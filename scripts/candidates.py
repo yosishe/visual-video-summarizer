@@ -42,6 +42,7 @@ from frame_utils import (  # noqa: E402
 # bounded while leaving room for what the transcript did not foresee.
 LIGHT_CAP = 48
 ADVANCED_CAP = 60
+UNPLANNED_FLOOR = 12  # scene/safety slots always kept beyond reserved target frames
 LIGHT_SCENE_THRESHOLD = 0.15
 ADVANCED_SCENE_FLOOR = 0.04
 MERGE_EPS = 0.20
@@ -547,6 +548,13 @@ def target_sample_times(target: dict, mode: str) -> list[float]:
         offsets = (0.20, 0.80, 1.60) if mode == "light" else (0.10, 0.35, 0.70, 1.20, 1.80, 2.40)
         return [min(end, max(start, anchor + offset)) for offset in offsets]
     if mode == "light":
+        if target["kind"] in ("diagram", "slide"):
+            # A board or slide is built up WHILE the speaker talks about it, so
+            # its most complete state is at the end of the referenced segments.
+            # Sampling only the midpoint returned half-typed titles and diagrams
+            # missing their last labels. The mid sample stays for the case where
+            # the screen moves on before the segment ends.
+            return [min(end, max(start, anchor)), max(start, end - 0.25)]
         return [min(end, max(start, anchor)), min(end, max(start, anchor + 0.60))]
     span = max(0.05, end - start)
     return [start + span * fraction for fraction in (0.10, 0.30, 0.50, 0.70, 0.90)]
@@ -733,6 +741,11 @@ def select_with_budget(
         if matches and not any(frame["path"] in keep_paths for frame in matches):
             keep_paths.add(max(matches, key=_frame_score)["path"])
     selected = [frame for frame in frames if frame["path"] in keep_paths]
+    # Planned frames (targets + chapter coverage) must never crowd out the
+    # unplanned ones: a run with many targets would otherwise leave zero slots
+    # for the scene changes the transcript did not predict. Guarantee a floor of
+    # UNPLANNED_FLOOR slots on top of whatever is reserved.
+    cap = max(cap, len(selected) + UNPLANNED_FLOOR)
     if len(selected) > cap:
         selected = sorted(selected, key=_frame_score, reverse=True)[:cap]
         keep_paths = {frame["path"] for frame in selected}
