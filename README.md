@@ -1,8 +1,11 @@
 # visual-video-summarizer
 
-**A Claude Code skill that turns a video into a page worth reading.** Give `/summarize-video` a YouTube URL or a local file and it produces a detailed English HTML summary: chapters synthesized from the transcript, with ~15–20 carefully chosen, timestamp-aligned frames (slides, screens, demos) embedded next to the exact sentences they illustrate — each caption linking back to that second of the video.
+**A `/summarize-video` skill that turns a video into a page worth reading.** It produces a detailed English HTML summary with transcript-aligned, non-duplicate visual evidence beside the exact prose it supports.
 
-Built for talks, lectures, screencasts, and product demos. Transcript + frames, stitched by time. Not a frame dump.
+```text
+captions → chapters + visual targets → temporal strips → candidate IDs
+         → verified high-resolution re-grab → deterministic manifest + HTML
+```
 
 ## Quick start
 
@@ -11,89 +14,91 @@ brew install ffmpeg yt-dlp
 git clone https://github.com/yosishe/visual-video-summarizer ~/.claude/skills/summarize-video
 ```
 
-Then, in any Claude Code session:
+Then invoke:
 
-```
+```text
 /summarize-video https://www.youtube.com/watch?v=VIDEO_ID
 ```
 
-The deliverable is **one self-contained file** — `summary-<video-id>.html`, with every image embedded as a data URI: open it with a double click, mail it, drop it in a chat. No server involved. Alongside it, `summary-<video-id>/` holds the editable source: `index.html`, an `assets/` folder (1280px frames + thumbnails), and a `manifest.json` recording every frame's timestamp, chapter, transcript segment, and selection reason — change a frame or a caption there and re-run `bundle.py` to regenerate the single file.
+Output lands in `summary-<video-id>/` with `index.html`, `manifest.json`, validated full/thumbnail assets, and timestamp links back to YouTube.
 
-## How it works
+## Why this pipeline is precise
 
-Most video-summarization pipelines extract frames first and think later. This one inverts the order so that **all text decisions happen before any image token is spent**:
+- Captions are requested with `yt-dlp --skip-download`; video is downloaded only after visual windows are known.
+- Chapters use half-open `[start,end)` intervals, so a frame exactly at a boundary belongs to the next chapter.
+- Visual targets reference transcript `seg_id` values. `action_result` targets search after the action instead of using a fixed global offset.
+- Each frame records both the requested timestamp and the actual decoded FFmpeg timestamp. Excess seek drift is rejected.
+- Near-duplicates use multi-scale luma, edge, and changed-pixel signatures. Dedup is scoped by chapter and semantic target and chooses the best stable representative instead of always keeping the earliest frame.
+- Coverage is checked after blank filtering, dedup, and caps. Missing required evidence is reported as `unresolved` and blocks rendering.
+- Selections use immutable `candidate_id` values. The deliverable re-grab must visually match the candidate.
+- The renderer validates provenance, budgets, duplicates, assets, and HTML placement before producing output.
 
-```
-transcript  →  chapters  →  cheap candidates (512px)  →  ONE visual triage  →  high-res re-grab  →  HTML
- (free-ish)    (text only)     (ffmpeg, no model)         (the only image spend)   (zero tokens)    (from a manifest)
-```
+## Token-efficient triage
 
-Key design decisions:
+`light` is the default. It searches only visual transcript windows, keeps at most two alternatives per target, and caps the pool at 36 candidates.
 
-- **Captions before download.** `yt-dlp --skip-download` fetches the transcript without touching the video. Whisper (Groq/OpenAI) is only a fallback, and rolling caption overlap is stripped losslessly (~halves transcript tokens).
-- **Placement is arithmetic, not vision.** Chapters are defined from the transcript with time windows; a frame belongs to a chapter by its timestamp. The model is never asked "where does this image go?"
-- **Hybrid candidate union.** Scene changes (threshold 0.15) ∪ cue grabs at **+0.5s/+1.5s** after "as you can see" moments (speakers talk *before* the screen changes) ∪ pinned timestamps ∪ final frame ∪ a safety frame in any >90s gap ∪ per-chapter coverage fill.
-- **Label == content, by construction.** Scene detection is a metadata-only pass that yields timestamps; every candidate frame is then extracted by seeking to its own timestamp. The alignment a timestamp-driven summary lives or dies on cannot drift.
-- **Free filtering before the model looks.** Blank/black frames and near-duplicates are dropped using 16×16 grayscale thumbnails — dropped frames cost zero tokens. Cue/pin/coverage frames are never evicted by the cap.
-- **Two resolution passes.** Candidates are analyzed once at 512px; only the selected frames are re-extracted at 1280px (+640px thumbs) for the HTML — without re-reading them.
-- **A near-duplicate audit guards the final page.** After the high-res re-grab, all selections are compared pairwise; two selections rendering the same picture fail the run with the offending pair named, instead of shipping the same frame twice under different captions.
-- **A manifest is the source of truth.** The page can be rebuilt, or one frame swapped, without re-analyzing the video.
+`advanced` uses adaptive local scene scores, denser action windows, transition recovery, and up to 60 candidates. Partial downloads in both modes use exact cuts so timestamps remain trustworthy. Advanced spends more local compute, not more model context unless the extra alternatives are opened.
 
-## Token economics
+Both modes generate small temporal strips. Read those first, then open individual 512px candidates only when selected or uncertain. The manifest reports provider-neutral pixel-area metrics against the former 60-individual-frame baseline instead of claiming a provider-specific token price.
 
-For an 18-minute talk: transcript ≈ a few thousand tokens, one batched read of ~60 candidate frames at 512px ≈ 30–50k image tokens — and that's it. The 1280px deliverable frames are never read by the model. Total model cost is dominated by a single, bounded triage pass regardless of video length.
+## Requirements and optional configuration
 
-## Requirements
-
-| | |
+| Requirement | Purpose |
 |---|---|
-| `ffmpeg` / `ffprobe` | frame extraction, audio, thumbnails |
-| `yt-dlp` | captions + video download (keep it updated — see Troubleshooting) |
-| Python 3.10+ | bundled scripts, stdlib only — nothing to `pip install` |
-| Whisper API key | **optional**, only for videos with no captions |
+| `ffmpeg` / `ffprobe` | timestamps, scene scores, signatures, frames and audio |
+| `yt-dlp` | captions and selective video acquisition |
+| Python 3.9+ | standard-library runtime; nothing to install with pip |
+| Whisper API key | optional, only for sources without captions |
 
-## Configuration (optional)
+For captionless sources, put `GROQ_API_KEY` or `OPENAI_API_KEY` in the environment or in `~/.config/summarize-video/.env` with mode `0600`. `~/.config/watch/.env` remains a legacy fallback.
 
-Only needed for videos without captions. Create `~/.config/summarize-video/.env` (chmod 600):
-
-```
-GROQ_API_KEY=...      # preferred - cheaper, faster (console.groq.com/keys)
-OPENAI_API_KEY=...    # fallback (platform.openai.com/api-keys)
-```
-
-Environment variables with the same names also work. Users of the [claude-video](https://github.com/bradautomates/claude-video) `/watch` skill don't need to configure anything — `~/.config/watch/.env` is read as a legacy fallback.
-
-## Script flags (standalone use)
-
-The scripts also run outside Claude Code:
+## Standalone workflow
 
 ```bash
-python3 scripts/transcript.py "<url-or-path>"        # transcript only, no video download
-python3 scripts/candidates.py "<url>" --work DIR --chapters chapters.json --cues 58,122 --pins 45,210
-python3 scripts/grab.py --work DIR --spec selections.json --out-dir out/assets
-python3 scripts/bundle.py summary-dir/                # -> one self-contained .html
+python3 scripts/transcript.py "<source>" --work WORK
+
+# Author WORK/chapters.json from transcript segment IDs.
+python3 scripts/candidates.py "<source>" \
+  --work WORK --transcript WORK/transcript.json --chapters WORK/chapters.json \
+  --mode light
+
+# Author WORK/selections.json from candidate IDs.
+python3 scripts/grab.py \
+  --work WORK --spec WORK/selections.json --out-dir summary-VIDEO/assets
+
+# Author WORK/summary.json from transcript segment IDs.
+python3 scripts/render.py \
+  --work WORK --summary WORK/summary.json --selections WORK/selections.json \
+  --assets-dir summary-VIDEO/assets --out-dir summary-VIDEO
 ```
 
-Useful flags: `--langs "he.*,en.*"` (caption languages) · `--sections 40-215,590-880` (partial download for long videos) · `--scene-threshold` · `--max-candidates` · `--no-whisper` · `--resolution`.
+See [`references/contracts.md`](references/contracts.md) for the JSON contracts. Legacy `--cues` and `--pins` are still accepted, but new runs should use transcript-linked `visual_targets`.
 
-## Security & privacy
+## Security and privacy
 
-**Network:** `yt-dlp` talks only to the host of the URL you provide (public data — no logins, no cookies). If the video has no captions *and* you configured a Whisper key, the extracted **audio only** (mono 16 kHz mp3) is sent to `api.groq.com` or `api.openai.com`. The video itself and the frames never leave your machine. `--no-whisper` disables all transcription uploads.
+`yt-dlp` talks to the public URL supplied by the user. If captions are unavailable and a Whisper key is configured, only the extracted audio is sent to Groq or OpenAI. Video and frames are never uploaded, and `--no-whisper` disables transcription uploads.
 
-**Reads:** the source file/URL, and this skill's own config (`~/.config/summarize-video/.env`, legacy `~/.config/watch/.env`). It deliberately does **not** read `.env` files from your project directories.
+The skill reads only the source and its own config; it does not read project `.env` files, browser sessions, cookies, accounts, or unrelated credentials. Keys are never logged or written to output. Files are written only to the temporary work directory and the requested summary directory.
 
-**Writes:** a temp working directory, and `summary-<video-id>/` in the directory where you run it. Nothing else.
+Names and FFmpeg crop expressions are validated before they enter paths or filter graphs.
 
-**Keys:** never logged or written to any output; the Groq key goes only to Groq, the OpenAI key only to OpenAI.
+## Tests
 
-The scripts are short, dependency-free Python — review them before first use.
+The standard-library suite synthesizes its own FFmpeg fixtures; no third-party media is committed.
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Tests cover half-open chapter boundaries, semantic dedup, localized UI changes, protected-frame replacement, cache invalidation, overlapping sections, unresolved coverage, light/advanced extraction, re-grab identity, duplicate gates, and deterministic HTML rendering.
 
 ## Troubleshooting
 
-- **YouTube HTTP 403 / "PO Token" warnings** — your `yt-dlp` is outdated (YouTube rotates client requirements): `brew upgrade yt-dlp` and retry.
-- **"No transcript available"** — the source has no captions and no Whisper key is configured; the skill can still produce a frames-only summary, or add a key (see Configuration).
-- **Grab step exits with "Duplicate selections found"** — working as intended: two chosen frames render the same picture; keep the more complete one and re-run.
+- **YouTube HTTP 403 or PO-token warning:** update `yt-dlp` and retry once.
+- **No transcript:** configure an optional Whisper key, use `--no-whisper`, or proceed with an explicitly frames-only summary.
+- **Unresolved coverage:** correct the target segments/window or rerun that target in `advanced` mode.
+- **Grab exits 2 or 3:** fix the reported extraction mismatch, unsafe crop, or duplicate selection; do not bypass the audit.
 
 ## Credits
 
-Frame-engine internals (ffmpeg scene detection via `select=gt(scene,T)` + `showinfo` pts stamps, 16×16 thumbnail dedup, even-sampling) are adapted from [bradautomates/claude-video](https://github.com/bradautomates/claude-video) (MIT); `scripts/whisper.py` is copied from it. MIT licensed — see [LICENSE](LICENSE).
+Scene-detection concepts and Whisper plumbing are adapted from [bradautomates/claude-video](https://github.com/bradautomates/claude-video) (MIT). See [LICENSE](LICENSE).

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 — 2026-09-01
+
+- Added transcript-linked `visual_targets` and bounded `light`/`advanced` extraction modes.
+- Candidate records now preserve decoded `actual_t` values and selections use immutable `candidate_id` references instead of copied timestamps.
+- Added target-aware multi-resolution deduplication, protected-cue recovery, adaptive local scene scoring, and fail-closed post-filter coverage.
+- Added strip-first visual triage plus explicit image-area metrics; the cached real-video benchmark produced 36 candidates and a projected 33.3% image-read area versus the former 60-frame baseline, with no unresolved targets.
+- Added verified full-resolution re-grab and deterministic `manifest.json`/`index.html` rendering with asset, chapter, segment, duplicate, timestamp-link, and alt-text checks.
+- Added 12 Python standard-library and synthetic FFmpeg tests for chapter boundaries, local UI changes, action results, black transitions, cache invalidation, budgeting, coverage, and rendering.
+
 ## 1.0.0 — 2026-09-01
 
 First public release.
