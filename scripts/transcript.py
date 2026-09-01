@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
-"""Acquire timestamps and text before any video-frame download occurs."""
+"""Transcript acquisition for /summarize-video.
+
+Order of preference (cheapest first):
+1. Native captions via `yt-dlp --skip-download` (no video download at all).
+2. Whisper API fallback (Groq preferred, OpenAI fallback) on audio-only
+   download / local file audio. Keys are shared with the /watch skill's
+   config at ~/.config/watch/.env.
+
+Emits stable segment records {seg_id, start, end, text} so frames can
+reference exact transcript spans, plus a readable transcript.txt.
+
+VTT parsing/dedup and download patterns adapted from
+bradautomates/claude-video (MIT).
+"""
 from __future__ import annotations
 
 import argparse
-import html
 import json
 import re
 import shutil
@@ -11,219 +23,280 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urlparse
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from frame_utils import format_time, probe_media  # noqa: E402
-from media_backend import is_url  # noqa: E402
-from speech_to_text import load_api_key, transcribe_media  # noqa: E402
+from whisper import load_api_key, transcribe_video  # noqa: E402
 
-
-TIMING_RE = re.compile(
-    r"(?:(\d+):)?(\d{2}):(\d{2})[.,](\d{3})\s+-->\s+"
-    r"(?:(\d+):)?(\d{2}):(\d{2})[.,](\d{3})"
+TS_RE = re.compile(
+    r"(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2})[.,](\d{3})"
 )
-TAG_RE = re.compile(r"<[^>]*>")
-WORD_RE = re.compile(r"[\w']+", re.UNICODE)
+TAG_RE = re.compile(r"<[^>]+>")
 
 
-def _seconds(hours: str | None, minutes: str, seconds: str, milliseconds: str) -> float:
-    return int(hours or 0) * 3600 + int(minutes) * 60 + int(seconds) + int(milliseconds) / 1000
+def is_url(source: str) -> bool:
+    if source.startswith("-"):
+        return False
+    parsed = urlparse(source)
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
-def _clean_caption(lines: list[str]) -> str:
-    fragments = []
-    for line in lines:
-        value = html.unescape(TAG_RE.sub("", line)).replace("\u200b", " ").strip()
-        if value:
-            fragments.append(value)
-    return " ".join(fragments).strip()
+def format_time(seconds: float) -> str:
+    total = int(round(seconds))
+    hours, rem = divmod(total, 3600)
+    minutes, sec = divmod(rem, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{sec:02d}"
+    return f"{minutes:02d}:{sec:02d}"
 
 
-def _tokens(text: str) -> list[str]:
-    return [match.group(0).casefold() for match in WORD_RE.finditer(text)]
+def _to_seconds(h: str, m: str, s: str, ms: str) -> float:
+    return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000.0
 
 
-def _remove_rolling_overlap(previous: str, current: str, minimum: int = 3) -> str:
-    previous_tokens = _tokens(previous)
-    current_matches = list(WORD_RE.finditer(current))
-    current_tokens = [match.group(0).casefold() for match in current_matches]
-    for width in range(min(len(previous_tokens), len(current_tokens)), minimum - 1, -1):
-        if previous_tokens[-width:] == current_tokens[:width]:
-            if width == len(current_matches):
-                return ""
-            return current[current_matches[width].start():].strip()
-    return current
-
-
-def compact_captions(rows: list[dict]) -> list[dict]:
-    compact: list[dict] = []
-    for raw in sorted(rows, key=lambda row: (row["start"], row["end"])):
-        row = {**raw, "text": str(raw.get("text") or "").strip()}
-        if not row["text"]:
-            continue
-        if compact and _tokens(row["text"]) == _tokens(compact[-1]["text"]):
-            compact[-1]["end"] = max(compact[-1]["end"], row["end"])
-            continue
-        if compact:
-            shortened = _remove_rolling_overlap(compact[-1]["text"], row["text"])
-            if not shortened:
-                compact[-1]["end"] = max(compact[-1]["end"], row["end"])
-                continue
-            row["text"] = shortened
-        compact.append(row)
-    return compact
-
-
-def parse_vtt(path: Path | str) -> list[dict]:
-    lines = Path(path).read_text(encoding="utf-8", errors="replace").splitlines()
-    rows: list[dict] = []
-    index = 0
-    while index < len(lines):
-        match = TIMING_RE.search(lines[index])
+def parse_vtt(path: str) -> list[dict]:
+    text = Path(path).read_text(encoding="utf-8", errors="ignore")
+    lines = text.splitlines()
+    segments: list[dict] = []
+    i = 0
+    while i < len(lines):
+        match = TS_RE.match(lines[i])
         if not match:
-            index += 1
+            i += 1
             continue
-        groups = match.groups()
-        start = _seconds(*groups[:4])
-        end = _seconds(*groups[4:])
-        index += 1
-        content = []
-        while index < len(lines) and lines[index].strip():
-            content.append(lines[index])
-            index += 1
-        text = _clean_caption(content)
-        if text and end >= start:
-            rows.append({"start": round(start, 3), "end": round(end, 3), "text": text})
-        index += 1
-    return compact_captions(rows)
+        start = _to_seconds(*match.groups()[:4])
+        end = _to_seconds(*match.groups()[4:])
+        i += 1
+        cue_lines: list[str] = []
+        while i < len(lines) and lines[i].strip():
+            cleaned = TAG_RE.sub("", lines[i]).strip()
+            if cleaned:
+                cue_lines.append(cleaned)
+            i += 1
+        cue_text = " ".join(cue_lines).strip()
+        if cue_text:
+            segments.append({"start": round(start, 2), "end": round(end, 2), "text": cue_text})
+        i += 1
+    return _dedupe(segments)
 
 
-def _yt_dlp() -> str:
-    executable = shutil.which("yt-dlp")
-    if not executable:
-        raise RuntimeError("yt-dlp is required for URL sources")
-    return executable
+WORD_RE = re.compile(r"[\w']+")
 
 
-def _run(command: list[str], label: str) -> None:
-    result = subprocess.run(command, capture_output=True, text=True)
-    if result.stdout:
-        print(result.stdout, file=sys.stderr, end="")
-    if result.returncode != 0:
-        raise RuntimeError(f"{label} failed: {result.stderr.strip()}")
+def _strip_overlap(prev_text: str, text: str, min_words: int = 3) -> str:
+    """YouTube auto-subs interleave rolling halves: segment N+1 opens with the
+    tail of segment N ("...hundreds of different AI agent" / "hundreds of
+    different AI agent workflows, mostly..."). Strip the longest word-level
+    overlap (>= min_words) so every phrase appears once and the transcript
+    reads linearly — roughly halving its token cost.
+
+    Words are compared case-folded and without punctuation ("Claw," == "claw")
+    because the two halves are often re-punctuated; the surviving text is
+    sliced from the original string so its own punctuation is kept.
+    """
+    prev_tokens = [m.group(0).casefold() for m in WORD_RE.finditer(prev_text)]
+    matches = list(WORD_RE.finditer(text))
+    tokens = [m.group(0).casefold() for m in matches]
+    for k in range(min(len(prev_tokens), len(tokens)), min_words - 1, -1):
+        if prev_tokens[-k:] == tokens[:k]:
+            if k == len(matches):
+                return ""
+            return text[matches[k].start():].strip()
+    return text
 
 
-def fetch_text_metadata(url: str, directory: Path, languages: str) -> tuple[Path | None, dict]:
-    """Request metadata and captions only; this command never requests video."""
-    directory.mkdir(parents=True, exist_ok=True)
-    _run([
-        _yt_dlp(), "--skip-download", "--no-playlist", "--write-info-json",
-        "--write-subs", "--write-auto-subs", "--sub-langs", languages,
-        "--sub-format", "vtt", "-o", str(directory / "source.%(ext)s"), "--", url,
-    ], "caption acquisition")
-    captions = sorted(directory.glob("source*.vtt"))
-    preferred = [
-        path for path in captions
-        if any(marker in path.name.casefold() for marker in (".en.", ".en-us.", ".en-gb."))
-    ]
-    info_path = directory / "source.info.json"
-    info = {}
-    if info_path.is_file():
-        raw = json.loads(info_path.read_text(encoding="utf-8"))
-        info = {
-            "id": raw.get("id"),
-            "title": raw.get("title"),
-            "uploader": raw.get("uploader") or raw.get("channel"),
-            "duration": raw.get("duration"),
-            "url": raw.get("webpage_url") or url,
-        }
-    return (preferred[0] if preferred else (captions[0] if captions else None)), info
+def _dedupe(segments: list[dict]) -> list[dict]:
+    """Collapse rolling duplicates common in YouTube auto-subs."""
+    out: list[dict] = []
+    for seg in segments:
+        if out and seg["text"] == out[-1]["text"]:
+            out[-1]["end"] = seg["end"]
+            continue
+        if out and seg["text"].startswith(out[-1]["text"] + " "):
+            out[-1]["text"] = seg["text"]
+            out[-1]["end"] = seg["end"]
+            continue
+        if out:
+            stripped = _strip_overlap(out[-1]["text"], seg["text"])
+            if not stripped:
+                out[-1]["end"] = seg["end"]
+                continue
+            if stripped != seg["text"]:
+                seg = {**seg, "text": stripped}
+        out.append(seg)
+    return out
 
 
-def download_audio_source(url: str, directory: Path) -> Path:
-    directory.mkdir(parents=True, exist_ok=True)
-    _run([
-        _yt_dlp(), "--no-playlist", "-f", "ba/bestaudio",
-        "-o", str(directory / "speech-source.%(ext)s"), "--", url,
-    ], "audio-only acquisition")
-    candidates = [
-        path for path in sorted(directory.glob("speech-source.*"))
-        if path.suffix.lower() not in {".json", ".vtt", ".part"}
-    ]
+def _pick_subtitle(out_dir: Path) -> Path | None:
+    candidates = sorted(out_dir.glob("video*.vtt"))
     if not candidates:
-        raise RuntimeError("audio-only acquisition produced no media")
-    return candidates[0]
-
-
-def _records(rows: list[dict]) -> list[dict]:
-    return [
-        {
-            "seg_id": f"seg_{index:04d}",
-            "start": round(float(row["start"]), 3),
-            "end": round(float(row["end"]), 3),
-            "text": str(row["text"]).strip(),
-        }
-        for index, row in enumerate(rows)
-        if str(row.get("text") or "").strip()
+        return None
+    preferred = [
+        c for c in candidates
+        if any(marker in c.name for marker in (".en.", ".en-US.", ".en-GB.", ".en-orig."))
     ]
+    return preferred[0] if preferred else candidates[0]
+
+
+def _read_info(info_path: Path, url: str) -> dict:
+    info: dict = {"url": url}
+    if info_path.exists():
+        try:
+            raw = json.loads(info_path.read_text(encoding="utf-8"))
+            info = {
+                "id": raw.get("id"),
+                "title": raw.get("title"),
+                "uploader": raw.get("uploader") or raw.get("channel"),
+                "duration": raw.get("duration"),
+                "url": raw.get("webpage_url") or url,
+            }
+        except Exception as exc:
+            print(f"[vsum] info.json parse failed: {exc}", file=sys.stderr)
+    return info
+
+
+def fetch_captions(url: str, out_dir: Path, langs: str) -> dict:
+    """Fetch metadata + best VTT captions WITHOUT downloading the video."""
+    if shutil.which("yt-dlp") is None:
+        raise SystemExit("yt-dlp is not installed. Install with: brew install yt-dlp")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    cmd = [
+        "yt-dlp",
+        "--skip-download",
+        "--write-info-json",
+        "--write-subs",
+        "--write-auto-subs",
+        "--sub-langs", langs,
+        "--sub-format", "vtt",
+        "--convert-subs", "vtt",
+        "--no-playlist",
+        "--ignore-errors",
+        "-o", str(out_dir / "video.%(ext)s"),
+        "--",
+        url,
+    ]
+    subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    subtitle = _pick_subtitle(out_dir)
+    return {
+        "subtitle_path": str(subtitle) if subtitle else None,
+        "info": _read_info(out_dir / "video.info.json", url),
+    }
+
+
+def download_audio(url: str, out_dir: Path) -> Path:
+    """Audio-only download for the Whisper fallback."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    cmd = [
+        "yt-dlp",
+        "-N", "8",
+        "-f", "ba/bestaudio",
+        "--no-playlist",
+        "--ignore-errors",
+        "-o", str(out_dir / "audio_src.%(ext)s"),
+        "--",
+        url,
+    ]
+    subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    for candidate in sorted(out_dir.glob("audio_src.*")):
+        if candidate.suffix.lower() not in (".json", ".vtt"):
+            return candidate
+    raise SystemExit(f"yt-dlp did not produce an audio file in {out_dir}")
+
+
+def probe(path: str) -> dict:
+    if shutil.which("ffprobe") is None:
+        raise SystemExit("ffprobe is not installed. Install with: brew install ffmpeg")
+    result = subprocess.run(
+        ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", path],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise SystemExit(f"ffprobe failed: {result.stderr.strip()}")
+    data = json.loads(result.stdout or "{}")
+    streams = data.get("streams", [])
+    fmt = data.get("format", {})
+    return {
+        "duration": float(fmt.get("duration") or 0),
+        "has_audio": any(s.get("codec_type") == "audio" for s in streams),
+    }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Acquire a timestamped transcript before video frames")
-    parser.add_argument("source")
-    parser.add_argument("--work")
-    parser.add_argument("--langs", default="en.*")
-    parser.add_argument("--no-whisper", action="store_true", help="Disable speech-to-text fallback")
-    parser.add_argument("--whisper", choices=["groq", "openai"], help="Choose speech backend")
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser(
+        prog="transcript",
+        description="Fetch a timestamped transcript (captions first, Whisper fallback).",
+    )
+    ap.add_argument("source", help="Video URL or local file path")
+    ap.add_argument("--work", default=None, help="Working directory (default: new tmp dir)")
+    ap.add_argument("--langs", default="en.*", help="yt-dlp --sub-langs pattern (default en.*)")
+    ap.add_argument("--no-whisper", action="store_true", help="Disable Whisper fallback")
+    ap.add_argument("--whisper", choices=["groq", "openai"], default=None,
+                    help="Force a Whisper backend")
+    args = ap.parse_args()
 
     work = Path(args.work).expanduser().resolve() if args.work else Path(
-        tempfile.mkdtemp(prefix="visual-summary-")
-    )
-    work.mkdir(parents=True, exist_ok=True)
-    download_dir = work / "download"
-    url_source = is_url(args.source)
-    rows: list[dict] = []
+        tempfile.mkdtemp(prefix="vsum-"))
+    dl_dir = work / "download"
+    dl_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[vsum] working dir: {work}", file=sys.stderr)
+
+    segments: list[dict] = []
     source_kind: str | None = None
     info: dict = {}
+    url_source = is_url(args.source)
 
     if url_source:
-        print("[vsum] requesting captions and metadata without video download", file=sys.stderr)
-        try:
-            caption_path, info = fetch_text_metadata(args.source, download_dir, args.langs)
-            if caption_path:
-                rows = parse_vtt(caption_path)
+        print("[vsum] fetching metadata/captions via yt-dlp (no video download)…", file=sys.stderr)
+        fetched = fetch_captions(args.source, dl_dir, args.langs)
+        info = fetched["info"]
+        if fetched["subtitle_path"]:
+            try:
+                segments = parse_vtt(fetched["subtitle_path"])
                 source_kind = "captions"
-        except (OSError, RuntimeError, json.JSONDecodeError) as exc:
-            print(f"[vsum] caption acquisition unavailable: {exc}", file=sys.stderr)
+            except Exception as exc:
+                print(f"[vsum] subtitle parse failed: {exc}", file=sys.stderr)
         duration = float(info.get("duration") or 0)
     else:
-        media = Path(args.source).expanduser().resolve()
-        if not media.is_file():
-            raise SystemExit(f"media file not found: {media}")
-        metadata = probe_media(media)
-        duration = metadata["duration"]
-        info = {"id": media.stem, "title": media.name, "url": str(media)}
-        if not metadata["has_audio"]:
+        local = Path(args.source).expanduser().resolve()
+        if not local.exists():
+            raise SystemExit(f"File not found: {local}")
+        meta = probe(str(local))
+        duration = meta["duration"]
+        info = {"id": local.stem, "title": local.name, "url": str(local)}
+        if not meta["has_audio"]:
+            print("[vsum] no audio stream — no transcript possible", file=sys.stderr)
             args.no_whisper = True
 
-    if not rows and not args.no_whisper:
-        backend, key = load_api_key(args.whisper)
-        if backend and key:
+    if not segments and not args.no_whisper:
+        backend, api_key = load_api_key(args.whisper)
+        if backend and api_key:
+            media = download_audio(args.source, dl_dir) if url_source else Path(args.source).expanduser().resolve()
             try:
-                media = download_audio_source(args.source, download_dir) if url_source else Path(args.source)
-                rows, backend_used = transcribe_media(media, work, backend, key)
-                source_kind = f"speech-to-text:{backend_used}"
-            except RuntimeError as exc:
-                print(f"[vsum] speech-to-text fallback failed: {exc}", file=sys.stderr)
+                segments, used = transcribe_video(
+                    str(media), work / "audio.mp3", backend=backend, api_key=api_key)
+                source_kind = f"whisper ({used})"
+            except SystemExit as exc:
+                print(f"[vsum] whisper fallback failed: {exc}", file=sys.stderr)
         else:
-            print("[vsum] no captions and no configured speech-to-text key", file=sys.stderr)
+            print(
+                "[vsum] no captions and no Whisper API key (GROQ_API_KEY / OPENAI_API_KEY in "
+                "env or ~/.config/summarize-video/.env) — transcript unavailable",
+                file=sys.stderr,
+            )
 
-    records = _records(rows)
+    records = [
+        {
+            "seg_id": f"seg_{i:04d}",
+            "start": seg["start"],
+            "end": seg["end"],
+            "text": seg["text"],
+        }
+        for i, seg in enumerate(segments)
+    ]
+
     payload = {
-        "schema_version": 3,
         "source": source_kind,
         "video": {
             "id": info.get("id") or "video",
@@ -235,21 +308,35 @@ def main() -> int:
         },
         "segments": records,
     }
-    transcript_path = work / "transcript.json"
-    transcript_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-    lines = [
-        f"{row['seg_id']} [{format_time(row['start'])}-{format_time(row['end'])}] {row['text']}"
-        for row in records
+    (work / "transcript.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False),
+                                          encoding="utf-8")
+    txt_lines = [
+        f"{r['seg_id']} [{format_time(r['start'])}-{format_time(r['end'])}] {r['text']}"
+        for r in records
     ]
-    (work / "transcript.txt").write_text("\n".join(lines), encoding="utf-8")
+    (work / "transcript.txt").write_text("\n".join(txt_lines), encoding="utf-8")
 
-    print("\n# transcript report\n")
+    # --- report ---
+    print()
+    print("# transcript report")
+    print()
     print(f"- **Work dir:** `{work}`")
-    print(f"- **Duration:** {format_time(duration)} ({duration:.3f}s)")
-    print(f"- **Segments:** {len(records)}" + (f" via {source_kind}" if source_kind else ""))
-    print(f"- **Manifest:** `{transcript_path}`")
-    if not records:
-        print("- **Status:** no transcript available; use visual-only chaptering or configure speech-to-text")
+    print(f"- **Source:** {args.source}")
+    if info.get("title"):
+        print(f"- **Title:** {info['title']}")
+    print(f"- **Duration:** {format_time(duration)} ({duration:.1f}s)")
+    print(f"- **Video id:** {payload['video']['id']}")
+    if records:
+        print(f"- **Segments:** {len(records)} (via {source_kind})")
+        print(f"- **Files:** `{work / 'transcript.json'}`, `{work / 'transcript.txt'}`")
+        print()
+        print("## Transcript")
+        print()
+        print("```")
+        print("\n".join(txt_lines))
+        print("```")
+    else:
+        print("- **Transcript:** none available — chapterize from visuals only, or fix Whisper setup")
     return 0
 
 

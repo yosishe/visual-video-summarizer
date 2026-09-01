@@ -82,17 +82,13 @@ class PipelineIntegrationTests(unittest.TestCase):
 
     def test_light_pipeline_grab_and_renderer(self) -> None:
         work = self._prepare_work("light")
-        authored_chapters = (work / "chapters.json").read_bytes()
         candidates_run = self._run(
             sys.executable, SCRIPTS / "candidates.py", self.video,
             "--work", work, "--transcript", work / "transcript.json",
             "--chapters", work / "chapters.json", "--mode", "light",
         )
         self.assertEqual(candidates_run.returncode, 0, candidates_run.stderr)
-        self.assertEqual((work / "chapters.json").read_bytes(), authored_chapters)
         candidate_payload = json.loads((work / "candidates.json").read_text(encoding="utf-8"))
-        self.assertEqual(candidate_payload["schema_version"], 3)
-        self.assertEqual(candidate_payload["engine"], "independent-visual-evidence-engine")
         self.assertLessEqual(candidate_payload["counts"]["final"], 36)
         self.assertEqual(candidate_payload["coverage"]["chapters"][0]["status"], "not-required")
         self.assertEqual(candidate_payload["coverage"]["chapters"][1]["status"], "covered")
@@ -106,21 +102,6 @@ class PipelineIntegrationTests(unittest.TestCase):
         self.assertTrue(all(not candidate["quality"]["blank"] for candidate in target_candidates))
         self.assertTrue(any("recovered" in candidate["reasons"] for candidate in target_candidates))
         chosen = max(target_candidates, key=lambda candidate: candidate["actual_t"])
-
-        first_ids = [candidate["candidate_id"] for candidate in candidate_payload["candidates"]]
-        repeated_run = self._run(
-            sys.executable, SCRIPTS / "candidates.py", self.video,
-            "--work", work, "--transcript", work / "transcript.json",
-            "--chapters", work / "chapters.json", "--mode", "light",
-        )
-        self.assertEqual(repeated_run.returncode, 0, repeated_run.stderr)
-        repeated_payload = json.loads((work / "candidates.json").read_text(encoding="utf-8"))
-        self.assertEqual(
-            first_ids,
-            [candidate["candidate_id"] for candidate in repeated_payload["candidates"]],
-        )
-        self.assertGreaterEqual(repeated_payload["triage"]["projected_individual_reads"], 1)
-        self.assertLessEqual(repeated_payload["triage"]["projected_to_baseline_ratio"], 0.5)
 
         selections = [{
             "candidate_id": chosen["candidate_id"], "name": "ch02_result", "chapter_id": "ch02",

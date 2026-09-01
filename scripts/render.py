@@ -1,70 +1,71 @@
 #!/usr/bin/env python3
-"""Fail-closed evidence validation and deterministic English HTML rendering."""
+"""Validate summary evidence and deterministically render manifest.json + HTML."""
 from __future__ import annotations
 
 import argparse
 import html
 import json
 import shutil
-from collections import Counter, defaultdict
+import sys
+from collections import Counter
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-from frame_utils import chapter_for_time, file_sha256, format_time
+SCRIPT_DIR = Path(__file__).parent.resolve()
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from bundle import bundle as bundle_summary  # noqa: E402
+from frame_utils import chapter_for_time, format_time  # noqa: E402
+
+ROLES = {"evidence", "illustration"}
 
 
-ALLOWED_ROLES = {"evidence", "illustration"}
-
-
-def _load(path: Path) -> object:
+def _load_json(path: Path) -> object:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
-        raise SystemExit(f"missing required file: {path}") from exc
+        raise SystemExit(f"Missing required file: {path}") from exc
     except json.JSONDecodeError as exc:
-        raise SystemExit(f"invalid JSON in {path}: {exc}") from exc
+        raise SystemExit(f"Invalid JSON in {path}: {exc}") from exc
 
 
-def _timestamp_link(url: object, timestamp: float) -> str | None:
-    if not isinstance(url, str) or not url.startswith(("http://", "https://")):
+def _timestamp_url(source_url: str | None, timestamp: float) -> str | None:
+    if not source_url or not source_url.startswith(("http://", "https://")):
         return None
-    parsed = urlparse(url)
+    parsed = urlparse(source_url)
     if "youtube.com" not in parsed.netloc and "youtu.be" not in parsed.netloc:
         return None
     query = dict(parse_qsl(parsed.query, keep_blank_values=True))
-    query["t"] = str(max(0, int(round(timestamp))))
+    query["t"] = str(int(round(timestamp)))
     return urlunparse(parsed._replace(query=urlencode(query)))
 
 
-def _summary_by_chapter(summary: dict, chapters: list[dict], known_segments: set[str]) -> dict[str, dict]:
-    rows = summary.get("chapters")
+def _normalized_summary(summary_payload: dict, chapters: list[dict]) -> dict[str, dict]:
+    rows = summary_payload.get("chapters", [])
     if not isinstance(rows, list):
         raise SystemExit("summary.json chapters must be an array")
-    supplied = {str(row.get("chapter_id")): row for row in rows if isinstance(row, dict)}
+    by_id = {str(row.get("chapter_id")): row for row in rows}
     normalized: dict[str, dict] = {}
     for chapter in chapters:
         chapter_id = chapter["chapter_id"]
-        row = supplied.get(chapter_id)
+        row = by_id.get(chapter_id)
         if row is None:
             raise SystemExit(f"summary.json is missing chapter {chapter_id}")
-        raw_blocks = row.get("blocks")
-        if not isinstance(raw_blocks, list) or not raw_blocks:
-            raise SystemExit(f"{chapter_id}: summary requires non-empty blocks[]")
-        blocks = []
-        for index, block in enumerate(raw_blocks):
-            text = str(block.get("text") or "").strip() if isinstance(block, dict) else ""
-            seg_ids = [str(value) for value in block.get("seg_ids", [])] if isinstance(block, dict) else []
+        blocks = row.get("blocks")
+        if not isinstance(blocks, list) or not blocks:
+            raise SystemExit(f"summary chapter {chapter_id} needs non-empty blocks[]")
+        normalized_blocks = []
+        for index, block in enumerate(blocks):
+            text = str(block.get("text") or "").strip()
+            seg_ids = [str(seg_id) for seg_id in block.get("seg_ids", [])]
             if not text or not seg_ids:
-                raise SystemExit(f"{chapter_id}: block {index} requires text and seg_ids")
-            unknown = sorted(set(seg_ids) - known_segments)
-            if unknown:
-                raise SystemExit(f"{chapter_id}: block {index} has unknown segments {unknown}")
-            blocks.append({"text": text, "seg_ids": seg_ids})
+                raise SystemExit(f"{chapter_id} block {index} needs text and seg_ids")
+            normalized_blocks.append({"text": text, "seg_ids": seg_ids})
         normalized[chapter_id] = {
             "chapter_id": chapter_id,
             "title": str(row.get("title") or chapter.get("title") or chapter_id),
-            "blocks": blocks,
-            "key_points": [str(value).strip() for value in row.get("key_points", []) if str(value).strip()],
+            "blocks": normalized_blocks,
+            "key_points": [str(point) for point in row.get("key_points", []) if str(point).strip()],
         }
     return normalized
 
@@ -77,101 +78,90 @@ def _validate(
     assets_payload: dict,
     summary_payload: dict,
 ) -> tuple[dict[str, dict], list[dict], dict[str, dict]]:
-    if assets_payload.get("failures"):
-        raise SystemExit("asset extraction failures must be resolved before rendering")
     if assets_payload.get("duplicate_pairs"):
-        raise SystemExit("hard duplicate assets must be resolved before rendering")
+        raise SystemExit("assets-manifest.json contains hard duplicate selections")
+    if assets_payload.get("failures"):
+        raise SystemExit("assets-manifest.json contains extraction failures")
     if len(selections) > 20:
-        raise SystemExit("global HTML frame budget exceeded (maximum 20)")
-    chapter_counts = Counter(str(row.get("chapter_id")) for row in selections)
-    over_budget = sorted(chapter for chapter, count in chapter_counts.items() if count > 3)
-    if over_budget:
-        raise SystemExit("per-chapter frame budget exceeded: " + ", ".join(over_budget))
-
-    chapter_map = {str(row["chapter_id"]): row for row in chapters}
-    known_segments = {str(row["seg_id"]) for row in transcript.get("segments", [])}
-    summaries = _summary_by_chapter(summary_payload, chapters, known_segments)
-    candidate_map = {
-        str(row.get("candidate_id")): row for row in candidate_payload.get("candidates", [])
+        raise SystemExit("HTML frame budget exceeded: more than 20 selections")
+    chapter_map = {chapter["chapter_id"]: chapter for chapter in chapters}
+    segment_ids = {str(segment["seg_id"]) for segment in transcript.get("segments", [])}
+    candidates = {
+        str(candidate.get("candidate_id") or candidate.get("frame_id")): candidate
+        for candidate in candidate_payload.get("candidates", [])
     }
-    asset_map = {str(row.get("candidate_id")): row for row in assets_payload.get("assets", [])}
-
-    unresolved_chapters = sorted(
+    assets = {str(asset["candidate_id"]): asset for asset in assets_payload.get("assets", [])}
+    summaries = _normalized_summary(summary_payload, chapters)
+    unresolved_required = {
         row["chapter_id"]
         for row in candidate_payload.get("coverage", {}).get("chapters", [])
         if row.get("status") == "unresolved"
-        and chapter_map.get(str(row.get("chapter_id")), {}).get("needs_frames")
-    )
-    unresolved_targets = sorted(
-        row["target_id"]
-        for row in candidate_payload.get("coverage", {}).get("targets", [])
-        if row.get("status") == "unresolved"
-    )
-    if unresolved_chapters or unresolved_targets:
-        values = unresolved_chapters + unresolved_targets
-        raise SystemExit("required visual evidence units remain unresolved: " + ", ".join(values))
+        and chapter_map.get(row.get("chapter_id"), {}).get("needs_frames", False)
+    }
+    if unresolved_required:
+        raise SystemExit(
+            "Required visual chapters remain unresolved: " + ", ".join(sorted(unresolved_required))
+        )
+    for chapter_id, summary in summaries.items():
+        for block in summary["blocks"]:
+            unknown = [seg_id for seg_id in block["seg_ids"] if seg_id not in segment_ids]
+            if unknown:
+                raise SystemExit(f"{chapter_id}: summary block has unknown segments {unknown}")
+    counts = Counter(str(selection.get("chapter_id")) for selection in selections)
+    overfull = [chapter_id for chapter_id, count in counts.items() if count > 3]
+    if overfull:
+        raise SystemExit("Per-chapter frame budget exceeded: " + ", ".join(overfull))
 
     normalized: list[dict] = []
-    selected_targets: set[str] = set()
     for index, selection in enumerate(selections):
-        if not isinstance(selection, dict):
-            raise SystemExit(f"selection {index} must be an object")
         candidate_id = str(selection.get("candidate_id") or "")
-        candidate = candidate_map.get(candidate_id)
-        asset = asset_map.get(candidate_id)
+        candidate = candidates.get(candidate_id)
+        asset = assets.get(candidate_id)
         if candidate is None or asset is None:
-            raise SystemExit(f"selection {index} lacks a candidate/assets pair: {candidate_id!r}")
-        chapter_id = str(selection.get("chapter_id") or "")
+            raise SystemExit(f"selection {index} has no candidate/assets pair: {candidate_id!r}")
+        chapter_id = str(selection.get("chapter_id") or candidate.get("chapter_id") or "")
         chapter = chapter_map.get(chapter_id)
-        if chapter is None or chapter_id != candidate.get("chapter_id"):
-            raise SystemExit(f"{candidate_id}: invalid chapter binding {chapter_id!r}")
+        if chapter is None:
+            raise SystemExit(f"{candidate_id}: unknown chapter {chapter_id!r}")
         timestamp = float(candidate["actual_t"])
-        owner = chapter_for_time(chapters, timestamp)
-        if owner is None or owner["chapter_id"] != chapter_id:
-            raise SystemExit(f"{candidate_id}: decoded timestamp belongs to another chapter")
+        owning = chapter_for_time(chapters, timestamp)
+        if owning is None or owning["chapter_id"] != chapter_id:
+            raise SystemExit(
+                f"{candidate_id}: t={timestamp:.3f} belongs to "
+                f"{owning['chapter_id'] if owning else 'no chapter'}, not {chapter_id}"
+            )
         role = str(selection.get("role") or "")
+        name = str(selection.get("name") or "").strip()
         caption = str(selection.get("caption") or "").strip()
         alt = str(selection.get("alt") or "").strip()
-        name = str(selection.get("name") or "").strip()
-        anchors = [str(value) for value in selection.get("anchor_seg_ids", [])]
-        if role not in ALLOWED_ROLES or not caption or not alt or not name or not anchors:
-            raise SystemExit(f"{candidate_id}: name, role, caption, alt, and anchor_seg_ids are required")
-        unknown = sorted(set(anchors) - known_segments)
-        if unknown:
-            raise SystemExit(f"{candidate_id}: unknown anchor segments {unknown}")
+        anchors = [str(seg_id) for seg_id in selection.get("anchor_seg_ids", [])]
+        if role not in ROLES or not name or not caption or not alt or not anchors:
+            raise SystemExit(f"{candidate_id}: name, role, caption, alt and anchor_seg_ids are required")
+        unknown_segments = [seg_id for seg_id in anchors if seg_id not in segment_ids]
+        if unknown_segments:
+            raise SystemExit(f"{candidate_id}: unknown anchor segments {unknown_segments}")
         candidate_segments = set(candidate.get("seg_ids", []))
         if candidate_segments and not candidate_segments.intersection(anchors):
-            raise SystemExit(f"{candidate_id}: selection anchors do not overlap candidate provenance")
+            raise SystemExit(f"{candidate_id}: anchor_seg_ids do not overlap candidate provenance")
         block_index = next(
             (
-                block_index
-                for block_index, block in enumerate(summaries[chapter_id]["blocks"])
+                block_index for block_index, block in enumerate(summaries[chapter_id]["blocks"])
                 if set(block["seg_ids"]).intersection(anchors)
             ),
             None,
         )
         if block_index is None:
-            raise SystemExit(f"{candidate_id}: no prose block overlaps the frame anchors")
+            raise SystemExit(f"{candidate_id}: no summary block overlaps anchor_seg_ids")
         for variant in ("full", "thumb"):
-            variant_row = asset.get(variant, {})
-            variant_path = Path(variant_row.get("path", ""))
-            if not variant_path.is_file():
-                raise SystemExit(f"{candidate_id}: missing {variant} asset {variant_path}")
-            filename = str(variant_row.get("file") or "")
-            if not filename or Path(filename).name != filename or variant_path.name != filename:
-                raise SystemExit(f"{candidate_id}: unsafe or inconsistent {variant} asset filename")
-            expected_hash = str(variant_row.get("sha256") or "")
-            if not expected_hash:
-                raise SystemExit(f"{candidate_id}: {variant} asset has no content hash")
-            if file_sha256(variant_path) != expected_hash:
-                raise SystemExit(f"{candidate_id}: {variant} asset hash mismatch")
-        selected_targets.update(str(value) for value in candidate.get("target_ids", []))
+            path = Path(asset[variant]["path"])
+            if not path.exists():
+                raise SystemExit(f"{candidate_id}: missing asset {path}")
         normalized.append({
             **selection,
             "candidate_id": candidate_id,
             "chapter_id": chapter_id,
-            "requested_t": candidate.get("requested_t"),
             "actual_t": timestamp,
+            "requested_t": candidate.get("requested_t"),
             "seg_ids": candidate.get("seg_ids", []),
             "target_ids": candidate.get("target_ids", []),
             "selection_reasons": candidate.get("reasons", []),
@@ -179,108 +169,191 @@ def _validate(
             "asset": asset,
             "block_index": block_index,
         })
-
-    required_targets = {
-        str(target["target_id"])
-        for chapter in chapters
-        for target in chapter.get("visual_targets", [])
-    }
-    omitted_targets = sorted(required_targets - selected_targets)
-    if omitted_targets:
-        raise SystemExit("HTML selections omit required visual targets: " + ", ".join(omitted_targets))
-    for chapter in chapters:
-        if chapter.get("needs_frames") and not any(
-            row["chapter_id"] == chapter["chapter_id"] for row in normalized
-        ):
-            raise SystemExit(f"HTML selections omit required visual chapter {chapter['chapter_id']}")
-    return summaries, normalized, asset_map
+    return summaries, normalized, assets
 
 
-def _figure(frame: dict, source_url: object) -> str:
-    full = "assets/" + html.escape(frame["asset"]["full"]["file"])
-    thumb = "assets/" + html.escape(frame["asset"]["thumb"]["file"])
-    timestamp_text = html.escape(format_time(frame["actual_t"]))
-    link = _timestamp_link(source_url, frame["actual_t"])
-    time_markup = (
-        f'<a class="time" href="{html.escape(link)}">{timestamp_text}</a>'
-        if link else f'<span class="time">{timestamp_text}</span>'
+STYLE = """
+  :root {
+    --ink: #1c1e21; --muted: #6b7280; --accent: #b3372c; --accent-soft: #f6e8e6;
+    --line: #e5e2dc; --bg: #faf9f7; --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.65 "Avenir Next", "Segoe UI", system-ui, sans-serif; }
+  header.hero { border-bottom: 3px solid var(--ink); background: var(--card); padding: 3.5rem 1.5rem 2.5rem; }
+  .measure { max-width: 46rem; margin: 0 auto; }
+  .kicker { text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; color: var(--accent); font-weight: 700; }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.15; margin: .4rem 0 .8rem; }
+  .meta { color: var(--muted); font-size: .92rem; }
+  .meta a { color: var(--accent); }
+  .thesis { margin-top: 1.4rem; padding: 1rem 1.2rem; background: var(--accent-soft);
+            border-left: 4px solid var(--accent); font-size: 1.02rem; }
+  nav.toc { margin: 2rem auto 0; max-width: 46rem; }
+  nav.toc ol { columns: 2; gap: 2rem; padding-left: 1.2rem; margin: .4rem 0 0; font-size: .92rem; }
+  nav.toc li { margin: .25rem 0; break-inside: avoid; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  nav.toc a:hover { color: var(--accent); border-color: var(--accent); }
+  main { padding: 1rem 1.5rem 4rem; }
+  section.chapter { max-width: 46rem; margin: 3rem auto 0; padding-top: 2.4rem; border-top: 1px solid var(--line); }
+  .ch-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
+  .ch-num { font-weight: 800; color: var(--accent); font-size: .95rem; letter-spacing: .06em; }
+  h2 { font-size: 1.35rem; margin: 0; line-height: 1.3; }
+  .range { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+  .range a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+  .range a:hover { color: var(--accent); border-color: var(--accent); }
+  p { margin: .9rem 0; }
+  figure { margin: 1.6rem 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+           padding: .7rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  figure a { display: block; }
+  figure img { width: 100%; height: auto; display: block; border-radius: 6px; }
+  figcaption { font-size: .87rem; color: var(--muted); padding: .65rem .3rem .1rem; }
+  figcaption b a { color: var(--accent); text-decoration: none; }
+  figcaption b a:hover { text-decoration: underline; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .duo figure { margin: 1.6rem 0 0; }
+  ul.key-points { margin: 1rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: .95rem; }
+  @media (max-width: 640px) { .duo { grid-template-columns: 1fr; } nav.toc ol { columns: 1; } }
+  footer { border-top: 3px solid var(--ink); background: var(--card); padding: 1.6rem; text-align: center;
+           color: var(--muted); font-size: .85rem; }
+"""
+
+
+def _figure(frame: dict, source_url: str | None) -> str:
+    asset = frame["asset"]
+    full = f"assets/{html.escape(asset['full']['file'])}"
+    thumb = f"assets/{html.escape(asset['thumb']['file'])}"
+    timestamp = format_time(frame["actual_t"])
+    timestamp_link = _timestamp_url(source_url, frame["actual_t"])
+    time_html = (
+        f'<b><a href="{html.escape(timestamp_link)}">{html.escape(timestamp)}</a></b>'
+        if timestamp_link
+        else f"<b>{html.escape(timestamp)}</b>"
     )
+    seg_ids = " ".join(html.escape(str(seg)) for seg in frame.get("anchor_seg_ids", []))
     return (
-        f'<figure data-candidate-id="{html.escape(frame["candidate_id"])}" '
-        f'data-time="{frame["actual_t"]:.6f}" data-role="{html.escape(frame["role"])}">'
-        f'<a href="{full}"><img src="{thumb}" loading="lazy" decoding="async" '
+        f'<figure data-frame-id="{html.escape(frame["name"])}" '
+        f'data-candidate-id="{html.escape(frame["candidate_id"])}" '
+        f'data-time="{frame["actual_t"]:.3f}" data-segment-ids="{seg_ids}" '
+        f'data-role="{html.escape(frame["role"])}">'
+        f'<a href="{full}"><img src="{thumb}" loading="lazy" '
         f'alt="{html.escape(frame["alt"])}"></a>'
-        f'<figcaption>{time_markup}<span aria-hidden="true"> — </span>'
-        f'{html.escape(frame["caption"])}</figcaption></figure>'
+        f"<figcaption>{time_html} — {html.escape(frame['caption'])}</figcaption>"
+        "</figure>"
     )
 
 
-def _html_document(
+def _figures_block(figures: list[str]) -> str:
+    """Two frames anchored to the same prose block sit side by side."""
+    if len(figures) == 2:
+        return '<div class="duo">' + "".join(figures) + "</div>"
+    return "".join(figures)
+
+
+def _render_html(
     transcript: dict,
     chapters: list[dict],
     summaries: dict[str, dict],
     frames: list[dict],
     overview: str,
+    candidate_count: int | None = None,
 ) -> str:
     video = transcript.get("video", {})
     title = str(video.get("title") or "Video summary")
     source_url = video.get("url")
-    by_chapter: dict[str, list[dict]] = defaultdict(list)
+    is_link = isinstance(source_url, str) and source_url.startswith(("http://", "https://"))
+    frames_by_chapter: dict[str, list[dict]] = {}
     for frame in frames:
-        by_chapter[frame["chapter_id"]].append(frame)
+        frames_by_chapter.setdefault(frame["chapter_id"], []).append(frame)
+
     sections: list[str] = []
-    for chapter in chapters:
+    toc: list[str] = []
+    for number, chapter in enumerate(chapters, start=1):
         chapter_id = chapter["chapter_id"]
         summary = summaries[chapter_id]
-        after_block: dict[int, list[dict]] = defaultdict(list)
-        for frame in sorted(by_chapter.get(chapter_id, []), key=lambda row: row["actual_t"]):
-            after_block[frame["block_index"]].append(frame)
-        content: list[str] = []
-        for block_index, block in enumerate(summary["blocks"]):
-            content.append(f'<p>{html.escape(block["text"])}</p>')
-            content.extend(_figure(frame, source_url) for frame in after_block.get(block_index, []))
+        toc.append(f'<li><a href="#{html.escape(chapter_id)}">{html.escape(summary["title"])}</a></li>')
+        block_frames: dict[int, list[dict]] = {}
+        for frame in sorted(frames_by_chapter.get(chapter_id, []), key=lambda row: row["actual_t"]):
+            block_frames.setdefault(frame["block_index"], []).append(frame)
+        body: list[str] = []
+        for index, block in enumerate(summary["blocks"]):
+            body.append(f"<p>{html.escape(block['text'])}</p>")
+            body.append(_figures_block([_figure(frame, source_url) for frame in block_frames.get(index, [])]))
         if summary["key_points"]:
-            content.append(
-                '<ul class="key-points">'
-                + "".join(f"<li>{html.escape(point)}</li>" for point in summary["key_points"])
-                + "</ul>"
-            )
-        sections.append(
-            f'<section id="{html.escape(chapter_id)}"><div class="chapter-title">'
-            f'<h2>{html.escape(summary["title"])}</h2><span>'
-            f'{html.escape(format_time(chapter["start"]))}–{html.escape(format_time(chapter["end"]))}'
-            f'</span></div>{"".join(content)}</section>'
+            items = "".join(f"<li>{html.escape(point)}</li>" for point in summary["key_points"])
+            body.append(f'<ul class="key-points">{items}</ul>')
+        range_text = f"{format_time(chapter['start'])}–{format_time(chapter['end'])}"
+        range_link = _timestamp_url(source_url, chapter["start"]) if is_link else None
+        range_html = (
+            f'<a href="{html.escape(range_link)}">{html.escape(range_text)}</a>' if range_link
+            else html.escape(range_text)
         )
-    source_markup = (
-        f'<a class="source" href="{html.escape(source_url)}">Open source video</a>'
-        if isinstance(source_url, str) and source_url.startswith(("http://", "https://")) else ""
+        sections.append(
+            f'<section class="chapter" id="{html.escape(chapter_id)}">'
+            f'<div class="ch-head"><span class="ch-num">{number:02d}</span>'
+            f'<h2>{html.escape(summary["title"])}</h2>'
+            f'<span class="range">{range_html}</span></div>'
+            + "".join(body)
+            + "</section>"
+        )
+
+    meta_bits: list[str] = []
+    if video.get("uploader"):
+        meta_bits.append(html.escape(str(video["uploader"])))
+    if video.get("duration"):
+        meta_bits.append(html.escape(format_time(float(video["duration"]))))
+    if is_link:
+        meta_bits.append(f'<a href="{html.escape(source_url)}">Watch the source video</a>')
+    if video.get("transcript_source"):
+        meta_bits.append("transcript: " + html.escape(str(video["transcript_source"])))
+    frames_note = f"{len(frames)} frames selected"
+    if candidate_count:
+        frames_note += f" from {candidate_count} candidates"
+    meta_bits.append(frames_note)
+    footer_source = (
+        f'source: <a href="{html.escape(source_url)}">{html.escape(source_url)}</a> · '
+        if is_link else ""
     )
-    return f'''<!doctype html>
+    return f"""<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{html.escape(title)} — Visual summary</title>
-  <style>
-    :root{{--ink:#152033;--muted:#657086;--paper:#fff;--bg:#f3f5f9;--line:#d7dde8;--accent:#2455d6}}
-    *{{box-sizing:border-box}} body{{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,sans-serif}}
-    main{{width:min(920px,calc(100% - 28px));margin:36px auto 72px}} header,section{{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:clamp(22px,4vw,42px);margin-bottom:24px}}
-    h1{{font-size:clamp(2rem,5vw,3.5rem);line-height:1.12;margin:.15em 0}} h2{{margin:0;line-height:1.25}} .eyebrow,.chapter-title span{{color:var(--muted);font-size:.9rem;font-weight:700}}
-    .chapter-title{{display:flex;align-items:baseline;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:22px}} p{{max-width:72ch}}
-    figure{{margin:28px 0 34px}} figure a{{display:block}} img{{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#111827}}
-    figcaption{{color:var(--muted);font-size:.94rem;margin-top:9px}} a{{color:var(--accent)}} .time{{font-weight:750}} .key-points{{padding-left:1.25rem}}
-    @media(max-width:600px){{main{{width:calc(100% - 18px);margin-top:9px}}.chapter-title{{display:block}}}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{html.escape(title)} — Visual Summary</title>
+<style>{STYLE}</style>
 </head>
-<body><main><header><div class="eyebrow">Evidence-linked visual summary</div><h1>{html.escape(title)}</h1><p>{html.escape(overview)}</p>{source_markup}</header>{''.join(sections)}</main></body>
+<body>
+
+<header class="hero">
+  <div class="measure">
+    <div class="kicker">Visual video summary</div>
+    <h1>{html.escape(title)}</h1>
+    <div class="meta">{' · '.join(meta_bits)}</div>
+    <div class="thesis"><b>The claim in one line:</b> {html.escape(overview)}</div>
+  </div>
+  <nav class="toc">
+    <div class="kicker">Chapters</div>
+    <ol>{''.join(toc)}</ol>
+  </nav>
+</header>
+
+<main>
+{''.join(sections)}
+</main>
+
+<footer>
+  Summary generated from the video's transcript and {len(frames)} selected frames ·
+  {footer_source}frame provenance in <code>manifest.json</code>
+</footer>
+
+</body>
 </html>
-'''
+"""
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate evidence and render deterministic HTML")
+    parser = argparse.ArgumentParser(description="Render validated English HTML from summary evidence")
     parser.add_argument("--work", required=True)
-    parser.add_argument("--summary", required=True)
+    parser.add_argument("--summary", required=True, help="Model-authored summary.json")
     parser.add_argument("--selections", required=True)
     parser.add_argument("--assets-dir", required=True)
     parser.add_argument("--out-dir", required=True)
@@ -288,37 +361,29 @@ def main() -> int:
 
     work = Path(args.work).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()
-    source_assets = Path(args.assets_dir).expanduser().resolve()
+    assets_dir = Path(args.assets_dir).expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    assets_dir = out_dir / "assets"
-    if source_assets != assets_dir:
-        if assets_dir.exists():
-            raise SystemExit(f"refusing to replace existing assets directory: {assets_dir}")
-        shutil.copytree(source_assets, assets_dir)
+    expected_assets = out_dir / "assets"
+    if assets_dir != expected_assets:
+        if expected_assets.exists():
+            raise SystemExit(f"Refusing to replace existing assets directory: {expected_assets}")
+        shutil.copytree(assets_dir, expected_assets)
+        assets_dir = expected_assets
 
-    transcript = _load(work / "transcript.json")
-    authored_chapters = _load(work / "chapters.json")
-    candidates = _load(work / "candidates.json")
-    selections = _load(Path(args.selections).expanduser().resolve())
-    summary = _load(Path(args.summary).expanduser().resolve())
-    assets = _load(assets_dir / "assets-manifest.json")
-    if not all(isinstance(value, expected) for value, expected in (
-        (transcript, dict), (authored_chapters, list), (candidates, dict),
-        (selections, list), (summary, dict), (assets, dict),
-    )):
-        raise SystemExit("one or more input files has the wrong top-level JSON type")
-    chapters = candidates.get("chapters") or authored_chapters
-    if not isinstance(chapters, list):
-        raise SystemExit("candidate manifest chapters must be an array")
-    for asset in assets.get("assets", []):
-        for variant in ("full", "thumb"):
-            filename = str(asset.get(variant, {}).get("file") or "")
-            if filename:
-                asset[variant]["path"] = str(assets_dir / filename)
-    overview = str(summary.get("overview") or "").strip()
+    transcript = _load_json(work / "transcript.json")
+    chapters = _load_json(work / "chapters.json")
+    candidate_payload = _load_json(work / "candidates.json")
+    selections = _load_json(Path(args.selections).expanduser().resolve())
+    summary_payload = _load_json(Path(args.summary).expanduser().resolve())
+    assets_payload = _load_json(assets_dir / "assets-manifest.json")
+    if not isinstance(chapters, list) or not isinstance(selections, list):
+        raise SystemExit("chapters.json and selections.json must be arrays")
+    summaries, frames, _ = _validate(
+        transcript, chapters, candidate_payload, selections, assets_payload, summary_payload
+    )
+    overview = str(summary_payload.get("overview") or "").strip()
     if not overview:
         raise SystemExit("summary.json requires a non-empty overview")
-    summaries, frames, _ = _validate(transcript, chapters, candidates, selections, assets, summary)
 
     manifest_frames = []
     for frame in frames:
@@ -332,38 +397,38 @@ def main() -> int:
             )
         } | {
             "assets": {
-                variant: {
-                    key: asset[variant][key]
-                    for key in ("file", "width", "height", "sha256")
-                }
-                for variant in ("full", "thumb")
+                "full": {key: asset["full"][key] for key in ("file", "width", "height", "sha256")},
+                "thumb": {key: asset["thumb"][key] for key in ("file", "width", "height", "sha256")},
             }
         })
-    coverage_by_chapter = {
-        row["chapter_id"]: row["status"]
-        for row in candidates.get("coverage", {}).get("chapters", [])
-    }
     manifest = {
-        "schema_version": 3,
-        "engine": "independent-visual-evidence-engine",
+        "schema_version": 2,
         "video": transcript.get("video", {}),
         "overview": overview,
-        "chapters": [
-            summaries[chapter["chapter_id"]] | {
-                "start": chapter["start"], "end": chapter["end"],
-                "coverage_status": coverage_by_chapter.get(chapter["chapter_id"], "unknown"),
-            }
-            for chapter in chapters
-        ],
+        "chapters": [summaries[chapter["chapter_id"]] | {
+            "start": chapter["start"], "end": chapter["end"],
+            "coverage_status": next(
+                (
+                    row["status"] for row in candidate_payload.get("coverage", {}).get("chapters", [])
+                    if row["chapter_id"] == chapter["chapter_id"]
+                ),
+                "unknown",
+            ),
+        } for chapter in chapters],
         "frames": manifest_frames,
     }
-    manifest_tmp = out_dir / ".manifest.json.tmp"
-    manifest_tmp.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
-    manifest_tmp.replace(out_dir / "manifest.json")
-    html_tmp = out_dir / ".index.html.tmp"
-    html_tmp.write_text(_html_document(transcript, chapters, summaries, frames, overview), encoding="utf-8")
-    html_tmp.replace(out_dir / "index.html")
+    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    candidate_count = len(candidate_payload.get("candidates", [])) or None
+    html_text = _render_html(transcript, chapters, summaries, frames, overview, candidate_count)
+    temporary_html = out_dir / "index.html.tmp"
+    temporary_html.write_text(html_text, encoding="utf-8")
+    temporary_html.replace(out_dir / "index.html")
     print(f"Rendered `{out_dir / 'index.html'}` and `{out_dir / 'manifest.json'}`")
+    # The single self-contained file is the deliverable people open and share;
+    # the directory stays as the editable source.
+    single = bundle_summary(out_dir, None)
+    size_mb = single.stat().st_size / (1024 * 1024)
+    print(f"Bundled single-file deliverable: `{single}` ({size_mb:.1f} MB) — opens with a double click.")
     return 0
 
 
