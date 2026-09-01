@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import base64
 import re
+import sys
 from pathlib import Path
 
 MIME = {
@@ -32,25 +33,10 @@ def data_uri(path: Path) -> str:
     return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode('ascii')}"
 
 
-def _local_asset(summary_dir: Path, relative: str) -> Path:
-    """Resolve a generated asset without allowing the HTML to escape assets/."""
-    assets_root = (summary_dir / "assets").resolve()
-    candidate = (summary_dir / relative).resolve()
-    try:
-        candidate.relative_to(assets_root)
-    except ValueError as exc:
-        raise SystemExit(f"Unsafe asset path in index.html: {relative}") from exc
-    return candidate
-
-
 def bundle(summary_dir: Path, out: Path | None) -> Path:
-    summary_dir = summary_dir.resolve()
     index = summary_dir / "index.html"
-    manifest = summary_dir / "manifest.json"
-    if not index.is_file():
+    if not index.exists():
         raise SystemExit(f"No index.html in {summary_dir}")
-    if not manifest.is_file():
-        raise SystemExit(f"No manifest.json in {summary_dir}; render the summary first")
     html = index.read_text(encoding="utf-8")
 
     # 1. unwrap <a href="assets/..."> around images (data: links are blocked)
@@ -61,10 +47,10 @@ def bundle(summary_dir: Path, out: Path | None) -> Path:
 
     def repl(match: re.Match) -> str:
         rel = match.group(1)
-        path = _local_asset(summary_dir, rel)
+        path = summary_dir / rel
         full = path.with_name(path.name.replace("-thumb.", "-full."))
         target = full if full.exists() else path
-        if not target.is_file():
+        if not target.exists():
             missing.append(rel)
             return match.group(0)
         return f'src="{data_uri(target)}"'
@@ -77,12 +63,8 @@ def bundle(summary_dir: Path, out: Path | None) -> Path:
     if leftovers:
         raise SystemExit(f"Unresolved asset references remain: {leftovers[:5]}")
 
-    out = (out or summary_dir.parent / f"{summary_dir.name}.html").resolve()
-    if out == index:
-        raise SystemExit("Refusing to overwrite the editable index.html")
-    temporary = out.with_name(f".{out.name}.tmp")
-    temporary.write_text(html, encoding="utf-8")
-    temporary.replace(out)
+    out = out or summary_dir.parent / f"{summary_dir.name}.html"
+    out.write_text(html, encoding="utf-8")
     return out
 
 

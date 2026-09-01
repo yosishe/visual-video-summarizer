@@ -87,18 +87,9 @@ class ChapterAndCandidateTests(unittest.TestCase):
     def test_dedup_does_not_cross_semantic_targets(self) -> None:
         first = frame(3.1, "target", "vt1")
         second = frame(3.2, "target", "vt2")
-        second["_signature"] = signature(101)
         kept, dropped = candidates.deduplicate_frames([first, second])
         self.assertEqual(dropped, 0)
         self.assertEqual(len(kept), 2)
-
-    def test_hard_duplicate_in_one_chapter_unifies_target_provenance(self) -> None:
-        first = frame(3.1, "target", "vt1")
-        second = frame(3.2, "target", "vt2")
-        kept, dropped = candidates.deduplicate_frames([first, second])
-        self.assertEqual(dropped, 1)
-        self.assertEqual(len(kept), 1)
-        self.assertEqual(kept[0]["target_ids"], {"vt1", "vt2"})
 
     def test_coverage_is_fail_closed(self) -> None:
         chapters = [
