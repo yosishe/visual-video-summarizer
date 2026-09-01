@@ -17,7 +17,7 @@ Pipeline: **transcript → chapters → cheap candidates (512px) → one visual 
 
 The ordering is the point: all text decisions happen before any image token is spent, placement is solved by time arithmetic (frame → chapter by timestamp window), and the only image spend is a single batched Read of candidates. Selected frames are re-extracted at 1280px for the HTML **without re-reading them** — you already saw them at 512px.
 
-Frame-engine internals (scene detection, pts_time stamps, 16x16 dedup) are adapted from `bradautomates/claude-video` (MIT). Whisper keys are shared with the `/watch` skill's config (`~/.config/watch/.env`).
+Frame-engine internals (scene detection, pts_time stamps, 16x16 dedup) are adapted from `bradautomates/claude-video` (MIT). Whisper keys live in `~/.config/summarize-video/.env` (the `/watch` skill's `~/.config/watch/.env` is read as a legacy fallback).
 
 ## Resolve SKILL_DIR
 
