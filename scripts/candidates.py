@@ -506,10 +506,13 @@ def main() -> int:
                         key=lambda f: f["t"])
 
     # 7. final naming + manifest
+    # Full 2-decimal precision in file names and the report: scene timestamps
+    # sit exactly ON cuts, so a consumer that copies a rounded-down time seeks
+    # to the previous shot's last frame instead of the cut frame.
     records = []
     for i, f in enumerate(frames):
         reason = main_reason(f)
-        final_path = cand_dir / f"c_{i:04d}_t{f['t']:07.1f}_{reason}.jpg"
+        final_path = cand_dir / f"c_{i:04d}_t{f['t']:08.2f}_{reason}.jpg"
         Path(f["path"]).rename(final_path)
         records.append({
             "frame_id": f"c_{i:04d}",
@@ -556,7 +559,7 @@ def main() -> int:
           "then triage per the skill rubric.**")
     print()
     for r in records:
-        print(f"- `{r['path']}` (t={format_time(r['t'])}, {'+'.join(r['reasons'])})")
+        print(f"- `{r['path']}` (t={r['t']} [{format_time(r['t'])}], {'+'.join(r['reasons'])})")
     return 0
 
 

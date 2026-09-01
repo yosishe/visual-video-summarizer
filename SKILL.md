@@ -87,6 +87,8 @@ python3 "$SKILL_DIR/scripts/candidates.py" "$URL" --work "<work>" --sections 40-
 - **Quota:** 1–3 per chapter, soft cap ~20 total. A chapter can end with zero. Extra frames only when they show a state the previous frame doesn't cover.
 - Assign each selection `role`: `evidence` (proves a number/claim/action) or `illustration` (represents the chapter). Roles shape the caption: evidence captions state what the frame shows; illustration captions set the scene.
 
+**Copy `t` values into selections.json exactly as the candidate report prints them (full decimal precision).** Scene timestamps sit exactly on cuts — rounding one down by even 0.04s seeks to the previous shot's last frame and you'll embed the wrong picture (the duplicate audit in Step 5 will catch it, but get it right here).
+
 Write `<work>/selections.json`:
 
 ```json
