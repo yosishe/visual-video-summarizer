@@ -3,15 +3,23 @@
 
 Candidate union (per the plan):
     scene changes  ∪  cue-offset grabs  ∪  pinned timestamps
-    ∪  final frame  ∪  sparse safety grid
+    ∪  final frame  ∪  sparse safety grid  ∪  chapter-coverage fill
 
-Then, before any model tokens are spent:
-    blank/black filter + perceptual dedup — both computed from the same
-    16x16 grayscale thumbnails — and an even-sample cap that never evicts
-    cue/pin frames.
+Architecture note: scene detection runs as a metadata-only pass
+(`select=gt(scene,T)` + showinfo → `-f null -`) that yields a list of pts,
+and EVERY frame — scene, cue, pin, safety, coverage — is then extracted by
+seeking to its own timestamp. Label == content by construction. (The earlier
+single-pass design paired showinfo stamps with written files positionally,
+which mislabeled scene frames when the two streams drifted; a fast `-ss`
+seek was verified frame-identical to an accurate output-side seek, so
+per-timestamp grabs are both exact and cheap.)
 
-Scene detection (`select=gt(scene,T)` + showinfo pts_time), thumbnail dedup,
-and even-sampling are adapted from bradautomates/claude-video (MIT).
+Before any model tokens are spent: blank/black filter + near-duplicate
+removal (16x16 grayscale thumbs) and an even-sample cap that never evicts
+cue/pin/final/coverage frames.
+
+Scene detection and thumbnail dedup adapted from
+bradautomates/claude-video (MIT).
 """
 from __future__ import annotations
 
@@ -27,15 +35,16 @@ from urllib.parse import urlparse
 SCENE_THRESHOLD = 0.15   # lower than claude-video's 0.20: slide flips are small changes
 CUE_OFFSETS = (0.5, 1.5)  # "now I click" is said BEFORE the screen changes
 SAFETY_GAP = 90.0        # insert a safety frame in any gap longer than this
-MERGE_EPS = 0.35         # a point grab within this of an existing frame merges into it
+MERGE_EPS = 0.35         # points closer than this collapse into one grab
+MIN_PER_CHAPTER = 2      # coverage floor for chapters that need frames (--chapters)
 DEDUP_THUMB = 16
 DEDUP_THRESHOLD = 2.0
 BLANK_STD = 2.0          # thumb std below this = uniform frame
 BLANK_DARK = 10.0        # ...and mean below this = black
 BLANK_BRIGHT = 245.0     # ...or mean above this = white flash
 MAX_READ_DIMENSION = 1998
-REASON_PRIORITY = ("cue", "pin", "final", "scene", "safety", "first-frame")
-PROTECTED = {"cue", "pin", "final"}
+REASON_PRIORITY = ("cue", "pin", "final", "coverage", "scene", "safety")
+PROTECTED = {"cue", "pin", "final", "coverage"}
 SHOWINFO_TS_RE = re.compile(r"pts_time:([0-9.]+)")
 
 TOOL_HINT = "Install with: brew install ffmpeg yt-dlp"
@@ -208,34 +217,27 @@ def part_for(parts: list[dict], t: float) -> dict | None:
 
 # ------------------------------------------------------------- frame engines
 
-def scene_pass(part: dict, out_dir: Path, resolution: int, threshold: float,
-               tag: str) -> list[dict]:
-    """First frame + scene-change frames for one part; absolute timestamps."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    pattern = str(out_dir / f"scn_{tag}_%04d.jpg")
-    vf = f"select='eq(n\\,0)+gt(scene\\,{threshold})',{_scale_filter(resolution)},showinfo"
+def scene_detect_pts(part: dict, threshold: float) -> list[float]:
+    """Metadata-only scene pass: decode, select scene changes (plus frame 0),
+    and read their pts from showinfo — nothing is written, so there is no
+    file/stamp pairing to drift. Returns absolute timestamps."""
+    vf = f"select='eq(n\\,0)+gt(scene\\,{threshold})',showinfo"
     cmd = [
-        "ffmpeg", "-hide_banner", "-loglevel", "info", "-y",
+        "ffmpeg", "-hide_banner", "-loglevel", "info",
         "-i", part["path"],
-        "-vf", vf, "-vsync", "vfr", "-q:v", "4",
-        pattern,
+        "-vf", vf, "-an", "-f", "null", "-",
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        raise SystemExit(f"ffmpeg scene extraction failed: {result.stderr.strip()}")
-    stamps = [float(m.group(1)) for m in SHOWINFO_TS_RE.finditer(result.stderr)]
-    files = sorted(out_dir.glob(f"scn_{tag}_*.jpg"))
-    out = []
-    for i, path in enumerate(files):
-        local_t = stamps[i] if i < len(stamps) else 0.0
-        reason = "first-frame" if i == 0 and part["offset"] == 0.0 else "scene"
-        out.append({"t": round(part["offset"] + local_t, 2), "path": str(path),
-                    "reasons": {reason}})
-    return out
+        raise SystemExit(f"ffmpeg scene detection failed: {result.stderr.strip()}")
+    return [round(part["offset"] + float(m.group(1)), 2)
+            for m in SHOWINFO_TS_RE.finditer(result.stderr)]
 
 
 def point_grab(parts: list[dict], t: float, out_dir: Path, resolution: int,
-               reason: str, seq: int) -> dict | None:
+               reasons: set[str], seq: int) -> dict | None:
+    """Extract exactly one frame at absolute time ``t`` (fast seek — verified
+    frame-identical to an accurate output-side seek)."""
     part = part_for(parts, t)
     if part is None:
         return None
@@ -251,7 +253,65 @@ def point_grab(parts: list[dict], t: float, out_dir: Path, resolution: int,
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0 or not path.exists():
         return None
-    return {"t": round(t, 2), "path": str(path), "reasons": {reason}}
+    return {"t": round(t, 2), "path": str(path), "reasons": set(reasons)}
+
+
+def merge_points(points: list[tuple[float, str]], eps: float = MERGE_EPS) -> list[tuple[float, set[str]]]:
+    """Collapse timestamps closer than ``eps`` into one grab, unioning reasons
+    (keeps the earliest time of each cluster)."""
+    merged: list[list] = []
+    for t, reason in sorted(points):
+        if merged and t - merged[-1][0] <= eps:
+            merged[-1][1].add(reason)
+        else:
+            merged.append([t, {reason}])
+    return [(t, reasons) for t, reasons in merged]
+
+
+# ------------------------------------------------------------------ chapters
+
+def load_chapters(path: str | None) -> list[dict]:
+    if not path:
+        return []
+    chapters = json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
+    out = []
+    for ch in chapters:
+        out.append({
+            "chapter_id": ch.get("chapter_id", f"ch{len(out) + 1:02d}"),
+            "start": float(ch["start"]),
+            "end": float(ch["end"]),
+            "needs_frames": bool(ch.get("needs_frames", True)),
+        })
+    return out
+
+
+def chapter_counts(chapters: list[dict], times: list[float]) -> dict[str, int]:
+    return {
+        ch["chapter_id"]: sum(1 for t in times if ch["start"] <= t < ch["end"])
+        for ch in chapters
+    }
+
+
+def coverage_fill(chapters: list[dict], merged: list[tuple[float, set[str]]],
+                  min_per_chapter: int) -> list[tuple[float, str]]:
+    """Extra grab points for needs_frames chapters holding fewer than
+    ``min_per_chapter`` candidates: midpoint first, then quarter points."""
+    times = [t for t, _ in merged]
+    extras: list[tuple[float, str]] = []
+    for ch in chapters:
+        if not ch["needs_frames"]:
+            continue
+        have = sum(1 for t in times if ch["start"] <= t < ch["end"])
+        span = ch["end"] - ch["start"]
+        fills = [ch["start"] + span * f for f in (0.5, 0.25, 0.75)]
+        for f in fills:
+            if have >= min_per_chapter:
+                break
+            if all(abs(f - t) > MERGE_EPS for t in times):
+                extras.append((round(f, 2), "coverage"))
+                times.append(f)
+                have += 1
+    return extras
 
 
 # ------------------------------------------------------- thumbs + filtering
@@ -292,7 +352,7 @@ def drop(frame: dict) -> None:
 def main_reason(frame: dict) -> str:
     for r in REASON_PRIORITY:
         if r in frame["reasons"]:
-            return "scene" if r == "first-frame" else r
+            return r
     return "scene"
 
 
@@ -323,6 +383,12 @@ def main() -> int:
                          f"expanded to +{CUE_OFFSETS[0]}s and +{CUE_OFFSETS[1]}s grabs")
     ap.add_argument("--pins", default=None,
                     help="Comma-separated exact timestamps (chapter starts, segment ends)")
+    ap.add_argument("--chapters", default=None,
+                    help="Path to chapters.json — enables the per-chapter coverage table "
+                         "and fills chapters that need frames but have fewer than "
+                         f"{MIN_PER_CHAPTER} candidates")
+    ap.add_argument("--min-per-chapter", type=int, default=MIN_PER_CHAPTER,
+                    help="Coverage floor for needs_frames chapters (with --chapters)")
     ap.add_argument("--sections", default=None,
                     help="Comma-separated ranges 'S-E' to download instead of the full video "
                          "(long videos; pad each range by ~5s — keyframe snap is approximate)")
@@ -348,17 +414,16 @@ def main() -> int:
     sections = parse_ranges(args.sections)
     parts = resolve_parts(args.source, work, sections)
     total_end = max(p["offset"] + p["duration"] for p in parts)
+    chapters = load_chapters(args.chapters)
 
-    # 1. scene pass per part
-    frames: list[dict] = []
-    for i, part in enumerate(parts):
-        frames.extend(scene_pass(part, raw_dir, args.resolution,
-                                 args.scene_threshold, tag=f"{i:02d}"))
-    n_scene = len(frames)
-    print(f"[vsum] scene pass: {n_scene} frames", file=sys.stderr)
-
-    # 2. point grabs: cue offsets, pins, final frame
+    # 1. candidate point union: scene pts (metadata-only pass) + cues + pins + final
     points: list[tuple[float, str]] = []
+    for part in parts:
+        pts = scene_detect_pts(part, args.scene_threshold)
+        points += [(t, "scene") for t in pts]
+    n_scene = len(points)
+    print(f"[vsum] scene detection: {n_scene} change points", file=sys.stderr)
+
     for cue in parse_times(args.cues):
         for off in CUE_OFFSETS:
             points.append((cue + off, "cue"))
@@ -366,34 +431,37 @@ def main() -> int:
         points.append((pin, "pin"))
     points.append((max(0.0, total_end - 0.5), "final"))
 
-    # 3. safety grid over gaps no other candidate covers
-    known = sorted([f["t"] for f in frames] + [t for t, _ in points])
+    merged = merge_points(points)
+
+    # 2. safety grid over gaps no other candidate covers
+    filled: list[tuple[float, str]] = []
     prev = parts[0]["offset"]
-    for t in known + [total_end]:
+    for t in [t for t, _ in merged] + [total_end]:
         gap_start = prev
         while t - gap_start > SAFETY_GAP:
             gap_start += SAFETY_GAP
-            points.append((round(gap_start, 2), "safety"))
+            filled.append((round(gap_start, 2), "safety"))
         prev = max(prev, t)
+    # 3. chapter-coverage floor (only with --chapters)
+    merged = merge_points([(t, r) for t, rs in merged for r in rs] + filled)
+    if chapters:
+        extras = coverage_fill(chapters, merged, args.min_per_chapter)
+        if extras:
+            print(f"[vsum] coverage fill: +{len(extras)} frame(s) for starved chapters",
+                  file=sys.stderr)
+            merged = merge_points([(t, r) for t, rs in merged for r in rs] + extras)
 
-    seq = 0
-    merged_into_existing = 0
-    for t, reason in sorted(points):
-        near = next((f for f in frames if abs(f["t"] - t) <= MERGE_EPS), None)
-        if near is not None:
-            near["reasons"].add(reason)
-            merged_into_existing += 1
-            continue
-        grabbed = point_grab(parts, t, raw_dir, args.resolution, reason, seq)
-        seq += 1
+    # 4. extract every point by its own timestamp (label == content)
+    frames: list[dict] = []
+    for seq, (t, reasons) in enumerate(merged):
+        grabbed = point_grab(parts, t, raw_dir, args.resolution, reasons, seq)
         if grabbed:
             frames.append(grabbed)
     frames.sort(key=lambda f: f["t"])
     n_raw = len(frames)
-    print(f"[vsum] +point grabs: {n_raw} total ({merged_into_existing} merged into scene frames)",
-          file=sys.stderr)
+    print(f"[vsum] extracted {n_raw} candidate frames", file=sys.stderr)
 
-    # 4. thumbs once → blank filter + sequential dedup (reasons accumulate)
+    # 5. thumbs once → blank filter + sequential dedup (reasons accumulate)
     thumbs = {f["path"]: thumb(f["path"]) for f in frames}
     n_blank = 0
     survivors: list[dict] = []
@@ -423,7 +491,7 @@ def main() -> int:
                 last_tb = tb
         frames = kept
 
-    # 5. cap: protected (cue/pin/final) frames are never evicted
+    # 6. cap: protected (cue/pin/final/coverage) frames are never evicted
     n_capped = 0
     if len(frames) > args.max_candidates:
         protected = [f for f in frames if is_protected(f)]
@@ -437,7 +505,7 @@ def main() -> int:
         frames = sorted(protected + [f for i, f in enumerate(others) if i in keep_idx],
                         key=lambda f: f["t"])
 
-    # 6. final naming + manifest
+    # 7. final naming + manifest
     records = []
     for i, f in enumerate(frames):
         reason = main_reason(f)
@@ -463,10 +531,26 @@ def main() -> int:
     print("# candidate frames report")
     print()
     print(f"- **Candidates:** {len(records)} "
-          f"(scene {n_scene}, raw union {n_raw}; dropped: {n_blank} blank, "
+          f"(scene points {n_scene}, raw union {n_raw}; dropped: {n_blank} blank, "
           f"{n_dedup} near-duplicate, {n_capped} over cap)")
     print(f"- **Dir:** `{cand_dir}`")
     print(f"- **Manifest:** `{work / 'candidates.json'}`")
+    if chapters:
+        counts = chapter_counts(chapters, [r["t"] for r in records])
+        print()
+        print("## Per-chapter coverage")
+        print()
+        print("| chapter | window | candidates |")
+        print("|---|---|---|")
+        for ch in chapters:
+            n = counts[ch["chapter_id"]]
+            note = "" if not ch["needs_frames"] else (" ⚠ starved" if n < args.min_per_chapter else "")
+            skip = " (no frames needed)" if not ch["needs_frames"] else ""
+            print(f"| {ch['chapter_id']} | {format_time(ch['start'])}-{format_time(ch['end'])} "
+                  f"| {n}{note}{skip} |")
+        print()
+        print("A starved chapter usually means a static stretch — consider a focused re-run "
+              "with extra `--cues`/`--pins` inside its window before triage.")
     print()
     print("**Read ALL candidate paths below in a single message (parallel Read calls), "
           "then triage per the skill rubric.**")
