@@ -48,7 +48,9 @@ Each candidate contains:
 
 `coverage.chapters` and `coverage.targets` use `covered`, `not-required`, or `unresolved`. An unresolved required row is a fail-closed signal.
 
-`triage.strips` maps each left-to-right temporal strip to its ordered candidate IDs. `projected_to_baseline_ratio` estimates strip pixels plus one individual 512px verification read per strip against the former 60-frame baseline; it is not a provider token quote.
+`triage.strips` is populated only when `candidates.py --strips` was used; it maps each left-to-right temporal strip to its ordered candidate IDs. `projected_to_baseline_ratio` estimates strip pixels plus one individual 512px read per strip (or one read per candidate when strips are off) against the former 60-frame baseline; it is not a provider token quote.
+
+The candidate pool is capped at 48 in `light` mode and 60 in `advanced` mode; target frames and one frame per `needs_frames` chapter are reserved before the cap is applied.
 
 ## `selections.json`
 
@@ -79,6 +81,7 @@ Each chapter has `chapter_id`, optional display `title`, non-empty `blocks`, and
 
 - `manifest.json`: combined video, chapter, prose, frame, provenance, quality, and asset-hash source of truth.
 - `index.html`: escaped, deterministic English HTML that references only validated assets.
+- `../summary-<id>.html` (next to the output directory): the single self-contained deliverable produced by `bundle.py`, with every image embedded as a data URI. `render.py` bundles automatically; re-run it after any change.
 
 ## CLI compatibility
 

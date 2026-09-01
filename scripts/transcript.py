@@ -82,17 +82,28 @@ def parse_vtt(path: str) -> list[dict]:
     return _dedupe(segments)
 
 
+WORD_RE = re.compile(r"[\w']+")
+
+
 def _strip_overlap(prev_text: str, text: str, min_words: int = 3) -> str:
     """YouTube auto-subs interleave rolling halves: segment N+1 opens with the
     tail of segment N ("...hundreds of different AI agent" / "hundreds of
     different AI agent workflows, mostly..."). Strip the longest word-level
     overlap (>= min_words) so every phrase appears once and the transcript
-    reads linearly — roughly halving its token cost."""
-    prev_words = prev_text.split()
-    words = text.split()
-    for k in range(min(len(prev_words), len(words)), min_words - 1, -1):
-        if prev_words[-k:] == words[:k]:
-            return " ".join(words[k:])
+    reads linearly — roughly halving its token cost.
+
+    Words are compared case-folded and without punctuation ("Claw," == "claw")
+    because the two halves are often re-punctuated; the surviving text is
+    sliced from the original string so its own punctuation is kept.
+    """
+    prev_tokens = [m.group(0).casefold() for m in WORD_RE.finditer(prev_text)]
+    matches = list(WORD_RE.finditer(text))
+    tokens = [m.group(0).casefold() for m in matches]
+    for k in range(min(len(prev_tokens), len(tokens)), min_words - 1, -1):
+        if prev_tokens[-k:] == tokens[:k]:
+            if k == len(matches):
+                return ""
+            return text[matches[k].start():].strip()
     return text
 
 

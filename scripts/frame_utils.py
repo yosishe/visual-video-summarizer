@@ -163,7 +163,12 @@ def visual_signature(path: str | Path) -> dict:
     contrast = variance ** 0.5
     edges = _edge_map(values, SIGNATURE_WIDTH, SIGNATURE_HEIGHT)
     sharpness = sum(edges) / len(edges) if edges else 0.0
-    blank = contrast < 2.0 and (mean < 10.0 or mean > 245.0)
+    # A frame carries no information when it is (near-)uniform at any luma —
+    # not only black or white — or when almost every pixel is clipped and no
+    # edges survive (a white flash, a fade). Uniform mid-gray transitions used
+    # to pass the old black/white-only rule.
+    extreme = sum(value <= 4 or value >= 251 for value in values) / expected
+    blank = contrast < 2.2 or (extreme > 0.995 and sharpness < 1.4)
     return {
         "pixels": pixels,
         "edges": bytes(min(255, round(edge)) for edge in edges),

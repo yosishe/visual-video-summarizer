@@ -36,7 +36,11 @@ from frame_utils import (  # noqa: E402
     visual_signature,
 )
 
-LIGHT_CAP = 36
+# Light reserves up to two frames per target plus one per chapter before any
+# unplanned scene change gets a slot; 36 left too few for those, so a slide
+# nobody predicted in chapters.json could be capped out. 48 keeps the pool
+# bounded while leaving room for what the transcript did not foresee.
+LIGHT_CAP = 48
 ADVANCED_CAP = 60
 LIGHT_SCENE_THRESHOLD = 0.15
 ADVANCED_SCENE_FLOOR = 0.04
@@ -220,6 +224,15 @@ def resolve_parts(
                 print(f"[vsum] section {format_time(start)}-{format_time(end)} failed", file=sys.stderr)
                 continue
             media = probe_media(files[0])
+            if exact_sections:
+                requested = end - start
+                if abs(media["duration"] - requested) > max(0.4, media["frame_duration"] * 4):
+                    raise SystemExit(
+                        f"section {format_time(start)}-{format_time(end)}: decoded duration "
+                        f"{media['duration']:.2f}s does not match the requested {requested:.2f}s — "
+                        "the exact cut failed, so source timestamps would be untrustworthy. "
+                        "Retry, or run without --sections for a full download."
+                    )
             parts.append({
                 "path": str(files[0]), "source_start": start, "offset": start,
                 "media_start": media["start_time"], "duration": media["duration"],
@@ -463,15 +476,19 @@ def load_chapters(
 
 
 def visual_windows(chapters: list[dict]) -> list[tuple[float, float]]:
+    """Scene-detection windows: every chapter that needs frames, in full.
+
+    Targets only say where the transcript *predicts* a visual; they must not
+    become the only places we look. A slide flip or demo step nobody flagged
+    in advance still has to reach the candidate pool, so the whole chapter is
+    scanned for scene changes (the decode cost is the same as scanning the
+    video once) and target windows add dense sampling on top.
+    """
     windows: list[tuple[float, float]] = []
     for chapter in chapters:
         if not chapter["needs_frames"]:
             continue
-        targets = chapter.get("visual_targets", [])
-        if targets:
-            windows.extend((target["window"][0], target["window"][1]) for target in targets)
-        else:
-            windows.append((chapter["start"], chapter["end"]))
+        windows.append((chapter["start"], chapter["end"]))
     return merge_windows(windows)
 
 
@@ -848,6 +865,10 @@ def main() -> int:
     parser.add_argument("--max-candidates", type=int, default=None)
     parser.add_argument("--min-per-chapter", type=int, default=None)
     parser.add_argument("--no-dedup", action="store_true")
+    parser.add_argument("--strips", action="store_true",
+                        help="Also render 256px temporal strips per target for a cheaper first "
+                             "look. Off by default: slides and UI text are not reliably legible "
+                             "at strip size, so accuracy-first triage reads the 512px candidates.")
     args = parser.parse_args()
 
     if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
@@ -969,11 +990,13 @@ def main() -> int:
             "part_mapping_confidence": frame.get("part_mapping_confidence", "unknown"),
         })
     shutil.rmtree(raw_dir, ignore_errors=True)
-    strips = generate_strips(work, chapters, records) if chapters else []
+    strips = generate_strips(work, chapters, records) if (args.strips and chapters) else []
     coverage = coverage_report(chapters, records)
     strip_pixels = sum(strip["pixel_area"] for strip in strips)
     baseline_pixels = 60 * 512 * 288
-    projected_individual_reads = min(len(strips), len(records))
+    # Without strips every candidate is read individually — say so in the metric
+    # instead of projecting a saving that will not happen.
+    projected_individual_reads = min(len(strips), len(records)) if strips else len(records)
     projected_total_pixels = strip_pixels + projected_individual_reads * 512 * 288
     payload = {
         "schema_version": 2,
@@ -1006,19 +1029,43 @@ def main() -> int:
     print(f"- **Mode:** {args.mode}")
     print(f"- **Candidates:** {len(records)} (raw {raw_count}; dedup {dedup_dropped}; cap {cap_dropped})")
     print(f"- **Manifest:** `{work / 'candidates.json'}`")
-    print(
-        f"- **Temporal strips:** {len(strips)}; projected strip + selective-read pixel ratio "
-        f"vs 60×512 baseline: {payload['triage']['projected_to_baseline_ratio']:.1%}"
-    )
+    if strips:
+        print(
+            f"- **Temporal strips:** {len(strips)}; projected strip + selective-read pixel ratio "
+            f"vs 60×512 baseline: {payload['triage']['projected_to_baseline_ratio']:.1%}"
+        )
     unresolved = [row for row in coverage["chapters"] if row["status"] == "unresolved"]
     if unresolved:
         print("- **Unresolved visual chapters:** " + ", ".join(row["chapter_id"] for row in unresolved))
+    if chapters:
+        status_by_chapter = {row["chapter_id"]: row["status"] for row in coverage["chapters"]}
+        print()
+        print("## Per-chapter coverage")
+        print()
+        print("| chapter | window | candidates | status |")
+        print("|---|---|---|---|")
+        for chapter in chapters:
+            n = sum(1 for record in records if record.get("chapter_id") == chapter["chapter_id"])
+            targets = len(chapter.get("visual_targets", []))
+            print(
+                f"| {chapter['chapter_id']} | {format_time(chapter['start'])}-{format_time(chapter['end'])} "
+                f"| {n} ({targets} target{'s' if targets != 1 else ''}) "
+                f"| {status_by_chapter.get(chapter['chapter_id'], '-')} |"
+            )
+        print()
+        print("A needs_frames chapter with only 1 candidate is a static stretch — if its point "
+              "is visual, add a target inside its window before triage.")
     print()
-    print("Read the temporal strips first, in order:")
-    for strip in strips:
-        print(f"- `{strip['path']}` → {', '.join(strip['candidate_ids'])}")
-    print()
-    print("Open an individual candidate only when selected or uncertain:")
+    if strips:
+        print("Read the temporal strips first, in order:")
+        for strip in strips:
+            print(f"- `{strip['path']}` → {', '.join(strip['candidate_ids'])}")
+        print()
+        print("Open an individual candidate only when selected or uncertain:")
+    else:
+        print("**Read ALL candidate paths below in a single message (parallel Read calls), "
+              "then triage per the skill rubric. Select by `candidate_id` — never copy times.**")
+        print()
     for record in records:
         print(
             f"- `{record['path']}` ({record['candidate_id']}, "

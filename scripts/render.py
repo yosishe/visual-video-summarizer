@@ -6,11 +6,16 @@ import argparse
 import html
 import json
 import shutil
+import sys
 from collections import Counter
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-from frame_utils import chapter_for_time, format_time
+SCRIPT_DIR = Path(__file__).parent.resolve()
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from bundle import bundle as bundle_summary  # noqa: E402
+from frame_utils import chapter_for_time, format_time  # noqa: E402
 
 ROLES = {"evidence", "illustration"}
 
@@ -167,6 +172,52 @@ def _validate(
     return summaries, normalized, assets
 
 
+STYLE = """
+  :root {
+    --ink: #1c1e21; --muted: #6b7280; --accent: #b3372c; --accent-soft: #f6e8e6;
+    --line: #e5e2dc; --bg: #faf9f7; --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.65 "Avenir Next", "Segoe UI", system-ui, sans-serif; }
+  header.hero { border-bottom: 3px solid var(--ink); background: var(--card); padding: 3.5rem 1.5rem 2.5rem; }
+  .measure { max-width: 46rem; margin: 0 auto; }
+  .kicker { text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; color: var(--accent); font-weight: 700; }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.15; margin: .4rem 0 .8rem; }
+  .meta { color: var(--muted); font-size: .92rem; }
+  .meta a { color: var(--accent); }
+  .thesis { margin-top: 1.4rem; padding: 1rem 1.2rem; background: var(--accent-soft);
+            border-left: 4px solid var(--accent); font-size: 1.02rem; }
+  nav.toc { margin: 2rem auto 0; max-width: 46rem; }
+  nav.toc ol { columns: 2; gap: 2rem; padding-left: 1.2rem; margin: .4rem 0 0; font-size: .92rem; }
+  nav.toc li { margin: .25rem 0; break-inside: avoid; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  nav.toc a:hover { color: var(--accent); border-color: var(--accent); }
+  main { padding: 1rem 1.5rem 4rem; }
+  section.chapter { max-width: 46rem; margin: 3rem auto 0; padding-top: 2.4rem; border-top: 1px solid var(--line); }
+  .ch-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
+  .ch-num { font-weight: 800; color: var(--accent); font-size: .95rem; letter-spacing: .06em; }
+  h2 { font-size: 1.35rem; margin: 0; line-height: 1.3; }
+  .range { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+  .range a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+  .range a:hover { color: var(--accent); border-color: var(--accent); }
+  p { margin: .9rem 0; }
+  figure { margin: 1.6rem 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+           padding: .7rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  figure a { display: block; }
+  figure img { width: 100%; height: auto; display: block; border-radius: 6px; }
+  figcaption { font-size: .87rem; color: var(--muted); padding: .65rem .3rem .1rem; }
+  figcaption b a { color: var(--accent); text-decoration: none; }
+  figcaption b a:hover { text-decoration: underline; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .duo figure { margin: 1.6rem 0 0; }
+  ul.key-points { margin: 1rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: .95rem; }
+  @media (max-width: 640px) { .duo { grid-template-columns: 1fr; } nav.toc ol { columns: 1; } }
+  footer { border-top: 3px solid var(--ink); background: var(--card); padding: 1.6rem; text-align: center;
+           color: var(--muted); font-size: .85rem; }
+"""
+
+
 def _figure(frame: dict, source_url: str | None) -> str:
     asset = frame["asset"]
     full = f"assets/{html.escape(asset['full']['file'])}"
@@ -174,18 +225,28 @@ def _figure(frame: dict, source_url: str | None) -> str:
     timestamp = format_time(frame["actual_t"])
     timestamp_link = _timestamp_url(source_url, frame["actual_t"])
     time_html = (
-        f'<a class="timestamp" href="{html.escape(timestamp_link)}">{html.escape(timestamp)}</a>'
+        f'<b><a href="{html.escape(timestamp_link)}">{html.escape(timestamp)}</a></b>'
         if timestamp_link
-        else f'<span class="timestamp">{html.escape(timestamp)}</span>'
+        else f"<b>{html.escape(timestamp)}</b>"
     )
+    seg_ids = " ".join(html.escape(str(seg)) for seg in frame.get("anchor_seg_ids", []))
     return (
-        f'<figure data-candidate-id="{html.escape(frame["candidate_id"])}" '
-        f'data-time="{frame["actual_t"]:.3f}" data-role="{html.escape(frame["role"])}">'
+        f'<figure data-frame-id="{html.escape(frame["name"])}" '
+        f'data-candidate-id="{html.escape(frame["candidate_id"])}" '
+        f'data-time="{frame["actual_t"]:.3f}" data-segment-ids="{seg_ids}" '
+        f'data-role="{html.escape(frame["role"])}">'
         f'<a href="{full}"><img src="{thumb}" loading="lazy" '
         f'alt="{html.escape(frame["alt"])}"></a>'
-        f'<figcaption>{time_html} — {html.escape(frame["caption"])}</figcaption>'
+        f"<figcaption>{time_html} — {html.escape(frame['caption'])}</figcaption>"
         "</figure>"
     )
+
+
+def _figures_block(figures: list[str]) -> str:
+    """Two frames anchored to the same prose block sit side by side."""
+    if len(figures) == 2:
+        return '<div class="duo">' + "".join(figures) + "</div>"
+    return "".join(figures)
 
 
 def _render_html(
@@ -194,64 +255,97 @@ def _render_html(
     summaries: dict[str, dict],
     frames: list[dict],
     overview: str,
+    candidate_count: int | None = None,
 ) -> str:
     video = transcript.get("video", {})
     title = str(video.get("title") or "Video summary")
     source_url = video.get("url")
+    is_link = isinstance(source_url, str) and source_url.startswith(("http://", "https://"))
     frames_by_chapter: dict[str, list[dict]] = {}
     for frame in frames:
         frames_by_chapter.setdefault(frame["chapter_id"], []).append(frame)
+
     sections: list[str] = []
-    for chapter in chapters:
+    toc: list[str] = []
+    for number, chapter in enumerate(chapters, start=1):
         chapter_id = chapter["chapter_id"]
         summary = summaries[chapter_id]
+        toc.append(f'<li><a href="#{html.escape(chapter_id)}">{html.escape(summary["title"])}</a></li>')
         block_frames: dict[int, list[dict]] = {}
-        for frame in frames_by_chapter.get(chapter_id, []):
+        for frame in sorted(frames_by_chapter.get(chapter_id, []), key=lambda row: row["actual_t"]):
             block_frames.setdefault(frame["block_index"], []).append(frame)
         body: list[str] = []
         for index, block in enumerate(summary["blocks"]):
             body.append(f"<p>{html.escape(block['text'])}</p>")
-            body.extend(_figure(frame, source_url) for frame in block_frames.get(index, []))
+            body.append(_figures_block([_figure(frame, source_url) for frame in block_frames.get(index, [])]))
         if summary["key_points"]:
             items = "".join(f"<li>{html.escape(point)}</li>" for point in summary["key_points"])
             body.append(f'<ul class="key-points">{items}</ul>')
+        range_text = f"{format_time(chapter['start'])}–{format_time(chapter['end'])}"
+        range_link = _timestamp_url(source_url, chapter["start"]) if is_link else None
+        range_html = (
+            f'<a href="{html.escape(range_link)}">{html.escape(range_text)}</a>' if range_link
+            else html.escape(range_text)
+        )
         sections.append(
-            f'<section id="{html.escape(chapter_id)}">'
-            f'<div class="chapter-heading"><h2>{html.escape(summary["title"])}</h2>'
-            f'<span>{html.escape(format_time(chapter["start"]))}–{html.escape(format_time(chapter["end"]))}</span></div>'
+            f'<section class="chapter" id="{html.escape(chapter_id)}">'
+            f'<div class="ch-head"><span class="ch-num">{number:02d}</span>'
+            f'<h2>{html.escape(summary["title"])}</h2>'
+            f'<span class="range">{range_html}</span></div>'
             + "".join(body)
             + "</section>"
         )
-    source_link = (
-        f'<a href="{html.escape(source_url)}">Open source video</a>'
-        if isinstance(source_url, str) and source_url.startswith(("http://", "https://"))
-        else ""
+
+    meta_bits: list[str] = []
+    if video.get("uploader"):
+        meta_bits.append(html.escape(str(video["uploader"])))
+    if video.get("duration"):
+        meta_bits.append(html.escape(format_time(float(video["duration"]))))
+    if is_link:
+        meta_bits.append(f'<a href="{html.escape(source_url)}">Watch the source video</a>')
+    if video.get("transcript_source"):
+        meta_bits.append("transcript: " + html.escape(str(video["transcript_source"])))
+    frames_note = f"{len(frames)} frames selected"
+    if candidate_count:
+        frames_note += f" from {candidate_count} candidates"
+    meta_bits.append(frames_note)
+    footer_source = (
+        f'source: <a href="{html.escape(source_url)}">{html.escape(source_url)}</a> · '
+        if is_link else ""
     )
-    return f"""<!doctype html>
+    return f"""<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{html.escape(title)} — Visual summary</title>
-  <style>
-    :root {{ color-scheme: light; --ink:#172033; --muted:#667085; --line:#d8dee9; --accent:#3157d5; --paper:#fff; --bg:#f4f6fa; }}
-    * {{ box-sizing:border-box; }} body {{ margin:0; background:var(--bg); color:var(--ink); font:17px/1.65 system-ui,-apple-system,sans-serif; }}
-    main {{ width:min(900px,calc(100% - 32px)); margin:40px auto 80px; }}
-    header,section {{ background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:clamp(22px,4vw,42px); margin:0 0 24px; }}
-    h1 {{ line-height:1.15; margin:0 0 14px; font-size:clamp(2rem,5vw,3.6rem); }} h2 {{ margin:0; line-height:1.25; }}
-    .eyebrow,.chapter-heading span {{ color:var(--muted); font-size:.9rem; font-weight:650; letter-spacing:.02em; }}
-    .chapter-heading {{ display:flex; align-items:baseline; justify-content:space-between; gap:20px; border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:22px; }}
-    p {{ max-width:72ch; }} figure {{ margin:28px 0 32px; }} figure a {{ display:block; }}
-    img {{ width:100%; height:auto; display:block; border-radius:12px; border:1px solid var(--line); background:#0b1020; }}
-    figcaption {{ color:var(--muted); font-size:.94rem; margin-top:9px; }} .timestamp {{ color:var(--accent); font-weight:700; }}
-    a {{ color:var(--accent); }} .key-points {{ padding-left:1.2rem; }}
-    @media (max-width:600px) {{ main {{ width:min(100% - 20px,900px); margin-top:12px; }} .chapter-heading {{ display:block; }} }}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{html.escape(title)} — Visual Summary</title>
+<style>{STYLE}</style>
 </head>
-<body><main>
-  <header><div class="eyebrow">Visual video summary</div><h1>{html.escape(title)}</h1><p>{html.escape(overview)}</p>{source_link}</header>
-  {''.join(sections)}
-</main></body>
+<body>
+
+<header class="hero">
+  <div class="measure">
+    <div class="kicker">Visual video summary</div>
+    <h1>{html.escape(title)}</h1>
+    <div class="meta">{' · '.join(meta_bits)}</div>
+    <div class="thesis"><b>The claim in one line:</b> {html.escape(overview)}</div>
+  </div>
+  <nav class="toc">
+    <div class="kicker">Chapters</div>
+    <ol>{''.join(toc)}</ol>
+  </nav>
+</header>
+
+<main>
+{''.join(sections)}
+</main>
+
+<footer>
+  Summary generated from the video's transcript and {len(frames)} selected frames ·
+  {footer_source}frame provenance in <code>manifest.json</code>
+</footer>
+
+</body>
 </html>
 """
 
@@ -324,11 +418,17 @@ def main() -> int:
         "frames": manifest_frames,
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    html_text = _render_html(transcript, chapters, summaries, frames, overview)
+    candidate_count = len(candidate_payload.get("candidates", [])) or None
+    html_text = _render_html(transcript, chapters, summaries, frames, overview, candidate_count)
     temporary_html = out_dir / "index.html.tmp"
     temporary_html.write_text(html_text, encoding="utf-8")
     temporary_html.replace(out_dir / "index.html")
     print(f"Rendered `{out_dir / 'index.html'}` and `{out_dir / 'manifest.json'}`")
+    # The single self-contained file is the deliverable people open and share;
+    # the directory stays as the editable source.
+    single = bundle_summary(out_dir, None)
+    size_mb = single.stat().st_size / (1024 * 1024)
+    print(f"Bundled single-file deliverable: `{single}` ({size_mb:.1f} MB) — opens with a double click.")
     return 0
 
 
