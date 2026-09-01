@@ -104,6 +104,12 @@ The scripts are dependency-free Python — review them before first use.
 - **A chapter or target is `unresolved`** — correct its segments/window or re-run it in `--mode advanced`; the renderer refuses to build a page with missing required evidence.
 - **`grab.py` exits 2 or 3** — an extraction mismatch, unsafe crop, or two selections rendering the same picture; fix the named selection, don't bypass the audit.
 
+## Contributors
+
+- **yosishe** — project owner and maintainer.
+- **OpenAI Codex** — transcript-aligned target engine, candidate-ID selection with verified re-grab, deterministic renderer, and the test suite (PR #2).
+- **Claude Code** — original pipeline, review and integration, single-file bundle, recall/precision fixes.
+
 ## Credits
 
 Frame-engine internals (ffmpeg scene detection via `select=gt(scene,T)` + `showinfo` pts stamps, thumbnail dedup, even-sampling) are adapted from [bradautomates/claude-video](https://github.com/bradautomates/claude-video) (MIT); `scripts/whisper.py` is copied from it. The transcript-aligned target engine, verified re-grab and renderer were developed in this repository (PR #2). MIT licensed — see [LICENSE](LICENSE).
