@@ -90,6 +90,11 @@ The v3 estimate counts one 512px verification read for every evidence group, inc
 - Login-, cookie-, region-, or DRM-protected acquisition is not attempted without explicit authorization.
 - Work files stay under the chosen work/output directories.
 
+## Contributors
+
+- **yosishe** — project owner and maintainer.
+- **OpenAI Codex** — implementation, testing, benchmarking, conflict-resolution, and integration assistance.
+
 ## License
 
 Private proprietary code. See [LICENSE](LICENSE).
