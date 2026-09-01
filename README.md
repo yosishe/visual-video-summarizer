@@ -17,7 +17,7 @@ Then, in any Claude Code session:
 /summarize-video https://www.youtube.com/watch?v=VIDEO_ID
 ```
 
-Output lands in `summary-<video-id>/` — a styled `index.html`, an `assets/` folder with the selected frames (1280px + thumbnails), and a `manifest.json` recording every frame's timestamp, chapter, transcript segment, and selection reason.
+The deliverable is **one self-contained file** — `summary-<video-id>.html`, with every image embedded as a data URI: open it with a double click, mail it, drop it in a chat. No server involved. Alongside it, `summary-<video-id>/` holds the editable source: `index.html`, an `assets/` folder (1280px frames + thumbnails), and a `manifest.json` recording every frame's timestamp, chapter, transcript segment, and selection reason — change a frame or a caption there and re-run `bundle.py` to regenerate the single file.
 
 ## How it works
 
@@ -71,6 +71,7 @@ The scripts also run outside Claude Code:
 python3 scripts/transcript.py "<url-or-path>"        # transcript only, no video download
 python3 scripts/candidates.py "<url>" --work DIR --chapters chapters.json --cues 58,122 --pins 45,210
 python3 scripts/grab.py --work DIR --spec selections.json --out-dir out/assets
+python3 scripts/bundle.py summary-dir/                # -> one self-contained .html
 ```
 
 Useful flags: `--langs "he.*,en.*"` (caption languages) · `--sections 40-215,590-880` (partial download for long videos) · `--scene-threshold` · `--max-candidates` · `--no-whisper` · `--resolution`.

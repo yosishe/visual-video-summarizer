@@ -11,3 +11,7 @@ First public release.
 - Lossless stripping of YouTube auto-sub rolling overlap (~halves transcript tokens).
 - Security hardening for publication: no `.env` reads from project directories; own config home at `~/.config/summarize-video/.env` (legacy `~/.config/watch/.env` fallback); strict validation of selection names and crop expressions.
 - Frame-engine internals adapted from [bradautomates/claude-video](https://github.com/bradautomates/claude-video) (MIT).
+
+## 1.1.0 — 2026-09-01
+
+- New `scripts/bundle.py` + final pipeline step: the primary deliverable is now **one self-contained HTML file** (`summary-<id>.html`) with all images embedded as data URIs — opens with a double click, no server, no sidecar folder. The `summary-<id>/` directory remains the editable source; re-run bundle.py after changes.

@@ -1,6 +1,6 @@
 ---
 name: summarize-video
-version: "1.0.0"
+version: "1.1.0"
 description: Turn a video (YouTube URL or local file) into a detailed English HTML summary - transcript-driven chapters with timestamp-aligned selected frames (slides, screens, demos) embedded next to the text they illustrate. Use when the user asks to summarize a video, wants a visual summary or HTML digest of a talk/lecture/screencast/demo, or types /summarize-video <url-or-path>.
 argument-hint: "<video-url-or-path> [notes / focus]"
 user-invocable: true
@@ -128,9 +128,17 @@ Create `summary-<video-id>/` in the cwd with:
 - For YouTube sources, make each timestamp a link: `https://youtu.be/<id>?t=133`.
 - Design the page properly (headings, readable measure, figures styled); it's a deliverable, not a dump.
 
+3. **Bundle to a single self-contained file** — the primary deliverable the user opens and shares:
+
+```bash
+python3 "$SKILL_DIR/scripts/bundle.py" "summary-<video-id>"
+```
+
+This emits `summary-<video-id>.html` next to the directory with every image embedded as a base64 data URI (full 1280px versions) — it opens with a double click and travels as one file. **No server is ever needed**; never start one to view the output. The directory (index.html + assets/ + manifest.json) remains the editable source — after any frame or text change, re-run bundle.py.
+
 ## Step 7 — Verify & clean up
 
-- `ls` the assets dir and check every `src`/`href` in the HTML resolves; open the page in the browser preview if the user wants to see it.
+- `ls` the assets dir and check every `src`/`href` in index.html resolves; confirm bundle.py reported all images embedded (it fails loudly on any unresolved reference). Send the user the single `summary-<video-id>.html` file.
 - Delete the expensive intermediates: `<work>/candidates/` and `<work>/download/`. Keep `<work>/transcript.json`, `chapters.json`, `selections.json` until the session ends (cheap, enable re-grabs); `summary-<id>/` is the product and stays.
 - Follow-up questions about the same video: answer from context — do not re-run anything. A changed frame choice needs only Steps 4b→5→6 (edit selections.json, re-grab, re-render from the manifest).
 
