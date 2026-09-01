@@ -1,156 +1,216 @@
 #!/usr/bin/env python3
-"""High-quality re-extraction of SELECTED frames for /summarize-video.
-
-The model triages candidates at 512px; this script re-grabs only the chosen
-timestamps from the source video at full deliverable quality — a 1280px
-`-full.jpg` plus a 640px `-thumb.jpg` per selection — into the summary's
-assets dir. Zero extra image tokens: the model never re-reads these.
-
-Spec file (written by the model during triage), JSON array:
-    [{"t": 133.4, "name": "ch03_export",
-      "crop": "w:h:x:y" (optional, ffmpeg crop syntax, applied to full only)}]
-"""
+"""Re-decode selected candidate IDs and produce verified HTML assets."""
 from __future__ import annotations
 
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from candidates import format_time, frame_delta, parse_time, part_for, resolve_parts, thumb  # noqa: E402
-
-MAX_READ_DIMENSION = 1998
-# Post-grab near-duplicate audit on the -full images (16x16 gray thumbs,
-# mean px delta 0-255). Calibrated on a real run: a genuinely duplicated
-# selection measured 0.36 while *distinct* whiteboard frames on the same
-# white background measured >= 2.7 — so fail well below that floor and warn
-# just above the dedup threshold.
-DUP_FAIL = 1.5
-DUP_WARN = 3.0
-# Selection names become file names; crop strings are spliced into an ffmpeg
-# filter chain. Both come from a JSON spec, so validate them strictly — a name
-# must not traverse paths and a crop must not smuggle extra filters.
-NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
-CROP_RE = re.compile(r"^\d+:\d+:\d+:\d+$")
+from frame_utils import (  # noqa: E402
+    compare_signatures,
+    file_sha256,
+    format_time,
+    is_hard_duplicate,
+    is_near_duplicate,
+    probe_media,
+    visual_signature,
+)
+from media_backend import extract_frame, load_parts  # noqa: E402
 
 
-def grab_one(parts: list[dict], t: float, out_base: Path, full_width: int,
-             thumb_width: int, crop: str | None) -> list[Path]:
-    part = part_for(parts, t)
-    if part is None:
-        print(f"[vsum] t={format_time(t)} is outside every downloaded part — skipped",
-              file=sys.stderr)
-        return []
-    local_t = min(max(0.0, t - part["offset"]), max(0.0, part["duration"] - 0.05))
-    made: list[Path] = []
-    for suffix, width, quality in (("full", full_width, 2), ("thumb", thumb_width, 4)):
-        vf_parts = []
-        if crop and suffix == "full":
-            vf_parts.append(f"crop={crop}")
-        vf_parts.append(
-            f"scale=w='min({width},iw)':h='min({MAX_READ_DIMENSION},ih)':"
-            "force_original_aspect_ratio=decrease:force_divisible_by=2"
-        )
-        path = out_base.parent / f"{out_base.name}-{suffix}.jpg"
-        cmd = [
-            "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-            "-ss", f"{local_t:.3f}", "-i", part["path"],
-            "-frames:v", "1", "-vf", ",".join(vf_parts), "-q:v", str(quality),
-            str(path),
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode == 0 and path.exists():
-            made.append(path)
-        else:
-            print(f"[vsum] grab failed for {path.name}: {result.stderr.strip()}",
-                  file=sys.stderr)
-    return made
+NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$")
+CROP_RE = re.compile(r"^(\d+):(\d+):(\d+):(\d+)$")
+
+
+def _load(path: Path) -> object:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise SystemExit(f"missing required file: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"invalid JSON in {path}: {exc}") from exc
+
+
+def _safe_name(value: object) -> str:
+    name = str(value or "").strip()
+    if not NAME_RE.fullmatch(name):
+        raise ValueError(f"unsafe asset name {value!r}")
+    return name
+
+
+def _crop_filter(value: object) -> str | None:
+    if value is None:
+        return None
+    match = CROP_RE.fullmatch(str(value))
+    if not match:
+        raise ValueError("crop must use integer w:h:x:y syntax")
+    width, height, left, top = (int(group) for group in match.groups())
+    if width <= 0 or height <= 0 or left < 0 or top < 0:
+        raise ValueError("crop dimensions must be positive and offsets non-negative")
+    return f"crop={width}:{height}:{left}:{top}"
+
+
+def _render_variant(source: Path, output: Path, width: int, crop: str | None) -> None:
+    executable = shutil.which("ffmpeg")
+    if not executable:
+        raise RuntimeError("ffmpeg is required")
+    filters = []
+    if crop:
+        filters.append(crop)
+    filters.append(f"scale=w='min({max(16, min(width, 1998))},iw)':h=-2:flags=lanczos")
+    result = subprocess.run([
+        executable, "-hide_banner", "-loglevel", "error", "-y",
+        "-i", str(source.resolve()), "-frames:v", "1", "-vf", ",".join(filters),
+        "-q:v", "2", str(output.resolve()),
+    ], capture_output=True, text=True)
+    if result.returncode != 0 or not output.exists() or output.stat().st_size == 0:
+        raise RuntimeError(result.stderr.strip() or f"failed to render {output.name}")
+
+
+def _asset_record(candidate: dict, name: str, actual_t: float, full: Path, thumb: Path) -> dict:
+    full_meta = probe_media(full)
+    thumb_meta = probe_media(thumb)
+    return {
+        "candidate_id": candidate["candidate_id"],
+        "name": name,
+        "chapter_id": candidate["chapter_id"],
+        "requested_t": candidate["requested_t"],
+        "actual_t": actual_t,
+        "seg_ids": candidate.get("seg_ids", []),
+        "target_ids": candidate.get("target_ids", []),
+        "full": {
+            "path": str(full), "file": full.name,
+            "width": full_meta["width"], "height": full_meta["height"],
+            "sha256": file_sha256(full),
+        },
+        "thumb": {
+            "path": str(thumb), "file": thumb.name,
+            "width": thumb_meta["width"], "height": thumb_meta["height"],
+            "sha256": file_sha256(thumb),
+        },
+    }
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        prog="grab",
-        description="Re-extract selected frames at deliverable quality (full + thumb).",
-    )
-    ap.add_argument("--work", required=True, help="Working directory (holds the video parts)")
-    ap.add_argument("--spec", required=True, help="JSON spec file of selections")
-    ap.add_argument("--out-dir", required=True, help="Assets dir (e.g. summary-<id>/assets)")
-    ap.add_argument("--full-width", type=int, default=1280)
-    ap.add_argument("--thumb-width", type=int, default=640)
-    ap.add_argument("--allow-dups", action="store_true",
-                    help="Do not fail when two selections are visually identical")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser(description="Verify and render selected frame assets")
+    parser.add_argument("--work", required=True)
+    parser.add_argument("--spec", required=True)
+    parser.add_argument("--out-dir", required=True)
+    parser.add_argument("--full-width", type=int, default=1280)
+    parser.add_argument("--thumb-width", type=int, default=640)
+    args = parser.parse_args()
 
     work = Path(args.work).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    spec = json.loads(Path(args.spec).expanduser().read_text(encoding="utf-8"))
-    if not isinstance(spec, list) or not spec:
-        raise SystemExit("Spec must be a non-empty JSON array")
+    candidate_payload = _load(work / "candidates.json")
+    if not isinstance(candidate_payload, dict) or candidate_payload.get("schema_version") != 3:
+        raise SystemExit("candidates.json is not an independent-engine schema v3 manifest")
+    candidate_map = {
+        str(row.get("candidate_id")): row for row in candidate_payload.get("candidates", [])
+    }
+    selections = _load(Path(args.spec).expanduser().resolve())
+    if not isinstance(selections, list) or not selections:
+        raise SystemExit("selections.json must be a non-empty array")
+    if len(selections) > 20:
+        raise SystemExit("global HTML frame budget exceeded (maximum 20)")
+    if len({str(row.get("candidate_id")) for row in selections}) != len(selections):
+        raise SystemExit("selections.json contains a repeated candidate_id")
+    parts = load_parts(work)
 
-    parts = resolve_parts(None, work)
+    assets: list[dict] = []
+    signatures: list[tuple[str, dict]] = []
+    failures: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="independent-grab-", dir=str(out_dir)) as temporary:
+        temp_dir = Path(temporary)
+        for index, selection in enumerate(selections):
+            candidate_id = str(selection.get("candidate_id") or "")
+            candidate = candidate_map.get(candidate_id)
+            if candidate is None:
+                failures.append(f"selection {index}: unknown candidate_id {candidate_id!r}")
+                continue
+            try:
+                if selection.get("chapter_id") != candidate.get("chapter_id"):
+                    raise ValueError("selection chapter does not match timestamp-derived candidate chapter")
+                name = _safe_name(selection.get("name"))
+                crop = _crop_filter(selection.get("crop"))
+                decoded = temp_dir / f"{candidate_id}.jpg"
+                actual_t, decoded_part = extract_frame(
+                    parts, float(candidate["actual_t"]), decoded, args.full_width
+                )
+                frame_tolerance = max(
+                    0.1,
+                    float(decoded_part.get("frame_duration") or 0.04) * 2.5,
+                )
+                if abs(actual_t - float(candidate["actual_t"])) > frame_tolerance:
+                    raise RuntimeError(
+                        f"re-decode timestamp drifted from {candidate['actual_t']:.6f}s to {actual_t:.6f}s"
+                    )
+                candidate_signature = visual_signature(Path(candidate["path"]))
+                decoded_signature = visual_signature(decoded)
+                if not is_near_duplicate(candidate_signature, decoded_signature):
+                    delta = compare_signatures(candidate_signature, decoded_signature)
+                    raise RuntimeError(
+                        "re-decoded pixels do not match the candidate "
+                        f"(luma={delta['luma_mad']:.2f}, changed={delta['changed_ratio']:.1%}, "
+                        f"tiles={delta['active_tile_ratio']:.1%})"
+                    )
+                full = out_dir / f"{name}-full.jpg"
+                thumb = out_dir / f"{name}-thumb.jpg"
+                _render_variant(decoded, full, args.full_width, crop)
+                _render_variant(decoded, thumb, args.thumb_width, crop)
+                full_signature = visual_signature(full)
+                signatures.append((candidate_id, full_signature))
+                assets.append(_asset_record(candidate, name, actual_t, full, thumb))
+            except (OSError, RuntimeError, ValueError) as exc:
+                failures.append(f"{candidate_id or index}: {exc}")
 
-    print()
-    print("# grab report")
-    print()
-    n_ok = 0
-    fulls: list[tuple[str, float, Path]] = []
-    for item in spec:
-        t = float(parse_time(item["t"]))
-        name = str(item["name"]).strip()
-        if not NAME_RE.match(name):
-            raise SystemExit(
-                f"Bad selection name: {item['name']!r} — use letters, digits, dot, "
-                "dash, underscore (no path separators, no leading dot)")
-        crop = item.get("crop")
-        if crop is not None and not CROP_RE.match(str(crop)):
-            raise SystemExit(
-                f"Bad crop: {crop!r} — expected 'w:h:x:y' with integer values "
-                "(ffmpeg crop syntax, nothing else)")
-        made = grab_one(parts, t, out_dir / name, args.full_width, args.thumb_width,
-                        crop)
-        if made:
-            n_ok += 1
-            print(f"- `{name}` (t={format_time(t)}): " + ", ".join(f"`{p.name}`" for p in made))
-            fulls += [(name, t, p) for p in made if p.name.endswith("-full.jpg")]
-    print()
-    print(f"**{n_ok}/{len(spec)} selections extracted to `{out_dir}`.**")
+    duplicates: list[dict] = []
+    for first_index, (first_id, first_signature) in enumerate(signatures):
+        for second_id, second_signature in signatures[first_index + 1:]:
+            if is_hard_duplicate(first_signature, second_signature):
+                duplicates.append({
+                    "first": first_id, "second": second_id,
+                    "delta": compare_signatures(first_signature, second_signature),
+                })
+    manifest = {
+        "schema_version": 3,
+        "engine": "independent-visual-evidence-engine",
+        "candidate_manifest_schema": candidate_payload.get("schema_version"),
+        "assets": assets,
+        "duplicate_pairs": duplicates,
+        "failures": failures,
+    }
+    manifest_path = out_dir / "assets-manifest.json"
+    temporary_manifest = out_dir / ".assets-manifest.json.tmp"
+    temporary_manifest.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    temporary_manifest.replace(manifest_path)
 
-    # Near-duplicate audit: two selections that render the same picture mean
-    # one of them adds nothing to the summary — the triage should have kept
-    # only the most complete frame of that scene.
-    thumbs = {name: thumb(str(p)) for name, _, p in fulls}
-    suspects = []
-    for i in range(len(fulls)):
-        for j in range(i + 1, len(fulls)):
-            a, ta, _ = fulls[i]
-            b, tb, _ = fulls[j]
-            d = frame_delta(thumbs[a], thumbs[b])
-            if d <= DUP_WARN:
-                suspects.append((d, a, ta, b, tb))
-    hard_dups = [s for s in suspects if s[0] <= DUP_FAIL]
-    if suspects:
-        print()
-        print("## Near-duplicate audit")
-        print()
-        for d, a, ta, b, tb in sorted(suspects):
-            tag = "DUPLICATE" if d <= DUP_FAIL else "similar — verify they differ"
-            print(f"- `{a}` (t={format_time(ta)}) ~ `{b}` (t={format_time(tb)}): "
-                  f"delta {d:.2f} → **{tag}**")
-        if hard_dups and not args.allow_dups:
-            print()
-            print("**Duplicate selections found — for each DUPLICATE pair keep only the more "
-                  "complete frame: edit selections.json (drop or re-time one of the pair, "
-                  "checking the candidate images for what should be there) and re-run. "
-                  "Pass --allow-dups only if both frames are genuinely wanted.**")
-            return 3
-
-    return 0 if n_ok == len(spec) else 1
+    print("\n# verified asset report\n")
+    for asset in assets:
+        print(
+            f"- `{asset['candidate_id']}` -> `{asset['full']['file']}` and "
+            f"`{asset['thumb']['file']}` at {asset['actual_t']:.6f}s "
+            f"[{format_time(asset['actual_t'])}]"
+        )
+    if failures:
+        print("\n## Failures")
+        for failure in failures:
+            print(f"- {failure}")
+    if duplicates:
+        print("\n## Hard duplicates")
+        for pair in duplicates:
+            print(f"- {pair['first']} duplicates {pair['second']}")
+    print(f"\n**Assets manifest:** `{manifest_path}`")
+    return 2 if failures else (3 if duplicates else 0)
 
 
 if __name__ == "__main__":

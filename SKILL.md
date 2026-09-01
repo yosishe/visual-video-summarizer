@@ -1,174 +1,186 @@
 ---
 name: summarize-video
-version: "1.1.0"
-description: Turn a video (YouTube URL or local file) into a detailed English HTML summary - transcript-driven chapters with timestamp-aligned selected frames (slides, screens, demos) embedded next to the text they illustrate. Use when the user asks to summarize a video, wants a visual summary or HTML digest of a talk/lecture/screencast/demo, or types /summarize-video <url-or-path>.
-argument-hint: "<video-url-or-path> [notes / focus]"
-user-invocable: true
+description: Create an English HTML video summary whose frames are transcript-linked evidence. Use for /summarize-video, visual lecture summaries, UI walkthroughs, diagrams, slides, or timestamped summaries that must minimize redundant image reads.
 allowed-tools: Bash, Read, Write, AskUserQuestion
-homepage: https://github.com/yosishe/visual-video-summarizer
-repository: https://github.com/yosishe/visual-video-summarizer
-author: yosishe
-license: MIT
+license: Proprietary
+metadata:
+  version: "2.0.0"
+  repository: https://github.com/yosishe/visual-video-summarizer
+  author: yosishe
 ---
 
 # /summarize-video
 
-Pipeline: **transcript → chapters → cheap candidates (512px) → one visual triage → high-res re-grab of the selected few → HTML built from a manifest.**
+Build a source-linked English HTML summary with an independent local evidence engine:
 
-The ordering is the point: all text decisions happen before any image token is spent, placement is solved by time arithmetic (frame → chapter by timestamp window), and the only image spend is a single batched Read of candidates. Selected frames are re-extracted at 1280px for the HTML **without re-reading them** — you already saw them at 512px.
+**transcript → evidence targets → tiny grayscale scans → stable candidate IDs → selective image review → verified assets → deterministic HTML**
 
-Frame-engine internals (scene detection, pts_time stamps, 16x16 dedup) are adapted from `bradautomates/claude-video` (MIT). Whisper keys live in `~/.config/summarize-video/.env` (the `/watch` skill's `~/.config/watch/.env` is read as a legacy fallback).
+The engine is implemented in this skill. It does not call, install, import, or execute another video skill. Its runtime tools are Python 3, FFmpeg/FFprobe, and yt-dlp.
 
-## Resolve SKILL_DIR
+Read [references/contracts.md](references/contracts.md) when writing JSON inputs. Read [references/architecture.md](references/architecture.md) only when debugging time mapping, ranking, cache behavior, or image-budget metrics.
 
-Set `SKILL_DIR` to the absolute path of the directory containing THIS SKILL.md — your harness reported that path when this file was loaded (a plain clone lands at `~/.claude/skills/summarize-video`). The bundled scripts are always a direct sibling of this file at `SKILL_DIR/scripts/`. Guard once:
-
-```bash
-SKILL_DIR="<absolute path of the directory containing this SKILL.md>"
-[ -f "$SKILL_DIR/scripts/transcript.py" ] || { echo "scripts not found under $SKILL_DIR" >&2; exit 1; }
-```
-
-Prereqs: `ffmpeg`, `ffprobe`, `yt-dlp` (`brew install ffmpeg yt-dlp`). A Whisper key (`GROQ_API_KEY` preferred, or `OPENAI_API_KEY`, in env or `~/.config/summarize-video/.env`) is only needed when the source has no captions.
-
-## Step 1 — Transcript (no video download)
+## 1. Acquire text before video
 
 ```bash
-python3 "$SKILL_DIR/scripts/transcript.py" "<source>"
+SKILL_DIR="<absolute path to this skill>"
+python3 "$SKILL_DIR/scripts/transcript.py" "<source>" --work "<work>"
 ```
 
-Options: `--langs "en.*"` (default) · `--whisper groq|openai` · `--no-whisper` · `--work DIR`.
+For a URL, this stage asks yt-dlp for metadata and captions with `--skip-download`; it does not request video. If captions are absent, the optional speech fallback uses only an audio file and a key from the environment or `~/.config/summarize-video/.env`. Use `--no-whisper` to prohibit that network call.
 
-The report prints the **work dir** (use it for every later step) and the full transcript as `seg_NNNN [MM:SS-MM:SS] text` lines. If no transcript is available, tell the user and offer frames-only (skip to Step 3 with no cues; captions/Whisper hints are in stderr).
+Keep `transcript.json`. Its stable `seg_id` values are the join keys for evidence planning, prose, frames, and final HTML.
 
-## Step 2 — Chapterize (you, text only — no images yet)
+## 2. Define transcript-linked visual evidence
 
-Read the transcript and write `<work>/chapters.json`:
+Write `<work>/chapters.json`. Chapter intervals are half-open `[start,end)`; only the last chapter may own the exact media end.
 
 ```json
-[{"chapter_id": "ch01", "title": "Setup & Architecture", "start": 45, "end": 210,
-  "needs_frames": true,
-  "cues": [{"t": 58, "seg_id": "seg_0012", "why": "'as you can see' - points at diagram"}]}]
+[
+  {
+    "chapter_id": "ch03",
+    "title": "Export result",
+    "start": 120.0,
+    "end": 210.0,
+    "needs_frames": true,
+    "visual_targets": [
+      {
+        "target_id": "ch03_export_result",
+        "kind": "action_result",
+        "seg_ids": ["seg_0084", "seg_0085"],
+        "action_seg_id": "seg_0084",
+        "why": "The completed dialog proves the narrated action"
+      }
+    ]
+  }
+]
 ```
 
-Rules:
-- 5–12 chapters for a typical talk; each a coherent topic, not a fixed length.
-- **`needs_frames: false` for pure-talk chapters** (intro banter, Q&A logistics, outro). No candidates will be generated there — that is the cheapest frame you'll never pay for.
-- Cues = moments the speaker directs attention to the screen: "as you can see", "look at this", "now I click", "notice the graph", a demo action being narrated. Judgment call — skip rhetorical "look, the point is…". Be restrained: **≤2 cues per chapter** typically.
-- For an action cue ("now I click…"), also note the **end** of that segment — the result appears on screen after the words. Pass segment-end times via `--pins`.
+Use a target only when the pixels preserve information: a UI state, action result, code, chart, diagram, or slide. Mark pure speech, logistics, and outro chapters with `needs_frames: false`.
 
-## Step 3 — Candidates (cheap, 512px)
+Target kinds:
 
-Build the command from chapters.json — cue times to `--cues`, chapter starts + action segment-ends to `--pins`, and **always pass `--chapters`**:
+- `action_result`: find the first stable, non-blank state after the action transition.
+- `state`: preserve a specific visible configuration.
+- `diagram`: preserve a complete diagram rather than an intermediate build.
+- `slide`: preserve a legible, stable slide.
+
+Prefer `seg_ids`. Use `anchor_t` or an explicit absolute `window` only when transcript timing cannot describe the evidence moment.
+
+## 3. Generate bounded candidates
+
+Start with light mode:
 
 ```bash
-python3 "$SKILL_DIR/scripts/candidates.py" "<source>" --work "<work>" \
-  --chapters "<work>/chapters.json" --cues 58,122,187 --pins 45,210,400,64.8
+python3 "$SKILL_DIR/scripts/candidates.py" "<source>" \
+  --work "<work>" \
+  --transcript "<work>/transcript.json" \
+  --chapters "<work>/chapters.json" \
+  --mode light
 ```
 
-What it does: downloads the video once (≤720p) → scene detection as a metadata-only pass, then **every** frame (scene ∪ cue grabs at **+0.5s/+1.5s** ∪ pins ∪ final ∪ safety frame in any >90s gap ∪ chapter-coverage fill) is extracted by seeking to its own timestamp, so a frame's label always matches its content → blank/black filter + near-duplicate removal (16x16 thumbs) → cap 60, **cue/pin/final/coverage frames never evicted** → `<work>/candidates/` + `candidates.json`.
+Light mode decodes tiny 64×36 grayscale samples only inside evidence windows, keeps at most two alternatives per target, and caps model-readable candidates at 36. It does not scan pure-speech chapters.
 
-With `--chapters` the report includes a **per-chapter coverage table** and guarantees at least 2 candidates in every chapter that needs frames. A chapter marked "starved" is a static stretch — consider extra `--cues`/`--pins` inside its window before triage, so relevant moments aren't missing from the pool.
+Use `--mode advanced` only for an unresolved target, a sub-second UI change, a progressive diagram, or an ambiguous action result. Advanced increases scan density inside the same bounded windows, keeps at most three alternatives per target, and caps the result at 60. It adds local decode work, not automatic model image reads.
 
-Other flags: `--max-candidates N` · `--scene-threshold F` · `--resolution W` · `--no-dedup`.
+The engine:
 
-**Long videos (>20 min):** after Step 2, prefer partial download — pass only the ranges of chapters with `needs_frames: true`, padded by ~5s each side (keyframe snap makes section starts approximate):
+- finds local motion relative to each evidence window rather than using a global scene threshold;
+- waits through transitions and blank/loading states before choosing an action result;
+- preserves small local UI/code changes with tile-aware visual comparison;
+- clusters duplicates within the same semantic target and selects the strongest representative;
+- assigns content-addressed `candidate_id` values from chapter, target, decoded time, and pixels;
+- validates coverage again after extraction, deduplication, and budgeting;
+- records `requested_t`, decoded `actual_t`, source mapping, quality, transcript provenance, and cache identity.
 
-```bash
-python3 "$SKILL_DIR/scripts/candidates.py" "$URL" --work "<work>" --sections 40-215,590-880 --cues ...
-```
+Any required `unresolved` row is a failure. Correct its target or rerun only that difficult window in advanced mode.
 
-## Step 4 — Triage (the ONLY image spend)
+## 4. Review strips before individual images
 
-**Read every candidate path in a single message** (parallel Read calls). Then select per chapter:
+Read the temporal strips printed by `candidates.py`. They are ordered left-to-right and list their candidate IDs. Open a 512px candidate only if it is selected or the strip is insufficient to verify detail.
 
-- **Content test:** keeps information — slide, code, diagram, chart, UI state, demo result. A frame of the presenter's face fails.
-- **Placement test:** its timestamp falls inside the chapter, and the transcript at that moment actually discusses it.
-- **Novelty test:** not a second copy of an already-selected frame. **One frame per board/scene**: when several candidates show the same whiteboard, slide, or screen at different build stages, select ONLY the most complete one (last-of-run) — never one per stage, unless the transcript discusses an intermediate stage at length as its own point. This applies across chapters too (the same board reappearing later is still the same board).
-- **Quota:** 1–3 per chapter, soft cap ~20 total. A chapter can end with zero. Extra frames only when they show a state the previous frame doesn't cover.
-- Assign each selection `role`: `evidence` (proves a number/claim/action) or `illustration` (represents the chapter). Roles shape the caption: evidence captions state what the frame shows; illustration captions set the scene.
+The reported budget is provider-neutral pixel area. It conservatively counts one individual verification read per evidence group, including singleton groups. Do not convert it into a token-price claim without the selected model's current image-pricing rules.
 
-**Copy `t` values into selections.json exactly as the candidate report prints them (full decimal precision).** Scene timestamps sit exactly on cuts — rounding one down by even 0.04s seeks to the previous shot's last frame and you'll embed the wrong picture (the duplicate audit in Step 5 will catch it, but get it right here).
+Select one frame per evidence target. Add another frame in the same chapter only when it proves a distinct state. Maximums: 20 globally and three per chapter.
 
-Write `<work>/selections.json`:
+Write `<work>/selections.json` with candidate IDs, never copied timestamps:
 
 ```json
-[{"t": 133.4, "name": "ch03_export", "chapter_id": "ch03", "seg_id": "seg_0084",
-  "role": "evidence", "caption": "The export button is visible as the presenter explains the next step.",
-  "crop": "w:h:x:y (optional - only to blow up a small UI region)"}]
+[
+  {
+    "candidate_id": "cand_6f91b38d1ab274",
+    "name": "ch03_export_result",
+    "chapter_id": "ch03",
+    "role": "evidence",
+    "caption": "The completed export dialog appears after confirmation.",
+    "alt": "Completed export dialog with output settings",
+    "anchor_seg_ids": ["seg_0084", "seg_0085"]
+  }
+]
 ```
 
-## Step 5 — Re-grab at deliverable quality (zero tokens)
+Use `crop` only when necessary for legibility. Its syntax is integer `w:h:x:y`; the same crop is applied to both asset variants.
+
+## 5. Re-decode and verify assets
 
 ```bash
-python3 "$SKILL_DIR/scripts/grab.py" --work "<work>" --spec "<work>/selections.json" \
+mkdir -p "summary-<video-id>/assets"
+python3 "$SKILL_DIR/scripts/grab.py" \
+  --work "<work>" \
+  --spec "<work>/selections.json" \
   --out-dir "summary-<video-id>/assets"
 ```
 
-Produces `<name>-full.jpg` (1280px) + `<name>-thumb.jpg` (640px) per selection. Do **not** Read these.
+This stage resolves full-precision `actual_t` from the candidate manifest, decodes again from source media, compares pixels against the selected candidate, validates crop/name syntax, writes full and thumbnail hashes, and rejects hard duplicate selections.
 
-The script then runs a **near-duplicate audit** over the full-size outputs. If it reports a DUPLICATE pair (exit 3), two selections rendered the same picture: keep only the more complete one — fix `selections.json` (drop one, or re-time it after checking the candidate images) and re-run. "similar — verify they differ" warnings are usually fine for same-styled slides, but glance at the pair's candidates before trusting them. Never pass `--allow-dups` just to silence the audit.
+## 6. Bind prose to evidence and render
 
-## Step 6 — Write the summary
+Write `<work>/summary.json`. Every English prose block must cite the transcript segments it synthesizes:
 
-Create `summary-<video-id>/` in the cwd with:
-
-1. **`manifest.json`** — the source of truth the HTML is built from: video info + per-frame `{frame_id, t, name, chapter_id, seg_ids, role, selection_reasons, caption}`. Copy `chapters.json` content in too. This is what lets you (or a later session) fix one frame or rebuild the page without re-analyzing the video.
-2. **`index.html`** — English, `<html lang="en" dir="ltr">`. Per chapter: heading + time range, a **detailed** summary of what is said (synthesize, don't paste transcript; quote only lines that matter), and each selected frame as:
-
-```html
-<figure data-frame-id="ch03_export" data-time="133.4" data-segment-id="seg_0084" data-role="evidence">
-  <a href="assets/ch03_export-full.jpg">
-    <img src="assets/ch03_export-thumb.jpg" loading="lazy" alt="Export dialog with MP4 selected">
-  </a>
-  <figcaption><b>2:13</b> — The export button is visible as the presenter explains the next step.</figcaption>
-</figure>
+```json
+{
+  "overview": "A practical walkthrough of the export workflow.",
+  "chapters": [
+    {
+      "chapter_id": "ch03",
+      "blocks": [
+        {
+          "text": "The presenter confirms the export and shows its completed state.",
+          "seg_ids": ["seg_0084", "seg_0085"]
+        }
+      ]
+    }
+  ]
+}
 ```
 
-- Every frame sits next to the point it illustrates — never a detached gallery at the end.
-- For YouTube sources, make each timestamp a link: `https://youtu.be/<id>?t=133`.
-- Design the page properly (headings, readable measure, figures styled); it's a deliverable, not a dump.
+```bash
+python3 "$SKILL_DIR/scripts/render.py" \
+  --work "<work>" \
+  --summary "<work>/summary.json" \
+  --selections "<work>/selections.json" \
+  --assets-dir "summary-<video-id>/assets" \
+  --out-dir "summary-<video-id>"
+```
 
-3. **Bundle to a single self-contained file** — the primary deliverable the user opens and shares:
+The renderer fails closed when a required target is unresolved or omitted, a timestamp belongs to another chapter, provenance does not overlap the prose, a budget is exceeded, a hard duplicate exists, an extraction failed, or an asset/hash/alt/caption is missing. It writes `manifest.json` and escaped English `<html lang="en" dir="ltr">`.
+
+Bundle the validated directory into the primary, self-contained deliverable:
 
 ```bash
 python3 "$SKILL_DIR/scripts/bundle.py" "summary-<video-id>"
 ```
 
-This emits `summary-<video-id>.html` next to the directory with every image embedded as a base64 data URI (full 1280px versions) — it opens with a double click and travels as one file. **No server is ever needed**; never start one to view the output. The directory (index.html + assets/ + manifest.json) remains the editable source — after any frame or text change, re-run bundle.py.
+The command embeds the verified full-size frames, removes local asset links, rejects unsafe or missing paths, and writes `summary-<video-id>.html` atomically. Keep the directory as the editable source; rerun the bundle after a text or frame change.
 
-## Step 7 — Verify & clean up
+## 7. Acceptance
 
-- `ls` the assets dir and check every `src`/`href` in index.html resolves; confirm bundle.py reported all images embedded (it fails loudly on any unresolved reference). Send the user the single `summary-<video-id>.html` file.
-- Delete the expensive intermediates: `<work>/candidates/` and `<work>/download/`. Keep `<work>/transcript.json`, `chapters.json`, `selections.json` until the session ends (cheap, enable re-grabs); `summary-<id>/` is the product and stays.
-- Follow-up questions about the same video: answer from context — do not re-run anything. A changed frame choice needs only Steps 4b→5→6 (edit selections.json, re-grab, re-render from the manifest).
+- `candidates.py`, `grab.py`, `render.py`, and `bundle.py` exit zero.
+- Every required chapter and target is covered and selected exactly where its evidence is discussed.
+- No HTML frame is a hard duplicate or transition/blank substitute.
+- Candidate IDs are unchanged when identical inputs and pixels are rerun.
+- Confirm the bundled HTML has no remaining `assets/` references, then open it and visually confirm every frame supports its adjacent prose.
+- Preserve transcript, chapters, selections, summary, and manifests for follow-up edits; downloaded media and unused candidates are disposable after acceptance.
 
-## Token notes
+## Security boundary
 
-- Candidates: ~30–60 frames at 512px ≈ 20–50k image tokens, once. Transcript: a few k.
-- Never Read the `-full.jpg` outputs. Never bump `--resolution` above 512 for candidates; if on-screen text must be legible in the *deliverable*, that's what the 1280px grab (or a `crop`) is for.
-- If the user asks about one specific moment afterwards, grab that single timestamp — don't re-run the candidate pass.
-
-## Security & Permissions
-
-**What this skill does:**
-- Runs `yt-dlp` locally to fetch captions/metadata and download the video — network requests go only to the host the given URL points at (public data; no logins, no cookies, no posting)
-- Runs `ffmpeg` / `ffprobe` locally to extract frames and, when Whisper is needed, a mono 16 kHz audio track
-- Sends that extracted **audio only** to `api.groq.com` or `api.openai.com` — and only when the source has no captions AND the user has configured a Whisper API key (`--no-whisper` disables this entirely)
-- Reads its own config at `~/.config/summarize-video/.env` (legacy fallback: `~/.config/watch/.env`) and the env vars `GROQ_API_KEY` / `OPENAI_API_KEY`
-- Writes to a temp working directory and to `summary-<video-id>/` in the current directory — nowhere else
-
-**What this skill does NOT do:**
-- Never uploads the video or frames to any API — the only outbound data is the audio clip for optional transcription
-- Never reads `.env` files from the current directory or any project folder
-- Never logs, prints, or stores API keys; each key is sent only to its own provider
-- Never accesses accounts, browsers, or credentials
-
-Review the bundled scripts before first use — they are short and self-contained.
-
-## Failure modes
-
-- **YouTube HTTP 403 / "PO Token" warnings**: yt-dlp is outdated — YouTube rotates its client requirements. Run `brew upgrade yt-dlp` (or the platform equivalent) and retry once.
-- **Download fails** (login/region-locked): report yt-dlp's stderr plainly; don't retry in a loop.
-- **No transcript** (no captions, no Whisper key): offer frames-only summary; chapterize by visual content instead, or ask for a key.
-- **Section download missing a range**: candidates.py skips it with a stderr note — re-request with wider padding or fall back to a full download.
-- **Very static video** (few scene changes): the safety grid + cues still give coverage; consider `--scene-threshold 0.08` on a re-run.
+The skill reads no project `.env`, browser state, cookies, or accounts. It never uploads video or frames. It writes only the requested work and output directories. Network activity is limited to the supplied public URL and, only when explicitly available and not disabled, an audio-only speech request to the chosen backend. Login-, cookie-, region-, or DRM-protected media requires separate user authorization; do not bypass those controls.

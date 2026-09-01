@@ -1,17 +1,17 @@
 # Changelog
 
-## 1.0.0 — 2026-09-01
+## 2.0.0 — 2026-09-01
 
-First public release.
+Independent private implementation introduced from parentless root commit `bb2f4c1` and integrated into `main` on 2026-09-02.
 
-- Pipeline: transcript-first chaptering → hybrid frame-candidate union (scene ∪ cue-offset ∪ pins ∪ final ∪ safety grid ∪ chapter coverage) → free blank/duplicate filtering → single 512px triage pass → 1280px re-grab of selections → manifest-driven HTML.
-- Truthful timestamps: scene detection is metadata-only; every frame is extracted by seeking to its own timestamp (label == content by construction).
-- Near-duplicate audit over the final selections (identical pairs fail the run, similar pairs listed for review).
-- Per-chapter coverage table + midpoint fill for starved chapters (`--chapters`).
-- Lossless stripping of YouTube auto-sub rolling overlap (~halves transcript tokens).
-- Security hardening for publication: no `.env` reads from project directories; own config home at `~/.config/summarize-video/.env` (legacy `~/.config/watch/.env` fallback); strict validation of selection names and crop expressions.
-- Frame-engine internals adapted from [bradautomates/claude-video](https://github.com/bradautomates/claude-video) (MIT).
-
-## 1.1.0 — 2026-09-01
-
-- New `scripts/bundle.py` + final pipeline step: the primary deliverable is now **one self-contained HTML file** (`summary-<id>.html`) with all images embedded as data URIs — opens with a double click, no server, no sidecar folder. The `summary-<id>/` directory remains the editable source; re-run bundle.py after changes.
+- Replaced the complete transcript, media, frame-planning, ranking, verification, and rendering runtime.
+- Added transcript-first caption acquisition and a streaming standard-library speech fallback.
+- Added bounded 64×36 grayscale evidence scans with per-window robust motion thresholds.
+- Added transition-to-stability selection for action results and progressive states.
+- Added tile-aware visual comparison, semantic duplicate clustering, representative ranking, and content-addressed candidate IDs.
+- Added schema version 3 source-time/cache manifests and full-precision decoded timestamp validation.
+- Added fail-closed target selection, verified re-decode, asset hashes, duplicate checks, and deterministic English HTML.
+- Added conservative image-read accounting that includes singleton evidence groups.
+- Retained the repository-owned standalone HTML bundler, added manifest/path validation, and made its output atomic.
+- Expanded the standard-library/synthetic-FFmpeg suite to 20 behavioral and integration tests.
+- Cached 18:15 validation video: 24 candidates, seven strips, zero unresolved chapters/targets, and 34.2% projected image-read area versus the 60-frame baseline.

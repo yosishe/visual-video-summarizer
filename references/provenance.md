@@ -1,0 +1,34 @@
+# Provenance boundary
+
+## Ownership claim
+
+The version 2.0 evidence engine entered `main` from parentless root commit `bb2f4c1` on `feat/independent-visual-evidence-engine-v3`. Its active engine source was written for this repository from product requirements and behavioral tests. The repository-owned standalone HTML bundler already present on `main` was retained and hardened during integration; it is not sourced from another video skill.
+
+It does not copy, import, vendor, install, execute, or call source code from another video-summary skill. It contains no runtime fallback to another skill directory or another skill's configuration.
+
+## External tools
+
+The implementation invokes these separately installed command-line tools through documented public interfaces:
+
+- FFmpeg and FFprobe for media decoding and metadata;
+- yt-dlp for public caption, metadata, audio, and video acquisition;
+- optional Groq or OpenAI speech endpoints when the user has configured a key and has not disabled the fallback.
+
+Python orchestration uses the standard library only. Calling a general-purpose tool or public HTTP API is a runtime dependency, not a source-code derivation claim.
+
+## Independent implementation controls
+
+- Candidate generation uses a repository-owned bounded grayscale scan and local median/MAD motion model.
+- Action-result selection uses a repository-owned transition-to-stability state machine.
+- Visual signatures, active-tile comparison, content-addressed IDs, semantic clustering, budget allocation, cache manifests, source-time mapping, verification, and rendering are implemented in this snapshot.
+- Speech upload uses a repository-owned streaming `http.client` multipart implementation.
+- The engine was published as a parentless root commit before being joined to `main`, preserving an auditable independent implementation boundary.
+- Tests use generated synthetic media and behavior contracts; no third-party video or skill source is committed.
+
+On 2026-09-01, an exact normalized-line comparison of this snapshot against the public `bradautomates/claude-video` and `Newuxtreme/watch-video-skill` trees found no matching contiguous block of eight or more non-comment lines. The longest matches were five-line generic import or metadata-mapping sequences. This is a useful copied-block audit, not a legal originality determination.
+
+## Honest limitation
+
+Independent implementation does not mean the underlying problem or generic techniques are unique. Timestamped decoding, grayscale comparison, transcript alignment, contact sheets, and deduplication are established engineering concepts. The claim is limited to this code and architecture: there is no reused video-skill source in the delivered snapshot and no operational dependency on another video skill.
+
+Repository history before this merge, along with older branches and tags, contains earlier implementations with their own notices. Those historical snapshots retain their applicable provenance and license terms; the active version 2.0 files are governed by the current repository license.
