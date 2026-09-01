@@ -21,9 +21,16 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from candidates import format_time, parse_time, part_for, resolve_parts  # noqa: E402
+from candidates import format_time, frame_delta, parse_time, part_for, resolve_parts, thumb  # noqa: E402
 
 MAX_READ_DIMENSION = 1998
+# Post-grab near-duplicate audit on the -full images (16x16 gray thumbs,
+# mean px delta 0-255). Calibrated on a real run: a genuinely duplicated
+# selection measured 0.36 while *distinct* whiteboard frames on the same
+# white background measured >= 2.7 — so fail well below that floor and warn
+# just above the dedup threshold.
+DUP_FAIL = 1.5
+DUP_WARN = 3.0
 
 
 def grab_one(parts: list[dict], t: float, out_base: Path, full_width: int,
@@ -69,6 +76,8 @@ def main() -> int:
     ap.add_argument("--out-dir", required=True, help="Assets dir (e.g. summary-<id>/assets)")
     ap.add_argument("--full-width", type=int, default=1280)
     ap.add_argument("--thumb-width", type=int, default=640)
+    ap.add_argument("--allow-dups", action="store_true",
+                    help="Do not fail when two selections are visually identical")
     args = ap.parse_args()
 
     work = Path(args.work).expanduser().resolve()
@@ -84,6 +93,7 @@ def main() -> int:
     print("# grab report")
     print()
     n_ok = 0
+    fulls: list[tuple[str, float, Path]] = []
     for item in spec:
         t = float(parse_time(item["t"]))
         name = str(item["name"]).strip()
@@ -94,8 +104,39 @@ def main() -> int:
         if made:
             n_ok += 1
             print(f"- `{name}` (t={format_time(t)}): " + ", ".join(f"`{p.name}`" for p in made))
+            fulls += [(name, t, p) for p in made if p.name.endswith("-full.jpg")]
     print()
     print(f"**{n_ok}/{len(spec)} selections extracted to `{out_dir}`.**")
+
+    # Near-duplicate audit: two selections that render the same picture mean
+    # one of them adds nothing to the summary — the triage should have kept
+    # only the most complete frame of that scene.
+    thumbs = {name: thumb(str(p)) for name, _, p in fulls}
+    suspects = []
+    for i in range(len(fulls)):
+        for j in range(i + 1, len(fulls)):
+            a, ta, _ = fulls[i]
+            b, tb, _ = fulls[j]
+            d = frame_delta(thumbs[a], thumbs[b])
+            if d <= DUP_WARN:
+                suspects.append((d, a, ta, b, tb))
+    hard_dups = [s for s in suspects if s[0] <= DUP_FAIL]
+    if suspects:
+        print()
+        print("## Near-duplicate audit")
+        print()
+        for d, a, ta, b, tb in sorted(suspects):
+            tag = "DUPLICATE" if d <= DUP_FAIL else "similar — verify they differ"
+            print(f"- `{a}` (t={format_time(ta)}) ~ `{b}` (t={format_time(tb)}): "
+                  f"delta {d:.2f} → **{tag}**")
+        if hard_dups and not args.allow_dups:
+            print()
+            print("**Duplicate selections found — for each DUPLICATE pair keep only the more "
+                  "complete frame: edit selections.json (drop or re-time one of the pair, "
+                  "checking the candidate images for what should be there) and re-run. "
+                  "Pass --allow-dups only if both frames are genuinely wanted.**")
+            return 3
+
     return 0 if n_ok == len(spec) else 1
 
 

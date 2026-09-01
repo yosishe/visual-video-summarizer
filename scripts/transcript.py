@@ -82,6 +82,20 @@ def parse_vtt(path: str) -> list[dict]:
     return _dedupe(segments)
 
 
+def _strip_overlap(prev_text: str, text: str, min_words: int = 3) -> str:
+    """YouTube auto-subs interleave rolling halves: segment N+1 opens with the
+    tail of segment N ("...hundreds of different AI agent" / "hundreds of
+    different AI agent workflows, mostly..."). Strip the longest word-level
+    overlap (>= min_words) so every phrase appears once and the transcript
+    reads linearly — roughly halving its token cost."""
+    prev_words = prev_text.split()
+    words = text.split()
+    for k in range(min(len(prev_words), len(words)), min_words - 1, -1):
+        if prev_words[-k:] == words[:k]:
+            return " ".join(words[k:])
+    return text
+
+
 def _dedupe(segments: list[dict]) -> list[dict]:
     """Collapse rolling duplicates common in YouTube auto-subs."""
     out: list[dict] = []
@@ -93,6 +107,13 @@ def _dedupe(segments: list[dict]) -> list[dict]:
             out[-1]["text"] = seg["text"]
             out[-1]["end"] = seg["end"]
             continue
+        if out:
+            stripped = _strip_overlap(out[-1]["text"], seg["text"])
+            if not stripped:
+                out[-1]["end"] = seg["end"]
+                continue
+            if stripped != seg["text"]:
+                seg = {**seg, "text": stripped}
         out.append(seg)
     return out
 

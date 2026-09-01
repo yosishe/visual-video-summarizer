@@ -53,14 +53,16 @@ Rules:
 
 ## Step 3 — Candidates (cheap, 512px)
 
-Build the command from chapters.json — cue times to `--cues`, chapter starts + action segment-ends to `--pins`:
+Build the command from chapters.json — cue times to `--cues`, chapter starts + action segment-ends to `--pins`, and **always pass `--chapters`**:
 
 ```bash
 python3 "$SKILL_DIR/scripts/candidates.py" "<source>" --work "<work>" \
-  --cues 58,122,187 --pins 45,210,400,64.8
+  --chapters "<work>/chapters.json" --cues 58,122,187 --pins 45,210,400,64.8
 ```
 
-What it does: downloads the video once (≤720p) → union of scene-change frames (threshold 0.15) ∪ cue grabs at **+0.5s and +1.5s** after each cue ∪ pins ∪ final frame ∪ a safety frame in any >90s gap → blank/black filter + near-duplicate removal (16x16 thumbs) → cap 60, **cue/pin/final frames never evicted** → `<work>/candidates/` + `candidates.json`.
+What it does: downloads the video once (≤720p) → scene detection as a metadata-only pass, then **every** frame (scene ∪ cue grabs at **+0.5s/+1.5s** ∪ pins ∪ final ∪ safety frame in any >90s gap ∪ chapter-coverage fill) is extracted by seeking to its own timestamp, so a frame's label always matches its content → blank/black filter + near-duplicate removal (16x16 thumbs) → cap 60, **cue/pin/final/coverage frames never evicted** → `<work>/candidates/` + `candidates.json`.
+
+With `--chapters` the report includes a **per-chapter coverage table** and guarantees at least 2 candidates in every chapter that needs frames. A chapter marked "starved" is a static stretch — consider extra `--cues`/`--pins` inside its window before triage, so relevant moments aren't missing from the pool.
 
 Other flags: `--max-candidates N` · `--scene-threshold F` · `--resolution W` · `--no-dedup`.
 
@@ -76,7 +78,7 @@ python3 "$SKILL_DIR/scripts/candidates.py" "$URL" --work "<work>" --sections 40-
 
 - **Content test:** keeps information — slide, code, diagram, chart, UI state, demo result. A frame of the presenter's face fails.
 - **Placement test:** its timestamp falls inside the chapter, and the transcript at that moment actually discusses it.
-- **Novelty test:** not a second copy of an already-selected frame. For a slide built up in stages (bullets appearing), pick the **last** frame of the run — the complete one.
+- **Novelty test:** not a second copy of an already-selected frame. **One frame per board/scene**: when several candidates show the same whiteboard, slide, or screen at different build stages, select ONLY the most complete one (last-of-run) — never one per stage, unless the transcript discusses an intermediate stage at length as its own point. This applies across chapters too (the same board reappearing later is still the same board).
 - **Quota:** 1–3 per chapter, soft cap ~20 total. A chapter can end with zero. Extra frames only when they show a state the previous frame doesn't cover.
 - Assign each selection `role`: `evidence` (proves a number/claim/action) or `illustration` (represents the chapter). Roles shape the caption: evidence captions state what the frame shows; illustration captions set the scene.
 
@@ -96,6 +98,8 @@ python3 "$SKILL_DIR/scripts/grab.py" --work "<work>" --spec "<work>/selections.j
 ```
 
 Produces `<name>-full.jpg` (1280px) + `<name>-thumb.jpg` (640px) per selection. Do **not** Read these.
+
+The script then runs a **near-duplicate audit** over the full-size outputs. If it reports a DUPLICATE pair (exit 3), two selections rendered the same picture: keep only the more complete one — fix `selections.json` (drop one, or re-time it after checking the candidate images) and re-run. "similar — verify they differ" warnings are usually fine for same-styled slides, but glance at the pair's candidates before trusting them. Never pass `--allow-dups` just to silence the audit.
 
 ## Step 6 — Write the summary
 
@@ -131,6 +135,7 @@ Create `summary-<video-id>/` in the cwd with:
 
 ## Failure modes
 
+- **YouTube HTTP 403 / "PO Token" warnings**: yt-dlp is outdated — YouTube rotates its client requirements. Run `brew upgrade yt-dlp` (or the platform equivalent) and retry once.
 - **Download fails** (login/region-locked): report yt-dlp's stderr plainly; don't retry in a loop.
 - **No transcript** (no captions, no Whisper key): offer frames-only summary; chapterize by visual content instead, or ask for a key.
 - **Section download missing a range**: candidates.py skips it with a stderr note — re-request with wider padding or fall back to a full download.
