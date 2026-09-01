@@ -271,7 +271,7 @@ def main() -> int:
         else:
             print(
                 "[vsum] no captions and no Whisper API key (GROQ_API_KEY / OPENAI_API_KEY in "
-                "env or ~/.config/watch/.env) — transcript unavailable",
+                "env or ~/.config/summarize-video/.env) — transcript unavailable",
                 file=sys.stderr,
             )
 

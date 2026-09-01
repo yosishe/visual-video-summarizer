@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -31,6 +32,11 @@ MAX_READ_DIMENSION = 1998
 # just above the dedup threshold.
 DUP_FAIL = 1.5
 DUP_WARN = 3.0
+# Selection names become file names; crop strings are spliced into an ffmpeg
+# filter chain. Both come from a JSON spec, so validate them strictly — a name
+# must not traverse paths and a crop must not smuggle extra filters.
+NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+CROP_RE = re.compile(r"^\d+:\d+:\d+:\d+$")
 
 
 def grab_one(parts: list[dict], t: float, out_base: Path, full_width: int,
@@ -97,10 +103,17 @@ def main() -> int:
     for item in spec:
         t = float(parse_time(item["t"]))
         name = str(item["name"]).strip()
-        if not name or "/" in name:
-            raise SystemExit(f"Bad selection name: {item['name']!r}")
+        if not NAME_RE.match(name):
+            raise SystemExit(
+                f"Bad selection name: {item['name']!r} — use letters, digits, dot, "
+                "dash, underscore (no path separators, no leading dot)")
+        crop = item.get("crop")
+        if crop is not None and not CROP_RE.match(str(crop)):
+            raise SystemExit(
+                f"Bad crop: {crop!r} — expected 'w:h:x:y' with integer values "
+                "(ffmpeg crop syntax, nothing else)")
         made = grab_one(parts, t, out_dir / name, args.full_width, args.thumb_width,
-                        item.get("crop"))
+                        crop)
         if made:
             n_ok += 1
             print(f"- `{name}` (t={format_time(t)}): " + ", ".join(f"`{p.name}`" for p in made))

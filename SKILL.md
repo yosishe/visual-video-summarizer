@@ -1,9 +1,14 @@
 ---
 name: summarize-video
-description: Turn a video (URL or local file) into a detailed English HTML summary - chapters synthesized from the transcript, with selected timestamp-aligned frames (slides, screens, demos) embedded next to the text they illustrate. Use when Yosi asks to summarize a video into HTML, "סכם לי את הסרטון ל-HTML", "make a visual summary of this talk", or types /summarize-video <url-or-path>.
+version: "1.0.0"
+description: Turn a video (YouTube URL or local file) into a detailed English HTML summary - transcript-driven chapters with timestamp-aligned selected frames (slides, screens, demos) embedded next to the text they illustrate. Use when the user asks to summarize a video, wants a visual summary or HTML digest of a talk/lecture/screencast/demo, or types /summarize-video <url-or-path>.
 argument-hint: "<video-url-or-path> [notes / focus]"
 user-invocable: true
 allowed-tools: Bash, Read, Write, AskUserQuestion
+homepage: https://github.com/yosishe/visual-video-summarizer
+repository: https://github.com/yosishe/visual-video-summarizer
+author: yosishe
+license: MIT
 ---
 
 # /summarize-video
@@ -16,14 +21,14 @@ Frame-engine internals (scene detection, pts_time stamps, 16x16 dedup) are adapt
 
 ## Resolve SKILL_DIR
 
-Set `SKILL_DIR` to the absolute path of the directory containing THIS SKILL.md (normally `~/.claude/skills/summarize-video`). Scripts live at `SKILL_DIR/scripts/`. Guard once:
+Set `SKILL_DIR` to the absolute path of the directory containing THIS SKILL.md — your harness reported that path when this file was loaded (a plain clone lands at `~/.claude/skills/summarize-video`). The bundled scripts are always a direct sibling of this file at `SKILL_DIR/scripts/`. Guard once:
 
 ```bash
-SKILL_DIR="$HOME/.claude/skills/summarize-video"
+SKILL_DIR="<absolute path of the directory containing this SKILL.md>"
 [ -f "$SKILL_DIR/scripts/transcript.py" ] || { echo "scripts not found under $SKILL_DIR" >&2; exit 1; }
 ```
 
-Prereqs: `ffmpeg`, `ffprobe`, `yt-dlp` (`brew install ffmpeg yt-dlp`). A Whisper key (`GROQ_API_KEY` preferred, or `OPENAI_API_KEY`, in env or `~/.config/watch/.env`) is only needed when the source has no captions.
+Prereqs: `ffmpeg`, `ffprobe`, `yt-dlp` (`brew install ffmpeg yt-dlp`). A Whisper key (`GROQ_API_KEY` preferred, or `OPENAI_API_KEY`, in env or `~/.config/summarize-video/.env`) is only needed when the source has no captions.
 
 ## Step 1 — Transcript (no video download)
 
@@ -132,6 +137,23 @@ Create `summary-<video-id>/` in the cwd with:
 - Candidates: ~30–60 frames at 512px ≈ 20–50k image tokens, once. Transcript: a few k.
 - Never Read the `-full.jpg` outputs. Never bump `--resolution` above 512 for candidates; if on-screen text must be legible in the *deliverable*, that's what the 1280px grab (or a `crop`) is for.
 - If the user asks about one specific moment afterwards, grab that single timestamp — don't re-run the candidate pass.
+
+## Security & Permissions
+
+**What this skill does:**
+- Runs `yt-dlp` locally to fetch captions/metadata and download the video — network requests go only to the host the given URL points at (public data; no logins, no cookies, no posting)
+- Runs `ffmpeg` / `ffprobe` locally to extract frames and, when Whisper is needed, a mono 16 kHz audio track
+- Sends that extracted **audio only** to `api.groq.com` or `api.openai.com` — and only when the source has no captions AND the user has configured a Whisper API key (`--no-whisper` disables this entirely)
+- Reads its own config at `~/.config/summarize-video/.env` (legacy fallback: `~/.config/watch/.env`) and the env vars `GROQ_API_KEY` / `OPENAI_API_KEY`
+- Writes to a temp working directory and to `summary-<video-id>/` in the current directory — nowhere else
+
+**What this skill does NOT do:**
+- Never uploads the video or frames to any API — the only outbound data is the audio clip for optional transcription
+- Never reads `.env` files from the current directory or any project folder
+- Never logs, prints, or stores API keys; each key is sent only to its own provider
+- Never accesses accounts, browsers, or credentials
+
+Review the bundled scripts before first use — they are short and self-contained.
 
 ## Failure modes
 
