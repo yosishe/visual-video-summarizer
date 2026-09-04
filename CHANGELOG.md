@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.3.0 — 2026-09-04
+
+Two tiers, measured slide terminals, a sharpness gate that keeps the pixel-verification guarantee, PDF export, and three hygiene fixes — after a survey of the neighbouring projects (dsh-bilibili, PlanOpticon, keyframe-blogger, Video-Analyzer).
+
+- **`--tier standard | high`.** All tier-dependent numbers live in one `PROFILES` table (`candidates.py`); `--mode light|advanced` stay as aliases and `candidates.json` keeps its `mode` key. `high`: adaptive scene scoring, 5–6 samples per target with 3 alternatives, a 64-frame pool with a 16-slot unplanned floor, and the three signals below. Chosen by argument only — the skill never asks.
+- **Measured terminal frame for `slide`/`diagram` targets (both tiers).** A cheap 192px scene-score probe over the target window finds where the build-up ends: build steps are walked forward, the first screen flip stops the walk (`stable_terminal_from_scores`), and the frame 0.2 s before it replaces the old "end of the sentence minus 0.25 s" assumption.
+- **Sharpness refinement at grab time (`high`, or `grab.py --refine sharpness`).** One `blurdetect` + signature pass over ±1.5 s picks the sharpest frame that is *still a near-duplicate of the triaged candidate* (the verification gate's own predicate), inside the chapter; the refined frame is re-decoded and gated again, and falls back to the triaged frame on any failure. Assets and `manifest.json` now carry `triaged_t` alongside the written `actual_t`; the renderer validates and captions the **written** time.
+- **Face demotion (`high`, optional).** Haar-cascade people-frame detection via OpenCV when it is importable; `-25` in ranking, below the target bonus. Never a dependency — reported `faces: unavailable` otherwise.
+- **OCR text density (`high`).** ffmpeg's `ocr` filter (tesseract, `eng+heb`) yields a per-frame character count used only to rank build states of a slide (up to +15). The 2026-09-01 decision — the model is the only OCR for triage — stands for `standard`; the text itself is never stored.
+- **Five content gaps** added to Step 2 as target triggers: dangling reference, conclusion without its data, unspoken operation, silent demo, visual comparison.
+- **`render.py --pdf`** prints the single-file HTML to `summary-<id>.pdf` via Chrome headless (WeasyPrint fallback) with new print CSS (A4, figures never split); exit 4 when no engine exists.
+- **Honest cost line.** `candidates.json["cost"]` and the report: image tokens from each candidate's real dimensions (w×h/750), CPU passes, and the other tier's ceiling. The old "25–50k" claim is replaced by the formula (≈ 9.5k / 12.6k at the caps for 16:9).
+- **Re-grab seeks half a frame early.** `actual_t` is a pts rounded to 3 decimals; seeking to it exactly landed on the *next* frame whenever the rounding went up. On the release screencast one of 14 standard-tier assets carried a timestamp one frame late (harmless on a static slide), and in `high` one mid-pan scene frame was refused by the verification gate outright (exit 2). After the fix: 0 of 14 late, 20/20 in `high`.
+- Fixes: `--max-candidates` is a hard ceiling (the report warns when reserved frames are trimmed); `--scene-threshold` is honoured in the adaptive pass as its floor instead of being silently ignored; an unsafe selection name is now a listed failure → exit 2, as the docs always claimed; blurdetect `nan` rows keep their slot so metadata and decoded frames stay aligned; the report states the effective pool when reserved frames lift it above the nominal cap.
+- Behaviour change for the `--mode advanced` alias: cap 60 → 64 and grab-time refinement on by default.
+- Measured on the 18-minute release screencast (12 chapters, 24 targets): `standard` 50 candidates / 26 s / ≈9.9k image tokens; `high` 76 / 69 s / ≈15k (OCR on 45 cluster frames, faces unavailable without cv2); grab 29 s; PDF 2.2 MB via Chrome in 3 s. Refinement moved 0/20 frames — nothing sharper exists in a crisp screen recording; it is for camera footage and transitions.
+- Tests: 22 new (profiles, terminal probe, refinement primitives, dedup cluster hook, signals, cost, print CSS, PDF engine fallback, high-tier integration with a blurred fixture, gate fallback, exit codes, PDF output) — 43 total.
+
 ## 1.2.0 — 2026-09-01
 
 Integration of the transcript-aligned engine (PR #2) with the single-file deliverable, plus recall and precision fixes found in review.
