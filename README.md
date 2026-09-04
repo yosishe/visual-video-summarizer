@@ -1,5 +1,8 @@
 # visual-video-summarizer
 
+[![CI](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml/badge.svg)](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **A Claude Code skill that turns a video into a page worth reading.** Give `/summarize-video` a YouTube URL or a local file and it produces a detailed illustrated HTML summary — **in Hebrew (right-to-left) by default, or English with `--lang en`**: chapters synthesized from the transcript, with ~15–20 carefully chosen, pixel-verified frames (slides, screens, demos) embedded next to the exact sentences they illustrate — each caption saying what the picture shows and why it is there, and linking back to that second of the video.
 
 Built for talks, lectures, screencasts, and product demos. Transcript + frames, stitched by time. Not a frame dump.
@@ -75,7 +78,8 @@ For an 18-minute talk: transcript ≈ a few thousand tokens, one batched read of
 |---|---|
 | `ffmpeg` / `ffprobe` | frame extraction, audio, thumbnails, `blurdetect`; the `ocr` filter (tesseract) for `--tier high`'s text signal |
 | `yt-dlp` | captions + video download (keep it updated — see Troubleshooting) |
-| Python 3.10+ | bundled scripts, stdlib only — nothing to `pip install` |
+| Python 3.10+ | bundled scripts, stdlib only at runtime — nothing to `pip install` |
+| `Pillow` | **optional** at runtime (fast box-filter resample in the visual-state engine; a nearest-neighbour stdlib fallback is used without it). **Required to run the test suite**: `tests/test_states.py` asserts on the box-filter path |
 | Whisper API key | **optional**, only for videos with no captions |
 | Google Chrome or WeasyPrint | **optional**, only for `--pdf` |
 | `opencv-python-headless` | **optional**, enables face demotion in `--tier high`; absent → reported `unavailable` |
@@ -107,11 +111,20 @@ python3 scripts/render.py --work WORK --summary WORK/summary.json --selections W
 
 Useful flags: `--langs "he.*,en.*"` (caption languages) · `--tier high` (see the table above; `--mode light|advanced` are aliases of the two tiers) · `--refine sharpness|none` on `grab.py` (override the tier's default) · `--pdf` on `render.py` · `--strips` (256px temporal strips for a cheaper first look; off by default — slide text isn't legible at that size) · `--sections 40-215,590-880` (explicit ranges; long videos derive them automatically) · `--max-candidates` (a hard ceiling) · `--no-whisper`.
 
-Tests (stdlib only, synthesize their own ffmpeg fixtures):
+Tests (synthesize their own ffmpeg fixtures; need `ffmpeg` and `Pillow`):
 
 ```bash
-python3 -m unittest discover -s tests -v
+pip install Pillow
+python3 -m unittest discover -s tests -v      # 105 tests [measured], run in CI on every push
 ```
+
+## Real outputs
+
+Every figure in this README is `[measured]` on one benchmark video (`ISb0nrlNoKQ`, 18 minutes,
+22 hand-annotated essential visuals) unless marked `[estimated]`. The runs are committed, not
+described: [`bench/runs/`](bench/runs/) holds each profile's `candidates.json`, `selections.json`,
+`summary.json`, `cost.json` and `REPORT.md`, and [`bench/README.md`](bench/README.md) explains the
+scoring. Re-run with `python3 bench/run.py`.
 
 ## Security & privacy
 
