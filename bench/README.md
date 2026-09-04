@@ -106,6 +106,12 @@ opening with Latin, 0 audit errors (after two rounds of fixes the audit forced:
 boundary segments cited in the wrong chapter, counts the speaker never said);
 render 4.5 s, PDF 2.2 MB via Chrome.
 
+v1.6 (two-stage triage) on the v15-high pool: 5 contact sheets ≈ 6,026 tokens
++ 24 shortlist frames at 768 px ≈ 10,752 → 16,778 image tokens, against 13,376
+for 64 individual 512 px reads — neutral at 18 minutes, as the audit predicted
+(the saving is on hour-long pools); all 5 sentinels identified, shortlist gate
+24/24, selections identical to v1.5.
+
 The v1.3.0 selections were made by the release-run session; the v1.4/v1.5
 selections by this session under the same Step 4 rubric — triage variance is
 part of what the numbers contain.

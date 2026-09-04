@@ -32,7 +32,7 @@ from frame_utils import (  # noqa: E402
     faces_available,
     format_time,
     is_near_duplicate,
-    ocr_text_density,
+    ocr_text,
     parse_metadata_series,
     parse_time,
     probe_media,
@@ -41,6 +41,7 @@ from frame_utils import (  # noqa: E402
     visual_signature,
 )
 from layout import detect_static_overlays, mask_fraction, overlay_mask  # noqa: E402
+from sheets import build_sheets  # noqa: E402
 from states import scan_video, states_to_points  # noqa: E402
 import time  # noqa: E402
 
@@ -65,6 +66,7 @@ PROFILES: dict[str, dict] = {
         "refine": "none", "faces": "off", "ocr": "off", "resolution": 512,
         "pip_mask": "on", "dedup_scope": "family",
         "engine": "states", "scan_fps": 2.0,
+        "sheets": "on", "sheet_tiles": 16, "shortlist_px": 640,
     },
     "high": {
         "cap": 64, "per_target": 3, "unplanned_floor": 16,
@@ -76,6 +78,7 @@ PROFILES: dict[str, dict] = {
         "refine": "sharpness", "faces": "auto", "ocr": "on", "resolution": 512,
         "pip_mask": "on", "dedup_scope": "family",
         "engine": "states", "scan_fps": 2.0,
+        "sheets": "on", "sheet_tiles": 16, "shortlist_px": 768,
     },
 }
 MODE_ALIASES = {"light": "standard", "advanced": "high"}
@@ -1499,14 +1502,15 @@ def main() -> int:
         for frame in cluster:
             if ocr_state["frames"] >= ocr_state["budget"]:
                 return
-            text = ocr_text_density(frame["path"])
-            if text is None:
+            read = ocr_text(frame["path"])
+            if read is None:
                 ocr_state["status"] = "unavailable"
                 ocr_state["budget"] = 0
                 return
             ocr_state["frames"] += 1
+            count, text = read
             frame["quality"] = public_quality(
-                frame["_signature"], faces=frame["quality"].get("faces"), text_chars=text,
+                frame["_signature"], faces=frame["quality"].get("faces"), text_chars=count, ocr_text=text,
             )
 
     seeks = 0
@@ -1655,6 +1659,10 @@ def main() -> int:
         "candidates": records,
     }
     (work / "candidates.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    sheet_block = None
+    if profile.get("sheets") == "on" and records:
+        sheet_block = build_sheets(work, int(profile.get("sheet_tiles", 16)), 320)
+        payload["sheets"] = sheet_block
 
     print()
     print("# candidate frames report")
@@ -1748,10 +1756,27 @@ def main() -> int:
             print(f"- `{strip['path']}` → {', '.join(strip['candidate_ids'])}")
         print()
         print("Open an individual candidate only when selected or uncertain:")
+    elif sheet_block and sheet_block.get("status") == "ok":
+        shortlist_px = int(profile.get("shortlist_px", 640))
+        print(f"**Two-stage triage.** Stage 1 — Read ALL {len(sheet_block['sheets'])} contact sheets in one message "
+              f"(≈{sheet_block['image_tokens']:,} image tokens for the whole pool; reading every candidate "
+              f"individually would cost {sheet_block['individual_tokens']:,}): for every tile decide keep/drop by its "
+              "burned-in id, group the same picture into one family, and report each sheet's sentinel tile as blank "
+              "(if you cannot find it, fall back to reading the candidates below individually). Stage 2 — "
+              f"`python3 \"$SKILL_DIR/scripts/shortlist.py\" --work \"<work>\" --ids <kept ids>` re-decodes the kept "
+              f"frames at {shortlist_px}px (verified against the candidates); Read those, then write selections.json "
+              "by `candidate_id` — never copy times.")
+        print()
+        for sheet in sheet_block["sheets"]:
+            ids = ", ".join(t["candidate_id"] for t in sheet["tiles"] if not t.get("sentinel"))
+            print(f"- `{sheet['path']}` → {ids}; sentinel `{sheet['sentinel_id']}`")
+        print()
+        print("Candidates (for stage 2 and for the `spoken`/`text` provenance of captions):")
     else:
         print("**Read ALL candidate paths below in a single message (parallel Read calls), "
               "then triage per the skill rubric. Select by `candidate_id` — never copy times.**")
         print()
+    segment_text = {str(s["seg_id"]): str(s.get("text") or "") for s in segments}
     for record in records:
         extras = ""
         quality = record["quality"]
@@ -1776,8 +1801,23 @@ def main() -> int:
             f"- `{record['path']}` ({record['candidate_id']}, "
             f"actual_t={record['actual_t']:.3f} [{format_time(record['actual_t'])}], "
             f"chapter={record['chapter_id']}, targets={','.join(record['target_ids']) or '-'}{extras})"
+            + _provenance_line(record, segment_text)
         )
     return 0
+
+
+def _provenance_line(record: dict, segment_text: dict[str, str]) -> str:
+    """What was being said while the frame was on screen, and what OCR read on
+    it — the two sources a caption's `shows`/`why` may draw on."""
+    spoken = " ".join(segment_text.get(seg, "") for seg in record.get("aligned_seg_ids") or record.get("seg_ids") or [])
+    spoken = " ".join(spoken.split())
+    parts = []
+    if spoken:
+        parts.append(f'spoken: "{spoken[:160]}{"…" if len(spoken) > 160 else ""}"')
+    ocr = record.get("quality", {}).get("ocr_text")
+    if ocr:
+        parts.append(f'ocr: "{ocr[:120]}{"…" if len(ocr) > 120 else ""}"')
+    return ("\n  " + " — ".join(parts)) if parts else ""
 
 
 if __name__ == "__main__":

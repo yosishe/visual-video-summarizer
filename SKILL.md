@@ -107,7 +107,10 @@ The report's **cost line** states the tier, the image-token estimate from the ca
 
 ## Step 4 — Triage (the ONLY image spend)
 
-**Read every candidate path in a single message** (parallel Read calls). Then select per chapter:
+Two stages, both listed in the candidates report:
+
+1. **Sheets.** Read ALL contact sheets in one message (4×4 tiles of 320px with the candidate id and time burned under each tile — a whole 64-frame pool is ≈ 5–6k image tokens instead of ≈ 13k). Decide per tile by its **burned-in id** (never by position — models miscount grid cells): keep / drop, and which tiles are the same picture. Every sheet carries one **sentinel** tile (flat gray, id `x_…`); report it as blank. If you cannot find a sheet's sentinel, do not trust your ids for that sheet — read its candidates individually instead.
+2. **Shortlist.** `python3 "$SKILL_DIR/scripts/shortlist.py" --work "<work>" --ids c_0003,c_0011,...` (≤ 30 ids; ≈ 1.5 × the frames you expect to select) re-decodes the kept frames at 640px (`standard`) / 768px (`high`), pixel-verified against the candidates, and prints their paths. **Read those in a single message**, then select per chapter:
 
 - **Content test:** keeps information — slide, code, diagram, chart, UI state, demo result. A frame of the presenter's face fails (in `high`, candidates flagged `(people frame)` in the report were already demoted in ranking; still apply the test).
 - **Placement test:** its chapter (printed per candidate, derived from the decoded timestamp) is where the transcript discusses it.
@@ -204,7 +207,7 @@ The renderer validates chapter ownership, segment provenance, budgets, coverage,
 
 ## Token notes
 
-- Candidates: one batched Read of the pool (48 / 64 nominal; reserved target frames may lift it — the report says by how much) at 512px. Cost per image is `⌈w/28⌉ × ⌈h/28⌉` visual tokens (Claude vision docs): 209 for a 16:9 candidate (512×288), 262 for 4:3, 627 for a vertical Short. The report prints the exact figure for the run. Transcript: a few thousand tokens.
+- Triage is two reads: the contact sheets (a 4×4 sheet of 320px tiles is 1280×792 → 1,334 visual tokens, i.e. 83 per candidate) and the shortlist (640×360 → 299 tokens each in `standard`, 768×432 → 448 in `high`). Cost per image is `⌈w/28⌉ × ⌈h/28⌉` (Claude vision docs). For a 64-frame pool that is ≈ 6k + 24 × 448 ≈ 17k — about the same as reading every 512px candidate (209 each, ≈ 13k) on an 18-minute video, and 2–3× less on an hour-long one; the report prints the exact figures for the run. Transcript: a few thousand tokens.
 - Never Read the `-full.jpg` outputs. Candidate resolution is capped at 512px; legibility in the *deliverable* comes from the 1280px re-grab (or a `crop`).
 
 ## Security & Permissions
@@ -222,7 +225,7 @@ The renderer validates chapter ownership, segment provenance, budgets, coverage,
 - Never reads `.env` files from the current directory or any project folder
 - Never logs, prints, or stores API keys; each key is sent only to its own provider
 - Never accesses accounts, browsers, or credentials; selection names and crop expressions are validated before they touch a path or an ffmpeg filter graph
-- Never installs anything: OCR text is used only as a per-frame character count for ranking and is not written to any output
+- Never installs anything. In `--tier high`, the first 300 characters tesseract reads on a candidate frame are kept in the work directory (`candidates.json` `quality.ocr_text`) as caption provenance — what UI strings are on the picture — and deleted with the intermediates in Step 7; OCR never rewrites the transcript
 
 Review the bundled scripts before first use — they are dependency-free Python (stdlib + the ffmpeg/yt-dlp binaries). Optional: `opencv-python-headless` enables face demotion in `--tier high`; when absent the report says `faces: unavailable` and everything else runs.
 
