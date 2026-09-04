@@ -1,6 +1,6 @@
 ---
 name: summarize-video
-version: "1.4.0"
+version: "1.6.0"
 description: Turn a video (YouTube URL or local file) into a detailed illustrated HTML summary in Hebrew (RTL, default) or English (optionally PDF) - transcript-driven chapters with timestamp-aligned, pixel-verified frames (slides, screens, demos) embedded next to the text they illustrate, each with a caption that says why it is there. Use when the user asks to summarize a video, wants a visual summary or HTML digest of a talk/lecture/screencast/demo, or types /summarize-video <url-or-path> [--tier high] [--lang en] [--pdf].
 argument-hint: "<video-url-or-path> [--tier high] [--lang he|en] [--pdf] [notes / focus]"
 user-invocable: true
@@ -10,7 +10,7 @@ homepage: https://github.com/yosishe/visual-video-summarizer
 repository: https://github.com/yosishe/visual-video-summarizer
 author: yosishe
 metadata:
-  version: "1.4.0"
+  version: "1.6.0"
   homepage: https://github.com/yosishe/visual-video-summarizer
   repository: https://github.com/yosishe/visual-video-summarizer
   author: yosishe

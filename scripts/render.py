@@ -33,7 +33,7 @@ from audit_summary import HEBREW_RE, run_audit  # noqa: E402
 from bundle import bundle as bundle_summary  # noqa: E402
 from frame_utils import chapter_for_time, format_time  # noqa: E402
 
-ENGINE_VERSION = "1.4.0"
+ENGINE_VERSION = "1.6.0"
 MANIFEST_SCHEMA = 3
 ROLES = {"evidence", "illustration"}
 NOVELTY = {"new_state", "build_stage", "reprise"}

@@ -4,7 +4,8 @@
   "duration": 1096,
   "annotator": "claude (from bench/sheets storyboard tiles; NEEDS REVIEW by yos)",
   "date": "2026-09-04",
-  "status": "draft",
+  "status": "reviewed",
+  "approved_by": "yos (approved 2026-09-04 as drafted by claude, revision c)",
   "source": "storyboard:sb0 (9.87 s tiles) + release-run chapters.json targets for spoken_seg_ids",
   "states": [
     {

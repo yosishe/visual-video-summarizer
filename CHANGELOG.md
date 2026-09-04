@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased — 1.6.0 (two-stage triage: contact sheets + verified shortlist, caption provenance)
+## 1.6.0 — 2026-09-04
+
+One release for the vNext roadmap of the 2026-09-04 audit, built and measured in four stages on `feat/bench` (PR #7). Each stage was scored on the benchmark against the previous one before the next began.
+
+### Two-stage triage: contact sheets + verified shortlist, caption provenance
 
 - **`scripts/sheets.py`.** After `candidates.json` is written, the pool is tiled into 4×4 contact sheets (320 px tiles, chronological, the candidate id and time burned into an 18 px bar under every tile, one flat-gray **sentinel** tile with an `x_…` id per sheet at a random non-first position). A 4×4 sheet is 1280×792 → 1,334 visual tokens, 83 per tile against 209 for a 512 px candidate read alone. The report lists every sheet with its ids and sentinel; the model keeps/drops by burned-in id and must report the sentinel as blank (CollagePrompt / "VLMs are blind": grids beyond 4×4 lose accuracy and models mis-index cells). Profile keys `sheets`, `sheet_tiles`; PIL absent → the report falls back to individual reads.
 - **`scripts/shortlist.py`.** Stage 2 re-decodes the kept ids (≤ 30) at 640 px (`standard`) / 768 px (`high`) and checks each against its 512 px candidate with the overlay-masked near-duplicate gate, so the legible frame the model reads is provably the picture grab will write. Profile key `shortlist_px`.
@@ -8,7 +12,7 @@
 - **Measured (ISb0nrlNoKQ, v15-high pool of 64):** 5 sheets ≈ 6,026 tokens + a 24-frame shortlist at 768 px ≈ 10,752 → 16,778 image tokens against 13,376 for reading all 64 candidates at 512 px — as the audit predicted, token-neutral to slightly dearer at 18 minutes (the pool is small), a 2–3× saving on hour-long pools, and the model reads its final picks at 768 px instead of 512. All five sentinels were identified; shortlist gate 24/24. Selections and scores are unchanged from v1.5.
 - Tests: 3 new (`test_sheets.py`); 105 total.
 
-## Unreleased — 1.5.0 (visual-state engine)
+### Visual-state engine
 
 - **`scripts/states.py` — the video as pictures, not instants.** One 2 fps 160×90 gray decode per part (`showinfo` timestamps, ≈13 s for 18 min of AV1) yields the overlay mask *and* per-sample masked 64×36 signatures, ink and motion. Samples merge into runs — compared with the run's anchor (drift) and last frame (cuts) under per-mode thresholds; a canvas (whiteboard/typing) or dynamic-UI run may drift with its anchor, a static slide may not, so a cross-fade can never merge two slides — then into states clipped at chapter boundaries, each with a mode (A talk / B static / C canvas / D dynamic UI, from 20-s window statistics), a representative time (last settled frame; the fullest settled frame of a build), `alt_t` (first settled / max ink / last settled), a build record, a family id shared by revisits, the transcript segments it was on screen for (overlap ∪ a 3–4 s lead ∪ EN/HE cue phrases) and a bounded importance (targets 0.35, cues 0.15, YouTube's most-replayed heatmap 0.15, chapter need 0.10, mode prior 0.25). Written to `work/states.json`.
 - **`candidates.py --engine states` (default; `legacy` keeps the 1.3 sampler for ablation).** One candidate per non-talk state (plus the first settled frame of a build whose target cites its start); targets attach to the states overlapping their window — `action_result` to the first state after the action — so `target_sample_times`, the terminal probe and the scene pass no longer run. Chapter coverage midpoints are only added where no state exists. Candidates carry `state_id`, `mode`, `importance`, `aligned_seg_ids`; the report prints the mode timeline and state counts.
@@ -17,7 +21,7 @@
 - **Measured (bench, ISb0nrlNoKQ, annotation rev. c, 22 essential visuals):** seeks 80/327 → 102/102; CPU standard 39 s → 27 s, high 82 s → 29 s; pool recall 86/91 % → **91/100 %**; IVR 82/82 % → **86/91 %**; redundancy 15/10 % → **5/0 %**; PoR 1.58 → **1.67/1.75**; image tokens/min 572/870 → 549/732 (no reserved-frame lift needed). The two whiteboard states every earlier profile missed are now in the pool and selected.
 - Tests: 9 new (`test_states.py`); 102 total.
 
-## Unreleased — 1.4.0 (step 3: Hebrew by default, RTL rendering, grounding audit, caption provenance)
+### Hebrew by default, RTL rendering, grounding audit, caption provenance
 
 - **`--lang he|en`, Hebrew by default.** The summary, captions and page are written in Hebrew directly from the transcript (never a translation of an English draft); `--lang en` keeps the English path. Resolution: flag → `summary.json` `lang` → `SUMMARY_LANG` (env or `~/.config/summarize-video/.env`) → `en`. `SKILL.md` Step 6 carries the Hebrew writing rubric (structure, what to keep, what to drop, terminology, no niqqud, every sentence opens in Hebrew).
 - **`summary.json` schema 3** — `lang`, `source_language`, `glossary`, blocks with `block_id` and `kind` (`prose` | `code` → `<pre dir="ltr">` | `quote` → `<blockquote dir="auto">`); `backticks` are the only inline markup and render as `<code dir="ltr">`.
@@ -30,14 +34,14 @@
 - **Verified end to end** on the ISb0nrlNoKQ high run: 12-chapter Hebrew summary (1,076 words, 100 % of segments cited, 85 % Hebrew letters), 20 Hebrew captions, render 4.5 s, PDF via Chrome 2.2 MB — RTL layout, two-column TOC, isolated LTR runs, Heebo — 0 audit errors after two rounds of fixes.
 - Tests: 31 new (RTL rendering, audit, track ranking, bundle); 93 total.
 
-## Unreleased — 1.4.0 (step 2: overlay mask + family dedup)
+### Overlay mask + family dedup
 
 - **Overlay mask (`scripts/layout.py`).** One 1 fps 160×90 gray decode per video; per pixel, the fraction of one-second pairs in which it moved (|Δ| > 4); pixels above `max(0.12, median + 4·MAD)` → 3×3 close → connected components → `webcam` (1–20 % of the frame, aspect 0.8–2.4, ≥30 % filled, no side > 60 %) or `bar` (≤10 % tall, ≥80 % wide), kept only when present in both halves of the pairs (IoU ≥ 0.5). The mask blanks those boxes (mid-gray) in every signature — dedup, the re-grab gate, refinement, the hard-duplicate audit — and never touches a written frame. Measured on the release screencast: webcam found at x 0–0.15, y 0.69–1.0 (5.2 % of the signature), 7–9 s. `-skip_frame nokey` is deliberately not used: libdav1d ignores it for AV1 and emits duplicated frames that look still. Profile key `pip_mask`.
 - **Family dedup across the video.** `deduplicate_frames(scope="family")` compares every frame with every other; a family keeps one representative per chapter that holds a protected frame (target / coverage / cue / pin), drops revisits elsewhere and records them as `family_revisits` on the keeper; `family_id` is reported per candidate and in the triage list ("same picture also at …"). The old chapter×target scope survives as `dedup_scope: chapter` for ablation. Fixes the 1.3.0 blind spot where a target frame and a scene frame of the same slide were never compared.
 - **Measured (bench, ISb0nrlNoKQ, draft annotation of 22 essential visuals; intervals of two states corrected after inspecting frames):** residual near-duplicate pairs in the pool 4 → 0 (standard) and 4 → 1 (high); distinct pictures 47 → 50 / 72 → 75. Important Visual Recall standard 59 % → 86 % (PoR 1.33 → 1.64), high 82 % → 86 % (PoR 1.55 → 1.64); redundancy 7 % → 10 % / 10 % → 5 %; alignment 79 % → 88 % / 89 % → 83 %. Pool recall unchanged (86–91 %): the missed boards are unsampled whiteboard states between targets — the v1.5 visual-state engine's job. CPU +9 s per run.
 - Tests: 10 new (overlay detection on synthetic frames and a synthetic video, masked signatures, family vs chapter scope); 62 total.
 
-## Unreleased — 1.4.0 (step 1: benchmark + loss attribution)
+### Benchmark + loss attribution
 
 - **`bench/`** — corpus manifest (6 videos: mixed screencast, slides lecture, VS Code demo, 60 Minutes interview, 3Blue1Brown animation, Hebrew Git tutorial), `storyboard.py` (annotation sheets from YouTube's storyboard track, zero download), `run.py` (deterministic stages per profile, import of existing runs), `score.py` (Important Visual Recall, pool recall, precision, redundancy, frame efficiency, alignment accuracy, image tokens by ⌈w/28⌉×⌈h/28⌉, uniform/random baselines and PoR, missed-visual attribution, summary checklist + Hebrew hygiene counts). Baseline recorded for the 1.3.0 release run on `ISb0nrlNoKQ`: standard IVR 64 % / high 86 % against a draft annotation of 22 essential visuals.
 - **`dropped.json`** — `candidates.py` now records every discarded raw frame with its reason (`blank` / `dedup` / `cap`) and the keeper's time, so a missed visual is attributed to the stage that lost it.

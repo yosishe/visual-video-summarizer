@@ -45,7 +45,7 @@ from sheets import build_sheets  # noqa: E402
 from states import scan_video, states_to_points  # noqa: E402
 import time  # noqa: E402
 
-ENGINE_VERSION = "1.3.0"
+ENGINE_VERSION = "1.6.0"
 
 # Every tier-dependent number lives here. `standard` is the default: it
 # reserves up to two frames per target plus one per chapter before any
