@@ -368,6 +368,7 @@ STYLE = """
   .brief ul { padding-inline-start: 1.3rem; margin-block: .4rem; }
   .brief li { margin-block: .55rem; }
   .brief-sources { font-size: .8em; color: var(--muted); unicode-bidi: isolate; }
+  .brief-source { display: inline-block; white-space: nowrap; }
   .brief-sources a { color: inherit; text-decoration: none; border-block-end: 1px dotted var(--muted); }
   section.chapter { max-inline-size: 46rem; margin: 3rem auto 0; padding-block-start: 2.4rem; border-block-start: 1px solid var(--line); }
   .ch-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
@@ -574,11 +575,12 @@ def _brief_html(brief: dict, transcript: dict, strings: dict) -> str:
                 start = float(segments[seg_id]["start"])
                 label = html.escape(format_time(start))
                 url = _timestamp_url(source_url, start)
-                links.append(f'<a href="{html.escape(url)}">{label}</a>' if url else label)
+                link = f'<a href="{html.escape(url)}">{label}</a>' if url else label
+                links.append(f'<span class="brief-source" dir="ltr">[{link}]</span>')
             previous = position
         sources = (
             f'<span class="brief-sources" dir="ltr" aria-label="{html.escape(strings["brief_sources"])}">'
-            f'[{" · ".join(links)}]</span>'
+            f'{" ".join(links)}</span>'
         )
         return f'{_inline(item["text"])} {sources}'
 
@@ -662,6 +664,9 @@ def _render_html(
         meta_bits.append(html.escape(strings["frames_of"].format(n=len(frames), m=candidate_count)))
     else:
         meta_bits.append(html.escape(strings["frames"].format(n=len(frames))))
+    # Isolate complete metadata items: a Latin caption label must not pull the
+    # following Hebrew frame count across the separator into its own bidi run.
+    metadata_html = ' · '.join(f'<bdi dir="auto">{bit}</bdi>' for bit in meta_bits)
     footer_source = (
         f'{html.escape(strings["source"])} <a href="{html.escape(source_url)}"><bdi dir="ltr">{html.escape(source_url)}</bdi></a> · '
         if is_link else ""
@@ -686,7 +691,7 @@ def _render_html(
   <div class="measure">
     <div class="kicker">{html.escape(strings["kicker"])}</div>
     <h1 dir="auto">{html.escape(title)}</h1>
-    <div class="meta">{' · '.join(meta_bits)}</div>
+    <div class="meta">{metadata_html}</div>
     <div class="thesis"><b>{html.escape(strings["claim"])}</b> {_inline(overview)}</div>
   </div>
   <nav class="toc">
