@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install ffmpeg (the tests synthesize their own fixtures with it)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install Pillow (optional at runtime; the visual-state tests need its box filter)
+        run: pip install Pillow
+      - name: Byte-compile
+        run: python -m compileall -q scripts tests
+      - name: Test
+        run: python -m unittest discover -s tests -v
