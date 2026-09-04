@@ -3,94 +3,88 @@
     "video_id": "ISb0nrlNoKQ",
     "duration": 1096.0,
     "essential_states": 22,
-    "candidates": 76,
-    "pool_recall": 0.8636363636363636,
-    "pool_missed": [
-      "s02",
-      "s06",
-      "s28"
-    ],
-    "image_tokens": 15884,
-    "cpu_seconds": 69.0,
+    "candidates": 64,
+    "pool_recall": 1.0,
+    "pool_missed": [],
+    "image_tokens": 13376,
+    "cpu_seconds": 28.7,
     "engine_cost": {
       "tier": "high",
-      "candidates": 76,
-      "image_tokens_estimate": 14972,
-      "image_tokens_per_candidate": 197,
-      "token_formula": "w*h/750 per image (Anthropic estimate); one batched Read",
+      "candidates": 64,
+      "image_tokens_estimate": 13376,
+      "image_tokens_per_candidate": 209,
+      "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
       "frame_dimensions": {
-        "512x288": 76
+        "512x288": 64
       },
       "cpu": {
         "scene_pass": "adaptive",
         "scene_seconds": 1053.0,
-        "terminal_probes": 12,
-        "seeks": 327,
-        "ocr_frames": 45,
+        "terminal_probes": 0,
+        "seeks": 102,
+        "ocr_frames": 11,
         "faces": "unavailable",
         "refine": "sharpness",
-        "refine_max_decodes": 20
+        "refine_max_decodes": 20,
+        "pip_mask": "on",
+        "overlays": 1,
+        "overlay_seconds": 0.0,
+        "dedup_scope": "family",
+        "engine": "states",
+        "scan_seconds": 12.28,
+        "states": 100
       },
       "other_tier": {
         "tier": "standard",
         "cap": 48,
-        "max_image_tokens": 9456
+        "max_image_tokens": 10032
       }
     },
-    "image_tokens_per_min": 869.5620437956205,
+    "image_tokens_per_min": 732.2627737226278,
     "selected": 20,
-    "important_visual_recall": 0.8181818181818182,
+    "important_visual_recall": 0.9090909090909091,
     "precision": 1.0,
-    "redundancy_rate": 0.1,
+    "redundancy_rate": 0.0,
     "frame_efficiency": 1.0,
-    "alignment_accuracy": 0.8947368421052632,
-    "alignment_evaluated_frames": 19,
+    "alignment_accuracy": 0.875,
+    "alignment_evaluated_frames": 16,
     "baselines": {
       "uniform_time": 0.6363636363636364,
       "uniform_pool": 0.7272727272727273,
       "random_mean": 0.5181818181818182,
       "random_sd": 0.061657545301138796
     },
-    "por": 1.5789473684210527,
+    "por": 1.7543859649122806,
     "missed": [
       {
-        "state_id": "s02",
-        "label": "Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent'",
-        "reason": "not_in_pool"
-      },
-      {
-        "state_id": "s06",
-        "label": "Board: 'Enter Task → Computer' ×4 + 'Command Center for Agents that have access to a computer'",
-        "reason": "not_in_pool"
-      },
-      {
-        "state_id": "s13",
-        "label": "Board: Employee — 'That gets things done / Do things that surprise you / Make suggestions that are useful' + 'Specific Goals, Intent'",
+        "state_id": "s03",
+        "label": "Perplexity Computer UI (Search→Computer mode, task running)",
         "reason": "triage_rejected"
       },
       {
         "state_id": "s28",
         "label": "Markdown skill document open in the browser",
-        "reason": "not_in_pool"
+        "reason": "triage_rejected"
       }
     ],
     "selected_rows": [
       {
-        "candidate_id": "c_0001",
-        "t": 61.995,
+        "candidate_id": "c_0000",
+        "t": 52.519,
         "chapter_id": "ch02",
-        "state_id": "s03",
+        "state_id": "s02",
         "class": "essential",
-        "group": "s03",
+        "group": "s02",
         "anchor_seg_ids": [
+          "seg_0010",
           "seg_0011",
           "seg_0012",
           "seg_0013"
         ]
       },
       {
-        "candidate_id": "c_0008",
-        "t": 112.012,
+        "candidate_id": "c_0005",
+        "t": 113.513,
         "chapter_id": "ch02",
         "state_id": "s04",
         "class": "essential",
@@ -102,22 +96,30 @@
         ]
       },
       {
-        "candidate_id": "c_0012",
-        "t": 206.84,
+        "candidate_id": "c_0007",
+        "t": 141.508,
+        "chapter_id": "ch02",
+        "state_id": "s06",
+        "class": "essential",
+        "group": "s06",
+        "anchor_seg_ids": [
+          "seg_0029"
+        ]
+      },
+      {
+        "candidate_id": "c_0009",
+        "t": 226.526,
         "chapter_id": "ch03",
         "state_id": "s08",
         "class": "essential",
         "group": "s08",
         "anchor_seg_ids": [
-          "seg_0038",
-          "seg_0039",
-          "seg_0040",
-          "seg_0041"
+          "seg_0045"
         ]
       },
       {
-        "candidate_id": "c_0015",
-        "t": 261.428,
+        "candidate_id": "c_0010",
+        "t": 260.026,
         "chapter_id": "ch04",
         "state_id": "s09",
         "class": "essential",
@@ -132,8 +134,8 @@
         ]
       },
       {
-        "candidate_id": "c_0020",
-        "t": 306.773,
+        "candidate_id": "c_0013",
+        "t": 302.002,
         "chapter_id": "ch04",
         "state_id": "s10",
         "class": "essential",
@@ -145,8 +147,8 @@
         ]
       },
       {
-        "candidate_id": "c_0023",
-        "t": 340.54,
+        "candidate_id": "c_0015",
+        "t": 337.003,
         "chapter_id": "ch05",
         "state_id": "s11",
         "class": "essential",
@@ -158,8 +160,8 @@
         ]
       },
       {
-        "candidate_id": "c_0025",
-        "t": 354.588,
+        "candidate_id": "c_0018",
+        "t": 352.519,
         "chapter_id": "ch05",
         "state_id": "s12",
         "class": "essential",
@@ -170,8 +172,23 @@
         ]
       },
       {
-        "candidate_id": "c_0029",
-        "t": 410.143,
+        "candidate_id": "c_0020",
+        "t": 393.026,
+        "chapter_id": "ch06",
+        "state_id": "s13",
+        "class": "essential",
+        "group": "s13",
+        "anchor_seg_ids": [
+          "seg_0079",
+          "seg_0081",
+          "seg_0082",
+          "seg_0083",
+          "seg_0084"
+        ]
+      },
+      {
+        "candidate_id": "c_0021",
+        "t": 419.019,
         "chapter_id": "ch06",
         "state_id": "s14",
         "class": "essential",
@@ -184,8 +201,8 @@
         ]
       },
       {
-        "candidate_id": "c_0033",
-        "t": 460.36,
+        "candidate_id": "c_0026",
+        "t": 467.033,
         "chapter_id": "ch07",
         "state_id": "s16",
         "class": "essential",
@@ -193,24 +210,27 @@
         "anchor_seg_ids": [
           "seg_0093",
           "seg_0094",
-          "seg_0095"
+          "seg_0095",
+          "seg_0096",
+          "seg_0097"
         ]
       },
       {
-        "candidate_id": "c_0037",
-        "t": 481.281,
+        "candidate_id": "c_0027",
+        "t": 486.519,
         "chapter_id": "ch07",
         "state_id": "s17",
         "class": "essential",
         "group": "s17",
         "anchor_seg_ids": [
           "seg_0096",
-          "seg_0097"
+          "seg_0097",
+          "seg_0099"
         ]
       },
       {
-        "candidate_id": "c_0042",
-        "t": 532.899,
+        "candidate_id": "c_0031",
+        "t": 536.503,
         "chapter_id": "ch08",
         "state_id": "s19",
         "class": "essential",
@@ -223,22 +243,8 @@
         ]
       },
       {
-        "candidate_id": "c_0044",
-        "t": 548.248,
-        "chapter_id": "ch08",
-        "state_id": "s19",
-        "class": "essential",
-        "group": "s19",
-        "anchor_seg_ids": [
-          "seg_0106",
-          "seg_0107",
-          "seg_0111",
-          "seg_0112"
-        ]
-      },
-      {
-        "candidate_id": "c_0048",
-        "t": 660.86,
+        "candidate_id": "c_0036",
+        "t": 649.516,
         "chapter_id": "ch08",
         "state_id": "s21",
         "class": "essential",
@@ -251,8 +257,8 @@
         ]
       },
       {
-        "candidate_id": "c_0052",
-        "t": 724.157,
+        "candidate_id": "c_0039",
+        "t": 709.008,
         "chapter_id": "ch09",
         "state_id": "s22",
         "class": "essential",
@@ -265,8 +271,8 @@
         ]
       },
       {
-        "candidate_id": "c_0055",
-        "t": 756.923,
+        "candidate_id": "c_0042",
+        "t": 755.021,
         "chapter_id": "ch10",
         "state_id": "s23",
         "class": "essential",
@@ -278,8 +284,8 @@
         ]
       },
       {
-        "candidate_id": "c_0059",
-        "t": 809.909,
+        "candidate_id": "c_0044",
+        "t": 799.532,
         "chapter_id": "ch10",
         "state_id": "s24",
         "class": "essential",
@@ -293,19 +299,19 @@
         ]
       },
       {
-        "candidate_id": "c_0065",
-        "t": 903.803,
+        "candidate_id": "c_0054",
+        "t": 921.02,
         "chapter_id": "ch11",
         "state_id": "s26",
         "class": "essential",
         "group": "s26",
         "anchor_seg_ids": [
-          "seg_0189"
+          "seg_0193"
         ]
       },
       {
-        "candidate_id": "c_0069",
-        "t": 961.227,
+        "candidate_id": "c_0057",
+        "t": 974.006,
         "chapter_id": "ch11",
         "state_id": "s27",
         "class": "essential",
@@ -315,25 +321,13 @@
           "seg_0202",
           "seg_0203",
           "seg_0204",
-          "seg_0205"
+          "seg_0205",
+          "seg_0206"
         ]
       },
       {
-        "candidate_id": "c_0071",
-        "t": 1004.003,
-        "chapter_id": "ch12",
-        "state_id": "s29",
-        "class": "essential",
-        "group": "s29",
-        "anchor_seg_ids": [
-          "seg_0209",
-          "seg_0210",
-          "seg_0211"
-        ]
-      },
-      {
-        "candidate_id": "c_0074",
-        "t": 1042.775,
+        "candidate_id": "c_0062",
+        "t": 1041.007,
         "chapter_id": "ch12",
         "state_id": "s29",
         "class": "essential",
@@ -347,42 +341,6 @@
         ]
       }
     ],
-    "summary": {
-      "coverage": 0.6,
-      "claims": [
-        {
-          "claim_id": "k01",
-          "present": true
-        },
-        {
-          "claim_id": "k02",
-          "present": true
-        },
-        {
-          "claim_id": "k03",
-          "present": false
-        },
-        {
-          "claim_id": "k04",
-          "present": true
-        },
-        {
-          "claim_id": "k05",
-          "present": false
-        },
-        {
-          "claim_id": "k06",
-          "present": true
-        }
-      ],
-      "lang": "en",
-      "words": 2010,
-      "hebrew_ratio": 0.0,
-      "niqqud": 0,
-      "bidi_controls": 0,
-      "blocks_leading_latin": 31,
-      "dashes": 0
-    },
     "annotation_status": "draft"
   }
 ]

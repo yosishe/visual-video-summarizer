@@ -1,0 +1,294 @@
+[
+  {
+    "candidate_id": "c_0000",
+    "name": "ch02_agents_tested",
+    "chapter_id": "ch02",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Board: agents tested and the most useful agent",
+    "alt": "Board: agents tested and the most useful agent",
+    "anchor_seg_ids": [
+      "seg_0010",
+      "seg_0011",
+      "seg_0012",
+      "seg_0013"
+    ]
+  },
+  {
+    "candidate_id": "c_0005",
+    "name": "ch02_manus",
+    "chapter_id": "ch02",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Manus computer view",
+    "alt": "Manus computer view",
+    "anchor_seg_ids": [
+      "seg_0021",
+      "seg_0022",
+      "seg_0023"
+    ]
+  },
+  {
+    "candidate_id": "c_0007",
+    "name": "ch02_enter_task",
+    "chapter_id": "ch02",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Board: Enter Task \u2192 Computer \u00d74",
+    "alt": "Board: Enter Task \u2192 Computer \u00d74",
+    "anchor_seg_ids": [
+      "seg_0029"
+    ]
+  },
+  {
+    "candidate_id": "c_0009",
+    "name": "ch03_openclaw",
+    "chapter_id": "ch03",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "OpenClaw shape with messaging apps, memory, skills, gateway",
+    "alt": "OpenClaw shape with messaging apps, memory, skills, gateway",
+    "anchor_seg_ids": [
+      "seg_0045"
+    ]
+  },
+  {
+    "candidate_id": "c_0010",
+    "name": "ch04_skills",
+    "chapter_id": "ch04",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Skills overview board",
+    "alt": "Skills overview board",
+    "anchor_seg_ids": [
+      "seg_0047",
+      "seg_0048",
+      "seg_0052",
+      "seg_0053",
+      "seg_0056",
+      "seg_0057"
+    ]
+  },
+  {
+    "candidate_id": "c_0013",
+    "name": "ch04_dependability",
+    "chapter_id": "ch04",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Skills/Integrations/Personality/Memory vs Tasks/Heartbeat/Webhook",
+    "alt": "Skills/Integrations/Personality/Memory vs Tasks/Heartbeat/Webhook",
+    "anchor_seg_ids": [
+      "seg_0059",
+      "seg_0060",
+      "seg_0061"
+    ]
+  },
+  {
+    "candidate_id": "c_0015",
+    "name": "ch05_sweet_spot",
+    "chapter_id": "ch05",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "7-10 skills on the board",
+    "alt": "7-10 skills on the board",
+    "anchor_seg_ids": [
+      "seg_0065",
+      "seg_0066",
+      "seg_0067"
+    ]
+  },
+  {
+    "candidate_id": "c_0018",
+    "name": "ch05_manus_skills",
+    "chapter_id": "ch05",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Manus official skill library",
+    "alt": "Manus official skill library",
+    "anchor_seg_ids": [
+      "seg_0070",
+      "seg_0071"
+    ]
+  },
+  {
+    "candidate_id": "c_0020",
+    "name": "ch06_employee",
+    "chapter_id": "ch06",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Employee list on the board",
+    "alt": "Employee list on the board",
+    "anchor_seg_ids": [
+      "seg_0079",
+      "seg_0081",
+      "seg_0082",
+      "seg_0083",
+      "seg_0084"
+    ]
+  },
+  {
+    "candidate_id": "c_0021",
+    "name": "ch06_tweet",
+    "chapter_id": "ch06",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Emmett Shear's tweet",
+    "alt": "Emmett Shear's tweet",
+    "anchor_seg_ids": [
+      "seg_0081",
+      "seg_0082",
+      "seg_0083",
+      "seg_0084"
+    ]
+  },
+  {
+    "candidate_id": "c_0026",
+    "name": "ch07_telegram",
+    "chapter_id": "ch07",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Telegram journal bot over the board",
+    "alt": "Telegram journal bot over the board",
+    "anchor_seg_ids": [
+      "seg_0093",
+      "seg_0094",
+      "seg_0095",
+      "seg_0096",
+      "seg_0097"
+    ]
+  },
+  {
+    "candidate_id": "c_0027",
+    "name": "ch07_focused",
+    "chapter_id": "ch07",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Focused Agent \u2192 Goal 1/2/3",
+    "alt": "Focused Agent \u2192 Goal 1/2/3",
+    "anchor_seg_ids": [
+      "seg_0096",
+      "seg_0097",
+      "seg_0099"
+    ]
+  },
+  {
+    "candidate_id": "c_0031",
+    "name": "ch08_youtube_goals",
+    "chapter_id": "ch08",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "YouTube AI Agent \u2192 Subs/Views/Conversions",
+    "alt": "YouTube AI Agent \u2192 Subs/Views/Conversions",
+    "anchor_seg_ids": [
+      "seg_0106",
+      "seg_0107",
+      "seg_0111",
+      "seg_0112"
+    ]
+  },
+  {
+    "candidate_id": "c_0036",
+    "name": "ch08_youtube_skills",
+    "chapter_id": "ch08",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "YouTube agent skills incl. Control my Notion",
+    "alt": "YouTube agent skills incl. Control my Notion",
+    "anchor_seg_ids": [
+      "seg_0131",
+      "seg_0132",
+      "seg_0133",
+      "seg_0134"
+    ]
+  },
+  {
+    "candidate_id": "c_0039",
+    "name": "ch09_chart",
+    "chapter_id": "ch09",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Agent team chart by cluster",
+    "alt": "Agent team chart by cluster",
+    "anchor_seg_ids": [
+      "seg_0145",
+      "seg_0146",
+      "seg_0147",
+      "seg_0148"
+    ]
+  },
+  {
+    "candidate_id": "c_0042",
+    "name": "ch10_journal",
+    "chapter_id": "ch10",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Telegram journal agent",
+    "alt": "Telegram journal agent",
+    "anchor_seg_ids": [
+      "seg_0154",
+      "seg_0155",
+      "seg_0156"
+    ]
+  },
+  {
+    "candidate_id": "c_0044",
+    "name": "ch10_highlight",
+    "chapter_id": "ch10",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Team chart with Email Newsletter and Journal highlighted",
+    "alt": "Team chart with Email Newsletter and Journal highlighted",
+    "anchor_seg_ids": [
+      "seg_0163",
+      "seg_0164",
+      "seg_0165",
+      "seg_0166",
+      "seg_0167"
+    ]
+  },
+  {
+    "candidate_id": "c_0054",
+    "name": "ch11_open_rate",
+    "chapter_id": "ch11",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Focused Agent \u2192 Open rate / Subscribe / CTR",
+    "alt": "Focused Agent \u2192 Open rate / Subscribe / CTR",
+    "anchor_seg_ids": [
+      "seg_0193"
+    ]
+  },
+  {
+    "candidate_id": "c_0057",
+    "name": "ch11_list_full",
+    "chapter_id": "ch11",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Full list incl. Easier loops / More autonomous",
+    "alt": "Full list incl. Easier loops / More autonomous",
+    "anchor_seg_ids": [
+      "seg_0201",
+      "seg_0202",
+      "seg_0203",
+      "seg_0204",
+      "seg_0205",
+      "seg_0206"
+    ]
+  },
+  {
+    "candidate_id": "c_0062",
+    "name": "ch12_questions",
+    "chapter_id": "ch12",
+    "role": "evidence",
+    "novelty": "new_state",
+    "caption": "Open questions board",
+    "alt": "Open questions board",
+    "anchor_seg_ids": [
+      "seg_0219",
+      "seg_0220",
+      "seg_0221",
+      "seg_0222",
+      "seg_0223"
+    ]
+  }
+]

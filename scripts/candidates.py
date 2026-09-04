@@ -41,6 +41,7 @@ from frame_utils import (  # noqa: E402
     visual_signature,
 )
 from layout import detect_static_overlays, mask_fraction, overlay_mask  # noqa: E402
+from states import scan_video, states_to_points  # noqa: E402
 import time  # noqa: E402
 
 ENGINE_VERSION = "1.3.0"
@@ -63,6 +64,7 @@ PROFILES: dict[str, dict] = {
         "coverage_min": 1, "cue_offsets": (0.5, 1.5),
         "refine": "none", "faces": "off", "ocr": "off", "resolution": 512,
         "pip_mask": "on", "dedup_scope": "family",
+        "engine": "states", "scan_fps": 2.0,
     },
     "high": {
         "cap": 64, "per_target": 3, "unplanned_floor": 16,
@@ -73,6 +75,7 @@ PROFILES: dict[str, dict] = {
         "coverage_min": 2, "cue_offsets": (0.2, 0.5, 1.0, 1.5, 2.0),
         "refine": "sharpness", "faces": "auto", "ocr": "on", "resolution": 512,
         "pip_mask": "on", "dedup_scope": "family",
+        "engine": "states", "scan_fps": 2.0,
     },
 }
 MODE_ALIASES = {"light": "standard", "advanced": "high"}
@@ -96,7 +99,7 @@ MERGE_EPS = 0.20
 LONG_VIDEO_SECONDS = 20 * 60
 SECTION_PADDING = 5.0
 MAX_READ_DIMENSION = 1998
-REASON_PRIORITY = ("target", "cue", "pin", "coverage", "scene", "final")
+REASON_PRIORITY = ("target", "cue", "pin", "coverage", "state", "scene", "final")
 PROTECTED = {"target", "cue", "pin", "coverage"}
 SHOWINFO_TS_RE = re.compile(r"pts_time:([-0-9.]+)")
 SCENE_SCORE_RE = re.compile(
@@ -669,7 +672,7 @@ def make_point(
     seg_ids = {str(seg_id) for row in target_rows for seg_id in row.get("seg_ids", [])}
     if not seg_ids:
         seg_ids.update(segment_ids_for_time(segments, timestamp))
-    priority = {"target": 100, "cue": 90, "pin": 80, "coverage": 70, "scene": 40, "final": 20}.get(reason, 0)
+    priority = {"target": 100, "cue": 90, "pin": 80, "coverage": 70, "state": 50, "scene": 40, "final": 20}.get(reason, 0)
     return {
         "requested_t": round(timestamp, 3),
         "reasons": {reason},
@@ -681,6 +684,18 @@ def make_point(
         "scene_score": scene_score,
         "priority": priority,
     }
+
+
+def _read_heatmap(work: Path) -> list[dict]:
+    """YouTube's most-replayed curve (100 bins) from the cached info.json — a free
+    human-attention prior for state importance; [] for local files."""
+    path = work / "download" / "video.info.json"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    rows = raw.get("heatmap") or []
+    return [r for r in rows if isinstance(r, dict)]
 
 
 def parse_profile_override(raw: str | None, profile: dict) -> dict:
@@ -1048,20 +1063,66 @@ def select_with_budget(
         frame for frame in frames
         if frame["path"] not in keep_paths and not frame.get("target_ids")
     ]
+    uniform_baseline: list[float] = []
     if slots > 0 and remaining:
+        ordered = sorted(remaining, key=lambda item: item["actual_t"])
         if len(remaining) <= slots:
             selected.extend(remaining)
-        elif slots == 1:
-            selected.append(max(remaining, key=_frame_score))
+            uniform_baseline = [f["actual_t"] for f in ordered]
         else:
-            ordered = sorted(remaining, key=lambda item: item["actual_t"])
-            indices = sorted({round(i * (len(ordered) - 1) / (slots - 1)) for i in range(slots)})
-            selected.extend(ordered[index] for index in indices)
+            # The uniform pick is always computed (and reported) — it is the
+            # baseline the greedy fill has to beat on the benchmark.
+            indices = sorted({round(i * (len(ordered) - 1) / max(slots - 1, 1)) for i in range(slots)})
+            uniform_baseline = [ordered[index]["actual_t"] for index in indices]
+            selected.extend(_greedy_fill(remaining, selected, slots))
+    select_with_budget.last["uniform_baseline"] = uniform_baseline
     selected_paths = {frame["path"] for frame in selected}
     for frame in frames:
         if frame["path"] not in selected_paths:
             drop_frame(frame, "cap")
     return sorted(selected, key=lambda item: item["actual_t"]), len(frames) - len(selected), trimmed
+
+
+def _quick_distance(first: dict, second: dict) -> float:
+    """Cheap picture distance in [0, 1]: mean luma difference on every 4th
+    signature pixel, saturating at 12 levels (the pixel-change threshold)."""
+    a = first.get("pixels", b"")[::4]
+    b = second.get("pixels", b"")[::4]
+    if not a or len(a) != len(b):
+        return 1.0
+    return min(1.0, sum(abs(x - y) for x, y in zip(a, b)) / len(a) / 12.0)
+
+
+def _greedy_fill(remaining: list[dict], selected: list[dict], slots: int) -> list[dict]:
+    """Fill the unplanned slots by greedy argmax of
+    0.5·importance + 0.3·novelty + 0.2·uniformity — the submodular mixture of
+    Gygli et al. (interestingness / representativeness / uniformity) with the
+    weights fixed instead of learned. Importance comes from the state engine
+    (targets, cues, heatmap, mode prior); novelty is the distance to the nearest
+    already-chosen picture; uniformity the time gap to the nearest chosen frame,
+    normalised to a quarter of the covered span."""
+    times = [f["actual_t"] for f in remaining + selected]
+    span = max(max(times) - min(times), 1.0) if times else 1.0
+    chosen: list[dict] = []
+    pool = list(remaining)
+    while pool and len(chosen) < slots:
+        anchors = selected + chosen
+
+        def score(frame: dict) -> float:
+            importance = float(frame.get("importance") or 0.0)
+            if anchors:
+                signature = frame.get("_signature") or {}
+                novelty = min(_quick_distance(signature, a.get("_signature") or {}) for a in anchors)
+                gap = min(abs(frame["actual_t"] - a["actual_t"]) for a in anchors)
+                uniformity = min(1.0, gap / (span / 4.0))
+            else:
+                novelty = uniformity = 1.0
+            return 0.5 * importance + 0.3 * novelty + 0.2 * uniformity
+
+        best = max(pool, key=score)
+        chosen.append(best)
+        pool.remove(best)
+    return chosen
 
 
 def _scaled_dimensions(width: int, height: int, resolution: int) -> tuple[int, int]:
@@ -1086,6 +1147,9 @@ def cost_estimate(
     refine_selections: int = 20,
     overlays: int = 0,
     overlay_seconds: float = 0.0,
+    engine: str = "legacy",
+    scan_seconds: float = 0.0,
+    states: int = 0,
 ) -> dict:
     """An honest cost line: image tokens use each candidate's real dimensions
     (⌈w/28⌉×⌈h/28⌉ patches, the documented Claude formula — other providers
@@ -1121,6 +1185,9 @@ def cost_estimate(
             "overlays": overlays,
             "overlay_seconds": overlay_seconds,
             "dedup_scope": profile["dedup_scope"],
+            "engine": engine,
+            "scan_seconds": scan_seconds,
+            "states": states,
         },
         "other_tier": {
             "tier": other_tier,
@@ -1253,6 +1320,9 @@ def main() -> int:
                              "e.g. '{\"scene_threshold\": 0.10}'). Keys must exist in the profile; the "
                              "effective profile and its sha256 are recorded in candidates.json.")
     parser.add_argument("--no-dedup", action="store_true")
+    parser.add_argument("--engine", choices=("states", "legacy"), default=None,
+                        help="states (default): one dense 2 fps scan → visual states → one candidate per state; "
+                             "legacy: the 1.3 scene-detection + target-offset sampler (ablation).")
     parser.add_argument("--strips", action="store_true",
                         help="Also render 256px temporal strips per target for a cheaper first "
                              "look. Off by default: slides and UI text are not reliably legible "
@@ -1267,6 +1337,8 @@ def main() -> int:
     mode_alias = TIER_TO_MODE[tier]
     profile_override = parse_profile_override(args.profile_override, profile)
     profile = {**profile, **profile_override}
+    if args.engine:
+        profile["engine"] = args.engine
     DROP_LOG.clear()
 
     work = Path(args.work).expanduser().resolve()
@@ -1297,7 +1369,18 @@ def main() -> int:
     # presenter. Sections of one video share a layout: one mask for all parts.
     overlays: list[dict] = []
     overlay_seconds = 0.0
-    if profile["pip_mask"] == "on":
+    scan: dict | None = None
+    scan_seconds = 0.0
+    if profile["engine"] == "states":
+        # One dense decode gives the overlay mask AND the visual states.
+        started = time.monotonic()
+        heatmap = _read_heatmap(work)
+        scan = scan_video(parts, chapters, segments, fps=float(profile["scan_fps"]),
+                          heatmap=heatmap, pip_mask=profile["pip_mask"] == "on")
+        overlays = scan["overlays"]
+        scan_seconds = round(time.monotonic() - started, 2)
+        (work / "states.json").write_text(json.dumps(scan, indent=2) + "\n", encoding="utf-8")
+    elif profile["pip_mask"] == "on":
         started = time.monotonic()
         for part in parts:
             for overlay in detect_static_overlays(part):
@@ -1319,7 +1402,29 @@ def main() -> int:
     scene_seconds = sum(end - start for start, end in windows)
     points: list[dict] = []
     scene_points: list[tuple[float, float]] = []
-    if profile["scene"] == "adaptive":
+    terminal_probes: list[dict] = []
+    if scan is not None:
+        scene_setting = f"states engine ({scan['counts']['states']} states from a {profile['scan_fps']} fps scan)"
+        target_map = {t["target_id"]: t for c in chapters for t in c.get("visual_targets", [])}
+        for descriptor in states_to_points(scan["states"], chapters):
+            state = descriptor["state"]
+            point = make_point(descriptor["t"], descriptor["reason"], chapters, segments)
+            point["target_ids"] = set(state["target_ids"])
+            point["target_kinds"] = set(state["target_kinds"])
+            point["target_anchors"] = {
+                tid: target_map[tid]["anchor_t"] for tid in state["target_ids"] if tid in target_map
+            }
+            target_segs = {s for tid in state["target_ids"] if tid in target_map for s in target_map[tid].get("seg_ids", [])}
+            point["seg_ids"] = set(point["seg_ids"]) | target_segs | set(state["aligned_seg_ids"][:0])
+            point["aligned_seg_ids"] = list(state["aligned_seg_ids"])
+            point["state_id"] = state["state_id"]
+            point["state_family"] = state["family_id"]
+            point["mode"] = state["mode"]
+            point["importance"] = state["importance"]
+            if descriptor.get("stage"):
+                point["stage"] = descriptor["stage"]
+            points.append(point)
+    elif profile["scene"] == "adaptive":
         scene_floor = args.scene_threshold or profile["scene_floor"]
         scene_setting = f"adaptive (median+8·MAD, floor {scene_floor})"
         for part in parts:
@@ -1332,28 +1437,34 @@ def main() -> int:
     for timestamp, score in scene_points:
         points.append(make_point(timestamp, "scene", chapters, segments, scene_score=score))
 
-    # Slide/diagram targets: measure where the build-up ends instead of assuming
-    # the end of the referenced segments (both tiers; one cheap probe each).
-    terminal_probes: list[dict] = []
-    for chapter in chapters:
-        if not chapter["needs_frames"]:
-            continue
-        for target in chapter.get("visual_targets", []):
-            if target["kind"] not in ("slide", "diagram"):
+    # Legacy engine only — slide/diagram targets: measure where the build-up
+    # ends instead of assuming the end of the referenced segments. The states
+    # engine gets this from the run itself (last settled frame).
+    if scan is None:
+        for chapter in chapters:
+            if not chapter["needs_frames"]:
                 continue
-            measured = measure_stable_terminal(parts, target)
-            if measured:
-                target["terminal_t"] = measured["terminal_t"]
-                target["terminal"] = measured
-                terminal_probes.append({"target_id": target["target_id"], **measured})
+            for target in chapter.get("visual_targets", []):
+                if target["kind"] not in ("slide", "diagram"):
+                    continue
+                measured = measure_stable_terminal(parts, target)
+                if measured:
+                    target["terminal_t"] = measured["terminal_t"]
+                    target["terminal"] = measured
+                    terminal_probes.append({"target_id": target["target_id"], **measured})
 
+    covered_targets = {tid for point in points for tid in point.get("target_ids", set())}
     for chapter in chapters:
         if not chapter["needs_frames"]:
             continue
         for target in chapter.get("visual_targets", []):
+            if scan is not None and target["target_id"] in covered_targets:
+                continue   # a state already carries this target
             for timestamp in target_sample_times(target, profile):
                 points.append(make_point(timestamp, "target", chapters, segments, target=target))
         minimum = args.min_per_chapter if args.min_per_chapter is not None else profile["coverage_min"]
+        if scan is not None and any(p.get("chapter_id") == chapter["chapter_id"] for p in points):
+            continue   # the chapter has states; no blind midpoint needed
         span = chapter["end"] - chapter["start"]
         for fraction in ((0.5,) if minimum == 1 else (0.5, 0.25, 0.75))[:minimum]:
             points.append(make_point(chapter["start"] + span * fraction, "coverage", chapters, segments))
@@ -1475,6 +1586,12 @@ def main() -> int:
             "part_mapping_confidence": frame.get("part_mapping_confidence", "unknown"),
             "family_id": frame.get("family_id"),
             "family_revisits": sorted(frame.get("family_revisits", [])),
+            "state_id": frame.get("state_id"),
+            "state_family": frame.get("state_family"),
+            "mode": frame.get("mode"),
+            "importance": frame.get("importance"),
+            "aligned_seg_ids": sorted(frame.get("aligned_seg_ids", [])),
+            "stage": frame.get("stage"),
         })
     shutil.rmtree(raw_dir, ignore_errors=True)
     (work / "dropped.json").write_text(json.dumps(DROP_LOG, indent=2) + "\n", encoding="utf-8")
@@ -1485,6 +1602,8 @@ def main() -> int:
         scene_seconds=scene_seconds, terminal_probes=len(terminal_probes), seeks=seeks,
         faces_status=faces_status, ocr_frames=ocr_frames,
         overlays=len(overlays), overlay_seconds=overlay_seconds,
+        engine=profile["engine"], scan_seconds=scan_seconds,
+        states=scan["counts"]["states"] if scan else 0,
     )
     strip_pixels = sum(strip["pixel_area"] for strip in strips)
     baseline_pixels = 60 * 512 * 288
@@ -1502,6 +1621,10 @@ def main() -> int:
         "profile_sha256": profile_digest(profile),
         "overlays": overlays,
         "mask_fraction": round(mask_fraction(mask), 4),
+        "states": {
+            "counts": scan["counts"], "modes": scan["modes"], "frames_scanned": scan["frames_scanned"],
+            "path": str(work / "states.json"),
+        } if scan else None,
         "parts": parts,
         "counts": {
             "scene": len(scene_points), "raw": raw_count,
@@ -1511,6 +1634,7 @@ def main() -> int:
             "cap": cap, "cap_effective": budget["cap_effective"], "reserved": budget["reserved"],
             "final": len(records),
         },
+        "baselines": {"uniform_fill": budget.get("uniform_baseline", [])},
         "coverage": coverage,
         "terminal_probes": terminal_probes,
         "cost": cost,
@@ -1535,7 +1659,14 @@ def main() -> int:
     print()
     print("# candidate frames report")
     print()
-    print(f"- **Tier:** {tier} (alias: --mode {mode_alias}) — scene pass: {scene_setting}")
+    print(f"- **Tier:** {tier} (alias: --mode {mode_alias}) — {scene_setting}")
+    if scan:
+        modes = "".join(w["mode"] for w in scan["modes"])
+        counts = scan["counts"]
+        print(f"- **Visual states:** {counts['states']} (A talk {counts['by_mode']['A']}, B static {counts['by_mode']['B']}, "
+              f"C canvas {counts['by_mode']['C']}, D dynamic UI {counts['by_mode']['D']}); "
+              f"{counts['families']} families, {counts['builds']} builds; mode timeline per 20 s: `{modes}`; "
+              f"scan {scan_seconds:.1f}s — `states.json` in the work dir")
     cap_note = f"pool {cap}"
     if budget["cap_effective"] > cap:
         cap_note += (
@@ -1631,6 +1762,10 @@ def main() -> int:
                 extras += " (people frame)"
         if quality.get("text_chars") is not None:
             extras += f", text={quality['text_chars']}"
+        if record.get("state_id"):
+            extras += f", state={record['state_id']}/{record['mode']}"
+            if record.get("stage"):
+                extras += f" ({record['stage']} stage)"
         if record.get("family_id"):
             extras += f", family={record['family_id']}"
             if record.get("family_revisits"):

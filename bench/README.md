@@ -79,11 +79,25 @@ Every missed essential visual is attributed to `not_in_pool`, `blank_dropped`,
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | v130-standard | 50 | 86% | 14 | 59% | 100% | 7% | 79% | 59% | 45% | 1.33 | 572 | 26 s |
 | v130-high | 76 | 86% | 20 | 82% | 100% | 10% | 89% | 73% | 53% | 1.55 | 870 | 69 s |
-| v14-standard (overlay mask + family dedup) | 50 | 86% | 20 | 86% | 100% | 10% | 88% | 82% | 53% | 1.64 | 572 | 39 s |
-| v14-high | 76 | 91% | 20 | 86% | 100% | 5% | 83% | 73% | 53% | 1.64 | 870 | 82 s |
+| v14-standard (overlay mask + family dedup) | 50 | 86% | 20 | 82% | 100% | 15% | 94% | 77% | 52% | 1.58 | 572 | 39 s |
+| v14-high | 76 | 91% | 20 | 82% | 100% | 10% | 88% | 73% | 52% | 1.58 | 870 | 82 s |
+| **v15-standard** (visual states, greedy fill) | 48 | 91% | 20 | **86%** | 100% | **5%** | 94% | 77% | 52% | **1.67** | 549 | 27 s |
+| **v15-high** | 64 | **100%** | 20 | **91%** | 100% | **0%** | 88% | 73% | 52% | **1.75** | 732 | 29 s |
 
-Residual near-duplicate pairs inside the pool (masked predicate): 4 → 0
+(Annotation revision c: three interval boundaries were corrected after
+inspecting extracted frames — `s02`, `s29`, `s25/s26` — so every row was
+rescored against the same ground truth; earlier reports quoted slightly
+different v1.3.0/v1.4 figures.)
+
+Residual near-duplicate pairs inside the pool (masked predicate, v1.4): 4 → 0
 (standard), 4 → 1 (high); distinct pictures 47 → 50 / 72 → 75.
+
+v1.5 replaced the 300-seek scene pass with one 2 fps decode: 102 seeks instead
+of 327, pool recall 86/91 % → 91/100 %, and the two whiteboard states no earlier
+profile ever sampled (`s06` "Enter Task → Computer", `s13` "Employee") are now
+in both pools and selected. The remaining misses are a per-chapter cap
+(`s03`: chapter 2 holds four essential pictures and the renderer allows three)
+and one board the annotation still places about 10 s off (`s28`).
 
 The v14-high run also carries the first **Hebrew** summary (`--lang he`):
 1,108 words, checklist coverage 100 % (bilingual `must_tokens`), 100 % of
@@ -92,10 +106,6 @@ opening with Latin, 0 audit errors (after two rounds of fixes the audit forced:
 boundary segments cited in the wrong chapter, counts the speaker never said);
 render 4.5 s, PDF 2.2 MB via Chrome.
 
-Still missed by every profile: `s06` "Enter Task → Computer" (2:07–2:43) and
-`s13` "Employee" list (6:03–6:45) in standard, `s02`/`s06` in high — unplanned
-whiteboard states between targets that scene detection never sampled
-(`not_in_pool`, or `cap_dropped`/`dedup_dropped` in high). That is the recall
-gap the visual-state engine (v1.5) is meant to close. The v1.3.0 selections
-were made by the release-run session; the v1.4 selections by this session under
-the same Step 4 rubric — triage variance is part of what the numbers contain.
+The v1.3.0 selections were made by the release-run session; the v1.4/v1.5
+selections by this session under the same Step 4 rubric — triage variance is
+part of what the numbers contain.

@@ -2,7 +2,7 @@
 
 | video | ess. | pool | pool recall | sel. | IVR | precision | redund. | eff. | align | uniform(t) | uniform(pool) | random | PoR | img tokens/min |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ISb0nrlNoKQ | 22 | 76 | 86% | 20 | 82% | 100% | 10% | 100% | 89% | 64% | 73% | 53% | 1.55 | 870 |
+| ISb0nrlNoKQ | 22 | 76 | 86% | 20 | 82% | 100% | 10% | 100% | 89% | 64% | 73% | 52% | 1.58 | 870 |
 
 ## ISb0nrlNoKQ — missed essential visuals
 - `s02` Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent' → **not_in_pool**

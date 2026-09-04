@@ -1,0 +1,114 @@
+[
+  {
+    "candidate_id": "c_0001",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0002",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0004",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0006",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0009",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0011",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0013",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0015",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0018",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0019",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0020",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0023",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0024",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0026",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0027",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0028",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0030",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0031",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0035",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0037",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0038",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0039",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0040",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0041",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0043",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0044",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0045",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0047",
+    "reason": "duplicate_or_build_stage"
+  }
+]

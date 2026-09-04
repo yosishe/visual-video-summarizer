@@ -2,7 +2,7 @@
 
 | video | ess. | pool | pool recall | sel. | IVR | precision | redund. | eff. | align | uniform(t) | uniform(pool) | random | PoR | img tokens/min |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ISb0nrlNoKQ | 22 | 50 | 86% | 14 | 59% | 100% | 7% | 100% | 79% | 64% | 59% | 45% | 1.33 | 572 |
+| ISb0nrlNoKQ | 22 | 50 | 82% | 14 | 59% | 100% | 7% | 100% | 79% | 64% | 59% | 44% | 1.35 | 572 |
 
 ## ISb0nrlNoKQ — missed essential visuals
 - `s02` Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent' → **triage_rejected**
@@ -11,7 +11,7 @@
 - `s09` Board: skills overview — many colored skill cards (supadata, etc.) → **triage_rejected**
 - `s13` Board: Employee — 'That gets things done / Do things that surprise you / Make suggestions that are useful' + 'Specific Goals, Intent' → **not_in_pool**
 - `s19` Board: YouTube AI Agent → Subs/Views/Conversions (goals) → **triage_rejected**
-- `s26` Board: Focused Agent → Open rate/Subscribe/CTR→Revenue (email agent example) + 'Narrow Focus…Reviewable' list → **triage_rejected**
+- `s26` Board: Focused Agent → Open rate/Subscribe/CTR→Revenue (email agent example) + 'Narrow Focus…Reviewable' list → **not_in_pool**
 - `s27` Board: final list 'Narrow Focus / Duplicable / Sharable / Understandable / Reviewable / Faster loops / More autonomous' with the team chart → **triage_rejected**
 - `s28` Markdown skill document open in the browser → **not_in_pool**
 

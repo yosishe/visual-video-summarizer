@@ -4,10 +4,11 @@
     "duration": 1096.0,
     "essential_states": 22,
     "candidates": 50,
-    "pool_recall": 0.8636363636363636,
+    "pool_recall": 0.8181818181818182,
     "pool_missed": [
       "s06",
       "s13",
+      "s26",
       "s28"
     ],
     "image_tokens": 10450,
@@ -48,10 +49,10 @@
     "baselines": {
       "uniform_time": 0.6363636363636364,
       "uniform_pool": 0.5909090909090909,
-      "random_mean": 0.4454545454545455,
-      "random_sd": 0.05300865358950273
+      "random_mean": 0.43636363636363634,
+      "random_sd": 0.061657545301138796
     },
-    "por": 1.3265306122448979,
+    "por": 1.3541666666666667,
     "missed": [
       {
         "state_id": "s02",
@@ -86,7 +87,7 @@
       {
         "state_id": "s26",
         "label": "Board: Focused Agent → Open rate/Subscribe/CTR→Revenue (email agent example) + 'Narrow Focus…Reviewable' list",
-        "reason": "triage_rejected"
+        "reason": "not_in_pool"
       },
       {
         "state_id": "s27",

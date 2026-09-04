@@ -1,0 +1,178 @@
+[
+  {
+    "candidate_id": "c_0001",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0002",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0003",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0004",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0006",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0008",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0011",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0012",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0014",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0016",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0017",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0019",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0022",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0023",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0024",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0025",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0028",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0029",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0030",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0032",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0033",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0034",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0035",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0037",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0038",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0040",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0041",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0043",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0045",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0046",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0047",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0048",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0049",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0050",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0051",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0052",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0053",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0055",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0056",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0058",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0059",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0060",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0061",
+    "reason": "duplicate_or_build_stage"
+  },
+  {
+    "candidate_id": "c_0063",
+    "reason": "duplicate_or_build_stage"
+  }
+]

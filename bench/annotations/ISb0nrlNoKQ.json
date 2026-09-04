@@ -332,7 +332,7 @@
     {
       "state_id": "s25",
       "start": 860,
-      "end": 885,
+      "end": 900,
       "class": "acceptable",
       "kind": "whiteboard",
       "label": "Reprise: OpenClaw shape + Employee list",
@@ -341,7 +341,7 @@
     },
     {
       "state_id": "s26",
-      "start": 885,
+      "start": 900,
       "end": 930,
       "class": "essential",
       "kind": "whiteboard",
@@ -353,7 +353,8 @@
         "seg_0204",
         "seg_0205"
       ],
-      "duplicates_of": null
+      "duplicates_of": null,
+      "note": "start moved to 15:00 after inspecting v1.5 frames (14:48 still shows the OpenClaw reprise)"
     },
     {
       "state_id": "s27",
@@ -537,6 +538,6 @@
       "weight": 1
     }
   ],
-  "revision": "2026-09-04b: s02/s29 starts moved earlier after inspecting extracted frames",
+  "revision": "2026-09-04c: s02/s29 starts (b) + s25/s26 boundary at 900 s",
   "notes": "must_tokens entries are lists of alternatives so English and Hebrew summaries score alike"
 }

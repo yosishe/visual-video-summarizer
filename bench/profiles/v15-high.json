@@ -1,0 +1,6 @@
+{
+  "name": "v15-high",
+  "description": "1.5: visual-state engine (dense 2 fps scan, runs → states, greedy fill), --tier high.",
+  "tier": "high",
+  "override": {}
+}
