@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `LICENSE` is now the MIT text only; third-party attributions (claude-video, Heebo, design references) moved to `NOTICE`.
+
 - **Caption track selection bug.** `--sub-langs` is a regex in yt-dlp: the ranked key `en` also downloaded `en-de`, `en-en`, `en-hi`, … (machine translations of the manual track) and the fallback glob then picked `video.en-de.vtt` alphabetically, so a 3Blue1Brown video was transcribed from a translated track while `source_detail` reported it as the track chosen. The ranked key is now anchored (`^en$`) and the exact `video.<key>.vtt` is used; the explicit `--langs` path prefers the shortest track name. `bench/run.py prepare` no longer passes the manifest's `langs` pattern (which bypassed the ranking) — `langs_override` forces one when needed. Tests: 2 new (`FetchCaptionsTests`).
 - **Benchmark widened from one video to six.** Chapters authored for the five other manifest videos (`bench/inputs/<id>/chapters.json`), storyboard-derived annotation drafts for all five (`bench/annotations/<id>.json`, status `draft`, pending Yosi's review), the v15-high pool run on each; results per category in `bench/README.md`.
 - Integration tests are hermetic to the user's `SUMMARY_LANG` config (fixtures are English).
