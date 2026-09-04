@@ -1,0 +1,198 @@
+[
+  {
+    "video_id": "7L9VP1E5CU4",
+    "duration": 1227.0,
+    "essential_states": 19,
+    "candidates": 128,
+    "pool_recall": 0.8947368421052632,
+    "pool_missed": [
+      "s18",
+      "s32"
+    ],
+    "image_tokens": 26752,
+    "cpu_seconds": 56.2,
+    "engine_cost": {
+      "tier": "high",
+      "candidates": 128,
+      "image_tokens_estimate": 26752,
+      "image_tokens_per_candidate": 209,
+      "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+      "frame_dimensions": {
+        "512x288": 128
+      },
+      "cpu": {
+        "scene_pass": "adaptive",
+        "scene_seconds": 1185.0,
+        "terminal_probes": 0,
+        "seeks": 190,
+        "ocr_frames": 10,
+        "faces": "unavailable",
+        "refine": "sharpness",
+        "refine_max_decodes": 20,
+        "pip_mask": "on",
+        "overlays": 1,
+        "overlay_seconds": 0.0,
+        "dedup_scope": "family",
+        "engine": "states",
+        "scan_seconds": 18.92,
+        "states": 188
+      },
+      "other_tier": {
+        "tier": "standard",
+        "cap": 48,
+        "max_image_tokens": 10032
+      }
+    },
+    "image_tokens_per_min": 1308.1662591687043,
+    "selected": null,
+    "annotation_status": "draft"
+  },
+  {
+    "video_id": "BUTjcAjfMgY",
+    "duration": 2090.0,
+    "essential_states": 27,
+    "candidates": 80,
+    "pool_recall": 0.8148148148148148,
+    "pool_missed": [
+      "s25",
+      "s33",
+      "s36",
+      "s38",
+      "s47"
+    ],
+    "image_tokens": 16720,
+    "cpu_seconds": 42.4,
+    "engine_cost": {
+      "tier": "high",
+      "candidates": 80,
+      "image_tokens_estimate": 16720,
+      "image_tokens_per_candidate": 209,
+      "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+      "frame_dimensions": {
+        "512x288": 80
+      },
+      "cpu": {
+        "scene_pass": "adaptive",
+        "scene_seconds": 1998.0,
+        "terminal_probes": 0,
+        "seeks": 98,
+        "ocr_frames": 28,
+        "faces": "unavailable",
+        "refine": "sharpness",
+        "refine_max_decodes": 20,
+        "pip_mask": "on",
+        "overlays": 0,
+        "overlay_seconds": 0.0,
+        "dedup_scope": "family",
+        "engine": "states",
+        "scan_seconds": 23.08,
+        "states": 90
+      },
+      "other_tier": {
+        "tier": "standard",
+        "cap": 48,
+        "max_image_tokens": 10032
+      }
+    },
+    "image_tokens_per_min": 479.99999999999994,
+    "selected": null,
+    "annotation_status": "draft"
+  },
+  {
+    "video_id": "aircAruvnKk",
+    "duration": 1120.0,
+    "essential_states": 24,
+    "candidates": 108,
+    "pool_recall": 1.0,
+    "pool_missed": [],
+    "image_tokens": 22572,
+    "cpu_seconds": 43.3,
+    "engine_cost": {
+      "tier": "high",
+      "candidates": 108,
+      "image_tokens_estimate": 22572,
+      "image_tokens_per_candidate": 209,
+      "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+      "frame_dimensions": {
+        "512x288": 108
+      },
+      "cpu": {
+        "scene_pass": "adaptive",
+        "scene_seconds": 1029.0,
+        "terminal_probes": 0,
+        "seeks": 137,
+        "ocr_frames": 33,
+        "faces": "unavailable",
+        "refine": "sharpness",
+        "refine_max_decodes": 20,
+        "pip_mask": "on",
+        "overlays": 0,
+        "overlay_seconds": 0.0,
+        "dedup_scope": "family",
+        "engine": "states",
+        "scan_seconds": 15.03,
+        "states": 132
+      },
+      "other_tier": {
+        "tier": "standard",
+        "cap": 48,
+        "max_image_tokens": 10032
+      }
+    },
+    "image_tokens_per_min": 1209.2142857142856,
+    "selected": null,
+    "annotation_status": "draft"
+  },
+  {
+    "video_id": "f8_uF_IDV50",
+    "duration": 928.0,
+    "essential_states": 22,
+    "candidates": 110,
+    "pool_recall": 0.7272727272727273,
+    "pool_missed": [
+      "s02",
+      "s03",
+      "s08",
+      "s09",
+      "s17",
+      "s32"
+    ],
+    "image_tokens": 22990,
+    "cpu_seconds": 27.8,
+    "engine_cost": {
+      "tier": "high",
+      "candidates": 110,
+      "image_tokens_estimate": 22990,
+      "image_tokens_per_candidate": 209,
+      "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+      "frame_dimensions": {
+        "512x288": 110
+      },
+      "cpu": {
+        "scene_pass": "adaptive",
+        "scene_seconds": 868.0,
+        "terminal_probes": 0,
+        "seeks": 132,
+        "ocr_frames": 0,
+        "faces": "unavailable",
+        "refine": "sharpness",
+        "refine_max_decodes": 20,
+        "pip_mask": "on",
+        "overlays": 0,
+        "overlay_seconds": 0.0,
+        "dedup_scope": "family",
+        "engine": "states",
+        "scan_seconds": 10.3,
+        "states": 132
+      },
+      "other_tier": {
+        "tier": "standard",
+        "cap": 48,
+        "max_image_tokens": 10032
+      }
+    },
+    "image_tokens_per_min": 1486.4224137931035,
+    "selected": null,
+    "annotation_status": "draft"
+  }
+]

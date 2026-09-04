@@ -107,6 +107,8 @@ class PipelineIntegrationTests(unittest.TestCase):
     def _run(self, *arguments: object) -> subprocess.CompletedProcess[str]:
         environment = os.environ.copy()
         environment["PYTHONPYCACHEPREFIX"] = str(self.root / "pycache")
+        # Hermetic: the fixtures are English; the user's ~/.config SUMMARY_LANG must not leak in.
+        environment["SUMMARY_LANG"] = "en"
         return subprocess.run(
             [str(argument) for argument in arguments],
             cwd=ROOT,

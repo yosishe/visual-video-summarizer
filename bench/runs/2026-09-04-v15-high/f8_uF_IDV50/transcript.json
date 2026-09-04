@@ -1,0 +1,1865 @@
+{
+  "source": "captions",
+  "source_detail": {
+    "kind": "captions",
+    "track": "en-US",
+    "manual": true,
+    "original": true,
+    "translated": false,
+    "youtube_language": "en",
+    "tracks_considered": 4,
+    "rejected_translated": 155
+  },
+  "language": "en",
+  "video": {
+    "id": "f8_uF_IDV50",
+    "title": "Learn Visual Studio Code in 15 minutes: 2026 Official Beginner Tutorial",
+    "uploader": "Visual Studio Code",
+    "url": "https://www.youtube.com/watch?v=f8_uF_IDV50",
+    "duration": 928.0,
+    "is_url": true,
+    "language": "en",
+    "chapters": [
+      {
+        "start_time": 0,
+        "title": "Intro",
+        "end_time": 28
+      },
+      {
+        "start_time": 28,
+        "title": "Demo - Explore the UI",
+        "end_time": 218
+      },
+      {
+        "start_time": 218,
+        "title": "Create a new file",
+        "end_time": 478
+      },
+      {
+        "start_time": 478,
+        "title": "Using Chat",
+        "end_time": 623
+      },
+      {
+        "start_time": 623,
+        "title": "Source control",
+        "end_time": 705
+      },
+      {
+        "start_time": 705,
+        "title": "Install MCP server",
+        "end_time": 792
+      },
+      {
+        "start_time": 792,
+        "title": "Create issues",
+        "end_time": 858
+      },
+      {
+        "start_time": 858,
+        "title": "View current and previous sessions",
+        "end_time": 896
+      },
+      {
+        "start_time": 896,
+        "title": "In summary",
+        "end_time": 925
+      },
+      {
+        "start_time": 925,
+        "title": "Wrap",
+        "end_time": 928
+      }
+    ]
+  },
+  "segments": [
+    {
+      "seg_id": "seg_0000",
+      "start": 0.12,
+      "end": 4.28,
+      "text": "VS Code is now your new AI first development environment."
+    },
+    {
+      "seg_id": "seg_0001",
+      "start": 4.4,
+      "end": 10.17,
+      "text": "You get agent mode, inline suggestions, copilot chat, and CP"
+    },
+    {
+      "seg_id": "seg_0002",
+      "start": 10.27,
+      "end": 13.44,
+      "text": "to connect your AI to real tools."
+    },
+    {
+      "seg_id": "seg_0003",
+      "start": 13.56,
+      "end": 14.72,
+      "text": "And that's just the beginning."
+    },
+    {
+      "seg_id": "seg_0004",
+      "start": 14.76,
+      "end": 17.23,
+      "text": "In the next few minutes, I'm going to start from"
+    },
+    {
+      "seg_id": "seg_0005",
+      "start": 17.28,
+      "end": 18.92,
+      "text": "scratch so you can follow along."
+    },
+    {
+      "seg_id": "seg_0006",
+      "start": 19.36,
+      "end": 23.46,
+      "text": "We'll write and execute some code, build an app, publish"
+    },
+    {
+      "seg_id": "seg_0007",
+      "start": 23.53,
+      "end": 26.9,
+      "text": "it to GitHub, and along the way explore the AI"
+    },
+    {
+      "seg_id": "seg_0008",
+      "start": 26.98,
+      "end": 28.44,
+      "text": "features of VS Code."
+    },
+    {
+      "seg_id": "seg_0009",
+      "start": 28.72,
+      "end": 29.96,
+      "text": "Let's start off with the UI."
+    },
+    {
+      "seg_id": "seg_0010",
+      "start": 30.12,
+      "end": 32.32,
+      "text": "On the far left is the activity bar."
+    },
+    {
+      "seg_id": "seg_0011",
+      "start": 32.48,
+      "end": 35.54,
+      "text": "The first icon opens the explorer, where you can view"
+    },
+    {
+      "seg_id": "seg_0012",
+      "start": 35.59,
+      "end": 36.92,
+      "text": "your folders and files."
+    },
+    {
+      "seg_id": "seg_0013",
+      "start": 36.96,
+      "end": 40.59,
+      "text": "Below that is a magnifying glass, which lets you search"
+    },
+    {
+      "seg_id": "seg_0014",
+      "start": 40.65,
+      "end": 44.28,
+      "text": "and find and replace text across your entire workspace."
+    },
+    {
+      "seg_id": "seg_0015",
+      "start": 44.36,
+      "end": 47.45,
+      "text": "Next is source control, used to track changes in your"
+    },
+    {
+      "seg_id": "seg_0016",
+      "start": 47.5,
+      "end": 48.96,
+      "text": "code with Git and GitHub."
+    },
+    {
+      "seg_id": "seg_0017",
+      "start": 49.16,
+      "end": 52.16,
+      "text": "Then there's the Run and Debug, which lets you execute"
+    },
+    {
+      "seg_id": "seg_0018",
+      "start": 52.22,
+      "end": 54.0,
+      "text": "and debug code some breakpoints."
+    },
+    {
+      "seg_id": "seg_0019",
+      "start": 54.12,
+      "end": 57.55,
+      "text": "Below that is the Extension Marketplace, where you can add"
+    },
+    {
+      "seg_id": "seg_0020",
+      "start": 57.6,
+      "end": 61.8,
+      "text": "additional functionality to the editor with extensions and MCP servers."
+    },
+    {
+      "seg_id": "seg_0021",
+      "start": 62.04,
+      "end": 64.81,
+      "text": "And then there are a couple of icons for your"
+    },
+    {
+      "seg_id": "seg_0022",
+      "start": 64.87,
+      "end": 65.36,
+      "text": "account."
+    },
+    {
+      "seg_id": "seg_0023",
+      "start": 65.48,
+      "end": 68.43,
+      "text": "Make sure you're signed into GitHub if you're following along"
+    },
+    {
+      "seg_id": "seg_0024",
+      "start": 68.48,
+      "end": 69.16,
+      "text": "in this video."
+    },
+    {
+      "seg_id": "seg_0025",
+      "start": 69.48,
+      "end": 71.8,
+      "text": "And the last icon is to manage settings."
+    },
+    {
+      "seg_id": "seg_0026",
+      "start": 72.0,
+      "end": 74.85,
+      "text": "Next thing to show is the command pallet, which is"
+    },
+    {
+      "seg_id": "seg_0027",
+      "start": 74.91,
+      "end": 78.5,
+      "text": "incredibly important because it makes it easy to quickly access"
+    },
+    {
+      "seg_id": "seg_0028",
+      "start": 78.55,
+      "end": 80.32,
+      "text": "a plethora of VS Code commands."
+    },
+    {
+      "seg_id": "seg_0029",
+      "start": 80.72,
+      "end": 83.86,
+      "text": "You can access it by hitting command shift P, at"
+    },
+    {
+      "seg_id": "seg_0030",
+      "start": 83.93,
+      "end": 87.26,
+      "text": "which point you can see all these commands that you"
+    },
+    {
+      "seg_id": "seg_0031",
+      "start": 87.33,
+      "end": 90.34,
+      "text": "have access to within VS Code and some of them"
+    },
+    {
+      "seg_id": "seg_0032",
+      "start": 90.41,
+      "end": 93.42,
+      "text": "have shortcuts as you can see to the right, or"
+    },
+    {
+      "seg_id": "seg_0033",
+      "start": 93.48,
+      "end": 96.23,
+      "text": "you can just type in a command and find it"
+    },
+    {
+      "seg_id": "seg_0034",
+      "start": 96.29,
+      "end": 97.08,
+      "text": "immediately."
+    },
+    {
+      "seg_id": "seg_0035",
+      "start": 97.44,
+      "end": 100.05,
+      "text": "You can also add a shortcut like if I put"
+    },
+    {
+      "seg_id": "seg_0036",
+      "start": 100.11,
+      "end": 102.78,
+      "text": "in git clone, I can add my own key binding"
+    },
+    {
+      "seg_id": "seg_0037",
+      "start": 102.85,
+      "end": 105.65,
+      "text": "so the next time I'm within the editor I can"
+    },
+    {
+      "seg_id": "seg_0038",
+      "start": 105.71,
+      "end": 108.0,
+      "text": "just hit that shortcut to access it."
+    },
+    {
+      "seg_id": "seg_0039",
+      "start": 108.84,
+      "end": 111.32,
+      "text": "And lastly, you can use it to search a file"
+    },
+    {
+      "seg_id": "seg_0040",
+      "start": 111.37,
+      "end": 114.25,
+      "text": "by hitting command P or by clicking in the command"
+    },
+    {
+      "seg_id": "seg_0041",
+      "start": 114.31,
+      "end": 118.0,
+      "text": "center, which will show you some additional quick open commands."
+    },
+    {
+      "seg_id": "seg_0042",
+      "start": 118.56,
+      "end": 121.79,
+      "text": "If I'd like to see a terminal, I can hit"
+    },
+    {
+      "seg_id": "seg_0043",
+      "start": 121.87,
+      "end": 122.68,
+      "text": "CTRL tick."
+    },
+    {
+      "seg_id": "seg_0044",
+      "start": 123.16,
+      "end": 125.6,
+      "text": "And now we have a panel that has a tab"
+    },
+    {
+      "seg_id": "seg_0045",
+      "start": 125.66,
+      "end": 129.77,
+      "text": "for the terminal, which is the integrated command line interface"
+    },
+    {
+      "seg_id": "seg_0046",
+      "start": 129.84,
+      "end": 133.56,
+      "text": "where you can run shell commands, scripts and build tasks."
+    },
+    {
+      "seg_id": "seg_0047",
+      "start": 134.08,
+      "end": 138.72,
+      "text": "Output that displays log messages and diagnostic output from VS"
+    },
+    {
+      "seg_id": "seg_0048",
+      "start": 138.79,
+      "end": 139.68,
+      "text": "Code itself."
+    },
+    {
+      "seg_id": "seg_0049",
+      "start": 139.92,
+      "end": 144.61,
+      "text": "Problems which lists errors, warnings and other diagnostics detected in"
+    },
+    {
+      "seg_id": "seg_0050",
+      "start": 144.67,
+      "end": 148.96,
+      "text": "your code by languages, linters and extensions and an interactive"
+    },
+    {
+      "seg_id": "seg_0051",
+      "start": 149.03,
+      "end": 153.59,
+      "text": "console for debugging sessions where you can evaluate expressions and"
+    },
+    {
+      "seg_id": "seg_0052",
+      "start": 153.65,
+      "end": 154.84,
+      "text": "inspect variables."
+    },
+    {
+      "seg_id": "seg_0053",
+      "start": 155.2,
+      "end": 158.61,
+      "text": "Next up is Chat which you can toggle on and"
+    },
+    {
+      "seg_id": "seg_0054",
+      "start": 158.69,
+      "end": 159.8,
+      "text": "off from here."
+    },
+    {
+      "seg_id": "seg_0055",
+      "start": 159.92,
+      "end": 163.44,
+      "text": "Chat is your AI power assistant for getting work done."
+    },
+    {
+      "seg_id": "seg_0056",
+      "start": 163.6,
+      "end": 168.52,
+      "text": "So for example, after choosing a model of your choice,"
+    },
+    {
+      "seg_id": "seg_0057",
+      "start": 168.61,
+      "end": 172.16,
+      "text": "you can come and select your mode here."
+    },
+    {
+      "seg_id": "seg_0058",
+      "start": 172.28,
+      "end": 176.12,
+      "text": "Ask mode answers questions but you apply any changes yourself."
+    },
+    {
+      "seg_id": "seg_0059",
+      "start": 176.28,
+      "end": 180.06,
+      "text": "Plan mode creates a step by step implementation plan before"
+    },
+    {
+      "seg_id": "seg_0060",
+      "start": 180.12,
+      "end": 184.09,
+      "text": "making any changes and Agent mode takes action autonomously by"
+    },
+    {
+      "seg_id": "seg_0061",
+      "start": 184.15,
+      "end": 188.5,
+      "text": "creating or editing files, files running terminal commands and tasks"
+    },
+    {
+      "seg_id": "seg_0062",
+      "start": 188.57,
+      "end": 190.04,
+      "text": "until work is complete."
+    },
+    {
+      "seg_id": "seg_0063",
+      "start": 190.4,
+      "end": 195.38,
+      "text": "So let's say I select Agent mode and I wanted"
+    },
+    {
+      "seg_id": "seg_0064",
+      "start": 195.49,
+      "end": 199.92,
+      "text": "to find out how do I change the theme in"
+    },
+    {
+      "seg_id": "seg_0065",
+      "start": 200.03,
+      "end": 200.92,
+      "text": "VS Code."
+    },
+    {
+      "seg_id": "seg_0066",
+      "start": 201.48,
+      "end": 204.83,
+      "text": "And while it gives me a detailed answer right off"
+    },
+    {
+      "seg_id": "seg_0067",
+      "start": 204.9,
+      "end": 207.91,
+      "text": "the bat, I could see the first thing that it"
+    },
+    {
+      "seg_id": "seg_0068",
+      "start": 207.98,
+      "end": 211.61,
+      "text": "mentioned is that I could use this shortcut Command K"
+    },
+    {
+      "seg_id": "seg_0069",
+      "start": 211.68,
+      "end": 212.64,
+      "text": "and Command T."
+    },
+    {
+      "seg_id": "seg_0070",
+      "start": 213.12,
+      "end": 215.83,
+      "text": "And boom, right there I got my answer and I"
+    },
+    {
+      "seg_id": "seg_0071",
+      "start": 215.9,
+      "end": 218.04,
+      "text": "can start navigating other themes."
+    },
+    {
+      "seg_id": "seg_0072",
+      "start": 218.16,
+      "end": 220.84,
+      "text": "Let's now go ahead and create a new file."
+    },
+    {
+      "seg_id": "seg_0073",
+      "start": 220.84,
+      "end": 224.46,
+      "text": "I can go to file and select it from the"
+    },
+    {
+      "seg_id": "seg_0074",
+      "start": 224.56,
+      "end": 228.92,
+      "text": "menu or just hit command North and enter in the"
+    },
+    {
+      "seg_id": "seg_0075",
+      "start": 229.01,
+      "end": 232.08,
+      "text": "name, which I can say is samlejs."
+    },
+    {
+      "seg_id": "seg_0076",
+      "start": 232.08,
+      "end": 235.44,
+      "text": "And you'll notice on the bottom right hand corner, V"
+    },
+    {
+      "seg_id": "seg_0077",
+      "start": 235.5,
+      "end": 239.12,
+      "text": "code immediately detects that this is a JavaScript file."
+    },
+    {
+      "seg_id": "seg_0078",
+      "start": 239.12,
+      "end": 242.43,
+      "text": "At this point as I start typing, 2 forms of"
+    },
+    {
+      "seg_id": "seg_0079",
+      "start": 242.5,
+      "end": 246.96,
+      "text": "completion can occur, Intellisense and inline suggestions."
+    },
+    {
+      "seg_id": "seg_0080",
+      "start": 247.16,
+      "end": 252.66,
+      "text": "In my case, first intellisense kicks in while I write"
+    },
+    {
+      "seg_id": "seg_0081",
+      "start": 252.77,
+      "end": 259.42,
+      "text": "consolelog which provides perimeter info member lists as you see"
+    },
+    {
+      "seg_id": "seg_0082",
+      "start": 259.52,
+      "end": 261.6,
+      "text": "in the drodown list."
+    },
+    {
+      "seg_id": "seg_0083",
+      "start": 261.6,
+      "end": 265.26,
+      "text": "But after console dot log right when I enter the"
+    },
+    {
+      "seg_id": "seg_0084",
+      "start": 265.34,
+      "end": 269.69,
+      "text": "(inline suggestions kicks in to show faded code you could"
+    },
+    {
+      "seg_id": "seg_0085",
+      "start": 269.77,
+      "end": 271.6,
+      "text": "either accept or ignore."
+    },
+    {
+      "seg_id": "seg_0086",
+      "start": 271.68,
+      "end": 273.2,
+      "text": "This is the work of Copilot."
+    },
+    {
+      "seg_id": "seg_0087",
+      "start": 273.2,
+      "end": 277.91,
+      "text": "So in short, intellisense equals the autocomplete dropdown such as"
+    },
+    {
+      "seg_id": "seg_0088",
+      "start": 277.99,
+      "end": 281.77,
+      "text": "types, methods, params and you can read more about it"
+    },
+    {
+      "seg_id": "seg_0089",
+      "start": 281.84,
+      "end": 282.2,
+      "text": "here."
+    },
+    {
+      "seg_id": "seg_0090",
+      "start": 282.44,
+      "end": 286.32,
+      "text": "And inline suggestions equals ghost text that redicts code as"
+    },
+    {
+      "seg_id": "seg_0091",
+      "start": 286.38,
+      "end": 289.44,
+      "text": "you type provided by AI, which you can read more"
+    },
+    {
+      "seg_id": "seg_0092",
+      "start": 289.5,
+      "end": 290.2,
+      "text": "about here."
+    },
+    {
+      "seg_id": "seg_0093",
+      "start": 290.72,
+      "end": 294.09,
+      "text": "O for my current inline suggestion, I can choose to"
+    },
+    {
+      "seg_id": "seg_0094",
+      "start": 294.16,
+      "end": 297.33,
+      "text": "accet it by hitting tab, or I could overwrite it"
+    },
+    {
+      "seg_id": "seg_0095",
+      "start": 297.4,
+      "end": 300.04,
+      "text": "by adding in some dashes, which I'll do."
+    },
+    {
+      "seg_id": "seg_0096",
+      "start": 300.32,
+      "end": 304.24,
+      "text": "And as I continue inline suggests some more code, which"
+    },
+    {
+      "seg_id": "seg_0097",
+      "start": 304.31,
+      "end": 307.74,
+      "text": "this time I'll hit tab to accept the second line"
+    },
+    {
+      "seg_id": "seg_0098",
+      "start": 307.81,
+      "end": 311.16,
+      "text": "and then the third line, but I'll hit escape to"
+    },
+    {
+      "seg_id": "seg_0099",
+      "start": 311.23,
+      "end": 315.08,
+      "text": "ignore the last suggestion and I'll just modify line 2"
+    },
+    {
+      "seg_id": "seg_0100",
+      "start": 315.15,
+      "end": 316.72,
+      "text": "to say rise and shine."
+    },
+    {
+      "seg_id": "seg_0101",
+      "start": 317.24,
+      "end": 320.06,
+      "text": "Now you may notice this bubble here that indicates the"
+    },
+    {
+      "seg_id": "seg_0102",
+      "start": 320.11,
+      "end": 321.88,
+      "text": "file has changed and is not saved."
+    },
+    {
+      "seg_id": "seg_0103",
+      "start": 322.24,
+      "end": 325.64,
+      "text": "But you can use autosave and make sure your changes"
+    },
+    {
+      "seg_id": "seg_0104",
+      "start": 325.71,
+      "end": 326.84,
+      "text": "are always saved."
+    },
+    {
+      "seg_id": "seg_0105",
+      "start": 327.12,
+      "end": 329.92,
+      "text": "And now to run my code, I can simply tab"
+    },
+    {
+      "seg_id": "seg_0106",
+      "start": 329.99,
+      "end": 332.92,
+      "text": "over to debug console and hit F5 to see my"
+    },
+    {
+      "seg_id": "seg_0107",
+      "start": 332.99,
+      "end": 333.48,
+      "text": "output."
+    },
+    {
+      "seg_id": "seg_0108",
+      "start": 333.88,
+      "end": 337.95,
+      "text": "Let's now create a Python file and enter the file"
+    },
+    {
+      "seg_id": "seg_0109",
+      "start": 338.03,
+      "end": 340.52,
+      "text": "name that VS Code will detect."
+    },
+    {
+      "seg_id": "seg_0110",
+      "start": 340.76,
+      "end": 344.86,
+      "text": "But even though it detects it, what you'll notice is"
+    },
+    {
+      "seg_id": "seg_0111",
+      "start": 344.94,
+      "end": 349.03,
+      "text": "that as I start typing, there is no intellisense and"
+    },
+    {
+      "seg_id": "seg_0112",
+      "start": 349.11,
+      "end": 351.16,
+      "text": "there's no error checking."
+    },
+    {
+      "seg_id": "seg_0113",
+      "start": 351.16,
+      "end": 354.87,
+      "text": "And that's because for languages like Python, additional support is"
+    },
+    {
+      "seg_id": "seg_0114",
+      "start": 354.92,
+      "end": 357.36,
+      "text": "needed which is provided through extensions."
+    },
+    {
+      "seg_id": "seg_0115",
+      "start": 357.36,
+      "end": 360.12,
+      "text": "And I can see that VS Code is recommending this"
+    },
+    {
+      "seg_id": "seg_0116",
+      "start": 360.18,
+      "end": 363.47,
+      "text": "first Python extension right here that I'll go ahead and"
+    },
+    {
+      "seg_id": "seg_0117",
+      "start": 363.53,
+      "end": 364.12,
+      "text": "install O."
+    },
+    {
+      "seg_id": "seg_0118",
+      "start": 364.16,
+      "end": 369.0,
+      "text": "This will add intellisense, linting which shows squiggly lines when"
+    },
+    {
+      "seg_id": "seg_0119",
+      "start": 369.07,
+      "end": 371.6,
+      "text": "there's errors, debugging and more."
+    },
+    {
+      "seg_id": "seg_0120",
+      "start": 371.6,
+      "end": 375.0,
+      "text": "Now when I start writing code, I have intellisense and"
+    },
+    {
+      "seg_id": "seg_0121",
+      "start": 375.06,
+      "end": 378.21,
+      "text": "if there's a typo I will be notified through error"
+    },
+    {
+      "seg_id": "seg_0122",
+      "start": 378.27,
+      "end": 378.84,
+      "text": "checking."
+    },
+    {
+      "seg_id": "seg_0123",
+      "start": 379.0,
+      "end": 382.6,
+      "text": "At this point I can add some additional code and"
+    },
+    {
+      "seg_id": "seg_0124",
+      "start": 382.68,
+      "end": 386.81,
+      "text": "either execute it through hitting F5 or by hitting this"
+    },
+    {
+      "seg_id": "seg_0125",
+      "start": 386.88,
+      "end": 388.76,
+      "text": "icon here to run my code."
+    },
+    {
+      "seg_id": "seg_0126",
+      "start": 390.28,
+      "end": 393.33,
+      "text": "Now to finish this up, I'm going to ask Agent"
+    },
+    {
+      "seg_id": "seg_0127",
+      "start": 393.39,
+      "end": 396.71,
+      "text": "mode using Cloud Opus to replace the rest of this"
+    },
+    {
+      "seg_id": "seg_0128",
+      "start": 396.78,
+      "end": 399.82,
+      "text": "code with a fast API app that serves a modern"
+    },
+    {
+      "seg_id": "seg_0129",
+      "start": 399.89,
+      "end": 400.84,
+      "text": "calculator UI."
+    },
+    {
+      "seg_id": "seg_0130",
+      "start": 401.52,
+      "end": 405.42,
+      "text": "Essentially what it does is it sets up the environment,"
+    },
+    {
+      "seg_id": "seg_0131",
+      "start": 405.49,
+      "end": 409.89,
+      "text": "installs dependencies, generates the code in UI, and then sets"
+    },
+    {
+      "seg_id": "seg_0132",
+      "start": 409.96,
+      "end": 412.44,
+      "text": "up a port so that when I run the AI"
+    },
+    {
+      "seg_id": "seg_0133",
+      "start": 412.51,
+      "end": 415.56,
+      "text": "can now see the calculator and test it out."
+    },
+    {
+      "seg_id": "seg_0134",
+      "start": 415.88,
+      "end": 419.28,
+      "text": "When coding, sometimes it's useful to have your next change"
+    },
+    {
+      "seg_id": "seg_0135",
+      "start": 419.34,
+      "end": 422.92,
+      "text": "anticipated, which is where inline suggestions come into play."
+    },
+    {
+      "seg_id": "seg_0136",
+      "start": 423.48,
+      "end": 427.78,
+      "text": "So for example, I want to change calc response to"
+    },
+    {
+      "seg_id": "seg_0137",
+      "start": 427.87,
+      "end": 432.61,
+      "text": "calc responses, and instead of me having to find every"
+    },
+    {
+      "seg_id": "seg_0138",
+      "start": 432.69,
+      "end": 438.23,
+      "text": "location to change the effects of that, inline suggestions will"
+    },
+    {
+      "seg_id": "seg_0139",
+      "start": 438.31,
+      "end": 442.17,
+      "text": "pop up a menu that allow me to either accept"
+    },
+    {
+      "seg_id": "seg_0140",
+      "start": 442.26,
+      "end": 444.72,
+      "text": "it or reject its suggestion."
+    },
+    {
+      "seg_id": "seg_0141",
+      "start": 445.16,
+      "end": 449.12,
+      "text": "So I'll go ahead and accept it and notice how"
+    },
+    {
+      "seg_id": "seg_0142",
+      "start": 449.21,
+      "end": 453.88,
+      "text": "it's going to anticipate my next move just by hitting"
+    },
+    {
+      "seg_id": "seg_0143",
+      "start": 453.97,
+      "end": 457.41,
+      "text": "tab on line 37, tab 47, tab on line 53,"
+    },
+    {
+      "seg_id": "seg_0144",
+      "start": 457.5,
+      "end": 460.76,
+      "text": "tab on line 60 and do a quick test to"
+    },
+    {
+      "seg_id": "seg_0145",
+      "start": 460.85,
+      "end": 464.63,
+      "text": "make sure that my app has not broken and it"
+    },
+    {
+      "seg_id": "seg_0146",
+      "start": 464.72,
+      "end": 469.04,
+      "text": "looks like it is still working, which is great O."
+    },
+    {
+      "seg_id": "seg_0147",
+      "start": 469.04,
+      "end": 472.56,
+      "text": "As you can see, inline suggestion helps you stay in"
+    },
+    {
+      "seg_id": "seg_0148",
+      "start": 472.63,
+      "end": 477.26,
+      "text": "the flow in the editor while increasing roductivity and anticiating"
+    },
+    {
+      "seg_id": "seg_0149",
+      "start": 477.33,
+      "end": 478.64,
+      "text": "your next move O O."
+    },
+    {
+      "seg_id": "seg_0150",
+      "start": 478.64,
+      "end": 481.67,
+      "text": "One of the most owerful asects of V code as"
+    },
+    {
+      "seg_id": "seg_0151",
+      "start": 481.75,
+      "end": 485.27,
+      "text": "editor is to use its AI functionality and by going"
+    },
+    {
+      "seg_id": "seg_0152",
+      "start": 485.35,
+      "end": 488.66,
+      "text": "to chat which we can toggle on by clicking this"
+    },
+    {
+      "seg_id": "seg_0153",
+      "start": 488.73,
+      "end": 491.91,
+      "text": "icon here we can ask it questions and tell it"
+    },
+    {
+      "seg_id": "seg_0154",
+      "start": 491.98,
+      "end": 495.58,
+      "text": "prompts for whatever we want to do esecially if you"
+    },
+    {
+      "seg_id": "seg_0155",
+      "start": 495.65,
+      "end": 498.12,
+      "text": "are new to a particular technology."
+    },
+    {
+      "seg_id": "seg_0156",
+      "start": 498.12,
+      "end": 501.15,
+      "text": "So let's say I am new to flask and I"
+    },
+    {
+      "seg_id": "seg_0157",
+      "start": 501.23,
+      "end": 504.6,
+      "text": "want to ask what is a flask application?"
+    },
+    {
+      "seg_id": "seg_0158",
+      "start": 504.6,
+      "end": 506.97,
+      "text": "I can do that and it will give me a"
+    },
+    {
+      "seg_id": "seg_0159",
+      "start": 507.04,
+      "end": 510.44,
+      "text": "detailed answer so that I can get started and here"
+    },
+    {
+      "seg_id": "seg_0160",
+      "start": 510.5,
+      "end": 514.24,
+      "text": "it tells me the definition along with some core pieces,"
+    },
+    {
+      "seg_id": "seg_0161",
+      "start": 514.3,
+      "end": 517.56,
+      "text": "the philosophy behind it and an execution model."
+    },
+    {
+      "seg_id": "seg_0162",
+      "start": 517.56,
+      "end": 521.23,
+      "text": "However, what I can try to do now is under"
+    },
+    {
+      "seg_id": "seg_0163",
+      "start": 521.32,
+      "end": 524.47,
+      "text": "agent to go to plan and I can ask it"
+    },
+    {
+      "seg_id": "seg_0164",
+      "start": 524.55,
+      "end": 528.22,
+      "text": "to create a plan for a flask app that lets"
+    },
+    {
+      "seg_id": "seg_0165",
+      "start": 528.31,
+      "end": 533.03,
+      "text": "the user enter a city and displays the current weather"
+    },
+    {
+      "seg_id": "seg_0166",
+      "start": 533.12,
+      "end": 534.08,
+      "text": "with icons."
+    },
+    {
+      "seg_id": "seg_0167",
+      "start": 534.12,
+      "end": 537.02,
+      "text": "Now a plan agent in VS Code is an AI"
+    },
+    {
+      "seg_id": "seg_0168",
+      "start": 537.1,
+      "end": 542.65,
+      "text": "powered assistant that could break down complex tasks into actionable"
+    },
+    {
+      "seg_id": "seg_0169",
+      "start": 542.73,
+      "end": 547.72,
+      "text": "steps or a plan helping automating guide multi step workflows."
+    },
+    {
+      "seg_id": "seg_0170",
+      "start": 548.28,
+      "end": 552.0,
+      "text": "OK and it created a plan for me and it"
+    },
+    {
+      "seg_id": "seg_0171",
+      "start": 552.1,
+      "end": 554.16,
+      "text": "is also step by step."
+    },
+    {
+      "seg_id": "seg_0172",
+      "start": 554.16,
+      "end": 556.15,
+      "text": "And now if I want I can go ahead and"
+    },
+    {
+      "seg_id": "seg_0173",
+      "start": 556.2,
+      "end": 558.36,
+      "text": "actually just start the implementation."
+    },
+    {
+      "seg_id": "seg_0174",
+      "start": 558.48,
+      "end": 562.31,
+      "text": "Now I've speed things up, but essentially agent mode scaffolds"
+    },
+    {
+      "seg_id": "seg_0175",
+      "start": 562.37,
+      "end": 566.95,
+      "text": "the project by creating files, setting up virtual environments, installing"
+    },
+    {
+      "seg_id": "seg_0176",
+      "start": 567.01,
+      "end": 570.96,
+      "text": "dependencies, then builds the weather logic and then creates the"
+    },
+    {
+      "seg_id": "seg_0177",
+      "start": 571.02,
+      "end": 572.2,
+      "text": "UI and wires it up."
+    },
+    {
+      "seg_id": "seg_0178",
+      "start": 572.96,
+      "end": 576.96,
+      "text": "And so when I execute it, we have our weather"
+    },
+    {
+      "seg_id": "seg_0179",
+      "start": 577.04,
+      "end": 577.4,
+      "text": "app."
+    },
+    {
+      "seg_id": "seg_0180",
+      "start": 577.52,
+      "end": 580.82,
+      "text": "So let me go ahead and put in a city"
+    },
+    {
+      "seg_id": "seg_0181",
+      "start": 580.91,
+      "end": 585.03,
+      "text": "here, and there we go -3 in Brooklyn, and now"
+    },
+    {
+      "seg_id": "seg_0182",
+      "start": 585.12,
+      "end": 587.96,
+      "text": "let's try Miami and 16 Celsius."
+    },
+    {
+      "seg_id": "seg_0183",
+      "start": 588.16,
+      "end": 591.56,
+      "text": "And we could also change this to Fahrenheit."
+    },
+    {
+      "seg_id": "seg_0184",
+      "start": 592.04,
+      "end": 595.07,
+      "text": "And I'd also like to show that for the browser,"
+    },
+    {
+      "seg_id": "seg_0185",
+      "start": 595.13,
+      "end": 598.54,
+      "text": "we do have a feature called simple Browser, which you"
+    },
+    {
+      "seg_id": "seg_0186",
+      "start": 598.61,
+      "end": 602.21,
+      "text": "can access by going to the command palette shift command"
+    },
+    {
+      "seg_id": "seg_0187",
+      "start": 602.28,
+      "end": 603.76,
+      "text": "P and typing in simple."
+    },
+    {
+      "seg_id": "seg_0188",
+      "start": 603.76,
+      "end": 608.08,
+      "text": "And by selecting simple browser show now we could just"
+    },
+    {
+      "seg_id": "seg_0189",
+      "start": 608.16,
+      "end": 611.04,
+      "text": "enter in the URL and just hit enter."
+    },
+    {
+      "seg_id": "seg_0190",
+      "start": 611.28,
+      "end": 615.38,
+      "text": "And now we have access to the same functionality right"
+    },
+    {
+      "seg_id": "seg_0191",
+      "start": 615.46,
+      "end": 616.6,
+      "text": "within VS Code."
+    },
+    {
+      "seg_id": "seg_0192",
+      "start": 616.68,
+      "end": 619.58,
+      "text": "Now that we have all this code that was generated"
+    },
+    {
+      "seg_id": "seg_0193",
+      "start": 619.63,
+      "end": 623.6,
+      "text": "from having clicked Start implementation from our plan agent, let's"
+    },
+    {
+      "seg_id": "seg_0194",
+      "start": 623.65,
+      "end": 625.9,
+      "text": "go ahead and take a look to see how VS"
+    },
+    {
+      "seg_id": "seg_0195",
+      "start": 625.96,
+      "end": 628.62,
+      "text": "Code makes it easy to add a project to source"
+    },
+    {
+      "seg_id": "seg_0196",
+      "start": 628.68,
+      "end": 630.04,
+      "text": "control such as GitHub."
+    },
+    {
+      "seg_id": "seg_0197",
+      "start": 630.08,
+      "end": 631.84,
+      "text": "And there are just a few steps."
+    },
+    {
+      "seg_id": "seg_0198",
+      "start": 632.0,
+      "end": 635.1,
+      "text": "The 1st is to just check that you're logged into"
+    },
+    {
+      "seg_id": "seg_0199",
+      "start": 635.17,
+      "end": 638.59,
+      "text": "GitHub by checking the account icon here, which I can"
+    },
+    {
+      "seg_id": "seg_0200",
+      "start": 638.65,
+      "end": 639.56,
+      "text": "see that I am."
+    },
+    {
+      "seg_id": "seg_0201",
+      "start": 639.68,
+      "end": 643.37,
+      "text": "Next is to click the source control icon right over"
+    },
+    {
+      "seg_id": "seg_0202",
+      "start": 643.44,
+      "end": 646.92,
+      "text": "here and then clicking on Initialize repository."
+    },
+    {
+      "seg_id": "seg_0203",
+      "start": 646.96,
+      "end": 650.35,
+      "text": "Now you see that our files are untracked, so we"
+    },
+    {
+      "seg_id": "seg_0204",
+      "start": 650.42,
+      "end": 653.88,
+      "text": "then need to stage them by clicking on this plus"
+    },
+    {
+      "seg_id": "seg_0205",
+      "start": 653.96,
+      "end": 655.76,
+      "text": "icon above all the files."
+    },
+    {
+      "seg_id": "seg_0206",
+      "start": 655.76,
+      "end": 658.1,
+      "text": "Now you'll notice the letter A next to the files,"
+    },
+    {
+      "seg_id": "seg_0207",
+      "start": 658.15,
+      "end": 660.68,
+      "text": "which indicates that the files were added and staged."
+    },
+    {
+      "seg_id": "seg_0208",
+      "start": 660.68,
+      "end": 663.76,
+      "text": "Now we're ready to commit the files and we could"
+    },
+    {
+      "seg_id": "seg_0209",
+      "start": 663.83,
+      "end": 667.36,
+      "text": "either enter a message manually right over here or just"
+    },
+    {
+      "seg_id": "seg_0210",
+      "start": 667.42,
+      "end": 670.96,
+      "text": "click this icon here to generate a commit message using"
+    },
+    {
+      "seg_id": "seg_0211",
+      "start": 671.02,
+      "end": 673.27,
+      "text": "AI O let me do that and see what it"
+    },
+    {
+      "seg_id": "seg_0212",
+      "start": 673.34,
+      "end": 676.48,
+      "text": "comes U with OK, so we have this description here"
+    },
+    {
+      "seg_id": "seg_0213",
+      "start": 676.55,
+      "end": 679.05,
+      "text": "and I like how it looks so I'm going to"
+    },
+    {
+      "seg_id": "seg_0214",
+      "start": 679.12,
+      "end": 682.01,
+      "text": "go ahead and commit next is to publish, and I"
+    },
+    {
+      "seg_id": "seg_0215",
+      "start": 682.07,
+      "end": 684.64,
+      "text": "do want it to be public so I will choose"
+    },
+    {
+      "seg_id": "seg_0216",
+      "start": 684.71,
+      "end": 687.92,
+      "text": "public repository on the bottom right hand corner."
+    },
+    {
+      "seg_id": "seg_0217",
+      "start": 687.92,
+      "end": 691.09,
+      "text": "You could see it's uploading the files and gives me"
+    },
+    {
+      "seg_id": "seg_0218",
+      "start": 691.16,
+      "end": 693.83,
+      "text": "an option to open on GitHub so we could see"
+    },
+    {
+      "seg_id": "seg_0219",
+      "start": 693.89,
+      "end": 697.13,
+      "text": "our results and there you go and what's beautiful is"
+    },
+    {
+      "seg_id": "seg_0220",
+      "start": 697.19,
+      "end": 700.99,
+      "text": "that it includes all this documentation that describes how to"
+    },
+    {
+      "seg_id": "seg_0221",
+      "start": 701.05,
+      "end": 705.28,
+      "text": "get started info on tests, environment variables and some additional"
+    },
+    {
+      "seg_id": "seg_0222",
+      "start": 705.35,
+      "end": 705.72,
+      "text": "notes."
+    },
+    {
+      "seg_id": "seg_0223",
+      "start": 705.72,
+      "end": 708.34,
+      "text": "Now that my app is on GitHub, I might want"
+    },
+    {
+      "seg_id": "seg_0224",
+      "start": 708.41,
+      "end": 711.65,
+      "text": "to add some features in the future and create issues"
+    },
+    {
+      "seg_id": "seg_0225",
+      "start": 711.72,
+      "end": 712.28,
+      "text": "for them."
+    },
+    {
+      "seg_id": "seg_0226",
+      "start": 712.56,
+      "end": 715.76,
+      "text": "And currently there are no issues that exist."
+    },
+    {
+      "seg_id": "seg_0227",
+      "start": 715.76,
+      "end": 719.86,
+      "text": "But VS Code makes this process easy too by leveraging"
+    },
+    {
+      "seg_id": "seg_0228",
+      "start": 719.94,
+      "end": 724.27,
+      "text": "MC Model Context Protocol Secifically 1 by GitHub, and a"
+    },
+    {
+      "seg_id": "seg_0229",
+      "start": 724.35,
+      "end": 727.59,
+      "text": "list of the tools that we have can be seen"
+    },
+    {
+      "seg_id": "seg_0230",
+      "start": 727.67,
+      "end": 732.08,
+      "text": "by clicking on this Configure tools icon right over here."
+    },
+    {
+      "seg_id": "seg_0231",
+      "start": 732.32,
+      "end": 735.45,
+      "text": "After we add our GitHub server, it'll be in this"
+    },
+    {
+      "seg_id": "seg_0232",
+      "start": 735.51,
+      "end": 735.84,
+      "text": "list."
+    },
+    {
+      "seg_id": "seg_0233",
+      "start": 736.24,
+      "end": 739.28,
+      "text": "The reason we want to do this is because it"
+    },
+    {
+      "seg_id": "seg_0234",
+      "start": 739.35,
+      "end": 742.88,
+      "text": "lets agent mode read and write your repo directly."
+    },
+    {
+      "seg_id": "seg_0235",
+      "start": 743.36,
+      "end": 746.45,
+      "text": "O It can create files, alley changes, open Rs, and"
+    },
+    {
+      "seg_id": "seg_0236",
+      "start": 746.51,
+      "end": 748.12,
+      "text": "keep everything organized."
+    },
+    {
+      "seg_id": "seg_0237",
+      "start": 748.6,
+      "end": 751.64,
+      "text": "It's way faster and less errorrone than doing it manually."
+    },
+    {
+      "seg_id": "seg_0238",
+      "start": 751.96,
+      "end": 754.61,
+      "text": "O To add the GitHub MC server that we want,"
+    },
+    {
+      "seg_id": "seg_0239",
+      "start": 754.68,
+      "end": 756.84,
+      "text": "all we need to do is go back to our"
+    },
+    {
+      "seg_id": "seg_0240",
+      "start": 756.9,
+      "end": 760.97,
+      "text": "marketplace and if we collapse recommended right over here, you'll"
+    },
+    {
+      "seg_id": "seg_0241",
+      "start": 761.03,
+      "end": 764.12,
+      "text": "see there's a section just for MC servers, and the"
+    },
+    {
+      "seg_id": "seg_0242",
+      "start": 764.18,
+      "end": 766.96,
+      "text": "one that we want is actually right over here."
+    },
+    {
+      "seg_id": "seg_0243",
+      "start": 766.96,
+      "end": 771.31,
+      "text": "But if you needed to search for the server itself,"
+    },
+    {
+      "seg_id": "seg_0244",
+      "start": 771.4,
+      "end": 774.88,
+      "text": "you just need to type in MC and the name"
+    },
+    {
+      "seg_id": "seg_0245",
+      "start": 774.97,
+      "end": 776.8,
+      "text": "of the server itself."
+    },
+    {
+      "seg_id": "seg_0246",
+      "start": 776.88,
+      "end": 780.09,
+      "text": "And here it is, along with the use cases that"
+    },
+    {
+      "seg_id": "seg_0247",
+      "start": 780.16,
+      "end": 781.44,
+      "text": "you can implement."
+    },
+    {
+      "seg_id": "seg_0248",
+      "start": 781.48,
+      "end": 782.88,
+      "text": "O I'll go ahead and install it."
+    },
+    {
+      "seg_id": "seg_0249",
+      "start": 783.12,
+      "end": 787.11,
+      "text": "And now you'll see that GitHub MC server is installed"
+    },
+    {
+      "seg_id": "seg_0250",
+      "start": 787.19,
+      "end": 791.26,
+      "text": "here in addition to when we click Configure tool right"
+    },
+    {
+      "seg_id": "seg_0251",
+      "start": 791.34,
+      "end": 792.24,
+      "text": "over here O."
+    },
+    {
+      "seg_id": "seg_0252",
+      "start": 792.24,
+      "end": 795.25,
+      "text": "At this point, I can go ahead and ask Chad"
+    },
+    {
+      "seg_id": "seg_0253",
+      "start": 795.32,
+      "end": 798.12,
+      "text": "to give me 3 features I can add to this"
+    },
+    {
+      "seg_id": "seg_0254",
+      "start": 798.19,
+      "end": 800.56,
+      "text": "project and open issues for them."
+    },
+    {
+      "seg_id": "seg_0255",
+      "start": 801.0,
+      "end": 803.88,
+      "text": "And now it should be examining my Myproject and eventually"
+    },
+    {
+      "seg_id": "seg_0256",
+      "start": 803.93,
+      "end": 806.22,
+      "text": "come U with a few ideas and then create issues"
+    },
+    {
+      "seg_id": "seg_0257",
+      "start": 806.27,
+      "end": 806.72,
+      "text": "for them."
+    },
+    {
+      "seg_id": "seg_0258",
+      "start": 806.72,
+      "end": 809.62,
+      "text": "And there you go right over here are the three"
+    },
+    {
+      "seg_id": "seg_0259",
+      "start": 809.68,
+      "end": 814.09,
+      "text": "issues autocomlete and favorites 7 day forecast and Washington offline"
+    },
+    {
+      "seg_id": "seg_0260",
+      "start": 814.15,
+      "end": 816.98,
+      "text": "O I'll go ahead and keep this and it's asking"
+    },
+    {
+      "seg_id": "seg_0261",
+      "start": 817.05,
+      "end": 819.88,
+      "text": "me to confirm if I want to create the issues."
+    },
+    {
+      "seg_id": "seg_0262",
+      "start": 820.6,
+      "end": 823.62,
+      "text": "Oi will say yes roceed and this is a nice"
+    },
+    {
+      "seg_id": "seg_0263",
+      "start": 823.7,
+      "end": 827.68,
+      "text": "touch that it gave me this markdown file with detailed"
+    },
+    {
+      "seg_id": "seg_0264",
+      "start": 827.76,
+      "end": 828.2,
+      "text": "notes."
+    },
+    {
+      "seg_id": "seg_0265",
+      "start": 828.24,
+      "end": 831.12,
+      "text": "And this right here is where we could see that"
+    },
+    {
+      "seg_id": "seg_0266",
+      "start": 831.18,
+      "end": 834.12,
+      "text": "it's going to be using the MCP server by GitHub"
+    },
+    {
+      "seg_id": "seg_0267",
+      "start": 834.19,
+      "end": 836.44,
+      "text": "and it will be using my credentials."
+    },
+    {
+      "seg_id": "seg_0268",
+      "start": 836.44,
+      "end": 839.88,
+      "text": "I'll click Always allow, which means that I trust this"
+    },
+    {
+      "seg_id": "seg_0269",
+      "start": 839.94,
+      "end": 842.99,
+      "text": "MCP server and its tools on this machine, so I'm"
+    },
+    {
+      "seg_id": "seg_0270",
+      "start": 843.06,
+      "end": 844.52,
+      "text": "not prompted each time."
+    },
+    {
+      "seg_id": "seg_0271",
+      "start": 845.12,
+      "end": 847.39,
+      "text": "And now it has created the issues for each of"
+    },
+    {
+      "seg_id": "seg_0272",
+      "start": 847.44,
+      "end": 848.2,
+      "text": "these features."
+    },
+    {
+      "seg_id": "seg_0273",
+      "start": 848.4,
+      "end": 851.55,
+      "text": "O If we go to GitHub and refresh, there they"
+    },
+    {
+      "seg_id": "seg_0274",
+      "start": 851.62,
+      "end": 856.85,
+      "text": "are with the user story, acceptance criteria, imlementation, notes, tests"
+    },
+    {
+      "seg_id": "seg_0275",
+      "start": 856.92,
+      "end": 857.64,
+      "text": "and tasks."
+    },
+    {
+      "seg_id": "seg_0276",
+      "start": 858.52,
+      "end": 861.13,
+      "text": "Something else I'd like to mention is that let's say"
+    },
+    {
+      "seg_id": "seg_0277",
+      "start": 861.18,
+      "end": 863.19,
+      "text": "in a few weeks I decided to come back to"
+    },
+    {
+      "seg_id": "seg_0278",
+      "start": 863.24,
+      "end": 864.8,
+      "text": "start some of my imlementation."
+    },
+    {
+      "seg_id": "seg_0279",
+      "start": 864.96,
+      "end": 868.59,
+      "text": "I may not remember all the interactions I've had with"
+    },
+    {
+      "seg_id": "seg_0280",
+      "start": 868.65,
+      "end": 872.28,
+      "text": "chat, but we have previous sessions that are saved O."
+    },
+    {
+      "seg_id": "seg_0281",
+      "start": 872.28,
+      "end": 875.19,
+      "text": "For example, I can go back and see when I"
+    },
+    {
+      "seg_id": "seg_0282",
+      "start": 875.26,
+      "end": 879.23,
+      "text": "was asking chat about project execution steps, and I can"
+    },
+    {
+      "seg_id": "seg_0283",
+      "start": 879.3,
+      "end": 882.64,
+      "text": "look back into the history of the interactions."
+    },
+    {
+      "seg_id": "seg_0284",
+      "start": 882.8,
+      "end": 886.02,
+      "text": "And you can view all current and previous sessions from"
+    },
+    {
+      "seg_id": "seg_0285",
+      "start": 886.08,
+      "end": 889.12,
+      "text": "one place, whether they run locally in the cloud, in"
+    },
+    {
+      "seg_id": "seg_0286",
+      "start": 889.18,
+      "end": 891.76,
+      "text": "the background, or through another provider."
+    },
+    {
+      "seg_id": "seg_0287",
+      "start": 892.2,
+      "end": 894.56,
+      "text": "And as the list grows, you also have the option"
+    },
+    {
+      "seg_id": "seg_0288",
+      "start": 894.61,
+      "end": 896.52,
+      "text": "to archive what you don't need to see."
+    },
+    {
+      "seg_id": "seg_0289",
+      "start": 896.64,
+      "end": 900.09,
+      "text": "I've just shown you through a few examples the power"
+    },
+    {
+      "seg_id": "seg_0290",
+      "start": 900.16,
+      "end": 903.95,
+      "text": "that you have at your fingertips while exploring the core"
+    },
+    {
+      "seg_id": "seg_0291",
+      "start": 904.01,
+      "end": 907.4,
+      "text": "features of VS Code as a premier AI powered editor."
+    },
+    {
+      "seg_id": "seg_0292",
+      "start": 907.64,
+      "end": 909.4,
+      "text": "But this is just the beginning."
+    },
+    {
+      "seg_id": "seg_0293",
+      "start": 909.56,
+      "end": 913.56,
+      "text": "Everyday developers are building incredible things with VS Codes AI"
+    },
+    {
+      "seg_id": "seg_0294",
+      "start": 913.62,
+      "end": 914.4,
+      "text": "capabilities."
+    },
+    {
+      "seg_id": "seg_0295",
+      "start": 914.68,
+      "end": 917.47,
+      "text": "And there's a lot more on the horizon, driven by"
+    },
+    {
+      "seg_id": "seg_0296",
+      "start": 917.53,
+      "end": 921.2,
+      "text": "new updates and a community that keeps pushing what's possible."
+    },
+    {
+      "seg_id": "seg_0297",
+      "start": 921.44,
+      "end": 924.52,
+      "text": "So with that ask, what will you build?"
+    }
+  ]
+}

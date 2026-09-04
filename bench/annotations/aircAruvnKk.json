@@ -1,0 +1,423 @@
+{
+  "video_id": "aircAruvnKk",
+  "title": "But what is a neural network? | Deep learning chapter 1",
+  "duration": 1120,
+  "annotator": "claude (from bench/sheets storyboard tiles, 9.9 s apart; NEEDS REVIEW by yos)",
+  "date": "2026-09-04",
+  "status": "draft",
+  "source": "storyboard:sb0",
+  "notes": "Animated explainer (3Blue1Brown): every diagram is built progressively; no presenter; dark background.",
+  "states": [
+    {
+      "state_id": "s01",
+      "start": 0,
+      "end": 8,
+      "class": "irrelevant",
+      "kind": "black",
+      "label": "Black intro",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s02",
+      "start": 8,
+      "end": 58,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "28×28 pixel '3' and the brain recognises 3 (intro animation)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s03",
+      "start": 58,
+      "end": 68,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "784-pixel grid → list of 10 digit outputs",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s04",
+      "start": 68,
+      "end": 108,
+      "class": "acceptable",
+      "kind": "animation",
+      "label": "Pi creatures: machine learning / neural network / structure vs learning",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s05",
+      "start": 108,
+      "end": 128,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "Full network: 784 inputs → two hidden layers → 10 outputs, digit 7",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s06",
+      "start": 128,
+      "end": 138,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "Convolutional neural network → good for image recognition (variants)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s07",
+      "start": 138,
+      "end": 158,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'Plain vanilla' multilayer perceptron network",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s08",
+      "start": 158,
+      "end": 186,
+      "class": "acceptable",
+      "kind": "animation",
+      "label": "'More A than I' joke; neural network: what are neurons, how connected; neuron = thing that holds a number",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s09",
+      "start": 186,
+      "end": 225,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "28×28 grid of neurons, 784, activation 0.58",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s10",
+      "start": 225,
+      "end": 255,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "Network with the output layer boxed / 0.97 for 9",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s11",
+      "start": 255,
+      "end": 275,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'Hidden layers' with a question mark, 16 neurons each",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s12",
+      "start": 275,
+      "end": 310,
+      "class": "acceptable",
+      "kind": "diagram",
+      "label": "Hidden layers activations for 7 and 2 (animation)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s11"
+    },
+    {
+      "state_id": "s13",
+      "start": 310,
+      "end": 320,
+      "class": "acceptable",
+      "kind": "diagram",
+      "label": "Grid of 784 pixels folded into the input column",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s09"
+    },
+    {
+      "state_id": "s14",
+      "start": 320,
+      "end": 350,
+      "class": "acceptable",
+      "kind": "diagram",
+      "label": "Hidden layers for 9 / 6, 'Why the layers?'",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s11"
+    },
+    {
+      "state_id": "s15",
+      "start": 350,
+      "end": 375,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "9 = loop + line; 8 = two loops; 4 = three lines (subcomponents)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s16",
+      "start": 375,
+      "end": 405,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'Upper loop neuron … maybe' highlighted in the second hidden layer",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s17",
+      "start": 405,
+      "end": 430,
+      "class": "acceptable",
+      "kind": "animation",
+      "label": "'Recognizing loops is just as hard' + loop and edge pieces",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s18",
+      "start": 430,
+      "end": 470,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'Little edge' layer hypothesis; edges → loops → digit",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s19",
+      "start": 470,
+      "end": 485,
+      "class": "essential",
+      "kind": "image",
+      "label": "Lion photo and its edge map",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s20",
+      "start": 485,
+      "end": 500,
+      "class": "acceptable",
+      "kind": "animation",
+      "label": "Audio recognition analogy",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s21",
+      "start": 500,
+      "end": 520,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'What are these connections actually doing?' network for 6",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s22",
+      "start": 520,
+      "end": 540,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "One neuron with a weight grid over the image region",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s23",
+      "start": 540,
+      "end": 560,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'What parameters should exist?' list p1..p8 and random weight grid",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s24",
+      "start": 560,
+      "end": 600,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "Weights w1..wn with the weighted sum formula and a 7 region",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s25",
+      "start": 600,
+      "end": 630,
+      "class": "acceptable",
+      "kind": "diagram",
+      "label": "Number line: activations should be in this range",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s26",
+      "start": 630,
+      "end": 645,
+      "class": "essential",
+      "kind": "chart",
+      "label": "Sigmoid curve σ(x)=1/(1+e^-x)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s27",
+      "start": 645,
+      "end": 690,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "Sigmoid of weighted sum; 'only activate meaningfully when weighted sum > 10' → bias",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s28",
+      "start": 690,
+      "end": 730,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "784 weights per neuron; one bias for each; 784×16 weights, 16 biases",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s29",
+      "start": 730,
+      "end": 760,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "Total 784×16+16×16+16×10 weights + biases = 13,002",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s30",
+      "start": 760,
+      "end": 790,
+      "class": "acceptable",
+      "kind": "diagram",
+      "label": "'Learning → finding the right weights and biases'; treating the network as a dial-set",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s29"
+    },
+    {
+      "state_id": "s31",
+      "start": 790,
+      "end": 805,
+      "class": "acceptable",
+      "kind": "diagram",
+      "label": "Wrong prediction for a 4: 'what weights are used here?'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s32",
+      "start": 805,
+      "end": 835,
+      "class": "acceptable",
+      "kind": "animation",
+      "label": "'Even when it works, dig into why'; neuron sum notation a^(1)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s33",
+      "start": 835,
+      "end": 905,
+      "class": "essential",
+      "kind": "formula",
+      "label": "Matrix notation: W·a^(0) + b, σ applied, a^(1)=σ(Wa+b)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s34",
+      "start": 905,
+      "end": 945,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'Neuron → thing that holds a number' crossed out → function; Network → function f(a0..a783)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s35",
+      "start": 945,
+      "end": 965,
+      "class": "acceptable",
+      "kind": "animation",
+      "label": "'It kind of has to be complicated, right?'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s36",
+      "start": 965,
+      "end": 985,
+      "class": "essential",
+      "kind": "diagram",
+      "label": "'Training in progress…' network classifying a 4",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s37",
+      "start": 985,
+      "end": 1015,
+      "class": "irrelevant",
+      "kind": "promo",
+      "label": "On learning / Subscribe / Patreon credits",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s38",
+      "start": 1015,
+      "end": 1025,
+      "class": "acceptable",
+      "kind": "video",
+      "label": "Lisha Li at a whiteboard (interview clip)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s39",
+      "start": 1025,
+      "end": 1050,
+      "class": "essential",
+      "kind": "chart",
+      "label": "Sigmoid vs ReLU: ReLU(a)=max(0,a) graphs",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s40",
+      "start": 1050,
+      "end": 1090,
+      "class": "acceptable",
+      "kind": "chart",
+      "label": "ReLU 'inactive' / 'same as f(a)=a'; slow learner sigmoid vs ReLU",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s39"
+    },
+    {
+      "state_id": "s41",
+      "start": 1090,
+      "end": 1120,
+      "class": "irrelevant",
+      "kind": "outro",
+      "label": "Clicky stuffs / outro",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    }
+  ],
+  "summary_checklist": []
+}

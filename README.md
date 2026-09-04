@@ -65,9 +65,37 @@ Key design decisions:
 - **Targets come from content gaps.** The chaptering step looks for the five stretches of transcript that are incomplete without the picture — a dangling reference, a conclusion without its data, an unspoken operation, a silent demo, a visual comparison — not only for "as you can see".
 - **Deterministic rendering from a manifest.** `render.py` validates provenance, budgets and coverage, then produces the page and the single-file bundle. The page can be rebuilt, or one frame swapped, without re-analyzing the video.
 
-## Token economics
+## Cost, and the guards that keep it bounded
 
-For an 18-minute talk: transcript ≈ a few thousand tokens, one batched read of the candidate pool (48 / 64 nominal) at 512px ≈ 10k–16k image tokens (`⌈w/28⌉×⌈h/28⌉` = 209 per 16:9 frame; 4:3 sources ~25% more) — and that's it. The 1280px deliverable frames are never read by the model. Total model cost is dominated by a single, bounded triage pass regardless of video length; the report prints the exact estimate for the run.
+The model looks at pictures exactly twice, and both reads are sized before they happen:
+
+| what the model reads | size | tokens each | typical run |
+|---|---|---|---|
+| contact sheets (4×4 tiles of 320 px with burned-in ids + a sentinel tile) | 1280×792 | 1,334 (83 per candidate) | 4–8 sheets ≈ 5k–11k |
+| shortlist (the frames it kept, re-decoded and pixel-verified) | 640×360 `standard` / 768×432 `high` | 299 / 448 | ≤ 30 frames ≈ 5k–13k |
+| transcript, chapters, reports | text | — | a few thousand |
+
+Per image the cost is `⌈w/28⌉ × ⌈h/28⌉` visual tokens (the documented Claude formula; other providers differ). The 1280 px deliverable frames are never read. Measured over the six benchmark videos (13–35 minutes), a run costs **≈ 8k–20k image tokens** whatever the length, because the pool, not the video, is what gets read.
+
+Three guards make that a ceiling rather than an estimate:
+
+- **A budget per run.** `--max-image-tokens N` (or `SUMMARY_MAX_IMAGE_TOKENS` in `~/.config/summarize-video/.env`; default 12,000 for `standard`, 20,000 for `high`). The report prints the plan — `sheets X + shortlist ≤N × Y` — and `shortlist.py` refuses more ids than the budget allows. If even the sheets do not fit, `candidates.py` stops with exit 7 and says by how much; `--allow-over-budget` is a deliberate choice, never a default.
+- **A duration guard.** Videos over 120 minutes stop with exit 8 unless `--allow-long` (with `--sections` to process only the chapters that matter). A pasted three-hour URL is a question back to you, not a bill.
+- **Rules in the skill itself.** The model may only read frames the report lists (never the candidate directory, `assets/`, or downloads), reads the sheets once and the shortlist once, and answers follow-up questions from context. Every drop is logged with its reason in `dropped.json`, so a smaller pool is auditable, not silent.
+
+CPU is local and cheap: one 2 fps 160×90 decode per video (≈ 10–20 s for 20 minutes on Apple Silicon), one extraction pass for the pool, and the re-grab of the ≤ 20 selected frames.
+
+## What a result looks like
+
+The top of a Hebrew summary of an 18-minute screencast (`--tier high`): the one-sentence claim, the chapter list, then each chapter's prose with its frames placed after the sentences they illustrate, every caption saying what the picture shows and why it is there, and every timestamp linking back to that second of the video.
+
+![The first screen of a Hebrew visual summary](docs/example-he.png)
+
+The rest of that page is 20 frames chosen from a pool of 76 candidates, each one pixel-verified against the frame the model actually looked at. The whole run cost ≈ 15k image tokens.
+
+## Benchmark
+
+`bench/` holds a six-video corpus (a mixed screencast, a 35-minute slide lecture, a VS Code demo, a 60 Minutes interview, a 3Blue1Brown animation and a Hebrew Git tutorial), interval annotations of the essential visuals, a runner that reproduces the deterministic stages per profile, and a scorer that reports recall, precision, redundancy, alignment and cost next to uniform and random baselines at the same budget — with every missed visual attributed to the stage that lost it. Numbers per release are in [`bench/README.md`](bench/README.md). No benchmark claim in this README is made without a row there.
 
 ## Requirements
 
@@ -105,7 +133,7 @@ python3 scripts/grab.py --work WORK --spec WORK/selections.json --out-dir summar
 python3 scripts/render.py --work WORK --summary WORK/summary.json --selections WORK/selections.json --assets-dir summary-ID/assets --out-dir summary-ID --pdf
 ```
 
-Useful flags: `--langs "he.*,en.*"` (caption languages) · `--tier high` (see the table above; `--mode light|advanced` are aliases of the two tiers) · `--refine sharpness|none` on `grab.py` (override the tier's default) · `--pdf` on `render.py` · `--strips` (256px temporal strips for a cheaper first look; off by default — slide text isn't legible at that size) · `--sections 40-215,590-880` (explicit ranges; long videos derive them automatically) · `--max-candidates` (a hard ceiling) · `--no-whisper`.
+Useful flags: `--langs "he.*,en.*"` (caption languages) · `--tier high` (see the table above; `--mode light|advanced` are aliases of the two tiers) · `--refine sharpness|none` on `grab.py` (override the tier's default) · `--pdf` on `render.py` · `--strips` (256px temporal strips for a cheaper first look; off by default — slide text isn't legible at that size) · `--sections 40-215,590-880` (explicit ranges; long videos derive them automatically) · `--max-candidates` (a hard ceiling on the pool) · `--max-image-tokens` / `--allow-over-budget` / `--allow-long` (the cost guards above) · `--engine legacy` (the 1.3 scene sampler, for ablation) · `--no-whisper`.
 
 Tests (stdlib only, synthesize their own ffmpeg fixtures):
 

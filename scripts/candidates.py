@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -98,6 +99,58 @@ def image_tokens(width: int, height: int) -> int:
     if width <= 0 or height <= 0:
         return 0
     return -(-width // IMAGE_PATCH) * -(-height // IMAGE_PATCH)
+
+
+# Token safety. The model's image spend is bounded *before* it looks at
+# anything: a budget per run (flag → SUMMARY_MAX_IMAGE_TOKENS → tier default)
+# caps how many shortlist frames may be read, and a run that cannot fit even
+# its contact sheets stops with exit 7. Videos over MAX_DURATION_SECONDS need
+# --allow-long (exit 8) so a stray three-hour URL never becomes a bill.
+IMAGE_TOKEN_BUDGET = {"standard": 12_000, "high": 20_000}
+SHORTLIST_MAX = 30
+MAX_DURATION_SECONDS = 120 * 60
+EXIT_OVER_BUDGET = 7
+EXIT_TOO_LONG = 8
+CONFIG_ENV = Path.home() / ".config" / "summarize-video" / ".env"
+
+
+def config_value(key: str) -> str | None:
+    """An env var, else the same key in the skill's own ~/.config .env."""
+    value = os.environ.get(key)
+    if value and value.strip():
+        return value.strip()
+    try:
+        for line in CONFIG_ENV.read_text(encoding="utf-8").splitlines():
+            name, _, raw = line.partition("=")
+            if name.strip() == key and raw.strip():
+                return raw.strip().strip("'\"")
+    except OSError:
+        pass
+    return None
+
+
+def plan_token_budget(budget: int, *, sheet_tokens: int | None, individual_tokens: int,
+                      shortlist_px: int, shortlist_max: int = SHORTLIST_MAX) -> dict:
+    """How the budget is spent. With contact sheets the fixed cost is the sheets
+    and the variable cost is the shortlist (one read per kept frame at
+    `shortlist_px`); without sheets the only spend is reading the pool.
+    `over_budget` means the mandatory part alone does not fit."""
+    per_shortlist = image_tokens(shortlist_px, round(shortlist_px * 9 / 16))
+    if sheet_tokens is not None:
+        remaining = budget - sheet_tokens
+        allowed = max(0, min(shortlist_max, remaining // per_shortlist)) if remaining > 0 else 0
+        return {
+            "budget": budget, "mode": "sheets", "sheets": sheet_tokens,
+            "shortlist_px": shortlist_px, "shortlist_tokens_each": per_shortlist,
+            "shortlist_max": allowed, "planned": sheet_tokens + allowed * per_shortlist,
+            "over_budget": sheet_tokens > budget,
+        }
+    return {
+        "budget": budget, "mode": "individual", "sheets": 0,
+        "shortlist_px": shortlist_px, "shortlist_tokens_each": per_shortlist,
+        "shortlist_max": 0, "planned": individual_tokens,
+        "over_budget": individual_tokens > budget,
+    }
 MERGE_EPS = 0.20
 LONG_VIDEO_SECONDS = 20 * 60
 SECTION_PADDING = 5.0
@@ -1317,6 +1370,14 @@ def main() -> int:
                              "(1280px re-grab), not at triage.")
     parser.add_argument("--max-candidates", type=int, default=None,
                         help="Hard ceiling on the pool (reserved target frames included).")
+    parser.add_argument("--max-image-tokens", type=int, default=None,
+                        help="Image-token budget for triage (default: SUMMARY_MAX_IMAGE_TOKENS, else "
+                             f"{IMAGE_TOKEN_BUDGET['standard']:,} standard / {IMAGE_TOKEN_BUDGET['high']:,} high). "
+                             "Caps the shortlist; exit 7 when even the contact sheets do not fit.")
+    parser.add_argument("--allow-over-budget", action="store_true",
+                        help="Continue past exit 7 (the report still prints the overrun).")
+    parser.add_argument("--allow-long", action="store_true",
+                        help=f"Process a video longer than {MAX_DURATION_SECONDS // 60} minutes (otherwise exit 8).")
     parser.add_argument("--min-per-chapter", type=int, default=None)
     parser.add_argument("--profile-override", default=None,
                         help="JSON object merged over the tier's PROFILES entry (benchmark ablations, "
@@ -1349,6 +1410,10 @@ def main() -> int:
         raise SystemExit(f"Work dir not found: {work} — run transcript.py first")
     transcript = load_transcript(args.transcript, work)
     duration = float(transcript.get("video", {}).get("duration") or 0)
+    if duration > MAX_DURATION_SECONDS and not args.allow_long:
+        print(f"[vsum] video is {format_time(duration)} long — over the {MAX_DURATION_SECONDS // 60}-minute guard. "
+              "Re-run with --allow-long (and consider --sections) if you really want it.", file=sys.stderr)
+        return EXIT_TOO_LONG
     chapters = load_chapters(args.chapters, transcript, duration)
     segments = transcript.get("segments", [])
     legacy_cues = parse_times(args.cues)
@@ -1663,6 +1728,25 @@ def main() -> int:
     if profile.get("sheets") == "on" and records:
         sheet_block = build_sheets(work, int(profile.get("sheet_tiles", 16)), 320)
         payload["sheets"] = sheet_block
+    budget_setting = args.max_image_tokens or config_value("SUMMARY_MAX_IMAGE_TOKENS")
+    try:
+        token_budget = int(budget_setting) if budget_setting else IMAGE_TOKEN_BUDGET[tier]
+    except ValueError:
+        raise SystemExit(f"SUMMARY_MAX_IMAGE_TOKENS must be an integer, got {budget_setting!r}")
+    sheets_ok = bool(sheet_block and sheet_block.get("status") == "ok")
+    budget_plan = plan_token_budget(
+        token_budget,
+        sheet_tokens=int(sheet_block["image_tokens"]) if sheets_ok else None,
+        individual_tokens=int(cost["image_tokens_estimate"]),
+        shortlist_px=int(profile.get("shortlist_px", 640)),
+    )
+    payload["token_budget"] = budget_plan
+    (work / "candidates.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    if budget_plan["over_budget"] and not args.allow_over_budget:
+        print(f"[vsum] over budget: the mandatory read alone is ≈{budget_plan['planned']:,} image tokens against a "
+              f"budget of {token_budget:,}. Raise --max-image-tokens / SUMMARY_MAX_IMAGE_TOKENS, lower "
+              "--max-candidates, or pass --allow-over-budget.", file=sys.stderr)
+        return EXIT_OVER_BUDGET
 
     print()
     print("# candidate frames report")
@@ -1699,6 +1783,19 @@ def main() -> int:
         f"- **Image tokens (estimate):** ≈{cost['image_tokens_estimate']:,} for one batched Read "
         f"({dims}; {cost['image_tokens_per_candidate']} each, ⌈w/{IMAGE_PATCH}⌉×⌈h/{IMAGE_PATCH}⌉; other providers differ)"
     )
+    if budget_plan["mode"] == "sheets":
+        print(
+            f"- **Token budget:** {budget_plan['budget']:,} — planned ≈{budget_plan['planned']:,} "
+            f"(sheets {budget_plan['sheets']:,} + shortlist ≤{budget_plan['shortlist_max']} × "
+            f"{budget_plan['shortlist_tokens_each']} at {budget_plan['shortlist_px']}px); "
+            f"`shortlist.py` refuses more than {budget_plan['shortlist_max']} ids"
+            + (" — **OVER BUDGET** (continuing under --allow-over-budget)" if budget_plan["over_budget"] else "")
+        )
+    else:
+        print(
+            f"- **Token budget:** {budget_plan['budget']:,} — planned ≈{budget_plan['planned']:,} for reading the pool"
+            + (" — **OVER BUDGET** (continuing under --allow-over-budget)" if budget_plan["over_budget"] else "")
+        )
     cpu = cost["cpu"]
     refine_note = (
         f"grab refinement: {cpu['refine']} (≤{cpu['refine_max_decodes']} × ~3 s decodes)"

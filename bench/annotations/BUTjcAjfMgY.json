@@ -1,0 +1,523 @@
+{
+  "video_id": "BUTjcAjfMgY",
+  "title": "ML Foundations for AI Engineers (in 34 Minutes)",
+  "duration": 2090,
+  "annotator": "claude (from bench/sheets storyboard tiles, 10 s apart; NEEDS REVIEW by yos)",
+  "date": "2026-09-04",
+  "status": "draft",
+  "source": "storyboard:sb0",
+  "notes": "Slides only, no presenter; every slide builds progressively; long static stretches (loss landscape 2+ min).",
+  "states": [
+    {
+      "state_id": "s01",
+      "start": 0,
+      "end": 30,
+      "class": "irrelevant",
+      "kind": "title",
+      "label": "Title slide: ML Foundations for AI Engs",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s02",
+      "start": 30,
+      "end": 40,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Outline: Intelligence & Models / 3 Ways Computers Can Learn / Data",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s03",
+      "start": 40,
+      "end": 50,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Section: I. Intelligence & Models",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s04",
+      "start": 50,
+      "end": 70,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Intelligence: Earth → mini world model → brain",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s05",
+      "start": 70,
+      "end": 90,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Model: input data photo (build stage)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s06"
+    },
+    {
+      "state_id": "s06",
+      "start": 90,
+      "end": 110,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Model: Input data → (Mental) Model → Prediction 'It's going to rain'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s07",
+      "start": 110,
+      "end": 139,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Section II title and '3 Ways Computers Can Learn' heading",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s08",
+      "start": 139,
+      "end": 170,
+      "class": "essential",
+      "kind": "slide",
+      "label": "AI ⊃ Machine Learning ⊃ Deep Learning / RL nested blobs diagram",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s09",
+      "start": 170,
+      "end": 199,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Way 1: ML — Training (Phase 1) diagram",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s10"
+    },
+    {
+      "state_id": "s10",
+      "start": 199,
+      "end": 229,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Way 1: ML — Training (Phase 1) + Inference (Phase 2) diagram complete",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s11",
+      "start": 229,
+      "end": 269,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Inference: ŷ = mx + b with prediction/input/parameters labels",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s12",
+      "start": 269,
+      "end": 299,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Training (Phase 1) heading",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s13"
+    },
+    {
+      "state_id": "s13",
+      "start": 299,
+      "end": 378,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Training: loss function L(m,b) = ‖y − (mx+b)‖² with actual/predicted values labelled",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s14",
+      "start": 378,
+      "end": 400,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Loss Function labelled + 'Goal: find parameter values with smallest loss'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s15",
+      "start": 400,
+      "end": 478,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Matrix form: X, θ, y; loss function expansion; gradient (build stages)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s16"
+    },
+    {
+      "state_id": "s16",
+      "start": 478,
+      "end": 527,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Closed-form solution θ* = (XᵀX)⁻¹Xᵀy boxed as Optimal Parameters",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s17",
+      "start": 527,
+      "end": 547,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Key Point: Computers can fit models to reality using data and math",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s18",
+      "start": 547,
+      "end": 647,
+      "class": "essential",
+      "kind": "slide",
+      "label": "More ML Techniques table (Linear/Logistic Regression, Decision Tree, Random Forest, XGBoost, SVM) with regression vs classification note",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s19",
+      "start": 647,
+      "end": 667,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Way 2: Deep Learning heading",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s20",
+      "start": 667,
+      "end": 736,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Deep Neural Nets Learn Features: cat → edges → parts → high-level → prediction",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s21",
+      "start": 736,
+      "end": 786,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Neural Networks: single neuron diagram (build)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s22"
+    },
+    {
+      "state_id": "s22",
+      "start": 786,
+      "end": 806,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Neuron = fundamental building block with z = g(Σ wᵢxᵢ + b) labelled",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s23",
+      "start": 806,
+      "end": 836,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Neurons organized in layers stacked into networks (Layer / Network boxes)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s24",
+      "start": 836,
+      "end": 906,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Zoo of NN components: neurons, activations, layers tables (build)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s25"
+    },
+    {
+      "state_id": "s25",
+      "start": 906,
+      "end": 926,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Zoo complete: neurons, activations, layers, networks tables",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s26",
+      "start": 926,
+      "end": 955,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Training Neural Nets heading",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s27",
+      "start": 955,
+      "end": 1035,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Loss landscape surface (build stages)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s28"
+    },
+    {
+      "state_id": "s28",
+      "start": 1035,
+      "end": 1105,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Loss landscape with current point, gradient ∇L and 'where we want to be'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s29",
+      "start": 1105,
+      "end": 1145,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Gradient descent formula (build)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s30"
+    },
+    {
+      "state_id": "s30",
+      "start": 1145,
+      "end": 1174,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Gradient Descent: θᵢ₊₁ = θᵢ − γ∇L(θᵢ) with all four labels",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s31",
+      "start": 1174,
+      "end": 1224,
+      "class": "essential",
+      "kind": "slide",
+      "label": "More Optimizers table: GD, SGD, Mini-batch, Adam",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s32",
+      "start": 1224,
+      "end": 1274,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Hyperparameters heading (empty)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s33"
+    },
+    {
+      "state_id": "s33",
+      "start": 1274,
+      "end": 1314,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Hyperparameters table: Epoch, Learning Rate, Batch Size, Dropout",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s34",
+      "start": 1314,
+      "end": 1363,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Way 3: Reinforcement Learning heading",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s35",
+      "start": 1363,
+      "end": 1393,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Supervised Learning diagram alone (build)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s36"
+    },
+    {
+      "state_id": "s36",
+      "start": 1393,
+      "end": 1403,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Supervised Learning vs Reinforcement Learning diagrams side by side",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s37",
+      "start": 1403,
+      "end": 1433,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "The Promise of RL heading",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s38",
+      "start": 1433,
+      "end": 1513,
+      "class": "essential",
+      "kind": "chart",
+      "label": "'RL surpasses grandmaster performance' Elo chart (AlphaGo Zero)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s39",
+      "start": 1513,
+      "end": 1563,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "How does it work? heading",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s40",
+      "start": 1563,
+      "end": 1632,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Objective J(θ) formula (build stages)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s41"
+    },
+    {
+      "state_id": "s41",
+      "start": 1632,
+      "end": 1722,
+      "class": "essential",
+      "kind": "slide",
+      "label": "J(θ) = E[Σ log πθ(aₜ|sₜ)·Rₜ] fully labelled with the where-clause definitions",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s42",
+      "start": 1722,
+      "end": 1772,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Policy gradient update θₖ₊₁ = θₖ + γ∇J(θₖ) labelled",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s43",
+      "start": 1772,
+      "end": 1832,
+      "class": "essential",
+      "kind": "slide",
+      "label": "More RL Techniques table: REINFORCE, TRPO, PPO, GRPO",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s44",
+      "start": 1832,
+      "end": 1871,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Section III. Data",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s45",
+      "start": 1871,
+      "end": 1921,
+      "class": "essential",
+      "kind": "slide",
+      "label": "What makes good data? Property 1: Quantity (more data > less data, overfitting)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s46",
+      "start": 1921,
+      "end": 1971,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Property 2: Quality — accuracy (build)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s47"
+    },
+    {
+      "state_id": "s47",
+      "start": 1971,
+      "end": 1990,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Property 2: Quality — Accuracy and Diversity complete",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s48",
+      "start": 1990,
+      "end": 2010,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Quantity AND Quality comparison",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s49",
+      "start": 2010,
+      "end": 2040,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Key Takeaways (build)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s50"
+    },
+    {
+      "state_id": "s50",
+      "start": 2040,
+      "end": 2062,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Key Takeaways complete (5 bullets)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s51",
+      "start": 2062,
+      "end": 2090,
+      "class": "irrelevant",
+      "kind": "outro",
+      "label": "End card",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    }
+  ],
+  "summary_checklist": []
+}

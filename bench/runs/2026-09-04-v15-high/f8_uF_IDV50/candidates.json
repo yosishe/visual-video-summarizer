@@ -1,0 +1,4311 @@
+{
+  "schema_version": 2,
+  "engine_version": "1.6.0",
+  "tier": "high",
+  "mode": "advanced",
+  "profile": {
+    "cap": 64,
+    "per_target": 3,
+    "unplanned_floor": 16,
+    "scene": "adaptive",
+    "scene_threshold": null,
+    "scene_floor": 0.04,
+    "action_offsets": [
+      0.1,
+      0.35,
+      0.7,
+      1.2,
+      1.8,
+      2.4
+    ],
+    "state_offsets": [],
+    "state_fractions": [
+      0.1,
+      0.3,
+      0.5,
+      0.7,
+      0.9
+    ],
+    "slide_fractions": [
+      0.3,
+      0.7
+    ],
+    "coverage_min": 2,
+    "cue_offsets": [
+      0.2,
+      0.5,
+      1.0,
+      1.5,
+      2.0
+    ],
+    "refine": "sharpness",
+    "faces": "auto",
+    "ocr": "on",
+    "resolution": 512,
+    "pip_mask": "on",
+    "dedup_scope": "family",
+    "engine": "states",
+    "scan_fps": 2.0,
+    "sheets": "on",
+    "sheet_tiles": 16,
+    "shortlist_px": 768
+  },
+  "profile_override": {},
+  "profile_sha256": "125df638e6cbd9e2525de604973cc2f867204f4f85f65cf6fae69e81a26cb9f0",
+  "overlays": [],
+  "mask_fraction": 0.0,
+  "states": {
+    "counts": {
+      "runs": 127,
+      "states": 132,
+      "by_mode": {
+        "A": 0,
+        "B": 33,
+        "C": 0,
+        "D": 99
+      },
+      "families": 15,
+      "builds": 4
+    },
+    "modes": [
+      {
+        "start": 29.0,
+        "end": 49.0,
+        "mode": "B",
+        "motion_freq": 0.051,
+        "big_motion": 0.0,
+        "luma": 50.8,
+        "edge": 2.43,
+        "ink_first": 0.0079,
+        "ink_last": 0.0006
+      },
+      {
+        "start": 49.0,
+        "end": 69.0,
+        "mode": "D",
+        "motion_freq": 0.179,
+        "big_motion": 0.0,
+        "luma": 52.0,
+        "edge": 3.17,
+        "ink_first": 0.0002,
+        "ink_last": 0.0314
+      },
+      {
+        "start": 69.0,
+        "end": 89.0,
+        "mode": "D",
+        "motion_freq": 0.333,
+        "big_motion": 0.0,
+        "luma": 53.9,
+        "edge": 3.02,
+        "ink_first": 0.022,
+        "ink_last": 0.0184
+      },
+      {
+        "start": 89.0,
+        "end": 109.0,
+        "mode": "D",
+        "motion_freq": 0.333,
+        "big_motion": 0.077,
+        "luma": 53.7,
+        "edge": 3.25,
+        "ink_first": 0.0001,
+        "ink_last": 0.0
+      },
+      {
+        "start": 109.0,
+        "end": 129.0,
+        "mode": "B",
+        "motion_freq": 0.077,
+        "big_motion": 0.0,
+        "luma": 50.8,
+        "edge": 2.32,
+        "ink_first": 0.0,
+        "ink_last": 0.0
+      },
+      {
+        "start": 129.0,
+        "end": 149.0,
+        "mode": "B",
+        "motion_freq": 0.026,
+        "big_motion": 0.0,
+        "luma": 49.4,
+        "edge": 2.36,
+        "ink_first": 0.0,
+        "ink_last": 0.0003
+      },
+      {
+        "start": 149.0,
+        "end": 169.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 50.4,
+        "edge": 2.0,
+        "ink_first": 0.0,
+        "ink_last": 0.0001
+      },
+      {
+        "start": 169.0,
+        "end": 189.0,
+        "mode": "B",
+        "motion_freq": 0.051,
+        "big_motion": 0.0,
+        "luma": 51.0,
+        "edge": 2.14,
+        "ink_first": 0.0001,
+        "ink_last": 0.0008
+      },
+      {
+        "start": 189.0,
+        "end": 209.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 51.4,
+        "edge": 2.02,
+        "ink_first": 0.0002,
+        "ink_last": 0.0
+      },
+      {
+        "start": 209.0,
+        "end": 229.0,
+        "mode": "D",
+        "motion_freq": 0.436,
+        "big_motion": 0.154,
+        "luma": 87.5,
+        "edge": 4.99,
+        "ink_first": 0.0,
+        "ink_last": 0.148
+      },
+      {
+        "start": 229.0,
+        "end": 249.0,
+        "mode": "D",
+        "motion_freq": 0.205,
+        "big_motion": 0.026,
+        "luma": 58.5,
+        "edge": 4.19,
+        "ink_first": 0.0796,
+        "ink_last": 0.0556
+      },
+      {
+        "start": 249.0,
+        "end": 269.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 59.7,
+        "edge": 5.14,
+        "ink_first": 0.0557,
+        "ink_last": 0.0556
+      },
+      {
+        "start": 269.0,
+        "end": 289.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.026,
+        "luma": 51.3,
+        "edge": 6.13,
+        "ink_first": 0.0556,
+        "ink_last": 0.063
+      },
+      {
+        "start": 289.0,
+        "end": 309.0,
+        "mode": "B",
+        "motion_freq": 0.077,
+        "big_motion": 0.026,
+        "luma": 57.7,
+        "edge": 4.98,
+        "ink_first": 0.062,
+        "ink_last": 0.0556
+      },
+      {
+        "start": 309.0,
+        "end": 329.0,
+        "mode": "B",
+        "motion_freq": 0.051,
+        "big_motion": 0.0,
+        "luma": 59.8,
+        "edge": 4.6,
+        "ink_first": 0.0556,
+        "ink_last": 0.0913
+      },
+      {
+        "start": 329.0,
+        "end": 349.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 52.3,
+        "edge": 2.81,
+        "ink_first": 0.0502,
+        "ink_last": 0.0
+      },
+      {
+        "start": 349.0,
+        "end": 369.0,
+        "mode": "B",
+        "motion_freq": 0.051,
+        "big_motion": 0.026,
+        "luma": 52.8,
+        "edge": 3.42,
+        "ink_first": 0.0,
+        "ink_last": 0.0035
+      },
+      {
+        "start": 369.0,
+        "end": 389.0,
+        "mode": "D",
+        "motion_freq": 0.154,
+        "big_motion": 0.026,
+        "luma": 52.2,
+        "edge": 2.89,
+        "ink_first": 0.0024,
+        "ink_last": 0.0005
+      },
+      {
+        "start": 389.0,
+        "end": 409.0,
+        "mode": "D",
+        "motion_freq": 0.462,
+        "big_motion": 0.077,
+        "luma": 57.7,
+        "edge": 4.71,
+        "ink_first": 0.0,
+        "ink_last": 0.0446
+      },
+      {
+        "start": 409.0,
+        "end": 429.0,
+        "mode": "D",
+        "motion_freq": 0.333,
+        "big_motion": 0.103,
+        "luma": 58.1,
+        "edge": 4.51,
+        "ink_first": 0.0861,
+        "ink_last": 0.0
+      },
+      {
+        "start": 429.0,
+        "end": 449.0,
+        "mode": "D",
+        "motion_freq": 0.154,
+        "big_motion": 0.0,
+        "luma": 54.0,
+        "edge": 3.61,
+        "ink_first": 0.0,
+        "ink_last": 0.0001
+      },
+      {
+        "start": 449.0,
+        "end": 469.0,
+        "mode": "D",
+        "motion_freq": 0.385,
+        "big_motion": 0.051,
+        "luma": 61.3,
+        "edge": 4.56,
+        "ink_first": 0.0003,
+        "ink_last": 0.1125
+      },
+      {
+        "start": 469.0,
+        "end": 489.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.077,
+        "luma": 62.8,
+        "edge": 3.37,
+        "ink_first": 0.112,
+        "ink_last": 0.0001
+      },
+      {
+        "start": 489.0,
+        "end": 509.0,
+        "mode": "B",
+        "motion_freq": 0.077,
+        "big_motion": 0.0,
+        "luma": 50.0,
+        "edge": 1.52,
+        "ink_first": 0.0,
+        "ink_last": 0.0
+      },
+      {
+        "start": 509.0,
+        "end": 529.0,
+        "mode": "B",
+        "motion_freq": 0.333,
+        "big_motion": 0.0,
+        "luma": 52.1,
+        "edge": 2.76,
+        "ink_first": 0.0,
+        "ink_last": 0.0
+      },
+      {
+        "start": 529.0,
+        "end": 549.0,
+        "mode": "B",
+        "motion_freq": 0.077,
+        "big_motion": 0.0,
+        "luma": 51.3,
+        "edge": 2.36,
+        "ink_first": 0.0,
+        "ink_last": 0.0
+      },
+      {
+        "start": 549.0,
+        "end": 569.0,
+        "mode": "D",
+        "motion_freq": 0.641,
+        "big_motion": 0.051,
+        "luma": 55.8,
+        "edge": 4.64,
+        "ink_first": 0.0,
+        "ink_last": 0.0428
+      },
+      {
+        "start": 569.0,
+        "end": 589.0,
+        "mode": "D",
+        "motion_freq": 0.333,
+        "big_motion": 0.051,
+        "luma": 65.9,
+        "edge": 7.17,
+        "ink_first": 0.1111,
+        "ink_last": 0.112
+      },
+      {
+        "start": 589.0,
+        "end": 609.0,
+        "mode": "D",
+        "motion_freq": 0.154,
+        "big_motion": 0.026,
+        "luma": 59.1,
+        "edge": 4.4,
+        "ink_first": 0.0669,
+        "ink_last": 0.0005
+      },
+      {
+        "start": 609.0,
+        "end": 629.0,
+        "mode": "D",
+        "motion_freq": 0.333,
+        "big_motion": 0.026,
+        "luma": 52.9,
+        "edge": 2.94,
+        "ink_first": 0.0007,
+        "ink_last": 0.0
+      },
+      {
+        "start": 629.0,
+        "end": 649.0,
+        "mode": "D",
+        "motion_freq": 0.256,
+        "big_motion": 0.0,
+        "luma": 52.0,
+        "edge": 1.94,
+        "ink_first": 0.0,
+        "ink_last": 0.0002
+      },
+      {
+        "start": 649.0,
+        "end": 669.0,
+        "mode": "D",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 54.2,
+        "edge": 3.71,
+        "ink_first": 0.0,
+        "ink_last": 0.0047
+      },
+      {
+        "start": 669.0,
+        "end": 689.0,
+        "mode": "D",
+        "motion_freq": 0.308,
+        "big_motion": 0.077,
+        "luma": 57.6,
+        "edge": 5.2,
+        "ink_first": 0.0057,
+        "ink_last": 0.0076
+      },
+      {
+        "start": 689.0,
+        "end": 709.0,
+        "mode": "D",
+        "motion_freq": 0.769,
+        "big_motion": 0.103,
+        "luma": 180.4,
+        "edge": 5.28,
+        "ink_first": 0.0008,
+        "ink_last": 0.098
+      },
+      {
+        "start": 709.0,
+        "end": 729.0,
+        "mode": "D",
+        "motion_freq": 0.154,
+        "big_motion": 0.026,
+        "luma": 110.8,
+        "edge": 4.77,
+        "ink_first": 0.0287,
+        "ink_last": 0.0004
+      },
+      {
+        "start": 729.0,
+        "end": 749.0,
+        "mode": "D",
+        "motion_freq": 0.385,
+        "big_motion": 0.051,
+        "luma": 55.4,
+        "edge": 4.13,
+        "ink_first": 0.0015,
+        "ink_last": 0.0006
+      },
+      {
+        "start": 749.0,
+        "end": 769.0,
+        "mode": "D",
+        "motion_freq": 0.231,
+        "big_motion": 0.0,
+        "luma": 52.2,
+        "edge": 3.72,
+        "ink_first": 0.0,
+        "ink_last": 0.0033
+      },
+      {
+        "start": 769.0,
+        "end": 789.0,
+        "mode": "D",
+        "motion_freq": 0.385,
+        "big_motion": 0.026,
+        "luma": 52.9,
+        "edge": 4.67,
+        "ink_first": 0.0012,
+        "ink_last": 0.0
+      },
+      {
+        "start": 789.0,
+        "end": 809.0,
+        "mode": "D",
+        "motion_freq": 0.179,
+        "big_motion": 0.051,
+        "luma": 53.6,
+        "edge": 3.59,
+        "ink_first": 0.0,
+        "ink_last": 0.0008
+      },
+      {
+        "start": 809.0,
+        "end": 829.0,
+        "mode": "D",
+        "motion_freq": 0.282,
+        "big_motion": 0.103,
+        "luma": 61.9,
+        "edge": 7.39,
+        "ink_first": 0.0014,
+        "ink_last": 0.0
+      },
+      {
+        "start": 829.0,
+        "end": 849.0,
+        "mode": "D",
+        "motion_freq": 0.179,
+        "big_motion": 0.0,
+        "luma": 57.9,
+        "edge": 6.25,
+        "ink_first": 0.0001,
+        "ink_last": 0.0
+      },
+      {
+        "start": 849.0,
+        "end": 869.0,
+        "mode": "D",
+        "motion_freq": 0.308,
+        "big_motion": 0.128,
+        "luma": 132.2,
+        "edge": 4.95,
+        "ink_first": 0.0197,
+        "ink_last": 0.0
+      },
+      {
+        "start": 869.0,
+        "end": 889.0,
+        "mode": "D",
+        "motion_freq": 0.41,
+        "big_motion": 0.0,
+        "luma": 51.8,
+        "edge": 2.91,
+        "ink_first": 0.0002,
+        "ink_last": 0.0
+      },
+      {
+        "start": 889.0,
+        "end": 897.0,
+        "mode": "D",
+        "motion_freq": 0.6,
+        "big_motion": 0.133,
+        "luma": 55.7,
+        "edge": 3.49,
+        "ink_first": 0.0002,
+        "ink_last": 0.0816
+      }
+    ],
+    "frames_scanned": 1736,
+    "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/states.json"
+  },
+  "parts": [
+    {
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/download/video_da6151c31e.mp4",
+      "source_start": 0.0,
+      "offset": 0.0,
+      "media_start": 0.0,
+      "duration": 927.901,
+      "frame_duration": 0.03333333333333333,
+      "mapping_confidence": "exact"
+    }
+  ],
+  "counts": {
+    "scene": 0,
+    "raw": 132,
+    "blank_or_seek_dropped": 0,
+    "recovered": 0,
+    "dedup_dropped": 21,
+    "cap_dropped": 47,
+    "reserved_trimmed": 0,
+    "cap": 64,
+    "cap_effective": 64,
+    "reserved": 36,
+    "final": 64
+  },
+  "baselines": {
+    "uniform_fill": [
+      29.0,
+      60.0,
+      70.0,
+      93.5,
+      100.5,
+      218.5,
+      224.0,
+      238.5,
+      326.5,
+      388.0,
+      400.5,
+      408.0,
+      425.0,
+      456.0,
+      533.5,
+      565.5,
+      575.0,
+      636.5,
+      646.0,
+      673.0,
+      691.5,
+      713.5,
+      752.0,
+      780.5,
+      800.5,
+      822.0,
+      842.5,
+      877.5
+    ]
+  },
+  "coverage": {
+    "chapters": [
+      {
+        "chapter_id": "ch01",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000",
+          "c_0001",
+          "c_0002",
+          "c_0003",
+          "c_0004",
+          "c_0005"
+        ]
+      },
+      {
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0006",
+          "c_0007"
+        ]
+      },
+      {
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0008",
+          "c_0009",
+          "c_0010",
+          "c_0011",
+          "c_0012",
+          "c_0013",
+          "c_0014",
+          "c_0015",
+          "c_0016",
+          "c_0017",
+          "c_0018"
+        ]
+      },
+      {
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0019",
+          "c_0020",
+          "c_0021",
+          "c_0022",
+          "c_0023",
+          "c_0024",
+          "c_0025",
+          "c_0026",
+          "c_0027",
+          "c_0028"
+        ]
+      },
+      {
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0029",
+          "c_0030",
+          "c_0031",
+          "c_0032",
+          "c_0033",
+          "c_0034",
+          "c_0035",
+          "c_0036",
+          "c_0037",
+          "c_0038",
+          "c_0039"
+        ]
+      },
+      {
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0040",
+          "c_0041",
+          "c_0042",
+          "c_0043",
+          "c_0044",
+          "c_0045",
+          "c_0046"
+        ]
+      },
+      {
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0047",
+          "c_0048",
+          "c_0049",
+          "c_0050",
+          "c_0051",
+          "c_0052",
+          "c_0053",
+          "c_0054",
+          "c_0055"
+        ]
+      },
+      {
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0056",
+          "c_0057",
+          "c_0058",
+          "c_0059",
+          "c_0060"
+        ]
+      },
+      {
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0061",
+          "c_0062",
+          "c_0063"
+        ]
+      },
+      {
+        "chapter_id": "ch11",
+        "status": "not-required",
+        "candidate_ids": []
+      }
+    ],
+    "targets": [
+      {
+        "target_id": "ch02_activity_bar",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000"
+        ]
+      },
+      {
+        "target_id": "ch02_command_palette",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0003"
+        ]
+      },
+      {
+        "target_id": "ch02_panel_terminal",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0005"
+        ]
+      },
+      {
+        "target_id": "ch03_mode_picker",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0006"
+        ]
+      },
+      {
+        "target_id": "ch03_theme_answer",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0007"
+        ]
+      },
+      {
+        "target_id": "ch04_intellisense",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0013",
+          "c_0014",
+          "c_0015",
+          "c_0016"
+        ]
+      },
+      {
+        "target_id": "ch04_ghost_text",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0015",
+          "c_0016"
+        ]
+      },
+      {
+        "target_id": "ch04_run_output",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0018"
+        ]
+      },
+      {
+        "target_id": "ch05_extension_recommendation",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0019",
+          "c_0020",
+          "c_0021"
+        ]
+      },
+      {
+        "target_id": "ch05_calculator",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0026"
+        ]
+      },
+      {
+        "target_id": "ch05_rename_suggestion",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0027",
+          "c_0028"
+        ]
+      },
+      {
+        "target_id": "ch06_flask_answer",
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0029",
+          "c_0030",
+          "c_0031"
+        ]
+      },
+      {
+        "target_id": "ch06_plan",
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0032",
+          "c_0033"
+        ]
+      },
+      {
+        "target_id": "ch06_weather_app",
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0037"
+        ]
+      },
+      {
+        "target_id": "ch06_simple_browser",
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0038",
+          "c_0039"
+        ]
+      },
+      {
+        "target_id": "ch07_staged",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0042"
+        ]
+      },
+      {
+        "target_id": "ch07_ai_commit_message",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0043"
+        ]
+      },
+      {
+        "target_id": "ch07_github_repo",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0046"
+        ]
+      },
+      {
+        "target_id": "ch08_configure_tools",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0049",
+          "c_0050",
+          "c_0055"
+        ]
+      },
+      {
+        "target_id": "ch08_mcp_marketplace",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0052",
+          "c_0053",
+          "c_0055"
+        ]
+      },
+      {
+        "target_id": "ch08_installed",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0055"
+        ]
+      },
+      {
+        "target_id": "ch09_three_features",
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0056"
+        ]
+      },
+      {
+        "target_id": "ch09_issues_on_github",
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0060"
+        ]
+      },
+      {
+        "target_id": "ch10_sessions",
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0062",
+          "c_0063"
+        ]
+      }
+    ]
+  },
+  "terminal_probes": [],
+  "cost": {
+    "tier": "high",
+    "candidates": 64,
+    "image_tokens_estimate": 13376,
+    "image_tokens_per_candidate": 209,
+    "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+    "frame_dimensions": {
+      "512x288": 64
+    },
+    "cpu": {
+      "scene_pass": "adaptive",
+      "scene_seconds": 868.0,
+      "terminal_probes": 0,
+      "seeks": 132,
+      "ocr_frames": 0,
+      "faces": "unavailable",
+      "refine": "sharpness",
+      "refine_max_decodes": 20,
+      "pip_mask": "on",
+      "overlays": 0,
+      "overlay_seconds": 0.0,
+      "dedup_scope": "family",
+      "engine": "states",
+      "scan_seconds": 10.75,
+      "states": 132
+    },
+    "other_tier": {
+      "tier": "standard",
+      "cap": 48,
+      "max_image_tokens": 10032
+    }
+  },
+  "triage": {
+    "instructions": "Read every candidate path in one message (parallel Reads), then select by candidate_id.",
+    "strips": [],
+    "pixel_area": 0,
+    "projected_individual_reads": 64,
+    "projected_total_pixel_area": 9437184,
+    "baseline_60x512_pixel_area": 8847360,
+    "strip_to_baseline_ratio": 0.0,
+    "projected_to_baseline_ratio": 1.0667
+  },
+  "candidates": [
+    {
+      "candidate_id": "c_0000",
+      "frame_id": "c_0000",
+      "requested_t": 46.0,
+      "actual_t": 46.0,
+      "t": 46.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0000_t0046.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_activity_bar"
+      ],
+      "seg_ids": [
+        "seg_0010",
+        "seg_0011",
+        "seg_0012",
+        "seg_0015",
+        "seg_0022",
+        "seg_0029",
+        "seg_0042"
+      ],
+      "reasons": [
+        "state",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 50.153,
+        "contrast": 7.912,
+        "sharpness": 2.152,
+        "blank": false,
+        "fingerprint": "218d51e7551ac79e08762562fb3b970285de5e783aed80f049334b55c730fdd5",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_001",
+      "family_revisits": [],
+      "state_id": "s_0001",
+      "state_family": "f_001",
+      "mode": "B",
+      "importance": 0.687,
+      "aligned_seg_ids": [
+        "seg_0007",
+        "seg_0008",
+        "seg_0009",
+        "seg_0010",
+        "seg_0011",
+        "seg_0012",
+        "seg_0013",
+        "seg_0014",
+        "seg_0015"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0001",
+      "frame_id": "c_0001",
+      "requested_t": 68.5,
+      "actual_t": 68.5,
+      "t": 68.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0001_t0068.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0024"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 56.959,
+        "contrast": 29.995,
+        "sharpness": 2.757,
+        "blank": false,
+        "fingerprint": "3b812f83f5ddcd557a748f4f16c41b0f772e67ee180f6efc9f93456c2d7110ad",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0006",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.403,
+      "aligned_seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023",
+        "seg_0024"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0002",
+      "frame_id": "c_0002",
+      "requested_t": 85.0,
+      "actual_t": 85.0,
+      "t": 85.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0002_t0085.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0029",
+        "seg_0030",
+        "seg_0031"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 64.885,
+        "contrast": 41.751,
+        "sharpness": 7.65,
+        "blank": false,
+        "fingerprint": "05d56dab5bc490d5fb63b94f3daf90c47a82e69c98b1bcad23512efc84fda316",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0010",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.572,
+      "aligned_seg_ids": [
+        "seg_0028",
+        "seg_0029",
+        "seg_0030"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0003",
+      "frame_id": "c_0003",
+      "requested_t": 88.0,
+      "actual_t": 88.0,
+      "t": 88.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0003_t0088.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_command_palette"
+      ],
+      "seg_ids": [
+        "seg_0029",
+        "seg_0030",
+        "seg_0031"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 53.568,
+        "contrast": 9.597,
+        "sharpness": 2.51,
+        "blank": false,
+        "fingerprint": "92e98f5925f43844d63927d03958e6e99fd7ecd3c9e69d9e6fa1fa18842a1985",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0011",
+      "state_family": "f_002",
+      "mode": "D",
+      "importance": 0.921,
+      "aligned_seg_ids": [
+        "seg_0029",
+        "seg_0030",
+        "seg_0031"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0004",
+      "frame_id": "c_0004",
+      "requested_t": 97.0,
+      "actual_t": 97.0,
+      "t": 97.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0004_t0097.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0034"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 58.181,
+        "contrast": 11.945,
+        "sharpness": 4.706,
+        "blank": false,
+        "fingerprint": "b8449fc5ad2bb8165d1edc2b014226d6cfe9dec6153a8f1203c7658b597fba96",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0014",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.553,
+      "aligned_seg_ids": [
+        "seg_0032",
+        "seg_0033",
+        "seg_0034",
+        "seg_0035"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0005",
+      "frame_id": "c_0005",
+      "requested_t": 154.5,
+      "actual_t": 154.5,
+      "t": 154.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0005_t0154.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_panel_terminal"
+      ],
+      "seg_ids": [
+        "seg_0044",
+        "seg_0045",
+        "seg_0046",
+        "seg_0052"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 48.875,
+        "contrast": 7.246,
+        "sharpness": 1.904,
+        "blank": false,
+        "fingerprint": "4e51a0a25eb145714ba94abeddf8b6ad3ff1bce08d89f72f91f931460c9f1a02",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0018",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.706,
+      "aligned_seg_ids": [
+        "seg_0042",
+        "seg_0043",
+        "seg_0044",
+        "seg_0045",
+        "seg_0046",
+        "seg_0047",
+        "seg_0048",
+        "seg_0049",
+        "seg_0050",
+        "seg_0051",
+        "seg_0052"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0006",
+      "frame_id": "c_0006",
+      "requested_t": 200.5,
+      "actual_t": 200.5,
+      "t": 200.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0006_t0200.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_mode_picker"
+      ],
+      "seg_ids": [
+        "seg_0057",
+        "seg_0058",
+        "seg_0059",
+        "seg_0060",
+        "seg_0065"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 50.41,
+        "contrast": 6.105,
+        "sharpness": 1.327,
+        "blank": false,
+        "fingerprint": "da05d7c1cfc2c65254ebe4e431c195c2837d32aa9eb21ca49b1dff7d9a98d425",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0021",
+      "state_family": "f_009",
+      "mode": "B",
+      "importance": 0.676,
+      "aligned_seg_ids": [
+        "seg_0056",
+        "seg_0057",
+        "seg_0058",
+        "seg_0059",
+        "seg_0060",
+        "seg_0061",
+        "seg_0062",
+        "seg_0063",
+        "seg_0064",
+        "seg_0065"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0007",
+      "frame_id": "c_0007",
+      "requested_t": 213.0,
+      "actual_t": 213.0,
+      "t": 213.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0007_t0213.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_theme_answer"
+      ],
+      "seg_ids": [
+        "seg_0068",
+        "seg_0069",
+        "seg_0070"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 52.831,
+        "contrast": 8.181,
+        "sharpness": 2.687,
+        "blank": false,
+        "fingerprint": "3b6068193760cb161b71867524c56487d8322cb87f174f15657036911d29d13b",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0023",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.688,
+      "aligned_seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067",
+        "seg_0068",
+        "seg_0069",
+        "seg_0070",
+        "seg_0071"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0008",
+      "frame_id": "c_0008",
+      "requested_t": 218.5,
+      "actual_t": 218.5,
+      "t": 218.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0008_t0218.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0072"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 73.762,
+        "contrast": 49.218,
+        "sharpness": 7.446,
+        "blank": false,
+        "fingerprint": "3d56a5a182769fb661d3c5d64b69a85f18385d513cb947c33cea5953d66f1342",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0024",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.428,
+      "aligned_seg_ids": [
+        "seg_0070",
+        "seg_0071",
+        "seg_0072"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0009",
+      "frame_id": "c_0009",
+      "requested_t": 224.0,
+      "actual_t": 224.0,
+      "t": 224.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0009_t0224.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0073"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 88.342,
+        "contrast": 58.864,
+        "sharpness": 5.88,
+        "blank": false,
+        "fingerprint": "46563912e47c487c9dce2f8ffb71d624d15d0e0b40f71468747bd1925822d7e2",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0026",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.438,
+      "aligned_seg_ids": [
+        "seg_0071",
+        "seg_0072",
+        "seg_0073",
+        "seg_0074"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0010",
+      "frame_id": "c_0010",
+      "requested_t": 229.0,
+      "actual_t": 229.0,
+      "t": 229.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0010_t0229.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0075"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 74.365,
+        "contrast": 58.975,
+        "sharpness": 8.153,
+        "blank": false,
+        "fingerprint": "f30265c1325b09ed972a8690f20b5409fffb462ab30a5106b0d79edde344aec5",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0027",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.448,
+      "aligned_seg_ids": [
+        "seg_0073",
+        "seg_0074",
+        "seg_0075"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0011",
+      "frame_id": "c_0011",
+      "requested_t": 233.0,
+      "actual_t": 233.0,
+      "t": 233.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0011_t0233.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0076"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 66.262,
+        "contrast": 50.74,
+        "sharpness": 4.421,
+        "blank": false,
+        "fingerprint": "6ef833a4c1edc526489c5cd3a8523e13a4c462155a1e1fe03f279dce9ed2d910",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0028",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.594,
+      "aligned_seg_ids": [
+        "seg_0074",
+        "seg_0075",
+        "seg_0076"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0012",
+      "frame_id": "c_0012",
+      "requested_t": 238.5,
+      "actual_t": 238.5,
+      "t": 238.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0012_t0238.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0077"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 48.905,
+        "contrast": 9.034,
+        "sharpness": 1.383,
+        "blank": false,
+        "fingerprint": "404f6b2248952254dbbf7baea3034518096492a2faa8460f200e9a47dfbadd8e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0029",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.591,
+      "aligned_seg_ids": [
+        "seg_0075",
+        "seg_0076",
+        "seg_0077",
+        "seg_0078"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0013",
+      "frame_id": "c_0013",
+      "requested_t": 253.5,
+      "actual_t": 253.5,
+      "t": 253.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0013_t0253.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_intellisense"
+      ],
+      "seg_ids": [
+        "seg_0080",
+        "seg_0081",
+        "seg_0082"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 61.326,
+        "contrast": 37.524,
+        "sharpness": 5.63,
+        "blank": false,
+        "fingerprint": "7711ccfe1a2c43fe4c9e35a97dd07f77753455dd910f4ee1dd39f30b13148374",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0030",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.756,
+      "aligned_seg_ids": [
+        "seg_0077",
+        "seg_0078",
+        "seg_0079",
+        "seg_0080",
+        "seg_0081"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0014",
+      "frame_id": "c_0014",
+      "requested_t": 256.0,
+      "actual_t": 256.0,
+      "t": 256.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0014_t0256.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_intellisense"
+      ],
+      "seg_ids": [
+        "seg_0080",
+        "seg_0081",
+        "seg_0082",
+        "seg_0102",
+        "seg_0105",
+        "seg_0106",
+        "seg_0107"
+      ],
+      "reasons": [
+        "state",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 58.231,
+        "contrast": 37.177,
+        "sharpness": 4.067,
+        "blank": false,
+        "fingerprint": "a48f35bf1c7b4312daba0eecaa08111089fee19033bf4f239869412b5b6f9760",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_002",
+      "family_revisits": [],
+      "state_id": "s_0031",
+      "state_family": "f_003",
+      "mode": "B",
+      "importance": 0.678,
+      "aligned_seg_ids": [
+        "seg_0080",
+        "seg_0081"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0015",
+      "frame_id": "c_0015",
+      "requested_t": 261.0,
+      "actual_t": 261.0,
+      "t": 261.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0015_t0261.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_ghost_text",
+        "ch04_intellisense"
+      ],
+      "seg_ids": [
+        "seg_0080",
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084",
+        "seg_0085"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 59.851,
+        "contrast": 37.344,
+        "sharpness": 5.041,
+        "blank": false,
+        "fingerprint": "974fab7b7867f473630fac1f83eb85848a18cf30ca98f012927e12dd27727176",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0032",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.675,
+      "aligned_seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0016",
+      "frame_id": "c_0016",
+      "requested_t": 273.5,
+      "actual_t": 273.5,
+      "t": 273.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0016_t0273.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_ghost_text",
+        "ch04_intellisense"
+      ],
+      "seg_ids": [
+        "seg_0080",
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084",
+        "seg_0085",
+        "seg_0087"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 59.257,
+        "contrast": 37.286,
+        "sharpness": 4.758,
+        "blank": false,
+        "fingerprint": "f12f57b3f90b6ef886fc256f79f755db1d981fd07be41fb02a60427439233f80",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0033",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.671,
+      "aligned_seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084",
+        "seg_0085",
+        "seg_0086",
+        "seg_0087"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0017",
+      "frame_id": "c_0017",
+      "requested_t": 290.0,
+      "actual_t": 290.0,
+      "t": 290.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0017_t0290.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0088",
+        "seg_0091",
+        "seg_0092"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 50.693,
+        "contrast": 47.63,
+        "sharpness": 7.407,
+        "blank": false,
+        "fingerprint": "8b51fe010d432c43b91e75b53926b7783355bf0d2c4ada2cabfce34efbd5d1c4",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_003",
+      "family_revisits": [],
+      "state_id": "s_0037",
+      "state_family": "f_005",
+      "mode": "B",
+      "importance": 0.319,
+      "aligned_seg_ids": [
+        "seg_0090",
+        "seg_0091",
+        "seg_0092",
+        "seg_0093"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0018",
+      "frame_id": "c_0018",
+      "requested_t": 333.5,
+      "actual_t": 333.5,
+      "t": 333.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0018_t0333.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_run_output"
+      ],
+      "seg_ids": [
+        "seg_0105",
+        "seg_0106",
+        "seg_0107"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 49.851,
+        "contrast": 7.487,
+        "sharpness": 2.027,
+        "blank": false,
+        "fingerprint": "24ffa76fa6e5cf4cfe6042f6fb451692729a0189c363ea14a1ef18141520c877",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_001",
+      "family_revisits": [
+        158.0,
+        166.5,
+        343.5
+      ],
+      "state_id": "s_0041",
+      "state_family": "f_001",
+      "mode": "B",
+      "importance": 0.743,
+      "aligned_seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0108"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0019",
+      "frame_id": "c_0019",
+      "requested_t": 357.0,
+      "actual_t": 357.0,
+      "t": 357.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0019_t0357.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_extension_recommendation"
+      ],
+      "seg_ids": [
+        "seg_0114",
+        "seg_0115",
+        "seg_0116",
+        "seg_0117"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 50.589,
+        "contrast": 8.077,
+        "sharpness": 2.135,
+        "blank": false,
+        "fingerprint": "d0ab10d47bb59fd7e3db1aaf441d7df9d2ea876754c3cbf70940f6ede8b872d6",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0043",
+      "state_family": "f_001",
+      "mode": "B",
+      "importance": 0.827,
+      "aligned_seg_ids": [
+        "seg_0110",
+        "seg_0111",
+        "seg_0112",
+        "seg_0113",
+        "seg_0114",
+        "seg_0115"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0020",
+      "frame_id": "c_0020",
+      "requested_t": 363.5,
+      "actual_t": 363.5,
+      "t": 363.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0020_t0363.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_extension_recommendation"
+      ],
+      "seg_ids": [
+        "seg_0115",
+        "seg_0116",
+        "seg_0117"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 52.053,
+        "contrast": 9.838,
+        "sharpness": 3.303,
+        "blank": false,
+        "fingerprint": "918cd950b786d5601a7d42022b43d5369451a312ef532194e25e283a85fbf412",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0044",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.832,
+      "aligned_seg_ids": [
+        "seg_0113",
+        "seg_0114",
+        "seg_0115",
+        "seg_0116",
+        "seg_0117"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0021",
+      "frame_id": "c_0021",
+      "requested_t": 371.0,
+      "actual_t": 371.0,
+      "t": 371.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0021_t0371.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_extension_recommendation"
+      ],
+      "seg_ids": [
+        "seg_0115",
+        "seg_0116",
+        "seg_0117",
+        "seg_0119"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 57.199,
+        "contrast": 14.12,
+        "sharpness": 5.338,
+        "blank": false,
+        "fingerprint": "1527603bd49e6053ba216eff2c1a4d88581fb2947b6d26f2f7d6ecd604317670",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0045",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.843,
+      "aligned_seg_ids": [
+        "seg_0116",
+        "seg_0117",
+        "seg_0118",
+        "seg_0119"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0022",
+      "frame_id": "c_0022",
+      "requested_t": 397.5,
+      "actual_t": 397.5,
+      "t": 397.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0022_t0397.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0128"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 69.737,
+        "contrast": 24.689,
+        "sharpness": 5.032,
+        "blank": false,
+        "fingerprint": "c852fd45ed1de096ed01fcd6f2c71ed25d2e32f66496a0c60c20223f6652ba1f",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0050",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.465,
+      "aligned_seg_ids": [
+        "seg_0126",
+        "seg_0127",
+        "seg_0128"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0023",
+      "frame_id": "c_0023",
+      "requested_t": 400.5,
+      "actual_t": 400.5,
+      "t": 400.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0023_t0400.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0129"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 55.021,
+        "contrast": 10.065,
+        "sharpness": 4.641,
+        "blank": false,
+        "fingerprint": "3f55e3fb603a1493b01de30928049c624c35bcf09e855c154c8644b729298f1a",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0051",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.457,
+      "aligned_seg_ids": [
+        "seg_0127",
+        "seg_0128",
+        "seg_0129"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0024",
+      "frame_id": "c_0024",
+      "requested_t": 402.0,
+      "actual_t": 402.0,
+      "t": 402.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0024_t0402.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0130"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 55.83,
+        "contrast": 12.86,
+        "sharpness": 5.149,
+        "blank": false,
+        "fingerprint": "86021ad91c2bf3ec8c25b6f25d651e3b9cc8291f55c5fa2d538f3de36e64ed79",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0052",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.457,
+      "aligned_seg_ids": [
+        "seg_0128",
+        "seg_0129",
+        "seg_0130"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0025",
+      "frame_id": "c_0025",
+      "requested_t": 411.0,
+      "actual_t": 411.0,
+      "t": 411.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0025_t0411.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 63.808,
+        "contrast": 37.378,
+        "sharpness": 7.415,
+        "blank": false,
+        "fingerprint": "52fe14b8d9033d22901d7d6c65c1b19cd526804a3012bef64a27c650ae749cfd",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0055",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.42,
+      "aligned_seg_ids": [
+        "seg_0130",
+        "seg_0131",
+        "seg_0132"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0026",
+      "frame_id": "c_0026",
+      "requested_t": 414.0,
+      "actual_t": 414.0,
+      "t": 414.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0026_t0414.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_calculator"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0148"
+      ],
+      "reasons": [
+        "state",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 75.956,
+        "contrast": 46.741,
+        "sharpness": 6.084,
+        "blank": false,
+        "fingerprint": "afe59e2d83b277b68629f16834b5ada17a47cca75407b462174e1e479a852851",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_005",
+      "family_revisits": [],
+      "state_id": "s_0056",
+      "state_family": "f_008",
+      "mode": "D",
+      "importance": 0.77,
+      "aligned_seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0027",
+      "frame_id": "c_0027",
+      "requested_t": 431.0,
+      "actual_t": 431.0,
+      "t": 431.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0027_t0431.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_rename_suggestion"
+      ],
+      "seg_ids": [
+        "seg_0137",
+        "seg_0138",
+        "seg_0139",
+        "seg_0140"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 53.055,
+        "contrast": 8.202,
+        "sharpness": 3.026,
+        "blank": false,
+        "fingerprint": "7d5048008d3094a0a8e2a4df39a2c089629717188061ec5c59506ce2e5442894",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0059",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.725,
+      "aligned_seg_ids": [
+        "seg_0136",
+        "seg_0137"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0028",
+      "frame_id": "c_0028",
+      "requested_t": 451.0,
+      "actual_t": 451.0,
+      "t": 451.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0028_t0451.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_rename_suggestion"
+      ],
+      "seg_ids": [
+        "seg_0138",
+        "seg_0139",
+        "seg_0140",
+        "seg_0142"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 53.879,
+        "contrast": 9.191,
+        "sharpness": 3.257,
+        "blank": false,
+        "fingerprint": "ee40895b0d5a63b89ed55d0992eb11bec44c10fa4a5b29596690318a2f560cce",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0060",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.869,
+      "aligned_seg_ids": [
+        "seg_0137",
+        "seg_0138",
+        "seg_0139",
+        "seg_0140",
+        "seg_0141",
+        "seg_0142"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0029",
+      "frame_id": "c_0029",
+      "requested_t": 511.5,
+      "actual_t": 511.5,
+      "t": 511.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0029_t0511.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_flask_answer"
+      ],
+      "seg_ids": [
+        "seg_0159",
+        "seg_0160",
+        "seg_0161"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 52.51,
+        "contrast": 8.692,
+        "sharpness": 2.749,
+        "blank": false,
+        "fingerprint": "978aee6ded500bef3c0072865318e965d308c61cf9fcdcd292705d59208c5562",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0067",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.659,
+      "aligned_seg_ids": [
+        "seg_0159",
+        "seg_0160"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0030",
+      "frame_id": "c_0030",
+      "requested_t": 514.0,
+      "actual_t": 514.0,
+      "t": 514.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0030_t0514.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_flask_answer"
+      ],
+      "seg_ids": [
+        "seg_0159",
+        "seg_0160",
+        "seg_0161"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 52.609,
+        "contrast": 8.652,
+        "sharpness": 2.724,
+        "blank": false,
+        "fingerprint": "2b680554108c4346aba70c605dffdb87e873619c7c8906e7743d49d29db8adc7",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0068",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.659,
+      "aligned_seg_ids": [
+        "seg_0159",
+        "seg_0160",
+        "seg_0161"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0031",
+      "frame_id": "c_0031",
+      "requested_t": 518.5,
+      "actual_t": 518.5,
+      "t": 518.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0031_t0518.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_flask_answer"
+      ],
+      "seg_ids": [
+        "seg_0159",
+        "seg_0160",
+        "seg_0161",
+        "seg_0162",
+        "seg_0163"
+      ],
+      "reasons": [
+        "state",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 51.855,
+        "contrast": 7.728,
+        "sharpness": 2.591,
+        "blank": false,
+        "fingerprint": "e6293fe0fb81cd214495d12dbc5f34acba062d974536d15775247560a91164d7",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_007",
+      "family_revisits": [],
+      "state_id": "s_0069",
+      "state_family": "f_010",
+      "mode": "B",
+      "importance": 0.659,
+      "aligned_seg_ids": [
+        "seg_0161",
+        "seg_0162"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0032",
+      "frame_id": "c_0032",
+      "requested_t": 547.0,
+      "actual_t": 547.0,
+      "t": 547.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0032_t0547.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_plan"
+      ],
+      "seg_ids": [
+        "seg_0169",
+        "seg_0170",
+        "seg_0171"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 51.378,
+        "contrast": 7.492,
+        "sharpness": 2.285,
+        "blank": false,
+        "fingerprint": "6d2593b2e85632f63ef3d7354407ef961c7dad22df507f08617c2e185267ee11",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0073",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.663,
+      "aligned_seg_ids": [
+        "seg_0165",
+        "seg_0166",
+        "seg_0167",
+        "seg_0168",
+        "seg_0169",
+        "seg_0170",
+        "seg_0171"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0033",
+      "frame_id": "c_0033",
+      "requested_t": 556.5,
+      "actual_t": 556.5,
+      "t": 556.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0033_t0556.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_plan"
+      ],
+      "seg_ids": [
+        "seg_0170",
+        "seg_0171",
+        "seg_0173"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 53.26,
+        "contrast": 9.538,
+        "sharpness": 2.863,
+        "blank": false,
+        "fingerprint": "ee3a32ef56bfbce9a87f43d6e2233432ba4ceb9dd2d42b20d52179fa6462d8f1",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0074",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.723,
+      "aligned_seg_ids": [
+        "seg_0170",
+        "seg_0171",
+        "seg_0172",
+        "seg_0173",
+        "seg_0174"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0034",
+      "frame_id": "c_0034",
+      "requested_t": 565.5,
+      "actual_t": 565.5,
+      "t": 565.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0034_t0565.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0175"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 60.294,
+        "contrast": 31.794,
+        "sharpness": 7.259,
+        "blank": false,
+        "fingerprint": "07ca6ae798150f85cb55f2c72d84678955262b5b0adcff77402581524c5842ef",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0077",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.38,
+      "aligned_seg_ids": [
+        "seg_0174",
+        "seg_0175",
+        "seg_0176"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0035",
+      "frame_id": "c_0035",
+      "requested_t": 571.5,
+      "actual_t": 571.5,
+      "t": 571.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0035_t0571.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0177"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 84.423,
+        "contrast": 57.206,
+        "sharpness": 15.711,
+        "blank": false,
+        "fingerprint": "515d2b19f1528381cfb617a834778be1c3f9cb48a6481031fe76647457977122",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0078",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.381,
+      "aligned_seg_ids": [
+        "seg_0175",
+        "seg_0176",
+        "seg_0177",
+        "seg_0178"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0036",
+      "frame_id": "c_0036",
+      "requested_t": 575.0,
+      "actual_t": 575.0,
+      "t": 575.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0036_t0575.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0178"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 66.583,
+        "contrast": 55.211,
+        "sharpness": 5.307,
+        "blank": false,
+        "fingerprint": "d19635231092506a7fcc6d3f8145f920e7107d0a8915453c4ea61cef82a73df0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0079",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.374,
+      "aligned_seg_ids": [
+        "seg_0176",
+        "seg_0177",
+        "seg_0178"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0037",
+      "frame_id": "c_0037",
+      "requested_t": 591.0,
+      "actual_t": 591.0,
+      "t": 591.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0037_t0591.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_weather_app"
+      ],
+      "seg_ids": [
+        "seg_0180",
+        "seg_0181",
+        "seg_0182",
+        "seg_0183"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 62.097,
+        "contrast": 49.852,
+        "sharpness": 5.042,
+        "blank": false,
+        "fingerprint": "042739de1ef95ac62ea027d9f3e7f6532dd069186498a45b395b999189dea5b3",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0080",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.716,
+      "aligned_seg_ids": [
+        "seg_0177",
+        "seg_0178",
+        "seg_0179",
+        "seg_0180",
+        "seg_0181",
+        "seg_0182",
+        "seg_0183"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0038",
+      "frame_id": "c_0038",
+      "requested_t": 612.0,
+      "actual_t": 612.0,
+      "t": 612.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0038_t0612.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_simple_browser"
+      ],
+      "seg_ids": [
+        "seg_0189",
+        "seg_0190",
+        "seg_0191"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 57.156,
+        "contrast": 16.091,
+        "sharpness": 4.933,
+        "blank": false,
+        "fingerprint": "d941472773571564c60b569c6e123cf7c15aba9575a9ef5977e87c791671aec0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0083",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.723,
+      "aligned_seg_ids": [
+        "seg_0185",
+        "seg_0186",
+        "seg_0187",
+        "seg_0188",
+        "seg_0189",
+        "seg_0190"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0039",
+      "frame_id": "c_0039",
+      "requested_t": 616.0,
+      "actual_t": 616.0,
+      "t": 616.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0039_t0616.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_simple_browser"
+      ],
+      "seg_ids": [
+        "seg_0189",
+        "seg_0190",
+        "seg_0191"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 52.515,
+        "contrast": 15.549,
+        "sharpness": 4.284,
+        "blank": false,
+        "fingerprint": "ea761dc944e4a94b76d4a9ec497b5d4759209d74206307ae3a9851f011f11fd3",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_008",
+      "family_revisits": [],
+      "state_id": "s_0084",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.721,
+      "aligned_seg_ids": [
+        "seg_0189",
+        "seg_0190",
+        "seg_0191"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0040",
+      "frame_id": "c_0040",
+      "requested_t": 639.0,
+      "actual_t": 639.0,
+      "t": 639.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0040_t0639.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0200"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 60.652,
+        "contrast": 33.449,
+        "sharpness": 3.561,
+        "blank": false,
+        "fingerprint": "dcc40ab6dffea1e92f996f6b250fe419d92b18b864b00d57ea93afb010a29df5",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0089",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.383,
+      "aligned_seg_ids": [
+        "seg_0198",
+        "seg_0199",
+        "seg_0200",
+        "seg_0201"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0041",
+      "frame_id": "c_0041",
+      "requested_t": 659.0,
+      "actual_t": 659.0,
+      "t": 659.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0041_t0659.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0207"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 51.853,
+        "contrast": 7.293,
+        "sharpness": 1.733,
+        "blank": false,
+        "fingerprint": "0c9eaaa3c4daee3db1d854fd80932a76c2f062b5093f14d4e3aa0cb49184e666",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0092",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.539,
+      "aligned_seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205",
+        "seg_0206",
+        "seg_0207"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0042",
+      "frame_id": "c_0042",
+      "requested_t": 662.5,
+      "actual_t": 662.5,
+      "t": 662.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0042_t0662.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_staged"
+      ],
+      "seg_ids": [
+        "seg_0205",
+        "seg_0206",
+        "seg_0207",
+        "seg_0208"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 57.133,
+        "contrast": 19.767,
+        "sharpness": 5.809,
+        "blank": false,
+        "fingerprint": "e3410c6ec75a0143072e2dadf88c29ce32b1802b51cffe8c681728131a323fef",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0093",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.878,
+      "aligned_seg_ids": [
+        "seg_0206",
+        "seg_0207",
+        "seg_0208"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0043",
+      "frame_id": "c_0043",
+      "requested_t": 679.5,
+      "actual_t": 679.5,
+      "t": 679.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0043_t0679.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_ai_commit_message"
+      ],
+      "seg_ids": [
+        "seg_0211",
+        "seg_0212",
+        "seg_0213",
+        "seg_0214"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 63.079,
+        "contrast": 22.871,
+        "sharpness": 7.815,
+        "blank": false,
+        "fingerprint": "793734fd326b207b97fdc4d91140f57a648ee9461c298d12f8024f245808e8e0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0095",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.714,
+      "aligned_seg_ids": [
+        "seg_0211",
+        "seg_0212",
+        "seg_0213",
+        "seg_0214"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0044",
+      "frame_id": "c_0044",
+      "requested_t": 682.0,
+      "actual_t": 682.0,
+      "t": 682.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0044_t0682.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0214"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 56.844,
+        "contrast": 22.676,
+        "sharpness": 5.227,
+        "blank": false,
+        "fingerprint": "9f50d04d9bf5fe5f9a3664a77f971218fd85b118797821caa28dca4965c01ef7",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0096",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.366,
+      "aligned_seg_ids": [
+        "seg_0213",
+        "seg_0214",
+        "seg_0215"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0045",
+      "frame_id": "c_0045",
+      "requested_t": 685.0,
+      "actual_t": 685.0,
+      "t": 685.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0045_t0685.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0216"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 58.546,
+        "contrast": 18.7,
+        "sharpness": 4.287,
+        "blank": false,
+        "fingerprint": "4ebedc7d362c5649e7df25341fafb61ac63154cae61a8362f706c70e16bedc6f",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0097",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.366,
+      "aligned_seg_ids": [
+        "seg_0214",
+        "seg_0215",
+        "seg_0216"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0046",
+      "frame_id": "c_0046",
+      "requested_t": 699.0,
+      "actual_t": 699.0,
+      "t": 699.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0046_t0699.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_github_repo"
+      ],
+      "seg_ids": [
+        "seg_0218",
+        "seg_0219",
+        "seg_0220",
+        "seg_0221"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 244.673,
+        "contrast": 17.746,
+        "sharpness": 5.114,
+        "blank": false,
+        "fingerprint": "d1e87c1eb8aee3304e2d69f22ca902853071f9abfa2c80fb2d9e15d40865a0e2",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0099",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.715,
+      "aligned_seg_ids": [
+        "seg_0217",
+        "seg_0218",
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0047",
+      "frame_id": "c_0047",
+      "requested_t": 706.0,
+      "actual_t": 706.0,
+      "t": 706.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0047_t0706.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0223"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 108.828,
+        "contrast": 76.05,
+        "sharpness": 12.737,
+        "blank": false,
+        "fingerprint": "39f11c561c92180abd0a8e4d1dcc44230cee9ec344a8ba83931fce93f14dfed2",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0100",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.371,
+      "aligned_seg_ids": [
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0048",
+      "frame_id": "c_0048",
+      "requested_t": 715.0,
+      "actual_t": 715.0,
+      "t": 715.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0048_t0715.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0226"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 238.544,
+        "contrast": 37.379,
+        "sharpness": 8.586,
+        "blank": false,
+        "fingerprint": "8368586240799f246b68cd5999657a1687f7ba27fd633315ea4d9127f357e110",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_010",
+      "family_revisits": [
+        850.5
+      ],
+      "state_id": "s_0103",
+      "state_family": "f_014",
+      "mode": "D",
+      "importance": 0.371,
+      "aligned_seg_ids": [
+        "seg_0224",
+        "seg_0225",
+        "seg_0226"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0049",
+      "frame_id": "c_0049",
+      "requested_t": 731.0,
+      "actual_t": 731.0,
+      "t": 731.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0049_t0731.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_configure_tools"
+      ],
+      "seg_ids": [
+        "seg_0229",
+        "seg_0230"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 54.718,
+        "contrast": 15.811,
+        "sharpness": 4.371,
+        "blank": false,
+        "fingerprint": "ece341868c127b1a6209e9ac9db14a861345bb10a9e7447e9f13f5802fec44fc",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0105",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.875,
+      "aligned_seg_ids": [
+        "seg_0229",
+        "seg_0230"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0050",
+      "frame_id": "c_0050",
+      "requested_t": 734.0,
+      "actual_t": 734.0,
+      "t": 734.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0050_t0734.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_configure_tools"
+      ],
+      "seg_ids": [
+        "seg_0229",
+        "seg_0230",
+        "seg_0231"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 52.28,
+        "contrast": 10.175,
+        "sharpness": 2.618,
+        "blank": false,
+        "fingerprint": "1f08cb72557175e73a8d1a7b52b3314e8cd6c952fb9cd233d67869a61229b42c",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0106",
+      "state_family": "f_013",
+      "mode": "D",
+      "importance": 0.873,
+      "aligned_seg_ids": [
+        "seg_0230",
+        "seg_0231"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0051",
+      "frame_id": "c_0051",
+      "requested_t": 752.0,
+      "actual_t": 752.0,
+      "t": 752.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0051_t0752.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0238"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 56.157,
+        "contrast": 13.14,
+        "sharpness": 4.249,
+        "blank": false,
+        "fingerprint": "05cc071f12526c243a4bdd83dcdf4fb10a2df096ee0b8b64b7b5484e95445b9c",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0107",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.511,
+      "aligned_seg_ids": [
+        "seg_0230",
+        "seg_0231",
+        "seg_0232",
+        "seg_0233",
+        "seg_0234",
+        "seg_0235",
+        "seg_0236",
+        "seg_0237",
+        "seg_0238"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0052",
+      "frame_id": "c_0052",
+      "requested_t": 760.0,
+      "actual_t": 760.0,
+      "t": 760.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0052_t0760.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_mcp_marketplace"
+      ],
+      "seg_ids": [
+        "seg_0240",
+        "seg_0241",
+        "seg_0242"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 52.826,
+        "contrast": 11.672,
+        "sharpness": 4.687,
+        "blank": false,
+        "fingerprint": "16fe7a83f1b1e11cfe9ee1ad16a62e0c39d6c000455c240cf36bce008c736fd8",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0109",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.851,
+      "aligned_seg_ids": [
+        "seg_0238",
+        "seg_0239",
+        "seg_0240"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0053",
+      "frame_id": "c_0053",
+      "requested_t": 763.0,
+      "actual_t": 763.0,
+      "t": 763.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0053_t0763.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_mcp_marketplace"
+      ],
+      "seg_ids": [
+        "seg_0240",
+        "seg_0241",
+        "seg_0242"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 49.773,
+        "contrast": 7.507,
+        "sharpness": 2.135,
+        "blank": false,
+        "fingerprint": "e66c5c5cf83b5ed072c4ab4b8f826d0277b86e7be5900da2f087ecf24f982282",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0110",
+      "state_family": "f_012",
+      "mode": "D",
+      "importance": 0.851,
+      "aligned_seg_ids": [
+        "seg_0239",
+        "seg_0240",
+        "seg_0241"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0054",
+      "frame_id": "c_0054",
+      "requested_t": 780.5,
+      "actual_t": 780.5,
+      "t": 780.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0054_t0780.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0247"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 57.475,
+        "contrast": 18.6,
+        "sharpness": 7.62,
+        "blank": false,
+        "fingerprint": "c6a18b8aa70df4082721de883cc7b9ed36aa1649ffb9713e13e2d14c9f0a0a31",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0114",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.357,
+      "aligned_seg_ids": [
+        "seg_0245",
+        "seg_0246",
+        "seg_0247"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0055",
+      "frame_id": "c_0055",
+      "requested_t": 788.5,
+      "actual_t": 788.5,
+      "t": 788.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0055_t0788.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_configure_tools",
+        "ch08_installed",
+        "ch08_mcp_marketplace"
+      ],
+      "seg_ids": [
+        "seg_0229",
+        "seg_0230",
+        "seg_0239",
+        "seg_0240",
+        "seg_0241",
+        "seg_0242",
+        "seg_0244",
+        "seg_0248",
+        "seg_0249",
+        "seg_0250"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 49.999,
+        "contrast": 7.7,
+        "sharpness": 2.317,
+        "blank": false,
+        "fingerprint": "bce0f3ed9497b4d24818d03587790b6164c765d3b0e340688fd0a374a4efeabb",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_011",
+      "family_revisits": [],
+      "state_id": "s_0116",
+      "state_family": "f_012",
+      "mode": "D",
+      "importance": 0.716,
+      "aligned_seg_ids": [
+        "seg_0246",
+        "seg_0247",
+        "seg_0248",
+        "seg_0249",
+        "seg_0250"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0056",
+      "frame_id": "c_0056",
+      "requested_t": 813.0,
+      "actual_t": 813.0,
+      "t": 813.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0056_t0813.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_three_features"
+      ],
+      "seg_ids": [
+        "seg_0258",
+        "seg_0259",
+        "seg_0260"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 71.185,
+        "contrast": 19.388,
+        "sharpness": 9.424,
+        "blank": false,
+        "fingerprint": "51ee27fabc555c0257e27c9996e91b4f54373476f7a302ef2f0e31abc354ff49",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0120",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.855,
+      "aligned_seg_ids": [
+        "seg_0255",
+        "seg_0256",
+        "seg_0257",
+        "seg_0258",
+        "seg_0259",
+        "seg_0260"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0057",
+      "frame_id": "c_0057",
+      "requested_t": 816.5,
+      "actual_t": 816.5,
+      "t": 816.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0057_t0816.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0260"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 64.421,
+        "contrast": 17.768,
+        "sharpness": 5.971,
+        "blank": false,
+        "fingerprint": "35412f46b7c5203cf4da60aa67b0ed66c2531d1f8edbf687ba74bc5acdef057c",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0121",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.35,
+      "aligned_seg_ids": [
+        "seg_0259",
+        "seg_0260"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0058",
+      "frame_id": "c_0058",
+      "requested_t": 822.0,
+      "actual_t": 822.0,
+      "t": 822.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0058_t0822.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0262"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 57.082,
+        "contrast": 11.325,
+        "sharpness": 5.63,
+        "blank": false,
+        "fingerprint": "114da91a68d1cba8b1c6ee0b132c85a3b0a94a151e7d0805600b0fd351662c33",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0122",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.349,
+      "aligned_seg_ids": [
+        "seg_0259",
+        "seg_0260",
+        "seg_0261",
+        "seg_0262"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0059",
+      "frame_id": "c_0059",
+      "requested_t": 842.5,
+      "actual_t": 842.5,
+      "t": 842.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0059_t0842.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0269"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 59.69,
+        "contrast": 19.86,
+        "sharpness": 6.326,
+        "blank": false,
+        "fingerprint": "7e87347d21dd02a6a6f0ac1d34b73a46c08bf2424709f11c9ddbac44bb6e4169",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0124",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.492,
+      "aligned_seg_ids": [
+        "seg_0263",
+        "seg_0264",
+        "seg_0265",
+        "seg_0266",
+        "seg_0267",
+        "seg_0268",
+        "seg_0269",
+        "seg_0270"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0060",
+      "frame_id": "c_0060",
+      "requested_t": 854.0,
+      "actual_t": 854.0,
+      "t": 854.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0060_t0854.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_issues_on_github"
+      ],
+      "seg_ids": [
+        "seg_0273",
+        "seg_0274",
+        "seg_0275"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 242.885,
+        "contrast": 17.552,
+        "sharpness": 5.401,
+        "blank": false,
+        "fingerprint": "1906da01f8c56041fe2a552bc02c93fd144bb41d37effb8baab37ce9fbff882b",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0127",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.695,
+      "aligned_seg_ids": [
+        "seg_0273",
+        "seg_0274",
+        "seg_0275"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0061",
+      "frame_id": "c_0061",
+      "requested_t": 858.5,
+      "actual_t": 858.5,
+      "t": 858.5,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0061_t0858.500_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0276"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 70.611,
+        "contrast": 44.369,
+        "sharpness": 6.434,
+        "blank": false,
+        "fingerprint": "030c494de131a63bb52a4131f01caf369ba418c0babdc439353e0d6ee000859b",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0128",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.348,
+      "aligned_seg_ids": [
+        "seg_0274",
+        "seg_0275",
+        "seg_0276"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0062",
+      "frame_id": "c_0062",
+      "requested_t": 889.0,
+      "actual_t": 889.0,
+      "t": 889.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0062_t0889.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_sessions"
+      ],
+      "seg_ids": [
+        "seg_0284",
+        "seg_0285",
+        "seg_0286"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 51.583,
+        "contrast": 7.446,
+        "sharpness": 2.538,
+        "blank": false,
+        "fingerprint": "05ea301991da1f3025c60c7e4f1fe06e729908e820d8a533804dcadf866e9713",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0130",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.685,
+      "aligned_seg_ids": [
+        "seg_0281",
+        "seg_0282",
+        "seg_0283",
+        "seg_0284",
+        "seg_0285",
+        "seg_0286"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0063",
+      "frame_id": "c_0063",
+      "requested_t": 894.0,
+      "actual_t": 894.0,
+      "t": 894.0,
+      "timestamp_error": 0.0,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/candidates/c_0063_t0894.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_sessions"
+      ],
+      "seg_ids": [
+        "seg_0284",
+        "seg_0285",
+        "seg_0286",
+        "seg_0287"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 51.859,
+        "contrast": 8.318,
+        "sharpness": 2.743,
+        "blank": false,
+        "fingerprint": "099a9d8d414b77ddad184e5b4bb299c524466161e29cb5438a06d3f7021f72bf",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0131",
+      "state_family": "f_015",
+      "mode": "D",
+      "importance": 0.684,
+      "aligned_seg_ids": [
+        "seg_0284",
+        "seg_0285",
+        "seg_0286",
+        "seg_0287",
+        "seg_0288",
+        "seg_0289"
+      ],
+      "stage": null
+    }
+  ],
+  "sheets": {
+    "status": "ok",
+    "tiles_per_sheet": 16,
+    "tile_width": 320,
+    "sheets": [
+      {
+        "sheet_id": "sheet_00",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0000",
+            "actual_t": 46.0
+          },
+          {
+            "index": 1,
+            "candidate_id": "c_0001",
+            "actual_t": 68.5
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0002",
+            "actual_t": 85.0
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0003",
+            "actual_t": 88.0
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0004",
+            "actual_t": 97.0
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0005",
+            "actual_t": 154.5
+          },
+          {
+            "index": 6,
+            "sentinel": true
+          },
+          {
+            "index": 7,
+            "candidate_id": "c_0006",
+            "actual_t": 200.5
+          },
+          {
+            "index": 8,
+            "candidate_id": "c_0007",
+            "actual_t": 213.0
+          },
+          {
+            "index": 9,
+            "candidate_id": "c_0008",
+            "actual_t": 218.5
+          },
+          {
+            "index": 10,
+            "candidate_id": "c_0009",
+            "actual_t": 224.0
+          },
+          {
+            "index": 11,
+            "candidate_id": "c_0010",
+            "actual_t": 229.0
+          },
+          {
+            "index": 12,
+            "candidate_id": "c_0011",
+            "actual_t": 233.0
+          },
+          {
+            "index": 13,
+            "candidate_id": "c_0012",
+            "actual_t": 238.5
+          },
+          {
+            "index": 14,
+            "candidate_id": "c_0013",
+            "actual_t": 253.5
+          },
+          {
+            "index": 15,
+            "candidate_id": "c_0014",
+            "actual_t": 256.0
+          }
+        ],
+        "sentinel_id": "x_0029",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/sheets/sheet_00.jpg",
+        "width": 1280,
+        "height": 792,
+        "tokens": 1334
+      },
+      {
+        "sheet_id": "sheet_01",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0015",
+            "actual_t": 261.0
+          },
+          {
+            "index": 1,
+            "candidate_id": "c_0016",
+            "actual_t": 273.5
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0017",
+            "actual_t": 290.0
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0018",
+            "actual_t": 333.5
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0019",
+            "actual_t": 357.0
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0020",
+            "actual_t": 363.5
+          },
+          {
+            "index": 6,
+            "candidate_id": "c_0021",
+            "actual_t": 371.0
+          },
+          {
+            "index": 7,
+            "sentinel": true
+          },
+          {
+            "index": 8,
+            "candidate_id": "c_0022",
+            "actual_t": 397.5
+          },
+          {
+            "index": 9,
+            "candidate_id": "c_0023",
+            "actual_t": 400.5
+          },
+          {
+            "index": 10,
+            "candidate_id": "c_0024",
+            "actual_t": 402.0
+          },
+          {
+            "index": 11,
+            "candidate_id": "c_0025",
+            "actual_t": 411.0
+          },
+          {
+            "index": 12,
+            "candidate_id": "c_0026",
+            "actual_t": 414.0
+          },
+          {
+            "index": 13,
+            "candidate_id": "c_0027",
+            "actual_t": 431.0
+          },
+          {
+            "index": 14,
+            "candidate_id": "c_0028",
+            "actual_t": 451.0
+          },
+          {
+            "index": 15,
+            "candidate_id": "c_0029",
+            "actual_t": 511.5
+          }
+        ],
+        "sentinel_id": "x_0193",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/sheets/sheet_01.jpg",
+        "width": 1280,
+        "height": 792,
+        "tokens": 1334
+      },
+      {
+        "sheet_id": "sheet_02",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0030",
+            "actual_t": 514.0
+          },
+          {
+            "index": 1,
+            "sentinel": true
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0031",
+            "actual_t": 518.5
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0032",
+            "actual_t": 547.0
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0033",
+            "actual_t": 556.5
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0034",
+            "actual_t": 565.5
+          },
+          {
+            "index": 6,
+            "candidate_id": "c_0035",
+            "actual_t": 571.5
+          },
+          {
+            "index": 7,
+            "candidate_id": "c_0036",
+            "actual_t": 575.0
+          },
+          {
+            "index": 8,
+            "candidate_id": "c_0037",
+            "actual_t": 591.0
+          },
+          {
+            "index": 9,
+            "candidate_id": "c_0038",
+            "actual_t": 612.0
+          },
+          {
+            "index": 10,
+            "candidate_id": "c_0039",
+            "actual_t": 616.0
+          },
+          {
+            "index": 11,
+            "candidate_id": "c_0040",
+            "actual_t": 639.0
+          },
+          {
+            "index": 12,
+            "candidate_id": "c_0041",
+            "actual_t": 659.0
+          },
+          {
+            "index": 13,
+            "candidate_id": "c_0042",
+            "actual_t": 662.5
+          },
+          {
+            "index": 14,
+            "candidate_id": "c_0043",
+            "actual_t": 679.5
+          },
+          {
+            "index": 15,
+            "candidate_id": "c_0044",
+            "actual_t": 682.0
+          }
+        ],
+        "sentinel_id": "x_0219",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/sheets/sheet_02.jpg",
+        "width": 1280,
+        "height": 792,
+        "tokens": 1334
+      },
+      {
+        "sheet_id": "sheet_03",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0045",
+            "actual_t": 685.0
+          },
+          {
+            "index": 1,
+            "candidate_id": "c_0046",
+            "actual_t": 699.0
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0047",
+            "actual_t": 706.0
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0048",
+            "actual_t": 715.0
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0049",
+            "actual_t": 731.0
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0050",
+            "actual_t": 734.0
+          },
+          {
+            "index": 6,
+            "candidate_id": "c_0051",
+            "actual_t": 752.0
+          },
+          {
+            "index": 7,
+            "candidate_id": "c_0052",
+            "actual_t": 760.0
+          },
+          {
+            "index": 8,
+            "candidate_id": "c_0053",
+            "actual_t": 763.0
+          },
+          {
+            "index": 9,
+            "candidate_id": "c_0054",
+            "actual_t": 780.5
+          },
+          {
+            "index": 10,
+            "candidate_id": "c_0055",
+            "actual_t": 788.5
+          },
+          {
+            "index": 11,
+            "candidate_id": "c_0056",
+            "actual_t": 813.0
+          },
+          {
+            "index": 12,
+            "candidate_id": "c_0057",
+            "actual_t": 816.5
+          },
+          {
+            "index": 13,
+            "candidate_id": "c_0058",
+            "actual_t": 822.0
+          },
+          {
+            "index": 14,
+            "sentinel": true
+          },
+          {
+            "index": 15,
+            "candidate_id": "c_0059",
+            "actual_t": 842.5
+          }
+        ],
+        "sentinel_id": "x_0378",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/sheets/sheet_03.jpg",
+        "width": 1280,
+        "height": 792,
+        "tokens": 1334
+      },
+      {
+        "sheet_id": "sheet_04",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0060",
+            "actual_t": 854.0
+          },
+          {
+            "index": 1,
+            "sentinel": true
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0061",
+            "actual_t": 858.5
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0062",
+            "actual_t": 889.0
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0063",
+            "actual_t": 894.0
+          }
+        ],
+        "sentinel_id": "x_0456",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/f8_uF_IDV50/work/sheets/sheet_04.jpg",
+        "width": 1280,
+        "height": 396,
+        "tokens": 690
+      }
+    ],
+    "image_tokens": 6026,
+    "individual_tokens": 13376
+  }
+}

@@ -1,0 +1,34 @@
+[
+  {"chapter_id": "ch01", "title": "Intro: the Godfather of AI", "start": 0.0, "end": 47.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch02", "title": "Hinton's warning: more intelligent than us", "start": 47.0, "end": 102.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch03", "title": "An accident born of failure; the Turing Award", "start": 102.0, "end": 180.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch03_turing_award", "kind": "state", "seg_ids": ["seg_0027", "seg_0028"],
+      "why": "Hinton with LeCun and Bengio at the Turing Award"}]},
+  {"chapter_id": "ch04", "title": "How AI learns: soccer robots and layers", "start": 180.0, "end": 257.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch04_robots", "kind": "state", "seg_ids": ["seg_0030", "seg_0031", "seg_0032", "seg_0033"],
+      "why": "the DeepMind soccer robots learning to score"},
+     {"target_id": "ch04_layers", "kind": "diagram", "seg_ids": ["seg_0036", "seg_0037", "seg_0038", "seg_0039", "seg_0040"],
+      "why": "the layered network animation with the feedback message"}]},
+  {"chapter_id": "ch05", "title": "Better than the brain, and the risk of escape", "start": 257.0, "end": 371.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch06", "title": "Hinton's family", "start": 371.0, "end": 438.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch07", "title": "Bard and the six-word story", "start": 438.0, "end": 497.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch07_bard_story", "kind": "state", "seg_ids": ["seg_0082", "seg_0083", "seg_0084"],
+      "why": "Bard's story on screen"}]},
+  {"chapter_id": "ch08", "title": "Do chatbots understand? The painting riddle", "start": 497.0, "end": 629.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch08_prompt", "kind": "state", "seg_ids": ["seg_0101", "seg_0102", "seg_0103"],
+      "why": "the riddle typed into GPT-4"},
+     {"target_id": "ch08_answer", "kind": "action_result", "seg_ids": ["seg_0104", "seg_0105", "seg_0106"], "action_seg_id": "seg_0104",
+      "why": "GPT-4's answer about the blue and yellow rooms"}]},
+  {"chapter_id": "ch09", "title": "Benefits, risks, and no guaranteed path", "start": 629.0, "end": 724.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch10", "title": "Oppenheimer and the turning point", "start": 724.0, "end": 792.0,
+   "needs_frames": false, "visual_targets": []}
+]

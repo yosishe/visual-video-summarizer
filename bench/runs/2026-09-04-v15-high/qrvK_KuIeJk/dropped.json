@@ -1,0 +1,154 @@
+[
+  {
+    "t": 168.001,
+    "requested_t": 168.0,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_turing_award"
+    ],
+    "kept_by_t": 167.501
+  },
+  {
+    "t": 177.511,
+    "requested_t": 177.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": 177.01
+  },
+  {
+    "t": 179.513,
+    "requested_t": 179.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": 180.013
+  },
+  {
+    "t": 575.508,
+    "requested_t": 575.5,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_prompt"
+    ],
+    "kept_by_t": 573.006
+  },
+  {
+    "t": 159.026,
+    "requested_t": 159.0,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_turing_award"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 161.528,
+    "requested_t": 161.5,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_turing_award"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 163.03,
+    "requested_t": 163.0,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_turing_award"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 172.506,
+    "requested_t": 172.5,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_turing_award"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 174.007,
+    "requested_t": 174.0,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_turing_award"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 472.505,
+    "requested_t": 472.5,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_bard_story"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 481.014,
+    "requested_t": 481.0,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_bard_story"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 486.519,
+    "requested_t": 486.5,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_bard_story"
+    ],
+    "kept_by_t": null
+  }
+]

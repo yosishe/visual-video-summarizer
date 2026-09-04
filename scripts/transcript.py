@@ -241,7 +241,8 @@ def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str
     if langs:
         rc = _run_ytdlp(base_args + ["--write-subs", "--write-auto-subs", "--sub-langs", langs,
                                      "--sub-format", "vtt", "--convert-subs", "vtt", "--ignore-errors", "--", url])
-        candidates = sorted(out_dir.glob("video*.vtt"))
+        # shortest key first: `video.en.vtt` before `video.en-de.vtt` (a translation)
+        candidates = sorted(out_dir.glob("video*.vtt"), key=lambda p: (len(p.name), p.name))
         subtitle = candidates[0] if candidates else None
         if subtitle:
             key = subtitle.name[len("video."):-len(".vtt")]
@@ -249,7 +250,9 @@ def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str
                                                                      "language": normalize_lang(key), "original": None})
     elif tracks:
         chosen = tracks[0]
-        rc = _run_ytdlp(base_args + ["--write-subs", "--write-auto-subs", "--sub-langs", chosen["key"],
+        # --sub-langs is a regex: a bare `en` also matches `en-de` (a translated
+        # track). Anchor it so exactly the ranked key is fetched.
+        rc = _run_ytdlp(base_args + ["--write-subs", "--write-auto-subs", "--sub-langs", f"^{re.escape(chosen['key'])}$",
                                      "--sub-format", "vtt", "--convert-subs", "vtt", "--ignore-errors", "--", url])
         expected = out_dir / f"video.{chosen['key']}.vtt"
         if expected.exists():
