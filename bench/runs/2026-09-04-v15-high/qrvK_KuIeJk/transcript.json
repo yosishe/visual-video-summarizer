@@ -1,0 +1,926 @@
+{
+  "source": "captions",
+  "source_detail": {
+    "kind": "captions",
+    "track": "en-orig",
+    "manual": false,
+    "original": true,
+    "translated": false,
+    "youtube_language": "en",
+    "tracks_considered": 2,
+    "rejected_translated": 155
+  },
+  "language": "en",
+  "video": {
+    "id": "qrvK_KuIeJk",
+    "title": "\"Godfather of AI\" Geoffrey Hinton: The 60 Minutes Interview",
+    "uploader": "60 Minutes",
+    "url": "https://www.youtube.com/watch?v=qrvK_KuIeJk",
+    "duration": 792.0,
+    "is_url": true,
+    "language": "en",
+    "chapters": [
+      {
+        "start_time": 0,
+        "title": "Intro",
+        "end_time": 47
+      },
+      {
+        "start_time": 47,
+        "title": "Hintons Warning",
+        "end_time": 99
+      },
+      {
+        "start_time": 99,
+        "title": "Artificial Intelligence",
+        "end_time": 159
+      },
+      {
+        "start_time": 159,
+        "title": "Nobel Prize",
+        "end_time": 213
+      },
+      {
+        "start_time": 213,
+        "title": "How AI works",
+        "end_time": 372
+      },
+      {
+        "start_time": 372,
+        "title": "Hintons family",
+        "end_time": 438
+      },
+      {
+        "start_time": 438,
+        "title": "Chatbots",
+        "end_time": 792
+      }
+    ]
+  },
+  "segments": [
+    {
+      "seg_id": "seg_0000",
+      "start": 3.23,
+      "end": 5.92,
+      "text": "whether you think artificial intelligence will save the world or end"
+    },
+    {
+      "seg_id": "seg_0001",
+      "start": 5.92,
+      "end": 12.2,
+      "text": "it you have Jeffrey Hinton to thank Hinton has been called The Godfather of"
+    },
+    {
+      "seg_id": "seg_0002",
+      "start": 12.2,
+      "end": 18.92,
+      "text": "AI a British computer scientist whose controversial ideas help make advanced"
+    },
+    {
+      "seg_id": "seg_0003",
+      "start": 18.92,
+      "end": 25.8,
+      "text": "artificial intelligence possible and so change the world Hinton believes that AI"
+    },
+    {
+      "seg_id": "seg_0004",
+      "start": 25.8,
+      "end": 32.36,
+      "text": "will do enormous good but tonight he has a warning he says that AI systems may be"
+    },
+    {
+      "seg_id": "seg_0005",
+      "start": 32.36,
+      "end": 37.44,
+      "text": "more intelligent than we know and there's a chance the machines could take"
+    },
+    {
+      "seg_id": "seg_0006",
+      "start": 37.44,
+      "end": 47.15,
+      "text": "over which made us ask the question the story will continue in a"
+    },
+    {
+      "seg_id": "seg_0007",
+      "start": 49.95,
+      "end": 53.59,
+      "text": "moment does Humanity know what it's doing no"
+    },
+    {
+      "seg_id": "seg_0008",
+      "start": 53.59,
+      "end": 58.72,
+      "text": "doing no um I think we're moving into a period"
+    },
+    {
+      "seg_id": "seg_0009",
+      "start": 58.72,
+      "end": 64.28,
+      "text": "when for the first time ever we may have things more intelligent than us you"
+    },
+    {
+      "seg_id": "seg_0010",
+      "start": 64.28,
+      "end": 69.96,
+      "text": "believe they can understand yes you believe they are intelligent yes you"
+    },
+    {
+      "seg_id": "seg_0011",
+      "start": 69.96,
+      "end": 75.76,
+      "text": "believe these systems have experiences of their own and can make decisions"
+    },
+    {
+      "seg_id": "seg_0012",
+      "start": 75.76,
+      "end": 80.84,
+      "text": "based on those experiences in the same sense as people do yes are they"
+    },
+    {
+      "seg_id": "seg_0013",
+      "start": 80.84,
+      "end": 85.0,
+      "text": "conscious I think they probably don't have much self-awareness at present so"
+    },
+    {
+      "seg_id": "seg_0014",
+      "start": 85.0,
+      "end": 89.0,
+      "text": "in that sense I don't think they're conscious will they have self-awareness"
+    },
+    {
+      "seg_id": "seg_0015",
+      "start": 89.0,
+      "end": 94.24,
+      "text": "consciousness I oh yes I think they will in time and so human beings will be the"
+    },
+    {
+      "seg_id": "seg_0016",
+      "start": 94.24,
+      "end": 102.32,
+      "text": "second most intelligent beings on the planet yeah Jeffrey Hinton told us the"
+    },
+    {
+      "seg_id": "seg_0017",
+      "start": 102.32,
+      "end": 108.96,
+      "text": "artificial intelligence he set in motion was an accident born of a failure in the"
+    },
+    {
+      "seg_id": "seg_0018",
+      "start": 108.96,
+      "end": 115.48,
+      "text": "1970s at the University of Edinburgh he dreamed of simulating a neural network"
+    },
+    {
+      "seg_id": "seg_0019",
+      "start": 115.48,
+      "end": 120.52,
+      "text": "on a computer simply as a tool for what he was really studying"
+    },
+    {
+      "seg_id": "seg_0020",
+      "start": 120.52,
+      "end": 125.96,
+      "text": "the human brain but back then almost no one thought software could mimic the"
+    },
+    {
+      "seg_id": "seg_0021",
+      "start": 125.96,
+      "end": 132.84,
+      "text": "brain his PhD advisor told him to drop it before it ruined his career Hinton"
+    },
+    {
+      "seg_id": "seg_0022",
+      "start": 132.84,
+      "end": 138.4,
+      "text": "says he failed to figure out the human mind but the long Pursuit led to an"
+    },
+    {
+      "seg_id": "seg_0023",
+      "start": 138.4,
+      "end": 142.44,
+      "text": "artificial version it took much much longer than I"
+    },
+    {
+      "seg_id": "seg_0024",
+      "start": 142.44,
+      "end": 146.68,
+      "text": "expected it took like 50 years before it worked well but in the end it did work"
+    },
+    {
+      "seg_id": "seg_0025",
+      "start": 146.68,
+      "end": 153.56,
+      "text": "well at what point did you you realize that you were right about neural"
+    },
+    {
+      "seg_id": "seg_0026",
+      "start": 153.56,
+      "end": 158.64,
+      "text": "networks and most everyone else was wrong I always thought I was"
+    },
+    {
+      "seg_id": "seg_0027",
+      "start": 158.64,
+      "end": 167.08,
+      "text": "right in 2019 Hinton and collaborators Yan laon on the left and yosua Beno won"
+    },
+    {
+      "seg_id": "seg_0028",
+      "start": 167.08,
+      "end": 173.6,
+      "text": "the touring award the Nobel Prize of computing to understand how their work"
+    },
+    {
+      "seg_id": "seg_0029",
+      "start": 173.6,
+      "end": 179.52,
+      "text": "on artificial neural networks helped machines learn to learn let us take you"
+    },
+    {
+      "seg_id": "seg_0030",
+      "start": 179.52,
+      "end": 185.84,
+      "text": "to a a game look at that oh my goodness this is"
+    },
+    {
+      "seg_id": "seg_0031",
+      "start": 185.84,
+      "end": 192.0,
+      "text": "Google's AI lab in London which we first showed you this past April Jeffrey"
+    },
+    {
+      "seg_id": "seg_0032",
+      "start": 192.0,
+      "end": 197.24,
+      "text": "Hinton wasn't involved in this soccer project but these robots are a great"
+    },
+    {
+      "seg_id": "seg_0033",
+      "start": 197.24,
+      "end": 203.84,
+      "text": "example of machine learning the thing to understand is that the robots were not"
+    },
+    {
+      "seg_id": "seg_0034",
+      "start": 203.84,
+      "end": 210.48,
+      "text": "programmed to play soccer they were told to score they had to learn how on their"
+    },
+    {
+      "seg_id": "seg_0035",
+      "start": 210.48,
+      "end": 216.16,
+      "text": "own oh go in general here's how AI does it"
+    },
+    {
+      "seg_id": "seg_0036",
+      "start": 216.16,
+      "end": 221.72,
+      "text": "Henton and his collaborators created software in layers with each layer"
+    },
+    {
+      "seg_id": "seg_0037",
+      "start": 221.72,
+      "end": 226.36,
+      "text": "handling part of the problem that's the so-called neural network but this is the"
+    },
+    {
+      "seg_id": "seg_0038",
+      "start": 226.36,
+      "end": 233.4,
+      "text": "key when for example the robot scores a message is sent back down through all of"
+    },
+    {
+      "seg_id": "seg_0039",
+      "start": 233.4,
+      "end": 240.32,
+      "text": "the layers that says that pathway was right likewise when an answer is wrong"
+    },
+    {
+      "seg_id": "seg_0040",
+      "start": 240.32,
+      "end": 245.32,
+      "text": "that message goes down through the network so correct connections get"
+    },
+    {
+      "seg_id": "seg_0041",
+      "start": 245.32,
+      "end": 251.24,
+      "text": "stronger wrong connections get weaker and by trial and error the machine"
+    },
+    {
+      "seg_id": "seg_0042",
+      "start": 251.24,
+      "end": 257.08,
+      "text": "teaches itself you think these AI systems are better at learning than the"
+    },
+    {
+      "seg_id": "seg_0043",
+      "start": 257.08,
+      "end": 263.32,
+      "text": "human mind I think they may be yes and at present they're quite a lot smaller"
+    },
+    {
+      "seg_id": "seg_0044",
+      "start": 263.32,
+      "end": 268.8,
+      "text": "so even the biggest chatbots only have about a trillion Connections in them the"
+    },
+    {
+      "seg_id": "seg_0045",
+      "start": 268.8,
+      "end": 273.88,
+      "text": "human brain has about 100 trillion and yet in the trillion Connections in a"
+    },
+    {
+      "seg_id": "seg_0046",
+      "start": 273.88,
+      "end": 279.4,
+      "text": "chatot it knows far more than you do in your 100 trillion connections which"
+    },
+    {
+      "seg_id": "seg_0047",
+      "start": 279.4,
+      "end": 283.52,
+      "text": "suggests it's got a much better way of getting knowledge into those connections"
+    },
+    {
+      "seg_id": "seg_0048",
+      "start": 283.52,
+      "end": 289.0,
+      "text": "a much better way of getting knowledge that isn't fully understood we have a"
+    },
+    {
+      "seg_id": "seg_0049",
+      "start": 289.0,
+      "end": 293.12,
+      "text": "very good idea of sort of roughly what it's doing but as soon as it gets really"
+    },
+    {
+      "seg_id": "seg_0050",
+      "start": 293.12,
+      "end": 296.96,
+      "text": "complicated we don't actually know what's going on anymore than we know"
+    },
+    {
+      "seg_id": "seg_0051",
+      "start": 296.96,
+      "end": 301.44,
+      "text": "what's going on in your brain what do you mean we don't know exactly how it"
+    },
+    {
+      "seg_id": "seg_0052",
+      "start": 301.44,
+      "end": 307.8,
+      "text": "works it was designed by people no it wasn't what we did was we designed the"
+    },
+    {
+      "seg_id": "seg_0053",
+      "start": 307.8,
+      "end": 312.0,
+      "text": "learning algorithm that's a bit like designing the principle of evolution but"
+    },
+    {
+      "seg_id": "seg_0054",
+      "start": 312.0,
+      "end": 316.24,
+      "text": "when this learning algorithm then interacts with data it produces"
+    },
+    {
+      "seg_id": "seg_0055",
+      "start": 316.24,
+      "end": 320.36,
+      "text": "complicated neural networks that are good at doing things but we don't really"
+    },
+    {
+      "seg_id": "seg_0056",
+      "start": 320.36,
+      "end": 324.84,
+      "text": "understand exactly how they do those things what are the"
+    },
+    {
+      "seg_id": "seg_0057",
+      "start": 324.84,
+      "end": 329.4,
+      "text": "implications of these systems autonomously writing their own computer"
+    },
+    {
+      "seg_id": "seg_0058",
+      "start": 329.4,
+      "end": 335.36,
+      "text": "code and executing their own computer code that's a serious worry right so one"
+    },
+    {
+      "seg_id": "seg_0059",
+      "start": 335.36,
+      "end": 340.92,
+      "text": "of the ways in which these systems might Escape control is by writing their own"
+    },
+    {
+      "seg_id": "seg_0060",
+      "start": 340.92,
+      "end": 345.36,
+      "text": "computer code to modify themselves and that's something we need"
+    },
+    {
+      "seg_id": "seg_0061",
+      "start": 345.36,
+      "end": 350.08,
+      "text": "to seriously worry about what do you say to someone who might argue if the"
+    },
+    {
+      "seg_id": "seg_0062",
+      "start": 350.08,
+      "end": 355.72,
+      "text": "systems become benevolent just turn them off they will be able to manipulate"
+    },
+    {
+      "seg_id": "seg_0063",
+      "start": 355.72,
+      "end": 360.12,
+      "text": "people right and these will be very good at convincing people because they'll"
+    },
+    {
+      "seg_id": "seg_0064",
+      "start": 360.12,
+      "end": 365.64,
+      "text": "have learned from all the novels that were ever written all the books by"
+    },
+    {
+      "seg_id": "seg_0065",
+      "start": 365.64,
+      "end": 370.6,
+      "text": "makavelli all the political connives they'll know all that stuff they'll know"
+    },
+    {
+      "seg_id": "seg_0066",
+      "start": 370.6,
+      "end": 378.12,
+      "text": "how to do it knowhow of the human kind runs in Jeffrey hinton's family his"
+    },
+    {
+      "seg_id": "seg_0067",
+      "start": 378.12,
+      "end": 384.36,
+      "text": "ancestors include mathematician George buou who invented the basis of computing"
+    },
+    {
+      "seg_id": "seg_0068",
+      "start": 384.36,
+      "end": 391.4,
+      "text": "and George Everest who surveyed India and got that mountain named after him"
+    },
+    {
+      "seg_id": "seg_0069",
+      "start": 391.4,
+      "end": 398.76,
+      "text": "but as a boy Hinton himself could never climb the peak of expectations raised by"
+    },
+    {
+      "seg_id": "seg_0070",
+      "start": 398.76,
+      "end": 404.04,
+      "text": "a domineering father every morning when I went to school he'd actually say to me"
+    },
+    {
+      "seg_id": "seg_0071",
+      "start": 404.04,
+      "end": 407.6,
+      "text": "as I walked down the driveway get in their pitching and maybe when you're"
+    },
+    {
+      "seg_id": "seg_0072",
+      "start": 407.6,
+      "end": 413.72,
+      "text": "twice as old as me you'll be half as good dad was an authority on Beatles he"
+    },
+    {
+      "seg_id": "seg_0073",
+      "start": 413.72,
+      "end": 417.2,
+      "text": "knew a lot more about beatles than he knew about people did you feel that as a"
+    },
+    {
+      "seg_id": "seg_0074",
+      "start": 417.2,
+      "end": 423.64,
+      "text": "child a bit yes when he died we went to his study at the"
+    },
+    {
+      "seg_id": "seg_0075",
+      "start": 423.64,
+      "end": 428.64,
+      "text": "University and the walls were lined with boxes of papers on different kinds of"
+    },
+    {
+      "seg_id": "seg_0076",
+      "start": 428.64,
+      "end": 433.92,
+      "text": "beetle and just near the door there was a slightly smaller box that simply said"
+    },
+    {
+      "seg_id": "seg_0077",
+      "start": 433.92,
+      "end": 437.92,
+      "text": "not insects and that's where he had all the things about the"
+    },
+    {
+      "seg_id": "seg_0078",
+      "start": 437.92,
+      "end": 444.56,
+      "text": "family today at 75 Hinton recently retired after what he calls 10 happy"
+    },
+    {
+      "seg_id": "seg_0079",
+      "start": 444.56,
+      "end": 450.32,
+      "text": "years at Google now he's professor ameritus at the University of Toronto"
+    },
+    {
+      "seg_id": "seg_0080",
+      "start": 450.32,
+      "end": 456.8,
+      "text": "and he happened to mention he has more academic citations than his father some"
+    },
+    {
+      "seg_id": "seg_0081",
+      "start": 456.8,
+      "end": 462.88,
+      "text": "of his research led to chatbots like Google's Bard which we met last spring"
+    },
+    {
+      "seg_id": "seg_0082",
+      "start": 462.88,
+      "end": 468.48,
+      "text": "confounding absolutely confounding we asked Bard to write a story from six"
+    },
+    {
+      "seg_id": "seg_0083",
+      "start": 468.48,
+      "end": 477.04,
+      "text": "words for sale baby shoes never worn holy cow the shoes were a gift from"
+    },
+    {
+      "seg_id": "seg_0084",
+      "start": 477.04,
+      "end": 483.24,
+      "text": "my wife but we never had a baby Bard created a deeply human tale of a man"
+    },
+    {
+      "seg_id": "seg_0085",
+      "start": 483.24,
+      "end": 488.96,
+      "text": "whose wife could not conceive and a stranger who accepted the shoes to heal"
+    },
+    {
+      "seg_id": "seg_0086",
+      "start": 488.96,
+      "end": 494.19,
+      "text": "the pain after her miscarriage I am rarely"
+    },
+    {
+      "seg_id": "seg_0087",
+      "start": 494.19,
+      "end": 496.72,
+      "text": "rarely speechless I don't know what to make of"
+    },
+    {
+      "seg_id": "seg_0088",
+      "start": 496.72,
+      "end": 502.56,
+      "text": "this chatbots are said to be language models that just predict the next most"
+    },
+    {
+      "seg_id": "seg_0089",
+      "start": 502.56,
+      "end": 507.44,
+      "text": "likely word based on probability you'll hear people saying things like they're"
+    },
+    {
+      "seg_id": "seg_0090",
+      "start": 507.44,
+      "end": 511.12,
+      "text": "just doing autocomplete they're just trying to predict the next word and"
+    },
+    {
+      "seg_id": "seg_0091",
+      "start": 511.12,
+      "end": 515.24,
+      "text": "they're just using statistics well it's true they're just"
+    },
+    {
+      "seg_id": "seg_0092",
+      "start": 515.24,
+      "end": 519.24,
+      "text": "trying to predict the next word but if you think about it to predict the next"
+    },
+    {
+      "seg_id": "seg_0093",
+      "start": 519.24,
+      "end": 525.32,
+      "text": "word you have to understand the sentences so the idea they just"
+    },
+    {
+      "seg_id": "seg_0094",
+      "start": 525.32,
+      "end": 528.68,
+      "text": "predicting the next word so they're not intelligent is crazy you have to be"
+    },
+    {
+      "seg_id": "seg_0095",
+      "start": 528.68,
+      "end": 533.48,
+      "text": "really intelligent to predict the next word really accurately to prove it"
+    },
+    {
+      "seg_id": "seg_0096",
+      "start": 533.48,
+      "end": 537.47,
+      "text": "Hinton showed us a test he devised for chat"
+    },
+    {
+      "seg_id": "seg_0097",
+      "start": 537.47,
+      "end": 540.4,
+      "text": "chat gp4 the chatbot from a company called"
+    },
+    {
+      "seg_id": "seg_0098",
+      "start": 540.4,
+      "end": 547.6,
+      "text": "open AI it was sort of reassuring to see a turing Award winner mistype and blame"
+    },
+    {
+      "seg_id": "seg_0099",
+      "start": 547.6,
+      "end": 552.08,
+      "text": "the computer oh damn this thing we're going to go back and start again that's"
+    },
+    {
+      "seg_id": "seg_0100",
+      "start": 552.08,
+      "end": 558.28,
+      "text": "okay hinton's test was a riddle about house painting an answer would demand"
+    },
+    {
+      "seg_id": "seg_0101",
+      "start": 558.28,
+      "end": 564.16,
+      "text": "reasoning and planning this is what he typed into chat"
+    },
+    {
+      "seg_id": "seg_0102",
+      "start": 564.16,
+      "end": 570.08,
+      "text": "gp4 the rooms in my house are painted white or blue or yellow and yellow paint"
+    },
+    {
+      "seg_id": "seg_0103",
+      "start": 570.08,
+      "end": 575.0,
+      "text": "Fades to White within a year in 2 years time I'd like all the rooms to be white"
+    },
+    {
+      "seg_id": "seg_0104",
+      "start": 575.0,
+      "end": 582.6,
+      "text": "what should I do the answer began in one second gp4 advised the rooms painted in"
+    },
+    {
+      "seg_id": "seg_0105",
+      "start": 582.6,
+      "end": 588.36,
+      "text": "blue need to be repainted the rooms painted in yellow don't need to be"
+    },
+    {
+      "seg_id": "seg_0106",
+      "start": 588.36,
+      "end": 595.16,
+      "text": "repainted because they would Fade to White before the deadline and oh I"
+    },
+    {
+      "seg_id": "seg_0107",
+      "start": 595.16,
+      "end": 600.72,
+      "text": "didn't even think of that it warned if you paint the yellow rooms white there's"
+    },
+    {
+      "seg_id": "seg_0108",
+      "start": 600.72,
+      "end": 607.36,
+      "text": "a risk the color might be off when the yellow Fades besides it advised you'd be"
+    },
+    {
+      "seg_id": "seg_0109",
+      "start": 607.36,
+      "end": 612.48,
+      "text": "wasting resources painting rooms that were going to Fade to White anyway you"
+    },
+    {
+      "seg_id": "seg_0110",
+      "start": 612.48,
+      "end": 618.76,
+      "text": "believe that chat GPD 4 understands I believe it definitely"
+    },
+    {
+      "seg_id": "seg_0111",
+      "start": 618.76,
+      "end": 623.48,
+      "text": "understands yes and in 5 years time I think in 5 years time it may well be"
+    },
+    {
+      "seg_id": "seg_0112",
+      "start": 623.48,
+      "end": 629.44,
+      "text": "able to reason better than us reasoning that he says is leading to ai's great"
+    },
+    {
+      "seg_id": "seg_0113",
+      "start": 629.44,
+      "end": 634.64,
+      "text": "risks and great benefits so an obvious area where"
+    },
+    {
+      "seg_id": "seg_0114",
+      "start": 634.64,
+      "end": 640.84,
+      "text": "there's huge benefits is Healthcare AI is already comparable with Radiologists"
+    },
+    {
+      "seg_id": "seg_0115",
+      "start": 640.84,
+      "end": 643.27,
+      "text": "at understanding what's going on in medical"
+    },
+    {
+      "seg_id": "seg_0116",
+      "start": 643.27,
+      "end": 645.28,
+      "text": "medical images it's going to be very good at"
+    },
+    {
+      "seg_id": "seg_0117",
+      "start": 645.28,
+      "end": 651.32,
+      "text": "designing drugs it already is designing drugs so that's an area where it's"
+    },
+    {
+      "seg_id": "seg_0118",
+      "start": 651.32,
+      "end": 657.04,
+      "text": "almost entirely going to do good I like that area the risks are"
+    },
+    {
+      "seg_id": "seg_0119",
+      "start": 657.04,
+      "end": 662.2,
+      "text": "what well the risks are having a whole class of people who are"
+    },
+    {
+      "seg_id": "seg_0120",
+      "start": 662.2,
+      "end": 667.28,
+      "text": "unemployed and not valued much because what they what they used to do is now"
+    },
+    {
+      "seg_id": "seg_0121",
+      "start": 667.28,
+      "end": 673.76,
+      "text": "done by machines other immediate risks he worries about include fake news"
+    },
+    {
+      "seg_id": "seg_0122",
+      "start": 673.76,
+      "end": 681.6,
+      "text": "unintended bias in employment and policing and autonomous Battlefield"
+    },
+    {
+      "seg_id": "seg_0123",
+      "start": 681.6,
+      "end": 686.71,
+      "text": "robots what is a path forward that ensures"
+    },
+    {
+      "seg_id": "seg_0124",
+      "start": 686.71,
+      "end": 690.12,
+      "text": "ensures safety I don't know I I can't see a path"
+    },
+    {
+      "seg_id": "seg_0125",
+      "start": 690.12,
+      "end": 694.4,
+      "text": "that guarantees safety that we're entering a period of"
+    },
+    {
+      "seg_id": "seg_0126",
+      "start": 694.4,
+      "end": 697.84,
+      "text": "great uncertainty where we're dealing with things we've never dealt with"
+    },
+    {
+      "seg_id": "seg_0127",
+      "start": 697.84,
+      "end": 701.6,
+      "text": "before and normally the first time you deal with something totally novel you"
+    },
+    {
+      "seg_id": "seg_0128",
+      "start": 701.6,
+      "end": 705.36,
+      "text": "get it wrong and we can't afford to get it wrong with these things can't afford"
+    },
+    {
+      "seg_id": "seg_0129",
+      "start": 705.36,
+      "end": 711.28,
+      "text": "to get it wrong why well because they might take over take over from Humanity"
+    },
+    {
+      "seg_id": "seg_0130",
+      "start": 711.28,
+      "end": 715.32,
+      "text": "yes that's a possibility why would they want I'm not saying it will happen if we"
+    },
+    {
+      "seg_id": "seg_0131",
+      "start": 715.32,
+      "end": 719.04,
+      "text": "could stop them ever wanting to that would be great but it's not clear we can"
+    },
+    {
+      "seg_id": "seg_0132",
+      "start": 719.04,
+      "end": 724.32,
+      "text": "stop stop them ever wanting to Jeffrey Hinton told us he has no"
+    },
+    {
+      "seg_id": "seg_0133",
+      "start": 724.32,
+      "end": 731.56,
+      "text": "regrets because of ai's potential for good but he says now is the moment to"
+    },
+    {
+      "seg_id": "seg_0134",
+      "start": 731.56,
+      "end": 737.92,
+      "text": "run experiments to understand AI for governments to impose regulations and"
+    },
+    {
+      "seg_id": "seg_0135",
+      "start": 737.92,
+      "end": 745.32,
+      "text": "for a world treaty to ban the use of military robots he reminded us of Robert"
+    },
+    {
+      "seg_id": "seg_0136",
+      "start": 745.32,
+      "end": 750.76,
+      "text": "Oppenheimer who after inventing the atomic bomb camp campaigned against the"
+    },
+    {
+      "seg_id": "seg_0137",
+      "start": 750.76,
+      "end": 757.44,
+      "text": "hydrogen bomb a man who changed the world and found the world Beyond his"
+    },
+    {
+      "seg_id": "seg_0138",
+      "start": 757.44,
+      "end": 762.28,
+      "text": "control it may be we look back and see this as a kind of Turning Point when"
+    },
+    {
+      "seg_id": "seg_0139",
+      "start": 762.28,
+      "end": 766.16,
+      "text": "Humanity had to make the decision about whether to develop these things further"
+    },
+    {
+      "seg_id": "seg_0140",
+      "start": 766.16,
+      "end": 772.2,
+      "text": "and what to do to protect themselves if they did um I don't know I think my main"
+    },
+    {
+      "seg_id": "seg_0141",
+      "start": 772.2,
+      "end": 777.24,
+      "text": "message is there's enormous uncertainty about what's going to happen"
+    },
+    {
+      "seg_id": "seg_0142",
+      "start": 777.24,
+      "end": 783.48,
+      "text": "next these things do understand and because they understand we need to think"
+    },
+    {
+      "seg_id": "seg_0143",
+      "start": 783.48,
+      "end": 788.56,
+      "text": "hard about what's going to happen next and we just don't know"
+    }
+  ]
+}

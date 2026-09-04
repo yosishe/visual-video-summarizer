@@ -77,15 +77,21 @@ def run_cmd(cmd: list[str], *, cwd: Path | None = None, report: Path | None = No
     if proc.returncode != 0:
         print(proc.stderr[-2000:], file=sys.stderr)
     if report is not None:
-        report.write_text(proc.stdout, encoding="utf-8")
+        report.write_text(relativize(proc.stdout), encoding="utf-8")
     return proc.returncode, wall, proc.stderr
+
+
+def relativize(text: str) -> str:
+    """Committed artifacts must not carry this machine's absolute paths: every
+    path under the skill root becomes `<skill>/...`."""
+    return text.replace(str(SKILL) + "/", "<skill>/").replace(str(SKILL), "<skill>")
 
 
 def copy_artifacts(work: Path, dest: Path) -> None:
     for name in ARTIFACTS:
         src = work / name
         if src.exists():
-            shutil.copy2(src, dest / name)
+            (dest / name).write_text(relativize(src.read_text(encoding="utf-8")), encoding="utf-8")
 
 
 def update_cost(dest: Path, **fields) -> None:
@@ -101,8 +107,10 @@ def cmd_prepare(args) -> int:
         dest = run_dir / video["id"]
         work = dest / "work"
         work.mkdir(parents=True, exist_ok=True)
-        cmd = [sys.executable, str(SCRIPTS / "transcript.py"), video["url"], "--work", str(work),
-               "--langs", video.get("langs", "en.*")]
+        cmd = [sys.executable, str(SCRIPTS / "transcript.py"), video["url"], "--work", str(work)]
+        if video.get("langs_override"):
+            # Only to force a specific track; otherwise transcript.py ranks tracks by provenance.
+            cmd += ["--langs", video["langs_override"]]
         if args.no_whisper:
             cmd.append("--no-whisper")
         rc, wall, _ = run_cmd(cmd)

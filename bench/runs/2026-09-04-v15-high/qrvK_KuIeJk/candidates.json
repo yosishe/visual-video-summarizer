@@ -1,0 +1,3075 @@
+{
+  "schema_version": 2,
+  "engine_version": "1.6.0",
+  "tier": "high",
+  "mode": "advanced",
+  "profile": {
+    "cap": 64,
+    "per_target": 3,
+    "unplanned_floor": 16,
+    "scene": "adaptive",
+    "scene_threshold": null,
+    "scene_floor": 0.04,
+    "action_offsets": [
+      0.1,
+      0.35,
+      0.7,
+      1.2,
+      1.8,
+      2.4
+    ],
+    "state_offsets": [],
+    "state_fractions": [
+      0.1,
+      0.3,
+      0.5,
+      0.7,
+      0.9
+    ],
+    "slide_fractions": [
+      0.3,
+      0.7
+    ],
+    "coverage_min": 2,
+    "cue_offsets": [
+      0.2,
+      0.5,
+      1.0,
+      1.5,
+      2.0
+    ],
+    "refine": "sharpness",
+    "faces": "auto",
+    "ocr": "on",
+    "resolution": 512,
+    "pip_mask": "on",
+    "dedup_scope": "family",
+    "engine": "states",
+    "scan_fps": 2.0,
+    "sheets": "on",
+    "sheet_tiles": 16,
+    "shortlist_px": 768
+  },
+  "profile_override": {},
+  "profile_sha256": "125df638e6cbd9e2525de604973cc2f867204f4f85f65cf6fae69e81a26cb9f0",
+  "overlays": [],
+  "mask_fraction": 0.0,
+  "states": {
+    "counts": {
+      "runs": 64,
+      "states": 66,
+      "by_mode": {
+        "A": 6,
+        "B": 12,
+        "C": 0,
+        "D": 48
+      },
+      "families": 3,
+      "builds": 1
+    },
+    "modes": [
+      {
+        "start": 102.0,
+        "end": 122.0,
+        "mode": "D",
+        "motion_freq": 0.692,
+        "big_motion": 0.333,
+        "luma": 60.3,
+        "edge": 9.13,
+        "ink_first": 0.3985,
+        "ink_last": 0.064
+      },
+      {
+        "start": 122.0,
+        "end": 142.0,
+        "mode": "D",
+        "motion_freq": 1.0,
+        "big_motion": 0.051,
+        "luma": 89.9,
+        "edge": 9.81,
+        "ink_first": 0.1298,
+        "ink_last": 0.3594
+      },
+      {
+        "start": 142.0,
+        "end": 162.0,
+        "mode": "D",
+        "motion_freq": 0.718,
+        "big_motion": 0.077,
+        "luma": 91.5,
+        "edge": 8.66,
+        "ink_first": 0.1419,
+        "ink_last": 0.2147
+      },
+      {
+        "start": 162.0,
+        "end": 182.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.051,
+        "luma": 100.7,
+        "edge": 13.64,
+        "ink_first": 0.298,
+        "ink_last": 0.3906
+      },
+      {
+        "start": 182.0,
+        "end": 202.0,
+        "mode": "A",
+        "motion_freq": 1.0,
+        "big_motion": 0.744,
+        "luma": 110.3,
+        "edge": 13.25,
+        "ink_first": 0.3464,
+        "ink_last": 0.3617
+      },
+      {
+        "start": 202.0,
+        "end": 222.0,
+        "mode": "A",
+        "motion_freq": 1.0,
+        "big_motion": 0.564,
+        "luma": 111.9,
+        "edge": 11.82,
+        "ink_first": 0.3819,
+        "ink_last": 0.3628
+      },
+      {
+        "start": 222.0,
+        "end": 242.0,
+        "mode": "A",
+        "motion_freq": 1.0,
+        "big_motion": 0.256,
+        "luma": 108.3,
+        "edge": 12.04,
+        "ink_first": 0.3654,
+        "ink_last": 0.2718
+      },
+      {
+        "start": 242.0,
+        "end": 257.0,
+        "mode": "A",
+        "motion_freq": 1.0,
+        "big_motion": 0.621,
+        "luma": 102.5,
+        "edge": 9.82,
+        "ink_first": 0.1419,
+        "ink_last": 0.1917
+      },
+      {
+        "start": 438.0,
+        "end": 442.0,
+        "mode": "D",
+        "motion_freq": 1.0,
+        "big_motion": 0.143,
+        "luma": 71.5,
+        "edge": 13.29,
+        "ink_first": 0.1608,
+        "ink_last": 0.2068
+      },
+      {
+        "start": 442.0,
+        "end": 462.0,
+        "mode": "D",
+        "motion_freq": 0.872,
+        "big_motion": 0.103,
+        "luma": 86.4,
+        "edge": 9.53,
+        "ink_first": 0.2108,
+        "ink_last": 0.0982
+      },
+      {
+        "start": 462.0,
+        "end": 482.0,
+        "mode": "D",
+        "motion_freq": 0.641,
+        "big_motion": 0.179,
+        "luma": 110.5,
+        "edge": 9.33,
+        "ink_first": 0.1293,
+        "ink_last": 0.6964
+      },
+      {
+        "start": 482.0,
+        "end": 502.0,
+        "mode": "D",
+        "motion_freq": 0.718,
+        "big_motion": 0.077,
+        "luma": 128.2,
+        "edge": 10.33,
+        "ink_first": 0.0645,
+        "ink_last": 0.0724
+      },
+      {
+        "start": 502.0,
+        "end": 522.0,
+        "mode": "D",
+        "motion_freq": 0.769,
+        "big_motion": 0.026,
+        "luma": 89.0,
+        "edge": 12.6,
+        "ink_first": 0.1189,
+        "ink_last": 0.1859
+      },
+      {
+        "start": 522.0,
+        "end": 542.0,
+        "mode": "D",
+        "motion_freq": 0.897,
+        "big_motion": 0.179,
+        "luma": 81.2,
+        "edge": 10.68,
+        "ink_first": 0.1138,
+        "ink_last": 0.1561
+      },
+      {
+        "start": 542.0,
+        "end": 562.0,
+        "mode": "D",
+        "motion_freq": 0.564,
+        "big_motion": 0.282,
+        "luma": 90.5,
+        "edge": 13.12,
+        "ink_first": 0.1934,
+        "ink_last": 0.1602
+      },
+      {
+        "start": 562.0,
+        "end": 582.0,
+        "mode": "D",
+        "motion_freq": 0.615,
+        "big_motion": 0.077,
+        "luma": 126.1,
+        "edge": 5.9,
+        "ink_first": 0.028,
+        "ink_last": 0.2408
+      },
+      {
+        "start": 582.0,
+        "end": 602.0,
+        "mode": "D",
+        "motion_freq": 0.308,
+        "big_motion": 0.179,
+        "luma": 132.3,
+        "edge": 5.41,
+        "ink_first": 0.6724,
+        "ink_last": 0.5236
+      },
+      {
+        "start": 602.0,
+        "end": 622.0,
+        "mode": "D",
+        "motion_freq": 0.538,
+        "big_motion": 0.179,
+        "luma": 119.3,
+        "edge": 7.31,
+        "ink_first": 0.2071,
+        "ink_last": 0.126
+      },
+      {
+        "start": 622.0,
+        "end": 629.0,
+        "mode": "D",
+        "motion_freq": 1.0,
+        "big_motion": 0.077,
+        "luma": 76.6,
+        "edge": 12.34,
+        "ink_first": 0.0411,
+        "ink_last": 0.0826
+      }
+    ],
+    "frames_scanned": 692,
+    "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/states.json"
+  },
+  "parts": [
+    {
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/download/video_3b388483af.mp4",
+      "source_start": 0.0,
+      "offset": 0.0,
+      "media_start": 0.0,
+      "duration": 791.941,
+      "frame_duration": 0.03336666666666667,
+      "mapping_confidence": "exact"
+    }
+  ],
+  "counts": {
+    "scene": 0,
+    "raw": 64,
+    "blank_or_seek_dropped": 0,
+    "recovered": 0,
+    "dedup_dropped": 4,
+    "cap_dropped": 8,
+    "reserved_trimmed": 0,
+    "cap": 64,
+    "cap_effective": 64,
+    "reserved": 15,
+    "final": 52
+  },
+  "baselines": {
+    "uniform_fill": [
+      107.507,
+      119.519,
+      136.003,
+      147.514,
+      152.519,
+      175.509,
+      177.01,
+      445.011,
+      449.516,
+      452.018,
+      454.02,
+      458.024,
+      460.026,
+      491.024,
+      495.028,
+      496.529,
+      503.002,
+      509.009,
+      511.511,
+      513.013,
+      531.531,
+      539.005,
+      542.008,
+      544.511,
+      546.012,
+      548.014,
+      556.022,
+      557.023,
+      581.014,
+      592.025,
+      597.03,
+      601.0,
+      606.005,
+      611.511,
+      613.012,
+      626.025,
+      628.528
+    ]
+  },
+  "coverage": {
+    "chapters": [
+      {
+        "chapter_id": "ch01",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch02",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000",
+          "c_0001",
+          "c_0002",
+          "c_0003",
+          "c_0004",
+          "c_0005",
+          "c_0006",
+          "c_0007",
+          "c_0008",
+          "c_0009"
+        ]
+      },
+      {
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0010",
+          "c_0011",
+          "c_0012",
+          "c_0013",
+          "c_0014"
+        ]
+      },
+      {
+        "chapter_id": "ch05",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch06",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0015",
+          "c_0016",
+          "c_0017",
+          "c_0018",
+          "c_0019",
+          "c_0020",
+          "c_0021",
+          "c_0022",
+          "c_0023",
+          "c_0024",
+          "c_0025",
+          "c_0026"
+        ]
+      },
+      {
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0027",
+          "c_0028",
+          "c_0029",
+          "c_0030",
+          "c_0031",
+          "c_0032",
+          "c_0033",
+          "c_0034",
+          "c_0035",
+          "c_0036",
+          "c_0037",
+          "c_0038",
+          "c_0039",
+          "c_0040",
+          "c_0041",
+          "c_0042",
+          "c_0043",
+          "c_0044",
+          "c_0045",
+          "c_0046",
+          "c_0047",
+          "c_0048",
+          "c_0049",
+          "c_0050",
+          "c_0051"
+        ]
+      },
+      {
+        "chapter_id": "ch09",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch10",
+        "status": "not-required",
+        "candidate_ids": []
+      }
+    ],
+    "targets": [
+      {
+        "target_id": "ch03_turing_award",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0005",
+          "c_0006",
+          "c_0007"
+        ]
+      },
+      {
+        "target_id": "ch04_robots",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0010",
+          "c_0011"
+        ]
+      },
+      {
+        "target_id": "ch04_layers",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0012",
+          "c_0013",
+          "c_0014"
+        ]
+      },
+      {
+        "target_id": "ch07_bard_story",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0021",
+          "c_0022",
+          "c_0023"
+        ]
+      },
+      {
+        "target_id": "ch08_prompt",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0039",
+          "c_0040",
+          "c_0041"
+        ]
+      },
+      {
+        "target_id": "ch08_answer",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0043"
+        ]
+      }
+    ]
+  },
+  "terminal_probes": [],
+  "cost": {
+    "tier": "high",
+    "candidates": 52,
+    "image_tokens_estimate": 10868,
+    "image_tokens_per_candidate": 209,
+    "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+    "frame_dimensions": {
+      "512x288": 52
+    },
+    "cpu": {
+      "scene_pass": "adaptive",
+      "scene_seconds": 346.0,
+      "terminal_probes": 0,
+      "seeks": 64,
+      "ocr_frames": 0,
+      "faces": "unavailable",
+      "refine": "sharpness",
+      "refine_max_decodes": 20,
+      "pip_mask": "on",
+      "overlays": 0,
+      "overlay_seconds": 0.0,
+      "dedup_scope": "family",
+      "engine": "states",
+      "scan_seconds": 9.57,
+      "states": 66
+    },
+    "other_tier": {
+      "tier": "standard",
+      "cap": 48,
+      "max_image_tokens": 10032
+    }
+  },
+  "triage": {
+    "instructions": "Read every candidate path in one message (parallel Reads), then select by candidate_id.",
+    "strips": [],
+    "pixel_area": 0,
+    "projected_individual_reads": 52,
+    "projected_total_pixel_area": 7667712,
+    "baseline_60x512_pixel_area": 8847360,
+    "strip_to_baseline_ratio": 0.0,
+    "projected_to_baseline_ratio": 0.8667
+  },
+  "candidates": [
+    {
+      "candidate_id": "c_0000",
+      "frame_id": "c_0000",
+      "requested_t": 107.5,
+      "actual_t": 107.507,
+      "t": 107.507,
+      "timestamp_error": 0.0074,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0000_t0107.507_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0017"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 131.125,
+        "contrast": 47.198,
+        "sharpness": 10.826,
+        "blank": false,
+        "fingerprint": "75d90435705415118230895ec2161199936c0450849404e7689a6ce2cc5bb55f",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0000",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.349,
+      "aligned_seg_ids": [
+        "seg_0016",
+        "seg_0017"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0001",
+      "frame_id": "c_0001",
+      "requested_t": 119.5,
+      "actual_t": 119.519,
+      "t": 119.519,
+      "timestamp_error": 0.0194,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0001_t0119.519_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0019"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 35.187,
+        "contrast": 37.016,
+        "sharpness": 8.604,
+        "blank": false,
+        "fingerprint": "a45e5fd63006e43f45037d6536f168a906d8570c6251da5e4d259d4afc829f0f",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0001",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.346,
+      "aligned_seg_ids": [
+        "seg_0017",
+        "seg_0018",
+        "seg_0019"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0002",
+      "frame_id": "c_0002",
+      "requested_t": 136.0,
+      "actual_t": 136.003,
+      "t": 136.003,
+      "timestamp_error": 0.0025,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0002_t0136.003_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0022"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 121.596,
+        "contrast": 70.473,
+        "sharpness": 11.462,
+        "blank": false,
+        "fingerprint": "f1a9c44da5c8723405c20ebd84d27e072084d1001a075716c5cc8ebd35f969f4",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0002",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.341,
+      "aligned_seg_ids": [
+        "seg_0019",
+        "seg_0020",
+        "seg_0021",
+        "seg_0022"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0003",
+      "frame_id": "c_0003",
+      "requested_t": 147.5,
+      "actual_t": 147.514,
+      "t": 147.514,
+      "timestamp_error": 0.014,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0003_t0147.514_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0025"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 91.829,
+        "contrast": 36.399,
+        "sharpness": 8.268,
+        "blank": false,
+        "fingerprint": "0ff47ab5b1a485db95f38496f8e50307df2c39d8cafb5db284d8c2d4d4113b6d",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0003",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.339,
+      "aligned_seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023",
+        "seg_0024",
+        "seg_0025"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0004",
+      "frame_id": "c_0004",
+      "requested_t": 152.5,
+      "actual_t": 152.519,
+      "t": 152.519,
+      "timestamp_error": 0.019,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0004_t0152.519_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0025"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 93.224,
+        "contrast": 37.118,
+        "sharpness": 8.204,
+        "blank": false,
+        "fingerprint": "d100db7c05161e5044de0cada2ff32081ebca783ebd06e83f5e3aaa7f8b2ea9e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0004",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.34,
+      "aligned_seg_ids": [
+        "seg_0024",
+        "seg_0025"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0005",
+      "frame_id": "c_0005",
+      "requested_t": 164.5,
+      "actual_t": 164.531,
+      "t": 164.531,
+      "timestamp_error": 0.031,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0005_t0164.531_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_turing_award"
+      ],
+      "seg_ids": [
+        "seg_0027",
+        "seg_0028"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 94.505,
+        "contrast": 59.809,
+        "sharpness": 14.321,
+        "blank": false,
+        "fingerprint": "44183979686c8efd746f54a40bca9efd5bd192f7e89f28ab409d1eef29460466",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0008",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.651,
+      "aligned_seg_ids": [
+        "seg_0027"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0006",
+      "frame_id": "c_0006",
+      "requested_t": 166.0,
+      "actual_t": 166.033,
+      "t": 166.033,
+      "timestamp_error": 0.0325,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0006_t0166.033_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_turing_award"
+      ],
+      "seg_ids": [
+        "seg_0027",
+        "seg_0028"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 95.192,
+        "contrast": 59.757,
+        "sharpness": 14.165,
+        "blank": false,
+        "fingerprint": "8d5ee64774ac9a19426cad5f00e811df6eff616f421d5af8f907636110183204",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0009",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.648,
+      "aligned_seg_ids": [
+        "seg_0027"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0007",
+      "frame_id": "c_0007",
+      "requested_t": 167.5,
+      "actual_t": 167.501,
+      "t": 167.501,
+      "timestamp_error": 0.0007,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0007_t0167.501_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_turing_award"
+      ],
+      "seg_ids": [
+        "seg_0027",
+        "seg_0028"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 96.044,
+        "contrast": 59.693,
+        "sharpness": 14.156,
+        "blank": false,
+        "fingerprint": "47011ac2598b55e2fd91dc5b0d8a7fa4abe36750534f23b5f2c5ca2bb936acc6",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_001",
+      "family_revisits": [],
+      "state_id": "s_0010",
+      "state_family": "f_001",
+      "mode": "B",
+      "importance": 0.646,
+      "aligned_seg_ids": [
+        "seg_0027",
+        "seg_0028"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0008",
+      "frame_id": "c_0008",
+      "requested_t": 175.5,
+      "actual_t": 175.509,
+      "t": 175.509,
+      "timestamp_error": 0.0087,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0008_t0175.509_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0029"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 99.894,
+        "contrast": 58.567,
+        "sharpness": 14.324,
+        "blank": false,
+        "fingerprint": "abe77bc9ad6f931ecb31263cc7db8c0aca99c87d3f566b468759bb45a7d2e19e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0014",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.298,
+      "aligned_seg_ids": [
+        "seg_0028",
+        "seg_0029"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0009",
+      "frame_id": "c_0009",
+      "requested_t": 177.0,
+      "actual_t": 177.01,
+      "t": 177.01,
+      "timestamp_error": 0.0102,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0009_t0177.010_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0029"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 100.534,
+        "contrast": 58.39,
+        "sharpness": 14.221,
+        "blank": false,
+        "fingerprint": "d72842c25816200e2ac2eb1a08ee77e5cf0db7a2fcb4a90831d89b69361eb0ec",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_002",
+      "family_revisits": [],
+      "state_id": "s_0015",
+      "state_family": "f_002",
+      "mode": "B",
+      "importance": 0.298,
+      "aligned_seg_ids": [
+        "seg_0028",
+        "seg_0029"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0010",
+      "frame_id": "c_0010",
+      "requested_t": 180.0,
+      "actual_t": 180.013,
+      "t": 180.013,
+      "timestamp_error": 0.0132,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0010_t0180.013_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_robots"
+      ],
+      "seg_ids": [
+        "seg_0030",
+        "seg_0031",
+        "seg_0032",
+        "seg_0033"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 101.897,
+        "contrast": 57.987,
+        "sharpness": 14.185,
+        "blank": false,
+        "fingerprint": "9fef83a4b4e4f2f4fd57b1711f1868c4cc5c025dbc2ad0ba8c183606a2fc7ab6",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_003",
+      "family_revisits": [
+        179.513
+      ],
+      "state_id": "s_0018",
+      "state_family": "f_003",
+      "mode": "B",
+      "importance": 0.646,
+      "aligned_seg_ids": [
+        "seg_0029",
+        "seg_0030",
+        "seg_0031"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0011",
+      "frame_id": "c_0011",
+      "requested_t": 212.5,
+      "actual_t": 212.512,
+      "t": 212.512,
+      "timestamp_error": 0.0123,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0011_t0212.512_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_robots"
+      ],
+      "seg_ids": [
+        "seg_0030",
+        "seg_0031",
+        "seg_0032",
+        "seg_0033",
+        "seg_0035"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 89.51,
+        "contrast": 53.636,
+        "sharpness": 13.335,
+        "blank": false,
+        "fingerprint": "fc8f840322b68a502228fc5b556db78235a71c28801e37f1a0eaaa5b4bdddbff",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0019",
+      "state_family": null,
+      "mode": "A",
+      "importance": 0.472,
+      "aligned_seg_ids": [
+        "seg_0030",
+        "seg_0031",
+        "seg_0032",
+        "seg_0033",
+        "seg_0034",
+        "seg_0035"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0012",
+      "frame_id": "c_0012",
+      "requested_t": 223.0,
+      "actual_t": 223.023,
+      "t": 223.023,
+      "timestamp_error": 0.0228,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0012_t0223.023_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_layers"
+      ],
+      "seg_ids": [
+        "seg_0036",
+        "seg_0037",
+        "seg_0038",
+        "seg_0039",
+        "seg_0040"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 112.804,
+        "contrast": 56.141,
+        "sharpness": 13.273,
+        "blank": false,
+        "fingerprint": "8c70195c454b22c88d8f5ffc6478ac155679210c38f9ad4ccbb48c6c7d00bc87",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0021",
+      "state_family": null,
+      "mode": "A",
+      "importance": 0.475,
+      "aligned_seg_ids": [
+        "seg_0035",
+        "seg_0036",
+        "seg_0037"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0013",
+      "frame_id": "c_0013",
+      "requested_t": 234.0,
+      "actual_t": 234.0,
+      "t": 234.0,
+      "timestamp_error": 0.0004,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0013_t0234.000_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_layers"
+      ],
+      "seg_ids": [
+        "seg_0036",
+        "seg_0037",
+        "seg_0038",
+        "seg_0039",
+        "seg_0040"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 111.351,
+        "contrast": 57.549,
+        "sharpness": 11.917,
+        "blank": false,
+        "fingerprint": "aaa3087ea851b3685cab79a4dc0b7d5a37cf098d11f061305fbe4007cb5fe4ed",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0022",
+      "state_family": null,
+      "mode": "A",
+      "importance": 0.47,
+      "aligned_seg_ids": [
+        "seg_0036",
+        "seg_0037",
+        "seg_0038",
+        "seg_0039"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0014",
+      "frame_id": "c_0014",
+      "requested_t": 252.0,
+      "actual_t": 252.018,
+      "t": 252.018,
+      "timestamp_error": 0.0184,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0014_t0252.018_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_layers"
+      ],
+      "seg_ids": [
+        "seg_0036",
+        "seg_0037",
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0042"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 125.068,
+        "contrast": 52.797,
+        "sharpness": 12.205,
+        "blank": false,
+        "fingerprint": "a9eba37e95dba9e150d12c8b43e6d7ebaa20fbb5aaeee5973bf40930ccf8098d",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0023",
+      "state_family": null,
+      "mode": "A",
+      "importance": 0.47,
+      "aligned_seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041",
+        "seg_0042"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0015",
+      "frame_id": "c_0015",
+      "requested_t": 445.0,
+      "actual_t": 445.011,
+      "t": 445.011,
+      "timestamp_error": 0.0112,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0015_t0445.011_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0079"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 73.81,
+        "contrast": 72.199,
+        "sharpness": 15.135,
+        "blank": false,
+        "fingerprint": "f602011e0146cbd44de6cc76c3fa91d421df28bef6359f0ebcb149bd864c9043",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0025",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.36,
+      "aligned_seg_ids": [
+        "seg_0077",
+        "seg_0078",
+        "seg_0079"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0016",
+      "frame_id": "c_0016",
+      "requested_t": 449.5,
+      "actual_t": 449.516,
+      "t": 449.516,
+      "timestamp_error": 0.0157,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0016_t0449.516_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0079"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 70.349,
+        "contrast": 72.825,
+        "sharpness": 7.525,
+        "blank": false,
+        "fingerprint": "98a0cf4b051a20aacaade7faefa0e7cb36c92c82f3673cf207787a738c87ebba",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0026",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.347,
+      "aligned_seg_ids": [
+        "seg_0078",
+        "seg_0079"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0017",
+      "frame_id": "c_0017",
+      "requested_t": 452.0,
+      "actual_t": 452.018,
+      "t": 452.018,
+      "timestamp_error": 0.0182,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0017_t0452.018_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0080"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 77.978,
+        "contrast": 74.947,
+        "sharpness": 8.023,
+        "blank": false,
+        "fingerprint": "a7b412d4b119d6bf716d1d1bc134f78b373a42dadd63bbd34b8ebfda1f91983f",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0027",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.349,
+      "aligned_seg_ids": [
+        "seg_0079",
+        "seg_0080"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0018",
+      "frame_id": "c_0018",
+      "requested_t": 454.0,
+      "actual_t": 454.02,
+      "t": 454.02,
+      "timestamp_error": 0.0202,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0018_t0454.020_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0080"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 84.238,
+        "contrast": 76.169,
+        "sharpness": 8.486,
+        "blank": false,
+        "fingerprint": "733ef1a7bf3c0230ea34fd2d3f9f94d6cf0d3b38af8f676f5e632bf7469c8e33",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0028",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.35,
+      "aligned_seg_ids": [
+        "seg_0079",
+        "seg_0080"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0019",
+      "frame_id": "c_0019",
+      "requested_t": 458.0,
+      "actual_t": 458.024,
+      "t": 458.024,
+      "timestamp_error": 0.0242,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0019_t0458.024_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0081"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 69.839,
+        "contrast": 51.427,
+        "sharpness": 16.321,
+        "blank": false,
+        "fingerprint": "094db6cdbfdbc9f3d3d9673d71662798765f6614416721747fa143c8cccfc2b9",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0029",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.35,
+      "aligned_seg_ids": [
+        "seg_0080",
+        "seg_0081"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0020",
+      "frame_id": "c_0020",
+      "requested_t": 460.0,
+      "actual_t": 460.026,
+      "t": 460.026,
+      "timestamp_error": 0.0262,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0020_t0460.026_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0081"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 212.627,
+        "contrast": 13.648,
+        "sharpness": 1.55,
+        "blank": false,
+        "fingerprint": "beb18143b0971903c1cd7831bba9d5ab008b0a93516f757e0de56db8260316cc",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0030",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.354,
+      "aligned_seg_ids": [
+        "seg_0080",
+        "seg_0081"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0021",
+      "frame_id": "c_0021",
+      "requested_t": 461.5,
+      "actual_t": 461.528,
+      "t": 461.528,
+      "timestamp_error": 0.0277,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0021_t0461.528_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_bard_story"
+      ],
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 61.792,
+        "contrast": 76.285,
+        "sharpness": 9.846,
+        "blank": false,
+        "fingerprint": "bd9cc815b2ff70b74c738069bd979e9b35391847e8a532da9d3d4f6f93166cdc",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0031",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.708,
+      "aligned_seg_ids": [
+        "seg_0080",
+        "seg_0081",
+        "seg_0082"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0022",
+      "frame_id": "c_0022",
+      "requested_t": 467.0,
+      "actual_t": 467.033,
+      "t": 467.033,
+      "timestamp_error": 0.0332,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0022_t0467.033_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_bard_story"
+      ],
+      "seg_ids": [
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 72.734,
+        "contrast": 73.169,
+        "sharpness": 9.621,
+        "blank": false,
+        "fingerprint": "85954b3223f9f4f7a9fde5c460c189b10b394b7efc6009aaee1a9a604429efe0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0032",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.71,
+      "aligned_seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0023",
+      "frame_id": "c_0023",
+      "requested_t": 483.0,
+      "actual_t": 483.016,
+      "t": 483.016,
+      "timestamp_error": 0.0159,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0023_t0483.016_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_bard_story"
+      ],
+      "seg_ids": [
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 71.672,
+        "contrast": 80.475,
+        "sharpness": 10.303,
+        "blank": false,
+        "fingerprint": "ab982b47a09989f3e137dd0631c7a8d07d83a27552207d5ea1ff0d0d8133829e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0035",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.706,
+      "aligned_seg_ids": [
+        "seg_0084",
+        "seg_0085"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0024",
+      "frame_id": "c_0024",
+      "requested_t": 491.0,
+      "actual_t": 491.024,
+      "t": 491.024,
+      "timestamp_error": 0.0239,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0024_t0491.024_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0086"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 204.359,
+        "contrast": 18.422,
+        "sharpness": 9.513,
+        "blank": false,
+        "fingerprint": "428624a7d499ef6e4c171ead5b148d085b70dae871f4f15e33524bc46dad737d",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0037",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.352,
+      "aligned_seg_ids": [
+        "seg_0084",
+        "seg_0085",
+        "seg_0086"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0025",
+      "frame_id": "c_0025",
+      "requested_t": 495.0,
+      "actual_t": 495.028,
+      "t": 495.028,
+      "timestamp_error": 0.0279,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0025_t0495.028_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0087"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 81.015,
+        "contrast": 50.191,
+        "sharpness": 7.532,
+        "blank": false,
+        "fingerprint": "fdcb57a1a76eca66b6c5da93a3ca2fca660a7ffdbb778733c23b7f55495575b3",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0038",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.351,
+      "aligned_seg_ids": [
+        "seg_0085",
+        "seg_0086",
+        "seg_0087"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0026",
+      "frame_id": "c_0026",
+      "requested_t": 496.5,
+      "actual_t": 496.529,
+      "t": 496.529,
+      "timestamp_error": 0.0294,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0026_t0496.529_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0087"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 80.159,
+        "contrast": 48.4,
+        "sharpness": 6.942,
+        "blank": false,
+        "fingerprint": "e0cea066ea13f96eefbaefeb56a62eadea872ef77f529ba160ac3a4cf761ec53",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0039",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.351,
+      "aligned_seg_ids": [
+        "seg_0086",
+        "seg_0087",
+        "seg_0088"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0027",
+      "frame_id": "c_0027",
+      "requested_t": 503.0,
+      "actual_t": 503.002,
+      "t": 503.002,
+      "timestamp_error": 0.0025,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0027_t0503.002_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0089"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 72.572,
+        "contrast": 42.826,
+        "sharpness": 15.388,
+        "blank": false,
+        "fingerprint": "a9a348e9374c74ceffba21bc5f00bd84719b735f4dd061f55b626b5036bb2761",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0040",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.346,
+      "aligned_seg_ids": [
+        "seg_0086",
+        "seg_0087",
+        "seg_0088",
+        "seg_0089"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0028",
+      "frame_id": "c_0028",
+      "requested_t": 509.0,
+      "actual_t": 509.009,
+      "t": 509.009,
+      "timestamp_error": 0.0085,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0028_t0509.009_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0090"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 91.724,
+        "contrast": 51.279,
+        "sharpness": 12.519,
+        "blank": false,
+        "fingerprint": "18599830f643c7a0442fe3498a643a2176fadaeb113082fb6634902e37b38a25",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0041",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.339,
+      "aligned_seg_ids": [
+        "seg_0088",
+        "seg_0089",
+        "seg_0090"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0029",
+      "frame_id": "c_0029",
+      "requested_t": 511.5,
+      "actual_t": 511.511,
+      "t": 511.511,
+      "timestamp_error": 0.011,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0029_t0511.511_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0091"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 91.585,
+        "contrast": 50.923,
+        "sharpness": 12.651,
+        "blank": false,
+        "fingerprint": "9b74fdb9e360ad2e1c3fe27b13532b5bef13dec49d1387099bc47b8f34cd645b",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0042",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.336,
+      "aligned_seg_ids": [
+        "seg_0089",
+        "seg_0090",
+        "seg_0091"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0030",
+      "frame_id": "c_0030",
+      "requested_t": 513.0,
+      "actual_t": 513.013,
+      "t": 513.013,
+      "timestamp_error": 0.0125,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0030_t0513.013_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0091"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 92.277,
+        "contrast": 51.335,
+        "sharpness": 12.081,
+        "blank": false,
+        "fingerprint": "f38b8ebebec1dde2f493a55711335a0f7634e12503abc447a711af11e41bd59e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0043",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.336,
+      "aligned_seg_ids": [
+        "seg_0090",
+        "seg_0091",
+        "seg_0092"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0031",
+      "frame_id": "c_0031",
+      "requested_t": 531.5,
+      "actual_t": 531.531,
+      "t": 531.531,
+      "timestamp_error": 0.031,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0031_t0531.531_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0095"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 78.342,
+        "contrast": 39.373,
+        "sharpness": 8.602,
+        "blank": false,
+        "fingerprint": "98a9d88c9ccd1696526570ba89ce3ed8f81c54faae1ef7208d472e077e4ba933",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0044",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.337,
+      "aligned_seg_ids": [
+        "seg_0091",
+        "seg_0092",
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0032",
+      "frame_id": "c_0032",
+      "requested_t": 539.0,
+      "actual_t": 539.005,
+      "t": 539.005,
+      "timestamp_error": 0.0051,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0032_t0539.005_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0097"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 78.443,
+        "contrast": 48.601,
+        "sharpness": 9.354,
+        "blank": false,
+        "fingerprint": "e570b8799afa41413565661246c6b5a232bd95af684eaaee826993ee9adf9386",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0045",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.341,
+      "aligned_seg_ids": [
+        "seg_0094",
+        "seg_0095",
+        "seg_0096",
+        "seg_0097"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0033",
+      "frame_id": "c_0033",
+      "requested_t": 542.0,
+      "actual_t": 542.008,
+      "t": 542.008,
+      "timestamp_error": 0.0081,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0033_t0542.008_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0098"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 83.208,
+        "contrast": 50.235,
+        "sharpness": 15.682,
+        "blank": false,
+        "fingerprint": "d7752900471f4ca4df9eb9b48425b507da19dd34fbd09d3969cda60d85813d00",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0046",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.342,
+      "aligned_seg_ids": [
+        "seg_0096",
+        "seg_0097",
+        "seg_0098"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0034",
+      "frame_id": "c_0034",
+      "requested_t": 544.5,
+      "actual_t": 544.511,
+      "t": 544.511,
+      "timestamp_error": 0.0106,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0034_t0544.511_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0098"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 85.172,
+        "contrast": 51.237,
+        "sharpness": 14.295,
+        "blank": false,
+        "fingerprint": "63b183df7fd62f74dbb8d403cd79e001adc8f37047ee3172a5e289cedf1e121c",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0047",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.342,
+      "aligned_seg_ids": [
+        "seg_0097",
+        "seg_0098"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0035",
+      "frame_id": "c_0035",
+      "requested_t": 546.0,
+      "actual_t": 546.012,
+      "t": 546.012,
+      "timestamp_error": 0.0121,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0035_t0546.012_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0098"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 84.931,
+        "contrast": 49.494,
+        "sharpness": 13.948,
+        "blank": false,
+        "fingerprint": "5e8afe32230974e04dee5a926f1d36df9b5eb1140364bbc6cff78b1b31512343",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0048",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.343,
+      "aligned_seg_ids": [
+        "seg_0098"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0036",
+      "frame_id": "c_0036",
+      "requested_t": 548.0,
+      "actual_t": 548.014,
+      "t": 548.014,
+      "timestamp_error": 0.0141,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0036_t0548.014_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0099"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 83.189,
+        "contrast": 50.425,
+        "sharpness": 15.974,
+        "blank": false,
+        "fingerprint": "6ca478a073c8b1c130312111232addc328f2558f01c60e4577ebc5509aeb68d3",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0049",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.344,
+      "aligned_seg_ids": [
+        "seg_0098",
+        "seg_0099",
+        "seg_0100"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0037",
+      "frame_id": "c_0037",
+      "requested_t": 556.0,
+      "actual_t": 556.022,
+      "t": 556.022,
+      "timestamp_error": 0.0221,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0037_t0556.022_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0100"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 82.535,
+        "contrast": 50.32,
+        "sharpness": 15.804,
+        "blank": false,
+        "fingerprint": "ed91e99903ea5415510232b6c77118cce79e105f23d914fa60bf32d2613e2653",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0050",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.353,
+      "aligned_seg_ids": [
+        "seg_0099",
+        "seg_0100"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0038",
+      "frame_id": "c_0038",
+      "requested_t": 557.0,
+      "actual_t": 557.023,
+      "t": 557.023,
+      "timestamp_error": 0.0231,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0038_t0557.023_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0100"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 84.866,
+        "contrast": 51.456,
+        "sharpness": 14.254,
+        "blank": false,
+        "fingerprint": "d0aefdaf154b6a14ffefa68113fa34493f03ad56477d098e73e540ed19aa8114",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0051",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.361,
+      "aligned_seg_ids": [
+        "seg_0100"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0039",
+      "frame_id": "c_0039",
+      "requested_t": 560.5,
+      "actual_t": 560.527,
+      "t": 560.527,
+      "timestamp_error": 0.0266,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0039_t0560.527_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_prompt"
+      ],
+      "seg_ids": [
+        "seg_0101",
+        "seg_0102",
+        "seg_0103"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 85.186,
+        "contrast": 51.978,
+        "sharpness": 14.256,
+        "blank": false,
+        "fingerprint": "c8b2fa8fcdab2672b400a2e4031247200706ad273797aa3260220c0a53bb01ea",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0052",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.711,
+      "aligned_seg_ids": [
+        "seg_0100",
+        "seg_0101"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0040",
+      "frame_id": "c_0040",
+      "requested_t": 564.0,
+      "actual_t": 564.03,
+      "t": 564.03,
+      "timestamp_error": 0.0301,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0040_t0564.030_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_prompt"
+      ],
+      "seg_ids": [
+        "seg_0101",
+        "seg_0102",
+        "seg_0103"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 227.471,
+        "contrast": 13.672,
+        "sharpness": 3.865,
+        "blank": false,
+        "fingerprint": "184f2c96d6a1b47fc151df0b712f6c069887ce4c9bfce52a9ba6a997f79d2a80",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0053",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.714,
+      "aligned_seg_ids": [
+        "seg_0100",
+        "seg_0101",
+        "seg_0102"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0041",
+      "frame_id": "c_0041",
+      "requested_t": 573.0,
+      "actual_t": 573.006,
+      "t": 573.006,
+      "timestamp_error": 0.0058,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0041_t0573.006_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_prompt"
+      ],
+      "seg_ids": [
+        "seg_0101",
+        "seg_0102",
+        "seg_0103"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 79.822,
+        "contrast": 39.832,
+        "sharpness": 8.446,
+        "blank": false,
+        "fingerprint": "f1a674ed2a85b3bc555053dd0358b34ab48ed7cc0c746ce312ec6d39d7f3061a",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_004",
+      "family_revisits": [],
+      "state_id": "s_0054",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.706,
+      "aligned_seg_ids": [
+        "seg_0101",
+        "seg_0102",
+        "seg_0103"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0042",
+      "frame_id": "c_0042",
+      "requested_t": 581.0,
+      "actual_t": 581.014,
+      "t": 581.014,
+      "timestamp_error": 0.0138,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0042_t0581.014_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0104"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 162.368,
+        "contrast": 25.015,
+        "sharpness": 2.262,
+        "blank": false,
+        "fingerprint": "a52cbe91466a9967758b5adcb63d9fffb49c0e32467fc10e280d69db7af4d902",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0056",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.342,
+      "aligned_seg_ids": [
+        "seg_0103",
+        "seg_0104"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0043",
+      "frame_id": "c_0043",
+      "requested_t": 585.0,
+      "actual_t": 585.018,
+      "t": 585.018,
+      "timestamp_error": 0.0178,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0043_t0585.018_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_answer"
+      ],
+      "seg_ids": [
+        "seg_0104",
+        "seg_0105",
+        "seg_0106"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 129.293,
+        "contrast": 28.898,
+        "sharpness": 4.438,
+        "blank": false,
+        "fingerprint": "c71284341e08bb0582865e20625b0dad805b1d967c3ede62e863cb31b1d6225a",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0057",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.69,
+      "aligned_seg_ids": [
+        "seg_0104",
+        "seg_0105",
+        "seg_0106"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0044",
+      "frame_id": "c_0044",
+      "requested_t": 592.0,
+      "actual_t": 592.025,
+      "t": 592.025,
+      "timestamp_error": 0.0248,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0044_t0592.025_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0106"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 161.479,
+        "contrast": 24.144,
+        "sharpness": 2.702,
+        "blank": false,
+        "fingerprint": "37e4ffb0bdc2788d8223dd93e87d00d8d92f516c991b59f36becbe21003606ae",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0058",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.342,
+      "aligned_seg_ids": [
+        "seg_0105",
+        "seg_0106"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0045",
+      "frame_id": "c_0045",
+      "requested_t": 597.0,
+      "actual_t": 597.03,
+      "t": 597.03,
+      "timestamp_error": 0.0298,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0045_t0597.030_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0107"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 164.326,
+        "contrast": 24.563,
+        "sharpness": 3.35,
+        "blank": false,
+        "fingerprint": "be5dc0bb259b19d31957a0e26b7cbbe172727b86a1a2c8c2ca2696c5645902fb",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0059",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.341,
+      "aligned_seg_ids": [
+        "seg_0106",
+        "seg_0107"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0046",
+      "frame_id": "c_0046",
+      "requested_t": 601.0,
+      "actual_t": 601.0,
+      "t": 601.0,
+      "timestamp_error": 0.0004,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0046_t0601.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0108"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 130.679,
+        "contrast": 28.25,
+        "sharpness": 5.403,
+        "blank": false,
+        "fingerprint": "7cfc115fb40fc95c9b65df36cad74b39ec50b7414b334cada5f1fff03d9141f3",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0060",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.34,
+      "aligned_seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0108"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0047",
+      "frame_id": "c_0047",
+      "requested_t": 606.0,
+      "actual_t": 606.005,
+      "t": 606.005,
+      "timestamp_error": 0.0054,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0047_t0606.005_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0108"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 164.133,
+        "contrast": 24.662,
+        "sharpness": 3.522,
+        "blank": false,
+        "fingerprint": "b7db4559d7edf9ebc02005a57aac94e279b08b735fdcb7f5edc2b75b7414a523",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0061",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.34,
+      "aligned_seg_ids": [
+        "seg_0107",
+        "seg_0108"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0048",
+      "frame_id": "c_0048",
+      "requested_t": 611.5,
+      "actual_t": 611.511,
+      "t": 611.511,
+      "timestamp_error": 0.0109,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0048_t0611.511_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0109"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 129.587,
+        "contrast": 26.75,
+        "sharpness": 4.672,
+        "blank": false,
+        "fingerprint": "cacb4e7aff56a2946790e167b364fab6e31b3061ca96f127bf8b1a1058a1810e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0062",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.338,
+      "aligned_seg_ids": [
+        "seg_0108",
+        "seg_0109"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0049",
+      "frame_id": "c_0049",
+      "requested_t": 613.0,
+      "actual_t": 613.012,
+      "t": 613.012,
+      "timestamp_error": 0.0124,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0049_t0613.012_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0110"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 89.576,
+        "contrast": 54.765,
+        "sharpness": 13.925,
+        "blank": false,
+        "fingerprint": "5f7f5fbc22a8061daeddf3500735cc25015b1a93f2d8a8b20c0d4b442b3d928a",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0063",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.336,
+      "aligned_seg_ids": [
+        "seg_0109",
+        "seg_0110"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0050",
+      "frame_id": "c_0050",
+      "requested_t": 626.0,
+      "actual_t": 626.025,
+      "t": 626.025,
+      "timestamp_error": 0.0254,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0050_t0626.025_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0112"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 74.473,
+        "contrast": 44.194,
+        "sharpness": 15.492,
+        "blank": false,
+        "fingerprint": "debb21f98d26c7f55f5afe6e1a76fda15f648aad614157587d040634b3ac6afc",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0064",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.335,
+      "aligned_seg_ids": [
+        "seg_0109",
+        "seg_0110",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0051",
+      "frame_id": "c_0051",
+      "requested_t": 628.5,
+      "actual_t": 628.528,
+      "t": 628.528,
+      "timestamp_error": 0.0279,
+      "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/candidates/c_0051_t0628.528_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0112"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 74.46,
+        "contrast": 43.506,
+        "sharpness": 15.217,
+        "blank": false,
+        "fingerprint": "1f11202c8523db3d7d2c03921c4c19e12f019f7a024cf9efdcaa8d289392b21f",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0065",
+      "state_family": null,
+      "mode": "D",
+      "importance": 0.335,
+      "aligned_seg_ids": [
+        "seg_0111",
+        "seg_0112"
+      ],
+      "stage": null
+    }
+  ],
+  "sheets": {
+    "status": "ok",
+    "tiles_per_sheet": 16,
+    "tile_width": 320,
+    "sheets": [
+      {
+        "sheet_id": "sheet_00",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0000",
+            "actual_t": 107.507
+          },
+          {
+            "index": 1,
+            "candidate_id": "c_0001",
+            "actual_t": 119.519
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0002",
+            "actual_t": 136.003
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0003",
+            "actual_t": 147.514
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0004",
+            "actual_t": 152.519
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0005",
+            "actual_t": 164.531
+          },
+          {
+            "index": 6,
+            "sentinel": true
+          },
+          {
+            "index": 7,
+            "candidate_id": "c_0006",
+            "actual_t": 166.033
+          },
+          {
+            "index": 8,
+            "candidate_id": "c_0007",
+            "actual_t": 167.501
+          },
+          {
+            "index": 9,
+            "candidate_id": "c_0008",
+            "actual_t": 175.509
+          },
+          {
+            "index": 10,
+            "candidate_id": "c_0009",
+            "actual_t": 177.01
+          },
+          {
+            "index": 11,
+            "candidate_id": "c_0010",
+            "actual_t": 180.013
+          },
+          {
+            "index": 12,
+            "candidate_id": "c_0011",
+            "actual_t": 212.512
+          },
+          {
+            "index": 13,
+            "candidate_id": "c_0012",
+            "actual_t": 223.023
+          },
+          {
+            "index": 14,
+            "candidate_id": "c_0013",
+            "actual_t": 234.0
+          },
+          {
+            "index": 15,
+            "candidate_id": "c_0014",
+            "actual_t": 252.018
+          }
+        ],
+        "sentinel_id": "x_0029",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/sheets/sheet_00.jpg",
+        "width": 1280,
+        "height": 792,
+        "tokens": 1334
+      },
+      {
+        "sheet_id": "sheet_01",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0015",
+            "actual_t": 445.011
+          },
+          {
+            "index": 1,
+            "candidate_id": "c_0016",
+            "actual_t": 449.516
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0017",
+            "actual_t": 452.018
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0018",
+            "actual_t": 454.02
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0019",
+            "actual_t": 458.024
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0020",
+            "actual_t": 460.026
+          },
+          {
+            "index": 6,
+            "candidate_id": "c_0021",
+            "actual_t": 461.528
+          },
+          {
+            "index": 7,
+            "sentinel": true
+          },
+          {
+            "index": 8,
+            "candidate_id": "c_0022",
+            "actual_t": 467.033
+          },
+          {
+            "index": 9,
+            "candidate_id": "c_0023",
+            "actual_t": 483.016
+          },
+          {
+            "index": 10,
+            "candidate_id": "c_0024",
+            "actual_t": 491.024
+          },
+          {
+            "index": 11,
+            "candidate_id": "c_0025",
+            "actual_t": 495.028
+          },
+          {
+            "index": 12,
+            "candidate_id": "c_0026",
+            "actual_t": 496.529
+          },
+          {
+            "index": 13,
+            "candidate_id": "c_0027",
+            "actual_t": 503.002
+          },
+          {
+            "index": 14,
+            "candidate_id": "c_0028",
+            "actual_t": 509.009
+          },
+          {
+            "index": 15,
+            "candidate_id": "c_0029",
+            "actual_t": 511.511
+          }
+        ],
+        "sentinel_id": "x_0193",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/sheets/sheet_01.jpg",
+        "width": 1280,
+        "height": 792,
+        "tokens": 1334
+      },
+      {
+        "sheet_id": "sheet_02",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0030",
+            "actual_t": 513.013
+          },
+          {
+            "index": 1,
+            "sentinel": true
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0031",
+            "actual_t": 531.531
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0032",
+            "actual_t": 539.005
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0033",
+            "actual_t": 542.008
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0034",
+            "actual_t": 544.511
+          },
+          {
+            "index": 6,
+            "candidate_id": "c_0035",
+            "actual_t": 546.012
+          },
+          {
+            "index": 7,
+            "candidate_id": "c_0036",
+            "actual_t": 548.014
+          },
+          {
+            "index": 8,
+            "candidate_id": "c_0037",
+            "actual_t": 556.022
+          },
+          {
+            "index": 9,
+            "candidate_id": "c_0038",
+            "actual_t": 557.023
+          },
+          {
+            "index": 10,
+            "candidate_id": "c_0039",
+            "actual_t": 560.527
+          },
+          {
+            "index": 11,
+            "candidate_id": "c_0040",
+            "actual_t": 564.03
+          },
+          {
+            "index": 12,
+            "candidate_id": "c_0041",
+            "actual_t": 573.006
+          },
+          {
+            "index": 13,
+            "candidate_id": "c_0042",
+            "actual_t": 581.014
+          },
+          {
+            "index": 14,
+            "candidate_id": "c_0043",
+            "actual_t": 585.018
+          },
+          {
+            "index": 15,
+            "candidate_id": "c_0044",
+            "actual_t": 592.025
+          }
+        ],
+        "sentinel_id": "x_0219",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/sheets/sheet_02.jpg",
+        "width": 1280,
+        "height": 792,
+        "tokens": 1334
+      },
+      {
+        "sheet_id": "sheet_03",
+        "tiles": [
+          {
+            "index": 0,
+            "candidate_id": "c_0045",
+            "actual_t": 597.03
+          },
+          {
+            "index": 1,
+            "candidate_id": "c_0046",
+            "actual_t": 601.0
+          },
+          {
+            "index": 2,
+            "candidate_id": "c_0047",
+            "actual_t": 606.005
+          },
+          {
+            "index": 3,
+            "candidate_id": "c_0048",
+            "actual_t": 611.511
+          },
+          {
+            "index": 4,
+            "candidate_id": "c_0049",
+            "actual_t": 613.012
+          },
+          {
+            "index": 5,
+            "candidate_id": "c_0050",
+            "actual_t": 626.025
+          },
+          {
+            "index": 6,
+            "candidate_id": "c_0051",
+            "actual_t": 628.528
+          },
+          {
+            "index": 7,
+            "sentinel": true
+          }
+        ],
+        "sentinel_id": "x_0378",
+        "path": "<skill>/bench/runs/2026-09-04-v15-high/qrvK_KuIeJk/work/sheets/sheet_03.jpg",
+        "width": 1280,
+        "height": 396,
+        "tokens": 690
+      }
+    ],
+    "image_tokens": 4692,
+    "individual_tokens": 10868
+  }
+}

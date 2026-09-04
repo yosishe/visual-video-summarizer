@@ -1,0 +1,72 @@
+[
+  {"chapter_id": "ch01", "title": "A sloppy 3 your brain recognizes", "start": 0.0, "end": 67.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch01_pixel_three", "kind": "diagram", "seg_ids": ["seg_0001", "seg_0002"],
+      "why": "the 28x28 pixel 3"},
+     {"target_id": "ch01_many_threes", "kind": "diagram", "seg_ids": ["seg_0005", "seg_0006"],
+      "why": "several differently drawn 3s"}]},
+  {"chapter_id": "ch02", "title": "Series preview: structure, then learning", "start": 67.0, "end": 163.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch02_network_preview", "kind": "diagram", "seg_ids": ["seg_0027", "seg_0028"],
+      "why": "the digit-recognizing network shown as the goal"}]},
+  {"chapter_id": "ch03", "title": "Neurons hold a number", "start": 163.0, "end": 215.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch03_input_neurons", "kind": "diagram", "seg_ids": ["seg_0050", "seg_0051"],
+      "why": "784 input neurons laid out from the pixel grid"},
+     {"target_id": "ch03_activation", "kind": "diagram", "seg_ids": ["seg_0054", "seg_0055", "seg_0056"],
+      "why": "a neuron lit up by its activation"}]},
+  {"chapter_id": "ch04", "title": "Layers: input, hidden, output", "start": 215.0, "end": 331.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch04_output_layer", "kind": "diagram", "seg_ids": ["seg_0058", "seg_0059", "seg_0060", "seg_0061"],
+      "why": "the 10 output neurons"},
+     {"target_id": "ch04_hidden_layers", "kind": "diagram", "seg_ids": ["seg_0065", "seg_0066"],
+      "why": "two hidden layers of 16 neurons"},
+     {"target_id": "ch04_propagation", "kind": "diagram", "seg_ids": ["seg_0081", "seg_0082", "seg_0083", "seg_0084"],
+      "why": "activations propagating to the brightest output neuron"}]},
+  {"chapter_id": "ch05", "title": "Why layers: subcomponents and edges", "start": 331.0, "end": 518.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch05_subcomponents", "kind": "diagram", "seg_ids": ["seg_0092", "seg_0093", "seg_0094"],
+      "why": "9, 8 and 4 broken into loops and lines"},
+     {"target_id": "ch05_loop_neuron", "kind": "diagram", "seg_ids": ["seg_0096", "seg_0097", "seg_0098", "seg_0099"],
+      "why": "a hidden neuron responding to an upper loop"},
+     {"target_id": "ch05_edges_to_nine", "kind": "diagram", "seg_ids": ["seg_0117", "seg_0118", "seg_0119", "seg_0120"],
+      "why": "edges lighting up loop and line, then the 9"},
+     {"target_id": "ch05_speech", "kind": "diagram", "seg_ids": ["seg_0129", "seg_0130", "seg_0131"],
+      "why": "speech parsing as layers of abstraction"}]},
+  {"chapter_id": "ch06", "title": "Weights, sigmoid, and bias", "start": 518.0, "end": 696.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch06_weight_grid", "kind": "diagram", "seg_ids": ["seg_0150", "seg_0151", "seg_0152"],
+      "why": "green and red weight pixels"},
+     {"target_id": "ch06_edge_weights", "kind": "diagram", "seg_ids": ["seg_0157", "seg_0158", "seg_0159", "seg_0160"],
+      "why": "negative weights around the edge region"},
+     {"target_id": "ch06_sigmoid", "kind": "diagram", "seg_ids": ["seg_0165", "seg_0166", "seg_0167", "seg_0168"],
+      "why": "the sigmoid curve"},
+     {"target_id": "ch06_bias", "kind": "diagram", "seg_ids": ["seg_0175", "seg_0176", "seg_0177"],
+      "why": "the bias added before the sigmoid"}]},
+  {"chapter_id": "ch07", "title": "Counting weights and biases", "start": 696.0, "end": 750.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch07_784x16", "kind": "diagram", "seg_ids": ["seg_0188", "seg_0189"],
+      "why": "784 x 16 weights plus 16 biases"},
+     {"target_id": "ch07_13000", "kind": "diagram", "seg_ids": ["seg_0193", "seg_0194"],
+      "why": "the 13,000 total parameters"}]},
+  {"chapter_id": "ch08", "title": "What learning means", "start": 750.0, "end": 806.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch09", "title": "Notation: matrices and vectors", "start": 806.0, "end": 916.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch09_matrix_vector", "kind": "diagram", "seg_ids": ["seg_0215", "seg_0216", "seg_0217"],
+      "why": "activations as a vector and weights as a matrix"},
+     {"target_id": "ch09_bias_vector", "kind": "diagram", "seg_ids": ["seg_0226", "seg_0227"],
+      "why": "the bias vector added to the product"},
+     {"target_id": "ch09_compact", "kind": "diagram", "seg_ids": ["seg_0228", "seg_0229", "seg_0230", "seg_0231"],
+      "why": "the sigmoid wrapped around the full expression"}]},
+  {"chapter_id": "ch10", "title": "Recap: the network is a function", "start": 916.0, "end": 988.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch10_function", "kind": "diagram", "seg_ids": ["seg_0241", "seg_0242"],
+      "why": "784 inputs to 10 outputs as one function"}]},
+  {"chapter_id": "ch11", "title": "Closing words", "start": 988.0, "end": 1023.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch12", "title": "ReLU vs sigmoid with Lisha Li", "start": 1023.0, "end": 1120.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch12_relu", "kind": "diagram", "seg_ids": ["seg_0276", "seg_0277"],
+      "why": "the ReLU function max(0, a)"}]}
+]

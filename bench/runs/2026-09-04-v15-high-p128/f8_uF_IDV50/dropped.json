@@ -1,0 +1,254 @@
+[
+  {
+    "t": 65.0,
+    "requested_t": 65.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 46.0
+  },
+  {
+    "t": 82.0,
+    "requested_t": 82.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 46.0
+  },
+  {
+    "t": 121.5,
+    "requested_t": 121.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 46.0
+  },
+  {
+    "t": 158.0,
+    "requested_t": 158.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": 333.5
+  },
+  {
+    "t": 166.5,
+    "requested_t": 166.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": 333.5
+  },
+  {
+    "t": 343.5,
+    "requested_t": 343.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": 333.5
+  },
+  {
+    "t": 322.0,
+    "requested_t": 322.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [],
+    "kept_by_t": 256.0
+  },
+  {
+    "t": 333.0,
+    "requested_t": 333.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [],
+    "kept_by_t": 256.0
+  },
+  {
+    "t": 279.0,
+    "requested_t": 279.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [],
+    "kept_by_t": 290.0
+  },
+  {
+    "t": 287.0,
+    "requested_t": 287.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [],
+    "kept_by_t": 290.0
+  },
+  {
+    "t": 382.0,
+    "requested_t": 382.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": 388.0
+  },
+  {
+    "t": 477.0,
+    "requested_t": 477.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": 414.0
+  },
+  {
+    "t": 461.0,
+    "requested_t": 461.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": 426.5
+  },
+  {
+    "t": 522.5,
+    "requested_t": 522.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": 518.5
+  },
+  {
+    "t": 616.5,
+    "requested_t": 616.5,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [
+      "ch06_simple_browser"
+    ],
+    "kept_by_t": 616.0
+  },
+  {
+    "t": 618.5,
+    "requested_t": 618.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": 642.0
+  },
+  {
+    "t": 634.0,
+    "requested_t": 634.0,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": 642.0
+  },
+  {
+    "t": 850.5,
+    "requested_t": 850.5,
+    "reason": "dedup",
+    "reasons": [
+      "state"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": 715.0
+  },
+  {
+    "t": 727.5,
+    "requested_t": 727.5,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_configure_tools"
+    ],
+    "kept_by_t": 788.5
+  },
+  {
+    "t": 756.5,
+    "requested_t": 756.5,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_mcp_marketplace"
+    ],
+    "kept_by_t": 788.5
+  },
+  {
+    "t": 773.5,
+    "requested_t": 773.5,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_mcp_marketplace"
+    ],
+    "kept_by_t": 788.5
+  },
+  {
+    "t": 504.0,
+    "requested_t": 504.0,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [
+      "ch06_flask_answer"
+    ],
+    "kept_by_t": null
+  }
+]

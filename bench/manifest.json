@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "notes": "Benchmark corpus for /summarize-video. Only ids and annotations are committed; media is fetched by the runner. Categories follow the vNext audit (2026-09-04): talking_head, presentation, coding, screen_demo, whiteboard, documentary, mixed. `langs` is passed to transcript.py --langs (YouTube keys Hebrew as `iw`).",
+  "notes": "Benchmark corpus for /summarize-video. Only ids and annotations are committed; media is fetched by the runner. Categories follow the vNext audit (2026-09-04): talking_head, presentation, coding, screen_demo, whiteboard, documentary, mixed. `langs` documents the expected caption languages; transcript.py ranks tracks by provenance on its own — set `langs_override` to force a yt-dlp --sub-langs pattern.",
   "videos": [
     {
       "id": "ISb0nrlNoKQ",

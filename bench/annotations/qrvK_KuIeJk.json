@@ -1,0 +1,183 @@
+{
+  "video_id": "qrvK_KuIeJk",
+  "title": "\"Godfather of AI\" Geoffrey Hinton: The 60 Minutes Interview",
+  "duration": 792,
+  "annotator": "claude (from bench/sheets storyboard tiles, 5 s apart at 159x90; NEEDS REVIEW by yos)",
+  "date": "2026-09-04",
+  "status": "draft",
+  "source": "storyboard:sb0",
+  "notes": "Broadcast interview: rapid cuts, B-roll, archival photos. Expected budget 0-4 frames; the only information-bearing visuals are the robot demo and the Bard chat screens.",
+  "states": [
+    {
+      "state_id": "s01",
+      "start": 0,
+      "end": 45,
+      "class": "irrelevant",
+      "kind": "title",
+      "label": "60 Minutes title sequence, correspondent in studio",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s02",
+      "start": 45,
+      "end": 120,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Hinton / Pelley interview shots",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s03",
+      "start": 119,
+      "end": 132,
+      "class": "acceptable",
+      "kind": "photo",
+      "label": "Young Geoffrey Hinton black-and-white portrait",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s04",
+      "start": 132,
+      "end": 183,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Interview shots",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s05",
+      "start": 183,
+      "end": 210,
+      "class": "essential",
+      "kind": "b_roll",
+      "label": "Humanoid robots playing soccer in the lab (AI learning by trial)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s06",
+      "start": 210,
+      "end": 238,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Pelley to camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s07",
+      "start": 238,
+      "end": 250,
+      "class": "acceptable",
+      "kind": "b_roll",
+      "label": "Robot kicking a ball (reprise)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s05"
+    },
+    {
+      "state_id": "s08",
+      "start": 250,
+      "end": 371,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Interview shots, walking through the lab",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s09",
+      "start": 371,
+      "end": 400,
+      "class": "acceptable",
+      "kind": "photo",
+      "label": "Hinton's ancestors: George Boole, Everest, black-and-white portraits",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s10",
+      "start": 400,
+      "end": 455,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Interview shots",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s11",
+      "start": 455,
+      "end": 470,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "'Meet Bard' — Bard chat screen, prompt typed on a laptop",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s12",
+      "start": 470,
+      "end": 490,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Bard's answer: 'The shoes were a gift from my wife, but we never had a baby' story",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s13",
+      "start": 490,
+      "end": 570,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Interview shots in the office",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s14",
+      "start": 570,
+      "end": 608,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Chat prompts with blurred answers: 'I need to be repainted…', 'if you paint the yellow rooms white…', 'you'd be wasting resources'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s15",
+      "start": 608,
+      "end": 720,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Interview shots",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s16",
+      "start": 720,
+      "end": 760,
+      "class": "acceptable",
+      "kind": "photo",
+      "label": "Hinton lecturing at a blackboard; Oppenheimer-era physicists black-and-white",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s17",
+      "start": 760,
+      "end": 792,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Interview close-ups, outro",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    }
+  ],
+  "summary_checklist": []
+}

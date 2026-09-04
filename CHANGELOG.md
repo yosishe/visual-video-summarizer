@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Caption track selection bug.** `--sub-langs` is a regex in yt-dlp: the ranked key `en` also downloaded `en-de`, `en-en`, `en-hi`, … (machine translations of the manual track) and the fallback glob then picked `video.en-de.vtt` alphabetically, so a 3Blue1Brown video was transcribed from a translated track while `source_detail` reported it as the track chosen. The ranked key is now anchored (`^en$`) and the exact `video.<key>.vtt` is used; the explicit `--langs` path prefers the shortest track name. `bench/run.py prepare` no longer passes the manifest's `langs` pattern (which bypassed the ranking) — `langs_override` forces one when needed. Tests: 2 new (`FetchCaptionsTests`).
+- **Benchmark widened from one video to six.** Chapters authored for the five other manifest videos (`bench/inputs/<id>/chapters.json`), storyboard-derived annotation drafts for all five (`bench/annotations/<id>.json`, status `draft`, pending Yosi's review), the v15-high pool run on each; results per category in `bench/README.md`.
+- Integration tests are hermetic to the user's `SUMMARY_LANG` config (fixtures are English).
+- **Token guards.** `candidates.py --max-image-tokens` (default `SUMMARY_MAX_IMAGE_TOKENS`, else 12,000 `standard` / 20,000 `high`) plans the spend before any read — sheets fixed, shortlist variable — writes it to `candidates.json` `token_budget`, prints a **Token budget** line, and stops with exit 7 when even the sheets do not fit (`--allow-over-budget` to proceed); `shortlist.py` enforces the budget's `shortlist_max`. Videos over 120 minutes stop with exit 8 unless `--allow-long`. `SKILL.md` gains the read rules that keep the spend bounded. Tests: 6 new (`test_token_budget.py`); 113 total.
+- **Public-release hygiene.** LICENSE is the verbatim MIT text with third-party notices moved below it (so GitHub detects the license); committed benchmark artifacts no longer contain this machine's absolute paths (`bench/run.py` relativizes them to `<skill>/…` on copy); README gains a cost-and-guards section, an example screenshot (`docs/example-he.png`) and a benchmark section.
+
 ## 1.6.0 — 2026-09-04
 
 One release for the vNext roadmap of the 2026-09-04 audit, built and measured in four stages on `feat/bench` (PR #7). Each stage was scored on the benchmark against the previous one before the next began.

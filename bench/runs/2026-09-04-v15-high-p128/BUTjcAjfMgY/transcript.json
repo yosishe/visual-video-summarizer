@@ -1,0 +1,2694 @@
+{
+  "source": "captions",
+  "source_detail": {
+    "kind": "captions",
+    "track": "en-orig",
+    "manual": false,
+    "original": true,
+    "translated": false,
+    "youtube_language": "en-US",
+    "tracks_considered": 2,
+    "rejected_translated": 155
+  },
+  "language": "en",
+  "video": {
+    "id": "BUTjcAjfMgY",
+    "title": "ML Foundations for AI Engineers (in 34 Minutes)",
+    "uploader": "Shaw Talebi",
+    "url": "https://www.youtube.com/watch?v=BUTjcAjfMgY",
+    "duration": 2090.0,
+    "is_url": true,
+    "language": "en-US",
+    "chapters": [
+      {
+        "start_time": 0,
+        "title": "Introduction",
+        "end_time": 40
+      },
+      {
+        "start_time": 40,
+        "title": "Intelligence & Models",
+        "end_time": 110
+      },
+      {
+        "start_time": 110,
+        "title": "3 Ways Computers Can Learn",
+        "end_time": 167
+      },
+      {
+        "start_time": 167,
+        "title": "Way 1: Machine Learning",
+        "end_time": 216
+      },
+      {
+        "start_time": 216,
+        "title": "Inference (Phase 2)",
+        "end_time": 267
+      },
+      {
+        "start_time": 267,
+        "title": "Training (Phase 1)",
+        "end_time": 547
+      },
+      {
+        "start_time": 547,
+        "title": "More ML Techniques",
+        "end_time": 643
+      },
+      {
+        "start_time": 643,
+        "title": "Way 2: Deep Learning",
+        "end_time": 726
+      },
+      {
+        "start_time": 726,
+        "title": "Neural Networks",
+        "end_time": 929
+      },
+      {
+        "start_time": 929,
+        "title": "Training Neural Nets",
+        "end_time": 1316
+      },
+      {
+        "start_time": 1316,
+        "title": "Way 3: Reinforcement Learning (RL)",
+        "end_time": 1405
+      },
+      {
+        "start_time": 1405,
+        "title": "The Promise of RL",
+        "end_time": 1516
+      },
+      {
+        "start_time": 1516,
+        "title": "How RL Works",
+        "end_time": 1830
+      },
+      {
+        "start_time": 1830,
+        "title": "Data (most important part!)",
+        "end_time": 2012
+      },
+      {
+        "start_time": 2012,
+        "title": "Key Takeaways",
+        "end_time": 2090
+      }
+    ]
+  },
+  "segments": [
+    {
+      "seg_id": "seg_0000",
+      "start": 2.47,
+      "end": 4.32,
+      "text": "Hey everyone, I'm Sha. In this video, I'll be covering machine learning"
+    },
+    {
+      "seg_id": "seg_0001",
+      "start": 4.32,
+      "end": 9.36,
+      "text": "fundamentals that every AI engineer needs to know. While you'll find endless"
+    },
+    {
+      "seg_id": "seg_0002",
+      "start": 9.36,
+      "end": 13.92,
+      "text": "textbooks and articles on this subject, my goal with this video is to give"
+    },
+    {
+      "seg_id": "seg_0003",
+      "start": 13.92,
+      "end": 19.68,
+      "text": "builders a short and accessible guide to the most critical concepts in machine"
+    },
+    {
+      "seg_id": "seg_0004",
+      "start": 19.68,
+      "end": 23.84,
+      "text": "learning. Here, I'm going to focus on five key points. I'll first talk about"
+    },
+    {
+      "seg_id": "seg_0005",
+      "start": 23.84,
+      "end": 27.84,
+      "text": "intelligence and world models. Then I'll talk about three different ways"
+    },
+    {
+      "seg_id": "seg_0006",
+      "start": 27.84,
+      "end": 32.96,
+      "text": "computers can learn world models through machine learning, deep learning, and"
+    },
+    {
+      "seg_id": "seg_0007",
+      "start": 32.96,
+      "end": 36.72,
+      "text": "reinforcement learning. Finally, I'll talk about the most important ingredient"
+    },
+    {
+      "seg_id": "seg_0008",
+      "start": 36.72,
+      "end": 41.68,
+      "text": "in machine learning, which is data. So let's talk about intelligence."
+    },
+    {
+      "seg_id": "seg_0009",
+      "start": 41.68,
+      "end": 46.72,
+      "text": "Intelligence requires understanding how the world works. But of course, the"
+    },
+    {
+      "seg_id": "seg_0010",
+      "start": 46.72,
+      "end": 51.6,
+      "text": "world is a big and complicated place. So in order to understand it, you need to"
+    },
+    {
+      "seg_id": "seg_0011",
+      "start": 51.6,
+      "end": 57.92,
+      "text": "develop models of the world so that you can compress the complicated and vast"
+    },
+    {
+      "seg_id": "seg_0012",
+      "start": 57.92,
+      "end": 63.04,
+      "text": "reality that we live in into something you can fit into your head. And put"
+    },
+    {
+      "seg_id": "seg_0013",
+      "start": 63.04,
+      "end": 68.24,
+      "text": "simply, a model is something that allows you to make predictions. For example, if"
+    },
+    {
+      "seg_id": "seg_0014",
+      "start": 68.24,
+      "end": 73.36,
+      "text": "you were to look out the window and were to see dark clouds like this, your"
+    },
+    {
+      "seg_id": "seg_0015",
+      "start": 73.36,
+      "end": 77.76,
+      "text": "mental model of the world and understanding that dark clouds typically"
+    },
+    {
+      "seg_id": "seg_0016",
+      "start": 77.76,
+      "end": 82.08,
+      "text": "mean it's going to rain later will allow you to make a prediction that it's going"
+    },
+    {
+      "seg_id": "seg_0017",
+      "start": 82.08,
+      "end": 87.12,
+      "text": "to rain later. We all have mental models of the world that allow us to make"
+    },
+    {
+      "seg_id": "seg_0018",
+      "start": 87.12,
+      "end": 92.24,
+      "text": "predictions and to achieve desired outcomes. And there are two main ways"
+    },
+    {
+      "seg_id": "seg_0019",
+      "start": 92.24,
+      "end": 97.52,
+      "text": "that we develop these models. The first is learning from others like our parents"
+    },
+    {
+      "seg_id": "seg_0020",
+      "start": 97.52,
+      "end": 104.0,
+      "text": "or mentors. And the second is learning directly from our experiences. And as it"
+    },
+    {
+      "seg_id": "seg_0021",
+      "start": 104.0,
+      "end": 109.68,
+      "text": "turns out, computers can learn models of the world in very much the same way."
+    },
+    {
+      "seg_id": "seg_0022",
+      "start": 109.68,
+      "end": 114.4,
+      "text": "Here I'll talk about three different ways computers can develop these models"
+    },
+    {
+      "seg_id": "seg_0023",
+      "start": 114.4,
+      "end": 119.2,
+      "text": "of the world. So here when I say the word learning, what I mean by that is"
+    },
+    {
+      "seg_id": "seg_0024",
+      "start": 119.2,
+      "end": 124.32,
+      "text": "getting computers to do things without explicit instructions. So this is in"
+    },
+    {
+      "seg_id": "seg_0025",
+      "start": 124.32,
+      "end": 129.12,
+      "text": "contrast to traditional software development where programmers use their"
+    },
+    {
+      "seg_id": "seg_0026",
+      "start": 129.12,
+      "end": 134.16,
+      "text": "own intelligence to develop step-by-step instructions for performing tasks or"
+    },
+    {
+      "seg_id": "seg_0027",
+      "start": 134.16,
+      "end": 138.8,
+      "text": "making decisions and then translating those instructions into computer code."
+    },
+    {
+      "seg_id": "seg_0028",
+      "start": 138.8,
+      "end": 142.4,
+      "text": "Here I'm going to focus on three different ways we can get computers to"
+    },
+    {
+      "seg_id": "seg_0029",
+      "start": 142.4,
+      "end": 147.36,
+      "text": "do things without explicit instructions. The first is machine learning which is"
+    },
+    {
+      "seg_id": "seg_0030",
+      "start": 147.36,
+      "end": 151.92,
+      "text": "actually an umbrella term for everything that I'm going to talk about in this"
+    },
+    {
+      "seg_id": "seg_0031",
+      "start": 151.92,
+      "end": 156.0,
+      "text": "video. The second is deep learning, which is a special type of machine"
+    },
+    {
+      "seg_id": "seg_0032",
+      "start": 156.0,
+      "end": 159.84,
+      "text": "learning. And then finally, I'll talk about reinforcement learning, which is"
+    },
+    {
+      "seg_id": "seg_0033",
+      "start": 159.84,
+      "end": 163.92,
+      "text": "also a special type of machine learning, but often you'll see it combined with"
+    },
+    {
+      "seg_id": "seg_0034",
+      "start": 163.92,
+      "end": 168.96,
+      "text": "deep learning in modern applications. Starting with way number one, machine"
+    },
+    {
+      "seg_id": "seg_0035",
+      "start": 168.96,
+      "end": 175.2,
+      "text": "learning allows computers to learn tasks directly from data. And so machine"
+    },
+    {
+      "seg_id": "seg_0036",
+      "start": 175.2,
+      "end": 180.08,
+      "text": "learning consists of two key phases. The first phase is called training. And this"
+    },
+    {
+      "seg_id": "seg_0037",
+      "start": 180.08,
+      "end": 185.84,
+      "text": "involves gathering a training data set. So basically a set of examples. Passing"
+    },
+    {
+      "seg_id": "seg_0038",
+      "start": 185.84,
+      "end": 190.16,
+      "text": "this training data to a so-called learning algorithm and the result of"
+    },
+    {
+      "seg_id": "seg_0039",
+      "start": 190.16,
+      "end": 195.36,
+      "text": "this learning algorithm is a machine learning model. Once we have this"
+    },
+    {
+      "seg_id": "seg_0040",
+      "start": 195.36,
+      "end": 200.16,
+      "text": "machine learning model, we can use it to make predictions. So this brings us to"
+    },
+    {
+      "seg_id": "seg_0041",
+      "start": 200.16,
+      "end": 205.2,
+      "text": "phase two which is called inference where we give our machine learning model"
+    },
+    {
+      "seg_id": "seg_0042",
+      "start": 205.2,
+      "end": 210.72,
+      "text": "new data to make predictions which we can use in making decisions or solving"
+    },
+    {
+      "seg_id": "seg_0043",
+      "start": 210.72,
+      "end": 215.36,
+      "text": "problems. Let's dive into a bit more detail on how each of these two phases"
+    },
+    {
+      "seg_id": "seg_0044",
+      "start": 215.36,
+      "end": 218.64,
+      "text": "works. So I'll actually start with inference which is phase two because"
+    },
+    {
+      "seg_id": "seg_0045",
+      "start": 218.64,
+      "end": 223.52,
+      "text": "it's a little easier to understand. Inference involves using a model to make"
+    },
+    {
+      "seg_id": "seg_0046",
+      "start": 223.52,
+      "end": 229.28,
+      "text": "predictions. For example, suppose we have this simple linear model for"
+    },
+    {
+      "seg_id": "seg_0047",
+      "start": 229.28,
+      "end": 234.0,
+      "text": "predicting tomorrow's high temperature. The way this works is we take today's"
+    },
+    {
+      "seg_id": "seg_0048",
+      "start": 234.0,
+      "end": 238.64,
+      "text": "temperature high, which is represented by X. We plug it into this equation to"
+    },
+    {
+      "seg_id": "seg_0049",
+      "start": 238.64,
+      "end": 244.08,
+      "text": "make a prediction about tomorrow's high temperature, and this mapping between"
+    },
+    {
+      "seg_id": "seg_0050",
+      "start": 244.08,
+      "end": 248.24,
+      "text": "today's temperature and tomorrow's temperature is determined by these two"
+    },
+    {
+      "seg_id": "seg_0051",
+      "start": 248.24,
+      "end": 254.32,
+      "text": "so-called parameters M and B. The quality of our predictions are going to"
+    },
+    {
+      "seg_id": "seg_0052",
+      "start": 254.32,
+      "end": 260.4,
+      "text": "be determined on how well our parameters are aligned with reality. But you might"
+    },
+    {
+      "seg_id": "seg_0053",
+      "start": 260.4,
+      "end": 265.36,
+      "text": "be wondering how do we pick these parameters so that these are going to be"
+    },
+    {
+      "seg_id": "seg_0054",
+      "start": 265.36,
+      "end": 270.72,
+      "text": "accurate predictions. That brings us to the training phase which is where we fit"
+    },
+    {
+      "seg_id": "seg_0055",
+      "start": 270.72,
+      "end": 276.24,
+      "text": "a model's predictions to reality. The key intuition here is that in training,"
+    },
+    {
+      "seg_id": "seg_0056",
+      "start": 276.24,
+      "end": 281.52,
+      "text": "we want to minimize the discrepancy between our model's predictions and real"
+    },
+    {
+      "seg_id": "seg_0057",
+      "start": 281.52,
+      "end": 287.12,
+      "text": "world data. So the first step in doing this is quantifying the discrepancy"
+    },
+    {
+      "seg_id": "seg_0058",
+      "start": 287.12,
+      "end": 291.44,
+      "text": "between our model's predictions and reality. One way we can do this is"
+    },
+    {
+      "seg_id": "seg_0059",
+      "start": 291.44,
+      "end": 295.28,
+      "text": "through this equation shown here. There's a lot of math on this slide, but"
+    },
+    {
+      "seg_id": "seg_0060",
+      "start": 295.28,
+      "end": 299.6,
+      "text": "I'm going to go through it one step at a time. The first thing to look at is this"
+    },
+    {
+      "seg_id": "seg_0061",
+      "start": 299.6,
+      "end": 305.44,
+      "text": "first term here, which corresponds to the actual values of the quantity we're"
+    },
+    {
+      "seg_id": "seg_0062",
+      "start": 305.44,
+      "end": 308.88,
+      "text": "trying to predict. For example, if we're trying to predict tomorrow's temperature"
+    },
+    {
+      "seg_id": "seg_0063",
+      "start": 308.88,
+      "end": 314.0,
+      "text": "high, y is just going to be a collection of temperature recordings that we"
+    },
+    {
+      "seg_id": "seg_0064",
+      "start": 314.0,
+      "end": 318.56,
+      "text": "collect from reality. The second thing to look at is this term on the right,"
+    },
+    {
+      "seg_id": "seg_0065",
+      "start": 318.56,
+      "end": 323.68,
+      "text": "which are our predicted values. So this is exactly the same equation we saw on"
+    },
+    {
+      "seg_id": "seg_0066",
+      "start": 323.68,
+      "end": 328.08,
+      "text": "the previous slide, but now we've written it out in terms of multiple"
+    },
+    {
+      "seg_id": "seg_0067",
+      "start": 328.08,
+      "end": 334.08,
+      "text": "examples. Instead of just one input x, we have n inputs x1, x2 all the way to"
+    },
+    {
+      "seg_id": "seg_0068",
+      "start": 334.08,
+      "end": 338.8,
+      "text": "xn. So here are our input values. And then we have our two parameter values m"
+    },
+    {
+      "seg_id": "seg_0069",
+      "start": 338.8,
+      "end": 343.6,
+      "text": "and b. m gets multiplied by each value in this matrix. And then we just write"
+    },
+    {
+      "seg_id": "seg_0070",
+      "start": 343.6,
+      "end": 348.4,
+      "text": "out this matrix of one. So we can multiply b by each of these elements to"
+    },
+    {
+      "seg_id": "seg_0071",
+      "start": 348.4,
+      "end": 353.04,
+      "text": "make the math work out here. But you can just think of this as n different linear"
+    },
+    {
+      "seg_id": "seg_0072",
+      "start": 353.04,
+      "end": 359.36,
+      "text": "equations. So m * x1 + b, m * x2 + b and so on and so forth. By taking the"
+    },
+    {
+      "seg_id": "seg_0073",
+      "start": 359.36,
+      "end": 364.16,
+      "text": "difference between these actual values and our model's predictions of the"
+    },
+    {
+      "seg_id": "seg_0074",
+      "start": 364.16,
+      "end": 368.8,
+      "text": "values, we are quantifying the discrepancy between our model's"
+    },
+    {
+      "seg_id": "seg_0075",
+      "start": 368.8,
+      "end": 374.72,
+      "text": "predictions and reality. We call this quantity our loss function. Now that"
+    },
+    {
+      "seg_id": "seg_0076",
+      "start": 374.72,
+      "end": 379.2,
+      "text": "we've quantified this discrepancy, the goal of training is to find the"
+    },
+    {
+      "seg_id": "seg_0077",
+      "start": 379.2,
+      "end": 384.88,
+      "text": "parameter values m and b that corresponds to the smallest possible"
+    },
+    {
+      "seg_id": "seg_0078",
+      "start": 384.88,
+      "end": 388.24,
+      "text": "loss function. While we could just randomly guess a bunch of parameter"
+    },
+    {
+      "seg_id": "seg_0079",
+      "start": 388.24,
+      "end": 393.04,
+      "text": "values to try to find the one with the smallest loss function. It turns out"
+    },
+    {
+      "seg_id": "seg_0080",
+      "start": 393.04,
+      "end": 398.4,
+      "text": "that we can solve this problem in a closed form using math. The way that"
+    },
+    {
+      "seg_id": "seg_0081",
+      "start": 398.4,
+      "end": 401.84,
+      "text": "looks is we're just going to rewrite some terms. So we'll define this matrix"
+    },
+    {
+      "seg_id": "seg_0082",
+      "start": 401.84,
+      "end": 408.16,
+      "text": "X which will be all our input values and all these ones stacked side by side."
+    },
+    {
+      "seg_id": "seg_0083",
+      "start": 408.16,
+      "end": 412.72,
+      "text": "Then we'll put our parameter values in their own little column matrix. Finally,"
+    },
+    {
+      "seg_id": "seg_0084",
+      "start": 412.72,
+      "end": 418.48,
+      "text": "we'll just define our column of actual values as this vector y. With these new"
+    },
+    {
+      "seg_id": "seg_0085",
+      "start": 418.48,
+      "end": 423.04,
+      "text": "terms, we can rewrite our loss function like this. So we have the norm squared"
+    },
+    {
+      "seg_id": "seg_0086",
+      "start": 423.04,
+      "end": 427.92,
+      "text": "of y - x theta. Writing this out a different way, it looks like this. So"
+    },
+    {
+      "seg_id": "seg_0087",
+      "start": 427.92,
+      "end": 433.76,
+      "text": "it's y - x theta transpose * y - x theta. And then we can expand this term"
+    },
+    {
+      "seg_id": "seg_0088",
+      "start": 433.76,
+      "end": 437.92,
+      "text": "out and it looks like this. So it looks all long and scary, but you don't really"
+    },
+    {
+      "seg_id": "seg_0089",
+      "start": 437.92,
+      "end": 442.56,
+      "text": "have to worry about that. The key thing to know here is that we can find the"
+    },
+    {
+      "seg_id": "seg_0090",
+      "start": 442.56,
+      "end": 448.96,
+      "text": "values of theta that minimize this loss function by computing its gradient,"
+    },
+    {
+      "seg_id": "seg_0091",
+      "start": 448.96,
+      "end": 453.68,
+      "text": "setting it equal to zero, and then solving for our parameter values. The"
+    },
+    {
+      "seg_id": "seg_0092",
+      "start": 453.68,
+      "end": 458.4,
+      "text": "way that looks is as follows. The gradient behaves a lot like a derivative"
+    },
+    {
+      "seg_id": "seg_0093",
+      "start": 458.4,
+      "end": 463.12,
+      "text": "which you probably learned in high school calculus. So if we're taking the"
+    },
+    {
+      "seg_id": "seg_0094",
+      "start": 463.12,
+      "end": 467.84,
+      "text": "gradient of L with respect to theta, we can see that this term goes away. This"
+    },
+    {
+      "seg_id": "seg_0095",
+      "start": 467.84,
+      "end": 473.36,
+      "text": "term is linear in theta. So this just becomes this. And then this term becomes"
+    },
+    {
+      "seg_id": "seg_0096",
+      "start": 473.36,
+      "end": 478.56,
+      "text": "this term here. This is our gradient of L. Then we can set it equal to zero"
+    },
+    {
+      "seg_id": "seg_0097",
+      "start": 478.56,
+      "end": 482.16,
+      "text": "which gives us this equation. And then rearranging it, it'll give us this"
+    },
+    {
+      "seg_id": "seg_0098",
+      "start": 482.16,
+      "end": 487.04,
+      "text": "expression here. And then finally we can just solve for theta and those values"
+    },
+    {
+      "seg_id": "seg_0099",
+      "start": 487.04,
+      "end": 491.28,
+      "text": "will be our optimal parameter values. And so if we assume that this matrix"
+    },
+    {
+      "seg_id": "seg_0100",
+      "start": 491.28,
+      "end": 497.12,
+      "text": "here is invertible then this becomes our optimal parameter values for theta."
+    },
+    {
+      "seg_id": "seg_0101",
+      "start": 497.12,
+      "end": 500.0,
+      "text": "Okay. So what just happened? We just went through all this math and we"
+    },
+    {
+      "seg_id": "seg_0102",
+      "start": 500.0,
+      "end": 503.04,
+      "text": "computed this gradient. Did all this complicated stuff. But here's the"
+    },
+    {
+      "seg_id": "seg_0103",
+      "start": 503.04,
+      "end": 509.68,
+      "text": "punchline. We can get the optimal parameter values for our linear model"
+    },
+    {
+      "seg_id": "seg_0104",
+      "start": 509.68,
+      "end": 516.08,
+      "text": "simply from training examples. So what is X? X is a set of input data that we"
+    },
+    {
+      "seg_id": "seg_0105",
+      "start": 516.08,
+      "end": 521.84,
+      "text": "collect. Y is a set of target data that we collect and we can combine them to"
+    },
+    {
+      "seg_id": "seg_0106",
+      "start": 521.84,
+      "end": 526.08,
+      "text": "find our optimal parameter values. So put another way, the key point of"
+    },
+    {
+      "seg_id": "seg_0107",
+      "start": 526.08,
+      "end": 532.56,
+      "text": "machine learning is that computers can fit models to reality using data and"
+    },
+    {
+      "seg_id": "seg_0108",
+      "start": 532.56,
+      "end": 536.8,
+      "text": "math. While a linear model is one of the simplest models you can work with in"
+    },
+    {
+      "seg_id": "seg_0109",
+      "start": 536.8,
+      "end": 542.48,
+      "text": "machine learning, this idea of fitting model parameters to real world data is a"
+    },
+    {
+      "seg_id": "seg_0110",
+      "start": 542.48,
+      "end": 547.12,
+      "text": "common thread you'll see throughout all machine learning models. And just to"
+    },
+    {
+      "seg_id": "seg_0111",
+      "start": 547.12,
+      "end": 550.64,
+      "text": "list a few other popular machine learning techniques you might come"
+    },
+    {
+      "seg_id": "seg_0112",
+      "start": 550.64,
+      "end": 554.4,
+      "text": "across. There's also logistic regression, which is a lot like linear"
+    },
+    {
+      "seg_id": "seg_0113",
+      "start": 554.4,
+      "end": 560.64,
+      "text": "regression, but instead of predicting a continuous target, it predicts a binary"
+    },
+    {
+      "seg_id": "seg_0114",
+      "start": 560.64,
+      "end": 565.12,
+      "text": "target. So that's why it lets you do classification instead of regression."
+    },
+    {
+      "seg_id": "seg_0115",
+      "start": 565.12,
+      "end": 569.12,
+      "text": "There's also decision tree which is a fundamentally different way of training"
+    },
+    {
+      "seg_id": "seg_0116",
+      "start": 569.12,
+      "end": 573.92,
+      "text": "models, but it's also very powerful and relatively easy to interpret. And then"
+    },
+    {
+      "seg_id": "seg_0117",
+      "start": 573.92,
+      "end": 579.04,
+      "text": "you have extensions of decision trees by combining many trees together into a"
+    },
+    {
+      "seg_id": "seg_0118",
+      "start": 579.04,
+      "end": 583.76,
+      "text": "so-called forest or boosting decision trees on top of each other like an XG"
+    },
+    {
+      "seg_id": "seg_0119",
+      "start": 583.76,
+      "end": 587.6,
+      "text": "boost as well as more traditional approaches like support vector machines"
+    },
+    {
+      "seg_id": "seg_0120",
+      "start": 587.6,
+      "end": 591.76,
+      "text": "which can be used for both regression and classification. So all the"
+    },
+    {
+      "seg_id": "seg_0121",
+      "start": 591.76,
+      "end": 596.08,
+      "text": "approaches that we see here is what we might call traditional machine learning."
+    },
+    {
+      "seg_id": "seg_0122",
+      "start": 596.08,
+      "end": 600.48,
+      "text": "While you can go very far with them, they do have their limitations. One such"
+    },
+    {
+      "seg_id": "seg_0123",
+      "start": 600.48,
+      "end": 605.36,
+      "text": "limitation is that often to get these approaches to work well, it requires a"
+    },
+    {
+      "seg_id": "seg_0124",
+      "start": 605.36,
+      "end": 610.56,
+      "text": "significant amount of time and domain expertise to choose the right input"
+    },
+    {
+      "seg_id": "seg_0125",
+      "start": 610.56,
+      "end": 615.28,
+      "text": "variables for your model. For example, we used today's temperature to predict"
+    },
+    {
+      "seg_id": "seg_0126",
+      "start": 615.28,
+      "end": 619.04,
+      "text": "tomorrow's temperature. And so that's probably a pretty good predictor of"
+    },
+    {
+      "seg_id": "seg_0127",
+      "start": 619.04,
+      "end": 623.76,
+      "text": "tomorrow's daily high. However, if we used the number of cappuccinos I drank"
+    },
+    {
+      "seg_id": "seg_0128",
+      "start": 623.76,
+      "end": 627.92,
+      "text": "as our predictor, it might have some sort of correlation with tomorrow's"
+    },
+    {
+      "seg_id": "seg_0129",
+      "start": 627.92,
+      "end": 631.2,
+      "text": "temperature high, but it probably wouldn't do a very good job at this"
+    },
+    {
+      "seg_id": "seg_0130",
+      "start": 631.2,
+      "end": 636.24,
+      "text": "prediction task. So, this process of picking the right input variables to"
+    },
+    {
+      "seg_id": "seg_0131",
+      "start": 636.24,
+      "end": 640.48,
+      "text": "your machine learning model is called feature engineering, and it is something"
+    },
+    {
+      "seg_id": "seg_0132",
+      "start": 640.48,
+      "end": 644.56,
+      "text": "that can make or break your model's performance. However, the importance of"
+    },
+    {
+      "seg_id": "seg_0133",
+      "start": 644.56,
+      "end": 650.48,
+      "text": "feature engineering began to wne around 2020 with the rise of deep learning."
+    },
+    {
+      "seg_id": "seg_0134",
+      "start": 650.48,
+      "end": 654.64,
+      "text": "Deep learning is a specific type of machine learning which involves training"
+    },
+    {
+      "seg_id": "seg_0135",
+      "start": 654.64,
+      "end": 660.4,
+      "text": "neural networks which can learn optimal features for a specific task all on"
+    },
+    {
+      "seg_id": "seg_0136",
+      "start": 660.4,
+      "end": 665.92,
+      "text": "their own. A cartoon diagram of this which CHBT helped me put together is"
+    },
+    {
+      "seg_id": "seg_0137",
+      "start": 665.92,
+      "end": 670.4,
+      "text": "let's say you're trying to create a deep learning model to do image"
+    },
+    {
+      "seg_id": "seg_0138",
+      "start": 670.4,
+      "end": 674.4,
+      "text": "classification. The way this would work is that you would just take raw image"
+    },
+    {
+      "seg_id": "seg_0139",
+      "start": 674.4,
+      "end": 679.92,
+      "text": "pixels as the inputs to your network. The early layers of the neural network"
+    },
+    {
+      "seg_id": "seg_0140",
+      "start": 679.92,
+      "end": 685.28,
+      "text": "would represent pretty basic features like edges and textures of images. The"
+    },
+    {
+      "seg_id": "seg_0141",
+      "start": 685.28,
+      "end": 690.4,
+      "text": "layers toward the middle would start to represent things like eyes or ears or"
+    },
+    {
+      "seg_id": "seg_0142",
+      "start": 690.4,
+      "end": 695.68,
+      "text": "whiskers, higher level features that might be in an image. And then the later"
+    },
+    {
+      "seg_id": "seg_0143",
+      "start": 695.68,
+      "end": 701.12,
+      "text": "layers would represent higher level concepts like entire objects or animals"
+    },
+    {
+      "seg_id": "seg_0144",
+      "start": 701.12,
+      "end": 705.44,
+      "text": "or something like that. These final layers make it a lot easier to do this"
+    },
+    {
+      "seg_id": "seg_0145",
+      "start": 705.44,
+      "end": 711.12,
+      "text": "prediction task because if you have a quantity that represents the catness of"
+    },
+    {
+      "seg_id": "seg_0146",
+      "start": 711.12,
+      "end": 716.0,
+      "text": "an image, you can basically use a linear model to make this prediction. This is"
+    },
+    {
+      "seg_id": "seg_0147",
+      "start": 716.0,
+      "end": 722.32,
+      "text": "the power of deep learning. By simply curating raw data with corresponding"
+    },
+    {
+      "seg_id": "seg_0148",
+      "start": 722.32,
+      "end": 727.04,
+      "text": "labels, you can train a neural network to do basically anything. The key"
+    },
+    {
+      "seg_id": "seg_0149",
+      "start": 727.04,
+      "end": 731.6,
+      "text": "technique in deep learning are neural networks, which are a series of"
+    },
+    {
+      "seg_id": "seg_0150",
+      "start": 731.6,
+      "end": 735.28,
+      "text": "operations that can approximate practically any function. The"
+    },
+    {
+      "seg_id": "seg_0151",
+      "start": 735.28,
+      "end": 739.6,
+      "text": "fundamental building block of a neural network is a so-called neuron, which"
+    },
+    {
+      "seg_id": "seg_0152",
+      "start": 739.6,
+      "end": 744.8,
+      "text": "involves the following steps. It takes a set of inputs, multiplies them by some"
+    },
+    {
+      "seg_id": "seg_0153",
+      "start": 744.8,
+      "end": 749.84,
+      "text": "corresponding weights, and sums them together. It applies some bias term. So"
+    },
+    {
+      "seg_id": "seg_0154",
+      "start": 749.84,
+      "end": 754.32,
+      "text": "just adds a scalar value to the summation. And then it passes this whole"
+    },
+    {
+      "seg_id": "seg_0155",
+      "start": 754.32,
+      "end": 759.04,
+      "text": "thing through a nonlinear function called an activation function. And then"
+    },
+    {
+      "seg_id": "seg_0156",
+      "start": 759.04,
+      "end": 763.84,
+      "text": "this will spit out the neurons output. These three stages of summing inputs,"
+    },
+    {
+      "seg_id": "seg_0157",
+      "start": 763.84,
+      "end": 768.24,
+      "text": "adding bias, and passing through an activation is fundamentally what a"
+    },
+    {
+      "seg_id": "seg_0158",
+      "start": 768.24,
+      "end": 772.88,
+      "text": "neuron is. Writing this out mathematically, Xi are the inputs to the"
+    },
+    {
+      "seg_id": "seg_0159",
+      "start": 772.88,
+      "end": 779.04,
+      "text": "neuron. W, I and B are the parameters of the neuron. G is this nonlinear function"
+    },
+    {
+      "seg_id": "seg_0160",
+      "start": 779.04,
+      "end": 783.36,
+      "text": "and Z is the output of the neuron. And so looking at this, we see that this"
+    },
+    {
+      "seg_id": "seg_0161",
+      "start": 783.36,
+      "end": 788.4,
+      "text": "looks a lot like the linear model that we saw in the previous slide. The key"
+    },
+    {
+      "seg_id": "seg_0162",
+      "start": 788.4,
+      "end": 793.28,
+      "text": "difference, however, is that we now have this nonlinear activation function. And"
+    },
+    {
+      "seg_id": "seg_0163",
+      "start": 793.28,
+      "end": 798.84,
+      "text": "so this is actually a critical aspect of a neural network because it is these"
+    },
+    {
+      "seg_id": "seg_0164",
+      "start": 798.84,
+      "end": 804.72,
+      "text": "nonlinearities that allow the network to be able to approximate practically any"
+    },
+    {
+      "seg_id": "seg_0165",
+      "start": 804.72,
+      "end": 809.12,
+      "text": "function. The way we can build up networks from neurons is we can take"
+    },
+    {
+      "seg_id": "seg_0166",
+      "start": 809.12,
+      "end": 813.92,
+      "text": "these inputs and we combine them into a neuron. So basically compressing"
+    },
+    {
+      "seg_id": "seg_0167",
+      "start": 813.92,
+      "end": 817.52,
+      "text": "everything we saw in the previous slide to this single circle. But we can"
+    },
+    {
+      "seg_id": "seg_0168",
+      "start": 817.52,
+      "end": 822.64,
+      "text": "combine multiple neurons together to form so-called layers. And then we can"
+    },
+    {
+      "seg_id": "seg_0169",
+      "start": 822.64,
+      "end": 828.0,
+      "text": "combine multiple layers together to form entire neural networks. So this is how"
+    },
+    {
+      "seg_id": "seg_0170",
+      "start": 828.0,
+      "end": 831.84,
+      "text": "we take that fundamental building block of a neuron, build them into layers, and"
+    },
+    {
+      "seg_id": "seg_0171",
+      "start": 831.84,
+      "end": 835.92,
+      "text": "then build layers into networks. But of course, neural networks in practice are"
+    },
+    {
+      "seg_id": "seg_0172",
+      "start": 835.92,
+      "end": 840.8,
+      "text": "much more sophisticated than the example I showed on the previous slide. So,"
+    },
+    {
+      "seg_id": "seg_0173",
+      "start": 840.8,
+      "end": 844.4,
+      "text": "while that vanilla neuron we saw in the previous slide is widely used, there's"
+    },
+    {
+      "seg_id": "seg_0174",
+      "start": 844.4,
+      "end": 849.52,
+      "text": "also another one called a long short-term memory neuron or LSTM, which"
+    },
+    {
+      "seg_id": "seg_0175",
+      "start": 849.52,
+      "end": 854.48,
+      "text": "is also pretty common when working with sequenced data. Also, there are a wide"
+    },
+    {
+      "seg_id": "seg_0176",
+      "start": 854.48,
+      "end": 859.12,
+      "text": "range of activation functions that are commonly used. There are many more than"
+    },
+    {
+      "seg_id": "seg_0177",
+      "start": 859.12,
+      "end": 864.16,
+      "text": "just these, but there's the relu, which is shown here. There's a sigmoid, which"
+    },
+    {
+      "seg_id": "seg_0178",
+      "start": 864.16,
+      "end": 868.32,
+      "text": "is kind of like a S-shaped thing. There's a tanh which is also a S-shaped"
+    },
+    {
+      "seg_id": "seg_0179",
+      "start": 868.32,
+      "end": 872.32,
+      "text": "thing but it has a different output range. And then there's a softmax which"
+    },
+    {
+      "seg_id": "seg_0180",
+      "start": 872.32,
+      "end": 877.6,
+      "text": "basically translates any inputs to a probability distribution. There are also"
+    },
+    {
+      "seg_id": "seg_0181",
+      "start": 877.6,
+      "end": 882.0,
+      "text": "several different types of layers that you'll commonly see in the wild. So"
+    },
+    {
+      "seg_id": "seg_0182",
+      "start": 882.0,
+      "end": 886.24,
+      "text": "before we just saw these fully connected layers where every neuron from a"
+    },
+    {
+      "seg_id": "seg_0183",
+      "start": 886.24,
+      "end": 890.32,
+      "text": "previous layer is connected to every neuron in a subsequent layer. But there"
+    },
+    {
+      "seg_id": "seg_0184",
+      "start": 890.32,
+      "end": 894.8,
+      "text": "are also recurrent layers, convolutional layers, attention layers which are"
+    },
+    {
+      "seg_id": "seg_0185",
+      "start": 894.8,
+      "end": 899.04,
+      "text": "critical in transformers which is probably the most popular architecture"
+    },
+    {
+      "seg_id": "seg_0186",
+      "start": 899.04,
+      "end": 903.6,
+      "text": "today. There also pooling layers, normalization layers and dropout layers."
+    },
+    {
+      "seg_id": "seg_0187",
+      "start": 903.6,
+      "end": 908.24,
+      "text": "Finally, there are a zoo of different network architectures. Before we just"
+    },
+    {
+      "seg_id": "seg_0188",
+      "start": 908.24,
+      "end": 912.72,
+      "text": "saw a simple feed forward neural network which is the most basic architecture."
+    },
+    {
+      "seg_id": "seg_0189",
+      "start": 912.72,
+      "end": 916.48,
+      "text": "There's also a recurrent neural network which handles sequential data. There's a"
+    },
+    {
+      "seg_id": "seg_0190",
+      "start": 916.48,
+      "end": 920.56,
+      "text": "convolutional neural network which is used a lot in image processing and then"
+    },
+    {
+      "seg_id": "seg_0191",
+      "start": 920.56,
+      "end": 924.56,
+      "text": "of course there's the transformer which has revolutionized natural language"
+    },
+    {
+      "seg_id": "seg_0192",
+      "start": 924.56,
+      "end": 929.2,
+      "text": "processing and the architecture behind large language models. So that's the"
+    },
+    {
+      "seg_id": "seg_0193",
+      "start": 929.2,
+      "end": 934.24,
+      "text": "anatomy of neural networks. But how do we actually train these objects on our"
+    },
+    {
+      "seg_id": "seg_0194",
+      "start": 934.24,
+      "end": 940.08,
+      "text": "data? At the most basic level just like how we fit our linear model to real"
+    },
+    {
+      "seg_id": "seg_0195",
+      "start": 940.08,
+      "end": 946.0,
+      "text": "world data we can also fit our neural network to real world data. However, the"
+    },
+    {
+      "seg_id": "seg_0196",
+      "start": 946.0,
+      "end": 950.96,
+      "text": "trouble with neural networks is that the loss function is going to be"
+    },
+    {
+      "seg_id": "seg_0197",
+      "start": 950.96,
+      "end": 956.24,
+      "text": "significantly more complicated than the one we saw for the linear model. Just to"
+    },
+    {
+      "seg_id": "seg_0198",
+      "start": 956.24,
+      "end": 960.64,
+      "text": "show you a cartoon diagram of this, the loss function of a neural network will"
+    },
+    {
+      "seg_id": "seg_0199",
+      "start": 960.64,
+      "end": 965.36,
+      "text": "have this jagged and messy terrain of different peaks and valleys which we"
+    },
+    {
+      "seg_id": "seg_0200",
+      "start": 965.36,
+      "end": 970.56,
+      "text": "have to figure out a way to navigate so that we can find the smallest value."
+    },
+    {
+      "seg_id": "seg_0201",
+      "start": 970.56,
+      "end": 975.68,
+      "text": "Again, the fundamental goal of training is to minimize the discrepancy between"
+    },
+    {
+      "seg_id": "seg_0202",
+      "start": 975.68,
+      "end": 980.16,
+      "text": "our model's predictions and reality, which is equivalent to picking parameter"
+    },
+    {
+      "seg_id": "seg_0203",
+      "start": 980.16,
+      "end": 985.36,
+      "text": "values for our model, which minimizes the loss function. So, in terms of this"
+    },
+    {
+      "seg_id": "seg_0204",
+      "start": 985.36,
+      "end": 989.2,
+      "text": "picture here, we want to pick the parameter values that correspond with"
+    },
+    {
+      "seg_id": "seg_0205",
+      "start": 989.2,
+      "end": 995.44,
+      "text": "this point in the loss landscape. But unfortunately, since this lost landscape"
+    },
+    {
+      "seg_id": "seg_0206",
+      "start": 995.44,
+      "end": 1001.84,
+      "text": "is so bumpy and perilous, we can't just simply write out a single equation that"
+    },
+    {
+      "seg_id": "seg_0207",
+      "start": 1001.84,
+      "end": 1007.52,
+      "text": "spits out the optimal values like we saw with the linear model. So in practice,"
+    },
+    {
+      "seg_id": "seg_0208",
+      "start": 1007.52,
+      "end": 1014.0,
+      "text": "what we need is some kind of algorithm to search this space of possible"
+    },
+    {
+      "seg_id": "seg_0209",
+      "start": 1014.0,
+      "end": 1019.76,
+      "text": "parameters in such a way that we get closer and closer to this minimal point"
+    },
+    {
+      "seg_id": "seg_0210",
+      "start": 1019.76,
+      "end": 1024.96,
+      "text": "that we're trying to reach. So it turns out we can again turn to our handy"
+    },
+    {
+      "seg_id": "seg_0211",
+      "start": 1024.96,
+      "end": 1030.48,
+      "text": "gradient to help us do this. The gradient is helpful because at any spot"
+    },
+    {
+      "seg_id": "seg_0212",
+      "start": 1030.48,
+      "end": 1036.24,
+      "text": "in this loss landscape if we compute the gradient it will point in the direction"
+    },
+    {
+      "seg_id": "seg_0213",
+      "start": 1036.24,
+      "end": 1041.36,
+      "text": "of greatest ascent. Basically it'll point in the direction where the slope"
+    },
+    {
+      "seg_id": "seg_0214",
+      "start": 1041.36,
+      "end": 1047.68,
+      "text": "of the lost landscape is steepest. So if we take the minus of the gradient"
+    },
+    {
+      "seg_id": "seg_0215",
+      "start": 1047.68,
+      "end": 1051.28,
+      "text": "basically pointing in the opposite direction this is going to point us in"
+    },
+    {
+      "seg_id": "seg_0216",
+      "start": 1051.28,
+      "end": 1057.36,
+      "text": "the direction of greatest descent. What that means is we can use the gradient of"
+    },
+    {
+      "seg_id": "seg_0217",
+      "start": 1057.36,
+      "end": 1063.36,
+      "text": "our loss function with respect to our parameters as a guide to point us toward"
+    },
+    {
+      "seg_id": "seg_0218",
+      "start": 1063.36,
+      "end": 1067.68,
+      "text": "the minimal value of this loss landscape. So, what that looks like is"
+    },
+    {
+      "seg_id": "seg_0219",
+      "start": 1067.68,
+      "end": 1071.52,
+      "text": "if we're at this spot here, we'll compute the gradient and then move in"
+    },
+    {
+      "seg_id": "seg_0220",
+      "start": 1071.52,
+      "end": 1076.32,
+      "text": "the direction of this black arrow and take a step and then we'll be in a new"
+    },
+    {
+      "seg_id": "seg_0221",
+      "start": 1076.32,
+      "end": 1079.92,
+      "text": "spot and then we'll do the same thing. We'll compute the gradient and then take"
+    },
+    {
+      "seg_id": "seg_0222",
+      "start": 1079.92,
+      "end": 1084.32,
+      "text": "a step in the opposite direction again, compute the gradient, take a step in the"
+    },
+    {
+      "seg_id": "seg_0223",
+      "start": 1084.32,
+      "end": 1088.08,
+      "text": "opposite direction, and then just keep doing that until we get closer and"
+    },
+    {
+      "seg_id": "seg_0224",
+      "start": 1088.08,
+      "end": 1093.36,
+      "text": "closer to this optimal value. This algorithm of computing the gradient,"
+    },
+    {
+      "seg_id": "seg_0225",
+      "start": 1093.36,
+      "end": 1096.96,
+      "text": "using it to decide what direction to move in, taking a step, and then"
+    },
+    {
+      "seg_id": "seg_0226",
+      "start": 1096.96,
+      "end": 1101.36,
+      "text": "repeating the process is called gradient descent. Put another way, it's an"
+    },
+    {
+      "seg_id": "seg_0227",
+      "start": 1101.36,
+      "end": 1105.92,
+      "text": "algorithm for updating model parameters to minimize the loss. The equation for"
+    },
+    {
+      "seg_id": "seg_0228",
+      "start": 1105.92,
+      "end": 1112.32,
+      "text": "this is shown here where theta i are the old parameters of our model. This will"
+    },
+    {
+      "seg_id": "seg_0229",
+      "start": 1112.32,
+      "end": 1116.72,
+      "text": "be a vector. So you can imagine we have hundreds, thousands, millions, billions"
+    },
+    {
+      "seg_id": "seg_0230",
+      "start": 1116.72,
+      "end": 1121.36,
+      "text": "of parameter values in our neural network. theta i1 are the new"
+    },
+    {
+      "seg_id": "seg_0231",
+      "start": 1121.36,
+      "end": 1126.0,
+      "text": "parameters. So we're going to update the old parameters in some way to generate"
+    },
+    {
+      "seg_id": "seg_0232",
+      "start": 1126.0,
+      "end": 1130.72,
+      "text": "the new ones. And the way we do that is using this term on the right here. There"
+    },
+    {
+      "seg_id": "seg_0233",
+      "start": 1130.72,
+      "end": 1136.08,
+      "text": "are two key components of how we update our model parameters. The first is the"
+    },
+    {
+      "seg_id": "seg_0234",
+      "start": 1136.08,
+      "end": 1140.16,
+      "text": "gradient which we just talked about in the previous slide. So the gradient is"
+    },
+    {
+      "seg_id": "seg_0235",
+      "start": 1140.16,
+      "end": 1144.16,
+      "text": "telling us which direction to go in. And then we have this other term here,"
+    },
+    {
+      "seg_id": "seg_0236",
+      "start": 1144.16,
+      "end": 1149.68,
+      "text": "gamma, also called the learning rate, which controls how big our steps are. A"
+    },
+    {
+      "seg_id": "seg_0237",
+      "start": 1149.68,
+      "end": 1154.24,
+      "text": "very large learning rate means we'll take really big leaps when following the"
+    },
+    {
+      "seg_id": "seg_0238",
+      "start": 1154.24,
+      "end": 1158.32,
+      "text": "gradient, while a really small learning rate corresponds to very small steps in"
+    },
+    {
+      "seg_id": "seg_0239",
+      "start": 1158.32,
+      "end": 1162.64,
+      "text": "this descent algorithm. The learning rate is something that you need to tweak"
+    },
+    {
+      "seg_id": "seg_0240",
+      "start": 1162.64,
+      "end": 1166.72,
+      "text": "and refine because if your learning rate is too big, you might overshoot the"
+    },
+    {
+      "seg_id": "seg_0241",
+      "start": 1166.72,
+      "end": 1170.72,
+      "text": "optimal value. While if the learning rate is too small, you may never get"
+    },
+    {
+      "seg_id": "seg_0242",
+      "start": 1170.72,
+      "end": 1175.2,
+      "text": "there. But in practice, it's rare people use gradient descent because can have"
+    },
+    {
+      "seg_id": "seg_0243",
+      "start": 1175.2,
+      "end": 1179.36,
+      "text": "convergence issues. The data you use in computing your loss function is the full"
+    },
+    {
+      "seg_id": "seg_0244",
+      "start": 1179.36,
+      "end": 1183.76,
+      "text": "data set and this causes some problems. At the other extreme, there's also"
+    },
+    {
+      "seg_id": "seg_0245",
+      "start": 1183.76,
+      "end": 1188.8,
+      "text": "stochastic gradient descent where basically the updates are based on"
+    },
+    {
+      "seg_id": "seg_0246",
+      "start": 1188.8,
+      "end": 1192.8,
+      "text": "picking a random data point in your training data set and doing the"
+    },
+    {
+      "seg_id": "seg_0247",
+      "start": 1192.8,
+      "end": 1196.64,
+      "text": "parameter updates based on that. What's much more common is to use so-called"
+    },
+    {
+      "seg_id": "seg_0248",
+      "start": 1196.64,
+      "end": 1200.72,
+      "text": "mini batches. Instead of using the full data set or just a single data point,"
+    },
+    {
+      "seg_id": "seg_0249",
+      "start": 1200.72,
+      "end": 1207.76,
+      "text": "you'll take a random sample of say 8 or 16 32 whatever examples and compute your"
+    },
+    {
+      "seg_id": "seg_0250",
+      "start": 1207.76,
+      "end": 1213.44,
+      "text": "loss based on those. But by far the most common optimizer or update strategy for"
+    },
+    {
+      "seg_id": "seg_0251",
+      "start": 1213.44,
+      "end": 1218.56,
+      "text": "neural networks today is atom, which is short for adaptive momentum estimation."
+    },
+    {
+      "seg_id": "seg_0252",
+      "start": 1218.56,
+      "end": 1223.36,
+      "text": "This takes into account not just the gradient itself but this momentum term"
+    },
+    {
+      "seg_id": "seg_0253",
+      "start": 1223.36,
+      "end": 1228.8,
+      "text": "to make the trading process more stable and efficient. So a couple things came"
+    },
+    {
+      "seg_id": "seg_0254",
+      "start": 1228.8,
+      "end": 1232.0,
+      "text": "up when we were talking about optimizers. One is this idea of a"
+    },
+    {
+      "seg_id": "seg_0255",
+      "start": 1232.0,
+      "end": 1238.08,
+      "text": "learning rate which is a number that we have to choose as model developers but"
+    },
+    {
+      "seg_id": "seg_0256",
+      "start": 1238.08,
+      "end": 1242.64,
+      "text": "also this idea of the mini batch in which we choose the number of samples to"
+    },
+    {
+      "seg_id": "seg_0257",
+      "start": 1242.64,
+      "end": 1247.2,
+      "text": "include in our loss calculation. And so the learning rate and the mini batch"
+    },
+    {
+      "seg_id": "seg_0258",
+      "start": 1247.2,
+      "end": 1252.08,
+      "text": "size can have a significant impact on the success of your model training. This"
+    },
+    {
+      "seg_id": "seg_0259",
+      "start": 1252.08,
+      "end": 1256.96,
+      "text": "brings up the idea of hyperparameters which are values that guide the training"
+    },
+    {
+      "seg_id": "seg_0260",
+      "start": 1256.96,
+      "end": 1262.0,
+      "text": "process. So these are not like the model parameters which we learn from data but"
+    },
+    {
+      "seg_id": "seg_0261",
+      "start": 1262.0,
+      "end": 1266.64,
+      "text": "rather these are values that we set manually or that we tune through some"
+    },
+    {
+      "seg_id": "seg_0262",
+      "start": 1266.64,
+      "end": 1271.6,
+      "text": "other optimization strategy to develop the best final model. Some of the most"
+    },
+    {
+      "seg_id": "seg_0263",
+      "start": 1271.6,
+      "end": 1275.92,
+      "text": "common hyperparameters you'll see are epoch. So basically the number of epochs"
+    },
+    {
+      "seg_id": "seg_0264",
+      "start": 1275.92,
+      "end": 1281.12,
+      "text": "is the number of times that your optimizer goes through the entirety of"
+    },
+    {
+      "seg_id": "seg_0265",
+      "start": 1281.12,
+      "end": 1284.48,
+      "text": "your training data set. The learning rate we already talked about it controls"
+    },
+    {
+      "seg_id": "seg_0266",
+      "start": 1284.48,
+      "end": 1290.16,
+      "text": "the step size in your optimization process. The batch size we also talked"
+    },
+    {
+      "seg_id": "seg_0267",
+      "start": 1290.16,
+      "end": 1294.08,
+      "text": "about which is the number of samples you use to compute the loss. And then"
+    },
+    {
+      "seg_id": "seg_0268",
+      "start": 1294.08,
+      "end": 1298.88,
+      "text": "finally there's this dropout term. So we can introduce dropout layers into our"
+    },
+    {
+      "seg_id": "seg_0269",
+      "start": 1298.88,
+      "end": 1304.32,
+      "text": "neural network and then have some number maybe between 0 and 0.2 two, which is"
+    },
+    {
+      "seg_id": "seg_0270",
+      "start": 1304.32,
+      "end": 1309.04,
+      "text": "representing the fraction of neurons to randomly set to zero during the training"
+    },
+    {
+      "seg_id": "seg_0271",
+      "start": 1309.04,
+      "end": 1313.2,
+      "text": "process. And so, dropout is a very powerful approach to help avoid"
+    },
+    {
+      "seg_id": "seg_0272",
+      "start": 1313.2,
+      "end": 1317.52,
+      "text": "overfitting and making your models more robust. So far, in talking about machine"
+    },
+    {
+      "seg_id": "seg_0273",
+      "start": 1317.52,
+      "end": 1322.56,
+      "text": "learning and deep learning, we've focused on models that learn by example."
+    },
+    {
+      "seg_id": "seg_0274",
+      "start": 1322.56,
+      "end": 1327.28,
+      "text": "In other words, we curate a training data set of inputs and outputs where we"
+    },
+    {
+      "seg_id": "seg_0275",
+      "start": 1327.28,
+      "end": 1331.44,
+      "text": "train a model to use the inputs to predict the output. This is a lot like"
+    },
+    {
+      "seg_id": "seg_0276",
+      "start": 1331.44,
+      "end": 1336.24,
+      "text": "how you and I might learn from like a teacher or a mentor who shows us how to"
+    },
+    {
+      "seg_id": "seg_0277",
+      "start": 1336.24,
+      "end": 1340.64,
+      "text": "perform a task through explicit examples. However, this isn't the only"
+    },
+    {
+      "seg_id": "seg_0278",
+      "start": 1340.64,
+      "end": 1344.64,
+      "text": "way that we can learn. In fact, a lot of times we don't learn from other people"
+    },
+    {
+      "seg_id": "seg_0279",
+      "start": 1344.64,
+      "end": 1349.6,
+      "text": "through examples, but rather we learn from our own personal experience of"
+    },
+    {
+      "seg_id": "seg_0280",
+      "start": 1349.6,
+      "end": 1353.76,
+      "text": "basically trying things, making mistakes and getting negative feedback from our"
+    },
+    {
+      "seg_id": "seg_0281",
+      "start": 1353.76,
+      "end": 1358.24,
+      "text": "environment or trying things and getting positive feedback from our environment."
+    },
+    {
+      "seg_id": "seg_0282",
+      "start": 1358.24,
+      "end": 1363.12,
+      "text": "It turns out computers can learn in very much the same way. And this process is"
+    },
+    {
+      "seg_id": "seg_0283",
+      "start": 1363.12,
+      "end": 1367.92,
+      "text": "called reinforcement learning. This is where computers can learn through trial"
+    },
+    {
+      "seg_id": "seg_0284",
+      "start": 1367.92,
+      "end": 1372.16,
+      "text": "and error. So far we've talked about supervised learning where you have a"
+    },
+    {
+      "seg_id": "seg_0285",
+      "start": 1372.16,
+      "end": 1375.92,
+      "text": "human who curates these examples. So here's our training data set with a set"
+    },
+    {
+      "seg_id": "seg_0286",
+      "start": 1375.92,
+      "end": 1380.48,
+      "text": "of inputs and outputs and then we use these inputs and outputs to train a"
+    },
+    {
+      "seg_id": "seg_0287",
+      "start": 1380.48,
+      "end": 1384.8,
+      "text": "machine learning model. However, with reinforcement learning, the strategy is"
+    },
+    {
+      "seg_id": "seg_0288",
+      "start": 1384.8,
+      "end": 1389.52,
+      "text": "a bit different. We have a model that can interact directly with reality or"
+    },
+    {
+      "seg_id": "seg_0289",
+      "start": 1389.52,
+      "end": 1393.6,
+      "text": "some artificial environment that we construct and then the model gets"
+    },
+    {
+      "seg_id": "seg_0290",
+      "start": 1393.6,
+      "end": 1398.96,
+      "text": "rewarded for good actions which indirectly influences the model"
+    },
+    {
+      "seg_id": "seg_0291",
+      "start": 1398.96,
+      "end": 1404.08,
+      "text": "parameters and it just continues in this feedback loop until we have a model that"
+    },
+    {
+      "seg_id": "seg_0292",
+      "start": 1404.08,
+      "end": 1407.68,
+      "text": "does what we want it to do. While reinforcement learning is notoriously"
+    },
+    {
+      "seg_id": "seg_0293",
+      "start": 1407.68,
+      "end": 1413.12,
+      "text": "hard to get working well, it does hold a ton of promise and potential. And the"
+    },
+    {
+      "seg_id": "seg_0294",
+      "start": 1413.12,
+      "end": 1417.92,
+      "text": "central reason for this is that with reinforcement learning, models are not"
+    },
+    {
+      "seg_id": "seg_0295",
+      "start": 1417.92,
+      "end": 1423.36,
+      "text": "bound by human labeling or expertise. In supervised learning, the performance of"
+    },
+    {
+      "seg_id": "seg_0296",
+      "start": 1423.36,
+      "end": 1430.32,
+      "text": "our model is going to be bound by our ability to label highquality data or our"
+    },
+    {
+      "seg_id": "seg_0297",
+      "start": 1430.32,
+      "end": 1434.64,
+      "text": "existing knowledge or expertise. However, with reinforcement learning,"
+    },
+    {
+      "seg_id": "seg_0298",
+      "start": 1434.64,
+      "end": 1440.4,
+      "text": "since the model is interacting with the environment on its own, it can find its"
+    },
+    {
+      "seg_id": "seg_0299",
+      "start": 1440.4,
+      "end": 1445.92,
+      "text": "own ways of solving problems and potentially surpass even expert human"
+    },
+    {
+      "seg_id": "seg_0300",
+      "start": 1445.92,
+      "end": 1451.04,
+      "text": "performance. A real world example of this is Alph Go, which is a deep"
+    },
+    {
+      "seg_id": "seg_0301",
+      "start": 1451.04,
+      "end": 1456.16,
+      "text": "learning model that Deep Mind developed to play the game of Go. So there's"
+    },
+    {
+      "seg_id": "seg_0302",
+      "start": 1456.16,
+      "end": 1459.92,
+      "text": "actually a whole movie about this, but in this nature paper, they showed this"
+    },
+    {
+      "seg_id": "seg_0303",
+      "start": 1459.92,
+      "end": 1465.36,
+      "text": "plot here comparing a reinforcement learningbased deep neural network, a"
+    },
+    {
+      "seg_id": "seg_0304",
+      "start": 1465.36,
+      "end": 1470.04,
+      "text": "supervised learning based deep neural network, and the ELO rating of this Go"
+    },
+    {
+      "seg_id": "seg_0305",
+      "start": 1470.04,
+      "end": 1474.72,
+      "text": "Grandmaster. And we can see that the Grandmaster has just below a 4,000 ELO"
+    },
+    {
+      "seg_id": "seg_0306",
+      "start": 1474.72,
+      "end": 1479.76,
+      "text": "rating. And that the supervised learning model gets good really quickly because"
+    },
+    {
+      "seg_id": "seg_0307",
+      "start": 1479.76,
+      "end": 1483.76,
+      "text": "it's learning from experts and grandmasters. But you see that it never"
+    },
+    {
+      "seg_id": "seg_0308",
+      "start": 1483.76,
+      "end": 1489.2,
+      "text": "can quite surpass the grandmaster level. On the other hand, the reinforcement"
+    },
+    {
+      "seg_id": "seg_0309",
+      "start": 1489.2,
+      "end": 1493.36,
+      "text": "learning algorithm, even though it really sucks at the beginning, it learns"
+    },
+    {
+      "seg_id": "seg_0310",
+      "start": 1493.36,
+      "end": 1498.64,
+      "text": "to play the game of go not from experts, but by playing itself and iteratively"
+    },
+    {
+      "seg_id": "seg_0311",
+      "start": 1498.64,
+      "end": 1504.72,
+      "text": "and slowly getting rewarded for winning games. This allows the model to be"
+    },
+    {
+      "seg_id": "seg_0312",
+      "start": 1504.72,
+      "end": 1510.08,
+      "text": "completely decoupled from how humans play the game of Go and develop its own"
+    },
+    {
+      "seg_id": "seg_0313",
+      "start": 1510.08,
+      "end": 1514.88,
+      "text": "novel strategies for playing the game and eventually surpassing human"
+    },
+    {
+      "seg_id": "seg_0314",
+      "start": 1514.88,
+      "end": 1519.68,
+      "text": "grandmaster performance. Going one layer deeper into how reinforcement learning"
+    },
+    {
+      "seg_id": "seg_0315",
+      "start": 1519.68,
+      "end": 1525.36,
+      "text": "works. The basic idea here is to update model parameters to maximize some reward"
+    },
+    {
+      "seg_id": "seg_0316",
+      "start": 1525.36,
+      "end": 1530.08,
+      "text": "function. In the game of Go, the reward they used was winning the game, but this"
+    },
+    {
+      "seg_id": "seg_0317",
+      "start": 1530.08,
+      "end": 1535.88,
+      "text": "could be anything. More recently in training DeepSeek R1, DeepSseek used the"
+    },
+    {
+      "seg_id": "seg_0318",
+      "start": 1535.88,
+      "end": 1542.24,
+      "text": "correctness to math and coding solutions as the reward to their model. And so a"
+    },
+    {
+      "seg_id": "seg_0319",
+      "start": 1542.24,
+      "end": 1545.76,
+      "text": "key difference between reinforcement learning and the supervised learning"
+    },
+    {
+      "seg_id": "seg_0320",
+      "start": 1545.76,
+      "end": 1552.0,
+      "text": "approaches we've seen so far is in the quantity we're trying to optimize. So in"
+    },
+    {
+      "seg_id": "seg_0321",
+      "start": 1552.0,
+      "end": 1556.4,
+      "text": "linear regression and neural networks, we saw that we had a loss function that"
+    },
+    {
+      "seg_id": "seg_0322",
+      "start": 1556.4,
+      "end": 1560.56,
+      "text": "we were trying to minimize. But in reinforcement learning, we instead have"
+    },
+    {
+      "seg_id": "seg_0323",
+      "start": 1560.56,
+      "end": 1565.52,
+      "text": "a reward function that we're trying to maximize. One way we can write out this"
+    },
+    {
+      "seg_id": "seg_0324",
+      "start": 1565.52,
+      "end": 1570.08,
+      "text": "reward function is like this. And I know this is all scary complicated math, but"
+    },
+    {
+      "seg_id": "seg_0325",
+      "start": 1570.08,
+      "end": 1575.2,
+      "text": "let me walk through it one piece at a time. So J is our objective. This is the"
+    },
+    {
+      "seg_id": "seg_0326",
+      "start": 1575.2,
+      "end": 1581.68,
+      "text": "reward that we're trying to maximize. Log of pi theta is the model's output."
+    },
+    {
+      "seg_id": "seg_0327",
+      "start": 1581.68,
+      "end": 1587.12,
+      "text": "And R is the reward at time t. The way to understand this is that in"
+    },
+    {
+      "seg_id": "seg_0328",
+      "start": 1587.12,
+      "end": 1592.32,
+      "text": "reinforcement learning, the model isn't producing a prediction. Rather, it's"
+    },
+    {
+      "seg_id": "seg_0329",
+      "start": 1592.32,
+      "end": 1598.24,
+      "text": "generating this probability distribution of different actions it might take given"
+    },
+    {
+      "seg_id": "seg_0330",
+      "start": 1598.24,
+      "end": 1602.48,
+      "text": "the current state of its environment. So, pi is just representing a"
+    },
+    {
+      "seg_id": "seg_0331",
+      "start": 1602.48,
+      "end": 1606.96,
+      "text": "probability distribution and pi theta is just saying that this probability"
+    },
+    {
+      "seg_id": "seg_0332",
+      "start": 1606.96,
+      "end": 1611.92,
+      "text": "distribution is parameterized by the parameters theta. A is representing the"
+    },
+    {
+      "seg_id": "seg_0333",
+      "start": 1611.92,
+      "end": 1615.92,
+      "text": "action at time t and then s is representing the state of the"
+    },
+    {
+      "seg_id": "seg_0334",
+      "start": 1615.92,
+      "end": 1620.48,
+      "text": "environment at time t. And the reason we use log here is that it makes the math a"
+    },
+    {
+      "seg_id": "seg_0335",
+      "start": 1620.48,
+      "end": 1626.4,
+      "text": "bit nicer to work with. And then this reward at time t is basically the"
+    },
+    {
+      "seg_id": "seg_0336",
+      "start": 1626.4,
+      "end": 1633.12,
+      "text": "feedback the model is getting for its specific action. So these probabilities"
+    },
+    {
+      "seg_id": "seg_0337",
+      "start": 1633.12,
+      "end": 1639.44,
+      "text": "and rewards are going to be summed over an entire episode or trajectory. And so"
+    },
+    {
+      "seg_id": "seg_0338",
+      "start": 1639.44,
+      "end": 1643.76,
+      "text": "if we're playing the game of go, an entire episode would be, let's say, an"
+    },
+    {
+      "seg_id": "seg_0339",
+      "start": 1643.76,
+      "end": 1648.24,
+      "text": "entire match of the game. Or if this was like a self-driving car, an episode"
+    },
+    {
+      "seg_id": "seg_0340",
+      "start": 1648.24,
+      "end": 1653.28,
+      "text": "would be from when the car starts moving to when it reaches its destination or"
+    },
+    {
+      "seg_id": "seg_0341",
+      "start": 1653.28,
+      "end": 1657.36,
+      "text": "crashes. And then a bit more details here. So again, we already said that pi"
+    },
+    {
+      "seg_id": "seg_0342",
+      "start": 1657.36,
+      "end": 1661.76,
+      "text": "theta is the probability of taking action a given state s based on model"
+    },
+    {
+      "seg_id": "seg_0343",
+      "start": 1661.76,
+      "end": 1666.4,
+      "text": "parameters. Tao is this full roll out of states and actions. So we have an"
+    },
+    {
+      "seg_id": "seg_0344",
+      "start": 1666.4,
+      "end": 1670.8,
+      "text": "initial state to which the model has an action to and gets a corresponding"
+    },
+    {
+      "seg_id": "seg_0345",
+      "start": 1670.8,
+      "end": 1674.88,
+      "text": "reward. Then there's another state which the model has an action to and gets"
+    },
+    {
+      "seg_id": "seg_0346",
+      "start": 1674.88,
+      "end": 1678.72,
+      "text": "another reward and so on and so forth. And then t is just the number of time"
+    },
+    {
+      "seg_id": "seg_0347",
+      "start": 1678.72,
+      "end": 1682.56,
+      "text": "steps in this full trajectory. So I know there's a lot of math and terms"
+    },
+    {
+      "seg_id": "seg_0348",
+      "start": 1682.56,
+      "end": 1686.96,
+      "text": "happening here. But here's the key intuition. What we want is to update"
+    },
+    {
+      "seg_id": "seg_0349",
+      "start": 1686.96,
+      "end": 1692.32,
+      "text": "these model parameters such that our model gives a high probability to"
+    },
+    {
+      "seg_id": "seg_0350",
+      "start": 1692.32,
+      "end": 1697.6,
+      "text": "actions which result in a high reward. So in that case you know if this"
+    },
+    {
+      "seg_id": "seg_0351",
+      "start": 1697.6,
+      "end": 1701.92,
+      "text": "probability is big when this reward is big then this whole term will be big and"
+    },
+    {
+      "seg_id": "seg_0352",
+      "start": 1701.92,
+      "end": 1706.56,
+      "text": "then once we average over the whole trajectory this objective will be as big"
+    },
+    {
+      "seg_id": "seg_0353",
+      "start": 1706.56,
+      "end": 1711.64,
+      "text": "as possible. So maximizing the objective is equivalent to having high"
+    },
+    {
+      "seg_id": "seg_0354",
+      "start": 1711.64,
+      "end": 1717.44,
+      "text": "probabilities for highreward actions. But from there we can update our model"
+    },
+    {
+      "seg_id": "seg_0355",
+      "start": 1717.44,
+      "end": 1722.64,
+      "text": "parameters in very much the same way we did in deep learning. Namely we have"
+    },
+    {
+      "seg_id": "seg_0356",
+      "start": 1722.64,
+      "end": 1727.36,
+      "text": "this parameter update rule where we have theta k which are the old parameters,"
+    },
+    {
+      "seg_id": "seg_0357",
+      "start": 1727.36,
+      "end": 1731.36,
+      "text": "theta ki which are the new parameters and then we have this update rule. So"
+    },
+    {
+      "seg_id": "seg_0358",
+      "start": 1731.36,
+      "end": 1735.76,
+      "text": "again, we take the gradient of our objective to serve as our guide in"
+    },
+    {
+      "seg_id": "seg_0359",
+      "start": 1735.76,
+      "end": 1740.88,
+      "text": "navigating this landscape and then we have the learning rate gamma. However,"
+    },
+    {
+      "seg_id": "seg_0360",
+      "start": 1740.88,
+      "end": 1744.96,
+      "text": "since we're not trying to minimize the reward and we're trying to maximize it,"
+    },
+    {
+      "seg_id": "seg_0361",
+      "start": 1744.96,
+      "end": 1749.92,
+      "text": "all we need to do is change the minus sign from gradient descent to a plus"
+    },
+    {
+      "seg_id": "seg_0362",
+      "start": 1749.92,
+      "end": 1755.12,
+      "text": "sign to give us this gradient ascent update rule. So everything I just"
+    },
+    {
+      "seg_id": "seg_0363",
+      "start": 1755.12,
+      "end": 1760.4,
+      "text": "described is based on this reinforce algorithm which is the reinforcement"
+    },
+    {
+      "seg_id": "seg_0364",
+      "start": 1760.4,
+      "end": 1764.08,
+      "text": "learning algorithm that underlies all modern reinforcement learning"
+    },
+    {
+      "seg_id": "seg_0365",
+      "start": 1764.08,
+      "end": 1767.92,
+      "text": "techniques. However, that came out in 1992 and since then there have been a"
+    },
+    {
+      "seg_id": "seg_0366",
+      "start": 1767.92,
+      "end": 1773.12,
+      "text": "lot of improvements and new approaches introduced. So here's a summary table of"
+    },
+    {
+      "seg_id": "seg_0367",
+      "start": 1773.12,
+      "end": 1777.28,
+      "text": "some popular ones. Reinforces what we've just been talking about in the previous"
+    },
+    {
+      "seg_id": "seg_0368",
+      "start": 1777.28,
+      "end": 1782.56,
+      "text": "slides. There's this trust region policy optimization approach which adds this KL"
+    },
+    {
+      "seg_id": "seg_0369",
+      "start": 1782.56,
+      "end": 1787.6,
+      "text": "divergence term and compares the current model action to the previous version of"
+    },
+    {
+      "seg_id": "seg_0370",
+      "start": 1787.6,
+      "end": 1792.0,
+      "text": "the model's action and this just improves training stability. There's PO"
+    },
+    {
+      "seg_id": "seg_0371",
+      "start": 1792.0,
+      "end": 1796.56,
+      "text": "which was used in reinforcement learning with human feedback which is what open"
+    },
+    {
+      "seg_id": "seg_0372",
+      "start": 1796.56,
+      "end": 1801.76,
+      "text": "AI used to make chat GBT and they basically do a similar thing as trust"
+    },
+    {
+      "seg_id": "seg_0373",
+      "start": 1801.76,
+      "end": 1805.2,
+      "text": "region policy optimization but they don't have this KL divergence term"
+    },
+    {
+      "seg_id": "seg_0374",
+      "start": 1805.2,
+      "end": 1809.28,
+      "text": "instead they have this clipping term to ensure that training is stable. Finally,"
+    },
+    {
+      "seg_id": "seg_0375",
+      "start": 1809.28,
+      "end": 1812.96,
+      "text": "there's this group relative policy optimization approach developed by"
+    },
+    {
+      "seg_id": "seg_0376",
+      "start": 1812.96,
+      "end": 1817.52,
+      "text": "DeepSeek and this is what they used in DeepSseek R1 and it basically combines"
+    },
+    {
+      "seg_id": "seg_0377",
+      "start": 1817.52,
+      "end": 1822.88,
+      "text": "PO with this KL divergence penalty to make training more stable. Additionally,"
+    },
+    {
+      "seg_id": "seg_0378",
+      "start": 1822.88,
+      "end": 1828.24,
+      "text": "they batch different examples into a group when computing this objective and"
+    },
+    {
+      "seg_id": "seg_0379",
+      "start": 1828.24,
+      "end": 1832.12,
+      "text": "updating the model parameters. For most of this video, I've talked about"
+    },
+    {
+      "seg_id": "seg_0380",
+      "start": 1832.12,
+      "end": 1837.76,
+      "text": "algorithms for optimizing parameter values and loss functions and neural"
+    },
+    {
+      "seg_id": "seg_0381",
+      "start": 1837.76,
+      "end": 1841.44,
+      "text": "networks and sophisticated fancy math. And this might give you the impression"
+    },
+    {
+      "seg_id": "seg_0382",
+      "start": 1841.44,
+      "end": 1844.96,
+      "text": "that algorithms are the most important thing when it comes to machine learning."
+    },
+    {
+      "seg_id": "seg_0383",
+      "start": 1844.96,
+      "end": 1849.28,
+      "text": "However, that is very much not the case because at the end of the day, we are"
+    },
+    {
+      "seg_id": "seg_0384",
+      "start": 1849.28,
+      "end": 1855.48,
+      "text": "simply fitting models to our data. So if you have bad data, it doesn't matter how"
+    },
+    {
+      "seg_id": "seg_0385",
+      "start": 1855.48,
+      "end": 1860.64,
+      "text": "sophisticated your algorithm is or how much you tune your hyperparameters. If"
+    },
+    {
+      "seg_id": "seg_0386",
+      "start": 1860.64,
+      "end": 1864.56,
+      "text": "you're fitting a model to bad data, you're going to have a bad model. That's"
+    },
+    {
+      "seg_id": "seg_0387",
+      "start": 1864.56,
+      "end": 1869.44,
+      "text": "why I wanted to finish this talk to review what makes good data. And so"
+    },
+    {
+      "seg_id": "seg_0388",
+      "start": 1869.44,
+      "end": 1874.16,
+      "text": "there really two properties that make data good. The first is quantity. All"
+    },
+    {
+      "seg_id": "seg_0389",
+      "start": 1874.16,
+      "end": 1879.52,
+      "text": "things equal, more data are better than less data. When you don't have enough"
+    },
+    {
+      "seg_id": "seg_0390",
+      "start": 1879.52,
+      "end": 1884.4,
+      "text": "data, your model is prone to overfitting. So this is basically a"
+    },
+    {
+      "seg_id": "seg_0391",
+      "start": 1884.4,
+      "end": 1889.36,
+      "text": "situation where your model memorizes your training data set and doesn't"
+    },
+    {
+      "seg_id": "seg_0392",
+      "start": 1889.36,
+      "end": 1893.76,
+      "text": "generalize well to new examples. In other words, it leads to models that"
+    },
+    {
+      "seg_id": "seg_0393",
+      "start": 1893.76,
+      "end": 1899.12,
+      "text": "just aren't very helpful in practice. However, there is a situation where more"
+    },
+    {
+      "seg_id": "seg_0394",
+      "start": 1899.12,
+      "end": 1904.88,
+      "text": "data is not necessarily a good thing. And this is when your data is garbage."
+    },
+    {
+      "seg_id": "seg_0395",
+      "start": 1904.88,
+      "end": 1909.2,
+      "text": "Because if you take bad data and train a model, even if you have a lot of it,"
+    },
+    {
+      "seg_id": "seg_0396",
+      "start": 1909.2,
+      "end": 1914.72,
+      "text": "you're going to have a bad model. And this is summarized by the old adage of"
+    },
+    {
+      "seg_id": "seg_0397",
+      "start": 1914.72,
+      "end": 1919.76,
+      "text": "garbage in, garbage out. That brings us to the second property of good data,"
+    },
+    {
+      "seg_id": "seg_0398",
+      "start": 1919.76,
+      "end": 1925.32,
+      "text": "which is quality. And the essence of quality is having data that faithfully"
+    },
+    {
+      "seg_id": "seg_0399",
+      "start": 1925.32,
+      "end": 1931.6,
+      "text": "represents reality. So there are two key aspects of this. The first is accuracy,"
+    },
+    {
+      "seg_id": "seg_0400",
+      "start": 1931.6,
+      "end": 1937.04,
+      "text": "which is the correctness of your data. For example, if your data set says"
+    },
+    {
+      "seg_id": "seg_0401",
+      "start": 1937.04,
+      "end": 1942.64,
+      "text": "someone is 35 years old when in reality the person is actually 53 years old,"
+    },
+    {
+      "seg_id": "seg_0402",
+      "start": 1942.64,
+      "end": 1947.92,
+      "text": "that is bad data. Another example is if your data says someone makes $12,000 a"
+    },
+    {
+      "seg_id": "seg_0403",
+      "start": 1947.92,
+      "end": 1952.32,
+      "text": "year when in fact they make $12,000 a month. That's another example of bad"
+    },
+    {
+      "seg_id": "seg_0404",
+      "start": 1952.32,
+      "end": 1957.72,
+      "text": "inaccurate data. The other aspect is diversity, which is basically the"
+    },
+    {
+      "seg_id": "seg_0405",
+      "start": 1957.72,
+      "end": 1961.52,
+      "text": "representativeness of your data. For example, if you have some kind of SAS"
+    },
+    {
+      "seg_id": "seg_0406",
+      "start": 1961.52,
+      "end": 1966.0,
+      "text": "product and you're trying to predict customer churn and you take data from a"
+    },
+    {
+      "seg_id": "seg_0407",
+      "start": 1966.0,
+      "end": 1970.72,
+      "text": "bunch of prousers of your SAS product and you use it to develop a customer"
+    },
+    {
+      "seg_id": "seg_0408",
+      "start": 1970.72,
+      "end": 1974.8,
+      "text": "churn model, this is completely fine if you're trying to predict churn of users"
+    },
+    {
+      "seg_id": "seg_0409",
+      "start": 1974.8,
+      "end": 1979.76,
+      "text": "of your pro plan. However, if you have an enterprise customer, this model"
+    },
+    {
+      "seg_id": "seg_0410",
+      "start": 1979.76,
+      "end": 1983.36,
+      "text": "probably won't be helpful in predicting the churn of an enterprise. In other"
+    },
+    {
+      "seg_id": "seg_0411",
+      "start": 1983.36,
+      "end": 1987.36,
+      "text": "words, it's not only important that your data are correct and accurately"
+    },
+    {
+      "seg_id": "seg_0412",
+      "start": 1987.36,
+      "end": 1991.92,
+      "text": "represent reality, but that they also contain examples of all the different"
+    },
+    {
+      "seg_id": "seg_0413",
+      "start": 1991.92,
+      "end": 1997.44,
+      "text": "scenarios you want to use your final model in. Just to summarize, good data"
+    },
+    {
+      "seg_id": "seg_0414",
+      "start": 1997.44,
+      "end": 2003.28,
+      "text": "comes down to quantity and quality. So, we want more data over less data. We"
+    },
+    {
+      "seg_id": "seg_0415",
+      "start": 2003.28,
+      "end": 2008.64,
+      "text": "want highquality data over lowquality data. And we want less highquality data"
+    },
+    {
+      "seg_id": "seg_0416",
+      "start": 2008.64,
+      "end": 2013.52,
+      "text": "over more lowquality data. All right, so I covered a ton of information in this"
+    },
+    {
+      "seg_id": "seg_0417",
+      "start": 2013.52,
+      "end": 2018.4,
+      "text": "video, so I just wanted to recap with a few key takeaways. First is that solving"
+    },
+    {
+      "seg_id": "seg_0418",
+      "start": 2018.4,
+      "end": 2024.0,
+      "text": "problems requires an accurate model of the world. And machine learning gives us"
+    },
+    {
+      "seg_id": "seg_0419",
+      "start": 2024.0,
+      "end": 2030.56,
+      "text": "a way to align models to reality using data and math. A specific type of"
+    },
+    {
+      "seg_id": "seg_0420",
+      "start": 2030.56,
+      "end": 2034.72,
+      "text": "machine learning is deep learning, which involves using neural networks to learn"
+    },
+    {
+      "seg_id": "seg_0421",
+      "start": 2034.72,
+      "end": 2039.76,
+      "text": "useful features and mappings from raw data. And a lot of times deep learning"
+    },
+    {
+      "seg_id": "seg_0422",
+      "start": 2039.76,
+      "end": 2044.56,
+      "text": "is combined with reinforcement learning which allows computers to learn by"
+    },
+    {
+      "seg_id": "seg_0423",
+      "start": 2044.56,
+      "end": 2048.96,
+      "text": "interacting with the world through trial and error. And finally, although there's"
+    },
+    {
+      "seg_id": "seg_0424",
+      "start": 2048.96,
+      "end": 2054.08,
+      "text": "a lot of math and fancy algorithms and machine learning, training good models"
+    },
+    {
+      "seg_id": "seg_0425",
+      "start": 2054.08,
+      "end": 2059.96,
+      "text": "comes down to having good data. And what this means is you need high volume,"
+    },
+    {
+      "seg_id": "seg_0426",
+      "start": 2059.96,
+      "end": 2064.0,
+      "text": "highquality training data sets. Although there were many things I couldn't cover"
+    },
+    {
+      "seg_id": "seg_0427",
+      "start": 2064.0,
+      "end": 2068.16,
+      "text": "in this short overview here, I hope it gave you more clarity around some"
+    },
+    {
+      "seg_id": "seg_0428",
+      "start": 2068.16,
+      "end": 2073.2,
+      "text": "buzzwords in machine learning and the confidence to continue your learning on"
+    },
+    {
+      "seg_id": "seg_0429",
+      "start": 2073.2,
+      "end": 2077.36,
+      "text": "your own. Toward that end, if you have any questions or suggestions for future"
+    },
+    {
+      "seg_id": "seg_0430",
+      "start": 2077.36,
+      "end": 2081.52,
+      "text": "topics you want me to cover, please let me know in the comments below. And as"
+    },
+    {
+      "seg_id": "seg_0431",
+      "start": 2081.52,
+      "end": 2087.24,
+      "text": "always, thank you so much for your time and thanks for watching."
+    }
+  ]
+}

@@ -106,6 +106,51 @@ opening with Latin, 0 audit errors (after two rounds of fixes the audit forced:
 boundary segments cited in the wrong chapter, counts the speaker never said);
 render 4.5 s, PDF 2.2 MB via Chrome.
 
+## Six videos, engine only (v15-high pools, 2026-09-04)
+
+Pool recall is the triage upper bound — the share of essential visuals for
+which at least one candidate exists. Five of the six annotations are
+storyboard-drawn drafts (10 s tiles, not yet reviewed), so treat these as
+engine diagnostics, not headline numbers. "pool 128" is the same profile with
+`--max-candidates 128`; with contact sheets the model's read stays inside the
+same 20k budget (8 sheets ≈ 10–12k + a 18–22-frame shortlist at 768 px), which
+is the point of measuring it.
+
+| video | category | ess. | states | pool 64: recall | dropped by cap | pool 128: recall | CPU (cached) |
+|---|---|---|---|---|---|---|---|
+| ISb0nrlNoKQ | mixed screencast (webcam PiP) | 22 | 100 | **100%** | 22 | — | 29 s |
+| aircAruvnKk | animated explainer | 24 | 132 | 96% | 46 | **100%** | 43 s |
+| BUTjcAjfMgY | slide lecture, 35 min | 27 | 90 | 78% | 8 | 81% | 42 s |
+| qrvK_KuIeJk | interview / B-roll | 4 | 66 | 75% (3/4) | 8 | — | 27 s |
+| 7L9VP1E5CU4 | Hebrew tutorial, slides + demo | 19 | 188 | 68% | 110 | **89%** | 56 s |
+| f8_uF_IDV50 | VS Code demo | 22 | 132 | 68% | 47 | 73% | 28 s |
+
+What the misses say (from `dropped.json` and the state lists):
+
+- **Dynamic-UI demos are cap-bound.** The Hebrew tutorial and the VS Code demo
+  produce 130–190 states; a 64-frame pool drops 47–110 of them by cap alone,
+  and recall follows the cap (68 → 89 % when the cap doubles). Since a sheet
+  tile costs 83 tokens, a pool of 128 is not more expensive to *look at* than
+  a pool of 64 was in 1.5 — the cap was inherited from the single-read era.
+  Candidate for 1.7: cap by budget (`sheets on` → 128 in `high`), not by a
+  fixed number.
+- **Slides lose to family dedup, not to the cap** (BUTjcAjfMgY: cap dropped 8,
+  dedup 17, recall 78 → 81 % with the cap lifted). The misses are build stages
+  of the same slide (`s25` zoo table, `s33` hyperparameters, `s47` quality)
+  where the annotation wants the *complete* stage and the family keeper is an
+  earlier one — the representative rule for B-mode builds (last settled frame)
+  is not always what survives dedup across a chapter boundary. Candidate for
+  1.7: family keeper = latest full build, not the first-seen member.
+- **The VS Code demo's remaining misses** (`s02`, `s03`, `s05`, `s08`, `s09`,
+  `s17`) are 5–10 s UI states inside long D-mode runs: menus and dropdowns
+  that the 2 fps scan sees but the run merge folds into the surrounding state
+  (settled threshold 0.02 on a 64×36 signature is too coarse for a dropdown).
+  Candidate for 1.7: compact-region change detection for D-mode (the crv
+  "action" channel the audit described), or 4 fps in `high` for D windows.
+- **Interview:** 3 of 4 essentials (robots, Bard, chat prompts) reach the
+  pool from a video that is 90 % faces; the miss is one of two near-identical
+  Bard screens. Talk-mode states are never sampled — 6 A-states, 0 candidates.
+
 v1.6 (two-stage triage) on the v15-high pool: 5 contact sheets ≈ 6,026 tokens
 + 24 shortlist frames at 768 px ≈ 10,752 → 16,778 image tokens, against 13,376
 for 64 individual 512 px reads — neutral at 18 minutes, as the audit predicted

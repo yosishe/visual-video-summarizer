@@ -1,0 +1,423 @@
+{
+  "video_id": "7L9VP1E5CU4",
+  "title": "להבין גיט וגיטהאב ולהתחיל לעבוד — ב-20 דקות",
+  "duration": 1227,
+  "annotator": "claude (from bench/sheets storyboard tiles, 9.9 s apart; NEEDS REVIEW by yos)",
+  "date": "2026-09-04",
+  "status": "draft",
+  "source": "storyboard:sb0",
+  "notes": "Slides with a presenter picture-in-picture bottom-right (moves between frames); bullets appear progressively; Hebrew auto-captions (iw).",
+  "states": [
+    {
+      "state_id": "s01",
+      "start": 0,
+      "end": 8,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter to camera (intro)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s02",
+      "start": 8,
+      "end": 28,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Intro slide: 'Git היא תוכנה שיושבת על המחשב שלנו ושומרת את ההיסטוריה של הפרויקט'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s03",
+      "start": 28,
+      "end": 40,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Slide 'מכירים את זה מוזר' heading revealed",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s05"
+    },
+    {
+      "state_id": "s04",
+      "start": 40,
+      "end": 68,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter to camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s05",
+      "start": 68,
+      "end": 105,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'מכירים את זה מוזר' with the two bullets (שומרים עותק לפני כל שינוי / זה בדיוק ניהול גרסאות)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s06",
+      "start": 105,
+      "end": 165,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "File-name build: עבודה סופית.docx → עבודה סופית באמת.docx (stages)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s07"
+    },
+    {
+      "state_id": "s07",
+      "start": 165,
+      "end": 178,
+      "class": "essential",
+      "kind": "slide",
+      "label": "The three-file joke complete: עבודה סופית / באמת / 2 אחרי תיקונים",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s08",
+      "start": 178,
+      "end": 188,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter to camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s09",
+      "start": 188,
+      "end": 196,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Slide with the three files (reprise)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s07"
+    },
+    {
+      "state_id": "s10",
+      "start": 196,
+      "end": 218,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'Git עושה את זה בשבילנו' heading + first explanation lines",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s11",
+      "start": 218,
+      "end": 228,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Explanation continued (build stage)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s13"
+    },
+    {
+      "state_id": "s12",
+      "start": 228,
+      "end": 285,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Save / תמונת מצב (Snapshot) timeline strip complete with commit line",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s13",
+      "start": 285,
+      "end": 297,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter to camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s14",
+      "start": 297,
+      "end": 355,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Whole 'Git עושה את זה' slide zoomed out (reprise)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s12"
+    },
+    {
+      "state_id": "s15",
+      "start": 355,
+      "end": 372,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Section overview 'מה זה נותן לך?' navigation",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s16",
+      "start": 372,
+      "end": 405,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'כוח העל: לראות מה השתנה' with the diff bullets",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s17",
+      "start": 405,
+      "end": 425,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "'הגרסה שעבדנו בקורסים' list being revealed",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s19"
+    },
+    {
+      "state_id": "s18",
+      "start": 425,
+      "end": 432,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Dark terminal/diff screenshot (what a real diff looks like)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s19",
+      "start": 432,
+      "end": 465,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Diff example list complete: מערבבים / אוספים / מכנסים לפני ההגשה",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s20",
+      "start": 465,
+      "end": 490,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Same list with the changed lines highlighted ('וככה Git מראה מה השתנה')",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s21",
+      "start": 490,
+      "end": 555,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'רשת הביטחון בעבודה עם AI' with its three bullets",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s22",
+      "start": 555,
+      "end": 575,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Same AI safety-net slide (reprise)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s21"
+    },
+    {
+      "state_id": "s23",
+      "start": 575,
+      "end": 584,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter to camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s24",
+      "start": 584,
+      "end": 652,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'הרגל שנעים לרשת הביטחון לעבוד' checklist (three habits)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s25",
+      "start": 652,
+      "end": 676,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "'מה זה Git ומה זה GitHub?' section navigation",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s26",
+      "start": 676,
+      "end": 800,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "'המילון של Git' glossary being built (Repository … Branch)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s27"
+    },
+    {
+      "state_id": "s27",
+      "start": 800,
+      "end": 852,
+      "class": "essential",
+      "kind": "slide",
+      "label": "Git glossary complete incl. Merge (מיזוג)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s28",
+      "start": 852,
+      "end": 866,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter to camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s29",
+      "start": 866,
+      "end": 918,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'GitHub היא שירות באינטרנט…' + 'Git בענן' bullets",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s30",
+      "start": 918,
+      "end": 975,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'המילון של GitHub': Push / Pull / Clone",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s31",
+      "start": 975,
+      "end": 1000,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "'מי מתקין לכם Git' heading revealed",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s33"
+    },
+    {
+      "state_id": "s32",
+      "start": 1000,
+      "end": 1012,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Dark AI-assistant window installing/checking Git",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s33",
+      "start": 1012,
+      "end": 1048,
+      "class": "essential",
+      "kind": "slide",
+      "label": "'מי מתקין לכם Git' complete: let the AI install it, don't fight the terminal",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s34",
+      "start": 1048,
+      "end": 1066,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Section navigation / small tip slide",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s35",
+      "start": 1066,
+      "end": 1076,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "GitHub contributions dashboard (stats, activity grid)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s36",
+      "start": 1076,
+      "end": 1094,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "AI chat: 'האם יש לי גיט במחשב' → checked, Git 2.52.0 installed",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s37",
+      "start": 1094,
+      "end": 1104,
+      "class": "acceptable",
+      "kind": "slide",
+      "label": "Navigation slide",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s25"
+    },
+    {
+      "state_id": "s38",
+      "start": 1104,
+      "end": 1125,
+      "class": "acceptable",
+      "kind": "screenshot",
+      "label": "Windows Explorer folder icons view",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s39",
+      "start": 1125,
+      "end": 1145,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Explorer list view showing the hidden .git folder",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s40",
+      "start": 1145,
+      "end": 1163,
+      "class": "acceptable",
+      "kind": "screenshot",
+      "label": "Explorer view options menu (show hidden items)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s41",
+      "start": 1163,
+      "end": 1227,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter to camera (outro)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    }
+  ],
+  "summary_checklist": []
+}

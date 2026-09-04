@@ -41,8 +41,10 @@ def main() -> int:
     out_dir = work / "shortlist"
     out_dir.mkdir(exist_ok=True)
     ids = [i.strip() for i in args.ids.split(",") if i.strip()]
-    if len(ids) > 30:
-        raise SystemExit("a shortlist is at most 30 frames; narrow it on the sheets first")
+    limit = min(30, int((payload.get("token_budget") or {}).get("shortlist_max", 30)))
+    if len(ids) > limit:
+        raise SystemExit(f"a shortlist is at most {limit} frames here (token budget "
+                         f"{(payload.get('token_budget') or {}).get('budget', 'n/a')}); narrow it on the sheets first")
     written, failures, tokens = [], [], 0
     for candidate_id in ids:
         candidate = candidates.get(candidate_id)

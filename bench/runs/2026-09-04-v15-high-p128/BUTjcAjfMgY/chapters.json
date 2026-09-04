@@ -1,0 +1,106 @@
+[
+  {"chapter_id": "ch01", "title": "Intro: five key points", "start": 0.0, "end": 42.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch02", "title": "Intelligence and world models", "start": 42.0, "end": 110.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch02_world_model", "kind": "diagram", "seg_ids": ["seg_0011", "seg_0012"],
+      "why": "Earth compressed into a model in the head"},
+     {"target_id": "ch02_rain_prediction", "kind": "diagram", "seg_ids": ["seg_0014", "seg_0015", "seg_0016"],
+      "why": "dark clouds → mental model → rain prediction"}]},
+  {"chapter_id": "ch03", "title": "Three ways computers can learn", "start": 110.0, "end": 164.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch03_nested_diagram", "kind": "diagram", "seg_ids": ["seg_0029", "seg_0030", "seg_0031", "seg_0032", "seg_0033"],
+      "why": "AI ⊃ ML ⊃ DL / RL nested diagram"}]},
+  {"chapter_id": "ch04", "title": "Way 1: machine learning has two phases", "start": 164.0, "end": 215.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch04_two_phases", "kind": "diagram", "seg_ids": ["seg_0040", "seg_0041", "seg_0042"],
+      "why": "training and inference diagram complete"}]},
+  {"chapter_id": "ch05", "title": "Inference: a linear model", "start": 215.0, "end": 265.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch05_linear_model", "kind": "slide", "seg_ids": ["seg_0048", "seg_0049", "seg_0050", "seg_0051"],
+      "why": "ŷ = mx + b with parameters labelled"}]},
+  {"chapter_id": "ch06", "title": "Training: loss function and the closed-form solution", "start": 265.0, "end": 497.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch06_loss_equation", "kind": "slide", "seg_ids": ["seg_0059", "seg_0060", "seg_0061"],
+      "why": "the loss equation with actual and predicted values"},
+     {"target_id": "ch06_goal", "kind": "slide", "seg_ids": ["seg_0076", "seg_0077", "seg_0078"],
+      "why": "goal: parameters with the smallest loss"},
+     {"target_id": "ch06_matrix_form", "kind": "slide", "seg_ids": ["seg_0084", "seg_0085", "seg_0086"],
+      "why": "loss rewritten as ‖y − Xθ‖²"},
+     {"target_id": "ch06_optimal_theta", "kind": "slide", "seg_ids": ["seg_0098", "seg_0099", "seg_0100"],
+      "why": "the boxed optimal parameters θ*"}]},
+  {"chapter_id": "ch07", "title": "Key point and more ML techniques", "start": 497.0, "end": 600.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch07_key_point", "kind": "slide", "seg_ids": ["seg_0106", "seg_0107", "seg_0108"],
+      "why": "computers fit models to reality using data and math"},
+     {"target_id": "ch07_techniques_table", "kind": "slide", "seg_ids": ["seg_0117", "seg_0118", "seg_0119", "seg_0120"],
+      "why": "the table of traditional ML techniques"}]},
+  {"chapter_id": "ch08", "title": "The feature-engineering limitation", "start": 600.0, "end": 650.0,
+   "needs_frames": false, "visual_targets": []},
+  {"chapter_id": "ch09", "title": "Way 2: deep learning learns its own features", "start": 650.0, "end": 727.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch09_cat_features", "kind": "diagram", "seg_ids": ["seg_0140", "seg_0141", "seg_0142", "seg_0143"],
+      "why": "pixels → edges → parts → objects cartoon"}]},
+  {"chapter_id": "ch10", "title": "Neural networks: the neuron, layers, networks", "start": 727.0, "end": 836.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch10_neuron_steps", "kind": "diagram", "seg_ids": ["seg_0153", "seg_0154", "seg_0155", "seg_0156"],
+      "why": "inputs × weights, bias, activation"},
+     {"target_id": "ch10_neuron_formula", "kind": "slide", "seg_ids": ["seg_0158", "seg_0159", "seg_0160"],
+      "why": "z = g(Σ wᵢxᵢ + b)"},
+     {"target_id": "ch10_layers_networks", "kind": "diagram", "seg_ids": ["seg_0168", "seg_0169", "seg_0170"],
+      "why": "neurons into layers into networks"}]},
+  {"chapter_id": "ch11", "title": "A zoo of neurons, activations, layers, architectures", "start": 836.0, "end": 929.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch11_activations", "kind": "slide", "seg_ids": ["seg_0177", "seg_0178", "seg_0179", "seg_0180"],
+      "why": "ReLU, sigmoid, tanh, softmax"},
+     {"target_id": "ch11_architectures", "kind": "slide", "seg_ids": ["seg_0189", "seg_0190", "seg_0191", "seg_0192"],
+      "why": "the complete zoo table with architectures"}]},
+  {"chapter_id": "ch12", "title": "Training neural nets: loss landscape and gradient descent", "start": 929.0, "end": 1229.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch12_landscape", "kind": "diagram", "seg_ids": ["seg_0198", "seg_0199", "seg_0200"],
+      "why": "the jagged loss landscape"},
+     {"target_id": "ch12_gradient_steps", "kind": "diagram", "seg_ids": ["seg_0219", "seg_0220", "seg_0221"],
+      "why": "gradient arrow and steps toward the minimum"},
+     {"target_id": "ch12_gd_equation", "kind": "slide", "seg_ids": ["seg_0233", "seg_0234", "seg_0235", "seg_0236"],
+      "why": "θᵢ₊₁ = θᵢ − γ∇L with learning rate labelled"},
+     {"target_id": "ch12_optimizers", "kind": "slide", "seg_ids": ["seg_0250", "seg_0251", "seg_0252"],
+      "why": "the optimizers table ending with Adam"}]},
+  {"chapter_id": "ch13", "title": "Hyperparameters", "start": 1229.0, "end": 1318.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch13_table", "kind": "slide", "seg_ids": ["seg_0267", "seg_0268", "seg_0269"],
+      "why": "epoch, learning rate, batch size, dropout"}]},
+  {"chapter_id": "ch14", "title": "Way 3: reinforcement learning", "start": 1318.0, "end": 1408.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch14_supervised_vs_rl", "kind": "diagram", "seg_ids": ["seg_0288", "seg_0289", "seg_0290", "seg_0291"],
+      "why": "supervised vs RL feedback loop diagrams"}]},
+  {"chapter_id": "ch15", "title": "The promise of RL: AlphaGo", "start": 1408.0, "end": 1520.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch15_elo_chart", "kind": "diagram", "seg_ids": ["seg_0303", "seg_0304", "seg_0305", "seg_0306", "seg_0307", "seg_0308"],
+      "why": "the Elo chart where RL surpasses the grandmaster"}]},
+  {"chapter_id": "ch16", "title": "How RL works: the objective and the update", "start": 1520.0, "end": 1755.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch16_objective", "kind": "slide", "seg_ids": ["seg_0324", "seg_0325", "seg_0326", "seg_0327"],
+      "why": "J(θ) with log πθ and reward labelled"},
+     {"target_id": "ch16_rollout", "kind": "slide", "seg_ids": ["seg_0343", "seg_0344", "seg_0345", "seg_0346"],
+      "why": "the trajectory τ of states, actions, rewards"},
+     {"target_id": "ch16_update_rule", "kind": "slide", "seg_ids": ["seg_0359", "seg_0360", "seg_0361", "seg_0362"],
+      "why": "gradient ascent update θₖ₊₁ = θₖ + γ∇J"}]},
+  {"chapter_id": "ch17", "title": "More RL techniques", "start": 1755.0, "end": 1832.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch17_rl_table", "kind": "slide", "seg_ids": ["seg_0375", "seg_0376", "seg_0377"],
+      "why": "REINFORCE, TRPO, PPO, GRPO table complete"}]},
+  {"chapter_id": "ch18", "title": "Data: quantity and quality", "start": 1832.0, "end": 2016.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch18_quantity", "kind": "slide", "seg_ids": ["seg_0389", "seg_0390", "seg_0391"],
+      "why": "more data beats less data; overfitting"},
+     {"target_id": "ch18_accuracy", "kind": "slide", "seg_ids": ["seg_0400", "seg_0401", "seg_0402", "seg_0403"],
+      "why": "accuracy examples: 35 vs 53, $12,000 per year vs month"},
+     {"target_id": "ch18_diversity", "kind": "slide", "seg_ids": ["seg_0408", "seg_0409", "seg_0410"],
+      "why": "diversity: pro users vs enterprise churn"},
+     {"target_id": "ch18_summary", "kind": "slide", "seg_ids": ["seg_0414", "seg_0415", "seg_0416"],
+      "why": "quantity and quality comparison"}]},
+  {"chapter_id": "ch19", "title": "Key takeaways", "start": 2016.0, "end": 2090.0,
+   "needs_frames": true, "visual_targets": [
+     {"target_id": "ch19_takeaways", "kind": "slide", "seg_ids": ["seg_0423", "seg_0424", "seg_0425"],
+      "why": "the five takeaways slide complete"}]}
+]

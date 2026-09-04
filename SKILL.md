@@ -105,6 +105,8 @@ Use `high` when the user asks for it, when a target stays unresolved, when the s
 
 The report's **cost line** states the tier, the image-token estimate from the candidates' real dimensions, the CPU passes (scene pass, terminal probes, seeks, OCR frames, faces status, refinement), and the other tier's ceiling. Quote it to the user if they ask what a run costs.
 
+**Token guards (hard, enforced by the script).** A video over 120 minutes stops with exit 8 — ask the user before re-running with `--allow-long` (and `--sections`). The image spend is budgeted before you look at anything: `--max-image-tokens` (default `SUMMARY_MAX_IMAGE_TOKENS` in `~/.config/summarize-video/.env`, else 12,000 `standard` / 20,000 `high`) fixes how many shortlist frames `shortlist.py` will decode, and the report's **Token budget** line says the plan (`sheets X + shortlist ≤N × Y`). Exit 7 = even the contact sheets do not fit: tell the user the number and let them raise the budget or lower `--max-candidates`; never pass `--allow-over-budget` on your own.
+
 ## Step 4 — Triage (the ONLY image spend)
 
 Two stages, both listed in the candidates report:
@@ -209,6 +211,7 @@ The renderer validates chapter ownership, segment provenance, budgets, coverage,
 
 - Triage is two reads: the contact sheets (a 4×4 sheet of 320px tiles is 1280×792 → 1,334 visual tokens, i.e. 83 per candidate) and the shortlist (640×360 → 299 tokens each in `standard`, 768×432 → 448 in `high`). Cost per image is `⌈w/28⌉ × ⌈h/28⌉` (Claude vision docs). For a 64-frame pool that is ≈ 6k + 24 × 448 ≈ 17k — about the same as reading every 512px candidate (209 each, ≈ 13k) on an 18-minute video, and 2–3× less on an hour-long one; the report prints the exact figures for the run. Transcript: a few thousand tokens.
 - Never Read the `-full.jpg` outputs. Candidate resolution is capped at 512px; legibility in the *deliverable* comes from the 1280px re-grab (or a `crop`).
+- **Rules that keep the spend bounded, in order of importance:** (1) never Read a frame the report did not list — not `work/candidates/*.jpg` when sheets exist, never `assets/`, never `download/`; (2) the sheets are read once, in one message; (3) the shortlist is at most the budget's `shortlist_max` (≤ 30) and is read once; (4) a re-run of Step 3 is a new spend — change `chapters.json` once, deliberately, not iteratively; (5) if the user asks for "more frames", the answer is `--tier high` or a higher `--max-image-tokens`, stated with its cost, not extra reads; (6) follow-ups about the same video are answered from context. A typical run is ≈ 8k–20k image tokens plus the transcript; the report's Token budget line is the number to quote.
 
 ## Security & Permissions
 
@@ -237,6 +240,8 @@ Review the bundled scripts before first use — they are dependency-free Python 
 - **render.py exit 5** (audit errors): open `<work>/audit.json`, fix the summary or captions (numbers and identifiers must come from the cited segments), re-run render.
 - **A required chapter/target is `unresolved`**: correct its segments or window, or re-run in `--tier high`; do not render around it.
 - **Section download rejected** (exact cut failed): re-run without `--sections` for a full download.
+- **candidates.py exit 7** (over the image-token budget): quote the planned and budgeted numbers from stderr; the user decides between a higher `--max-image-tokens`, a smaller `--max-candidates`, or `--tier standard`.
+- **candidates.py exit 8** (video over 120 minutes): tell the user the length; re-run only with their `--allow-long`, preferably with `--sections` on the chapters that matter.
 - **grab.py exit 2/3**: fix the named extraction mismatch, unsafe name/crop, or duplicate selection.
 - **render.py exit 4** (`--pdf`, no engine): deliver the HTML and tell the user a PDF needs Google Chrome or WeasyPrint.
 - **`faces: unavailable` / `OCR: unavailable` in a `high` report**: informational — the optional signal is missing on this machine; the run is still valid.

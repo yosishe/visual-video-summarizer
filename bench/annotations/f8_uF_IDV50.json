@@ -1,0 +1,342 @@
+{
+  "video_id": "f8_uF_IDV50",
+  "title": "Learn Visual Studio Code in 15 minutes: 2026 Official Beginner Tutorial",
+  "duration": 928,
+  "annotator": "claude (from bench/sheets storyboard tiles, 9.9 s apart; NEEDS REVIEW by yos)",
+  "date": "2026-09-04",
+  "status": "draft",
+  "source": "storyboard:sb0",
+  "states": [
+    {
+      "state_id": "s01",
+      "start": 0,
+      "end": 8,
+      "class": "irrelevant",
+      "kind": "title",
+      "label": "Title card with VS Code window on gradient",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s02",
+      "start": 8,
+      "end": 18,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Extensions view: MCP server Terraform detail page",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s03",
+      "start": 18,
+      "end": 28,
+      "class": "essential",
+      "kind": "code",
+      "label": "Editor with console.log IntelliSense popup",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s04",
+      "start": 28,
+      "end": 55,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Empty editor with Ask about your code chat panel (welcome state)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s05",
+      "start": 55,
+      "end": 65,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "MCP servers / extensions list in the sidebar",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s06",
+      "start": 65,
+      "end": 75,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Command palette hints: Open Chat / Show All Commands / Start Debugging",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s07",
+      "start": 85,
+      "end": 100,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Command palette open with commands list",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s08",
+      "start": 125,
+      "end": 145,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Integrated terminal opened under the editor",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s09",
+      "start": 165,
+      "end": 190,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Chat mode dropdown: Ask / Edit / Agent / Plan, configure custom agents",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s10",
+      "start": 195,
+      "end": 215,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Chat with Build with Agent header; explorer with getting_started files",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s11",
+      "start": 233,
+      "end": 275,
+      "class": "essential",
+      "kind": "code",
+      "label": "IntelliSense on console.log with signature popup",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s12",
+      "start": 275,
+      "end": 295,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Callouts: IntelliSense (autocomplete dropdown) and Inline suggestions (ghost text)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s13",
+      "start": 295,
+      "end": 330,
+      "class": "acceptable",
+      "kind": "code",
+      "label": "Three console.log lines typed",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s14",
+      "start": 330,
+      "end": 360,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Build with Agent panel with a Python extension recommended",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s15",
+      "start": 360,
+      "end": 372,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Python extension page in the Marketplace",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s16",
+      "start": 390,
+      "end": 460,
+      "class": "essential",
+      "kind": "code",
+      "label": "FastAPI calculator app code being generated with terminal running uvicorn",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s17",
+      "start": 460,
+      "end": 472,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Calculator web app running in the browser (468)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s18",
+      "start": 505,
+      "end": 545,
+      "class": "essential",
+      "kind": "code",
+      "label": "Flask hello-world app.py with pip install flask in the chat",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s19",
+      "start": 555,
+      "end": 570,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Agent plan: Scaffold the Project / Build the weather logic (todo list)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s20",
+      "start": 570,
+      "end": 590,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Check Current Weather web app in the browser",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s21",
+      "start": 590,
+      "end": 605,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Terminal running the Flask app",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s22",
+      "start": 625,
+      "end": 650,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Source Control view: staged changes 3129 files, .env listed",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s23",
+      "start": 660,
+      "end": 680,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Generated commit message and Commit button; published to GitHub toast",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s24",
+      "start": 685,
+      "end": 700,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "README Flask City Weather App rendered, GitHub repo page",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s25",
+      "start": 715,
+      "end": 730,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Build with Agent: model picker (GPT-5) and Configure Tools list",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s26",
+      "start": 745,
+      "end": 775,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Extensions list with GitHub extension detail",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s27",
+      "start": 795,
+      "end": 830,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Agent-drafted GitHub issues (feature list with acceptance criteria)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s28",
+      "start": 835,
+      "end": 850,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Issue tracker page: No results",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s29",
+      "start": 850,
+      "end": 885,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Build with Agent panel, project files",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s30",
+      "start": 885,
+      "end": 895,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Presenter on camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s31",
+      "start": 895,
+      "end": 905,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "HVAC Digital Twin app demo",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s32",
+      "start": 905,
+      "end": 915,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Charade Cards app demo",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s33",
+      "start": 915,
+      "end": 928,
+      "class": "irrelevant",
+      "kind": "outro",
+      "label": "Presenter / outro",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    }
+  ],
+  "summary_checklist": []
+}
