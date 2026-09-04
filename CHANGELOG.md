@@ -7,7 +7,7 @@
 - **Greedy fill.** Unplanned pool slots are filled by argmax of 0.5·importance + 0.3·novelty (distance to the nearest chosen picture) + 0.2·uniformity (time gap) instead of even spacing; the uniform pick is still computed and recorded as `baselines.uniform_fill`.
 - **`render.py`** accepts anchors inside `aligned_seg_ids` (engine-derived lead/overlap), not only the target's own segments.
 - **Measured (bench, ISb0nrlNoKQ, annotation rev. c, 22 essential visuals):** seeks 80/327 → 102/102; CPU standard 39 s → 27 s, high 82 s → 29 s; pool recall 86/91 % → **91/100 %**; IVR 82/82 % → **86/91 %**; redundancy 15/10 % → **5/0 %**; PoR 1.58 → **1.67/1.75**; image tokens/min 572/870 → 549/732 (no reserved-frame lift needed). The two whiteboard states every earlier profile missed are now in the pool and selected.
-- Tests: 11 new (`test_states.py`); 104 total.
+- Tests: 9 new (`test_states.py`); 102 total.
 
 ## Unreleased — 1.4.0 (step 3: Hebrew by default, RTL rendering, grounding audit, caption provenance)
 
