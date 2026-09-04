@@ -1,190 +1,167 @@
-# visual-video-summarizer
+# Visual Video Summarizer
 
 [![CI](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml/badge.svg)](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**New summaries open with a concise brief:** a short synthesis, the main points, and supported takeaways, followed by the existing detailed illustrated chapters. The brief targets 150–250 words, adapts to the source, and links its claims to transcript timestamps. It works in Hebrew and English, including bundled HTML and PDF; older summaries without a brief still render normally.
+**Turn lectures, tutorials, and demos into clear takeaways and illustrated study notes—with timestamps back to the source.**
 
-**A Claude Code skill that turns a video into a page worth reading.** Give `/summarize-video` a YouTube URL or a local file and it produces a detailed illustrated HTML summary — **in Hebrew (right-to-left) by default, or English with `--lang en`**: chapters synthesized from the transcript, with ~15–20 carefully chosen, pixel-verified frames (slides, screens, demos) embedded next to the exact sentences they illustrate — each caption saying what the picture shows and why it is there, and linking back to that second of the video.
+Give `/summarize-video` a YouTube URL or a local recording. It creates a concise opening summary, main points and takeaways, then detailed chapters with original video frames beside the explanations they support. Open the result as a single HTML file; add PDF when you need a printable copy. Hebrew with RTL layout is the default; use `--lang en` for English.
 
-Built for talks, lectures, screencasts, and product demos. Transcript + frames, stitched by time. Not a frame dump.
+Built for learners who need to understand an argument **and** see the slide, code, diagram, or demonstration behind it. Best with clear speech and useful on-screen material. It needs a transcript; a silent video or inaccessible source cannot produce a grounded lecture summary.
 
-## Quick start
+[Get started](#get-started) · [See the output](#what-you-get) · [Data and permissions](SECURITY.md) · [Benchmarks](bench/README.md) · [Report a vulnerability privately](https://github.com/yosishe/visual-video-summarizer/security/advisories/new)
+
+## What you get
+
+- **A brief to read first:** a short synthesis, essential points, and supported takeaways. Usually 150–250 words, shorter when appropriate, with source timestamps.
+- **Detailed illustrated chapters:** explanations from the transcript, chapter key points, and selected original frames with captions explaining their relevance.
+- **Traceable evidence:** text cites transcript segments; frame timestamps come from decoded video; selected frames are checked against the pixels the model reviewed.
+- **Portable output:** `summary-ID.html` embeds its images and font. `--pdf` adds `summary-ID.pdf`. The editable `summary-ID/` directory keeps `index.html`, `assets/`, and the evidence manifest.
+
+The screenshot below shows the illustrated chapter layout from an earlier Hebrew screencast run. Current output also includes the opening brief described above.
+
+![Hebrew study notes with chapter links, original video frames and timestamped captions](docs/example-he.png)
+
+The brief preserves the speaker's reasoning, exceptions, and qualifications. It is written after the detailed chapters and checked against its cited segments. The audit catches specific grounding errors; it cannot prove that every explanation is correct or complete.
+
+## Get started
+
+This is an **agent skill**, not a standalone automatic summarization service. The documented invocation is for Claude Code. Other Agent Skills hosts need local shell, file and image tools; their integration has not been tested here. An agent/model account is separate from this repository.
+
+### 1. Review and install
+
+Read [SKILL.md](SKILL.md), [SECURITY.md](SECURITY.md), and the [scripts](scripts/) before enabling the skill. The clone below does not run an installer or enable a background service. Use a new destination; do not overwrite an existing installation.
 
 ```bash
-brew install ffmpeg yt-dlp
-git clone https://github.com/yosishe/visual-video-summarizer ~/.claude/skills/summarize-video
+git clone https://github.com/yosishe/visual-video-summarizer.git ~/.claude/skills/summarize-video
+cd ~/.claude/skills/summarize-video
+git rev-parse HEAD
 ```
 
-Then, in any Claude Code session:
+For reproducible installations, review a particular commit in GitHub and check out that full commit ID with `git checkout --detach <reviewed-commit>`. Update only after reviewing the incoming changes; the skill never updates itself. See [update and removal guidance](SECURITY.md#updates-and-removal).
 
+### 2. Check your tools
+
+Required: **Python 3.10+, ffmpeg/ffprobe, and a current yt-dlp** for URLs. Local recordings do not need yt-dlp. The core Python scripts use the standard library; optional enhancements are listed below.
+
+```bash
+python3 scripts/doctor.py
+# Machine-readable readiness, including an installed PDF engine:
+python3 scripts/doctor.py --pdf --json
 ```
-/summarize-video https://www.youtube.com/watch?v=VIDEO_ID
-/summarize-video https://www.youtube.com/watch?v=VIDEO_ID --tier high --pdf
+
+The doctor checks installed executable versions and config-file metadata. It does not install packages, read keys, download a video, or upload audio. A successful check confirms prerequisites, not that a particular remote video is accessible.
+
+If dependencies are missing, install them yourself through a package manager you trust. For example, on macOS with Homebrew already installed:
+
+```bash
+brew install python ffmpeg yt-dlp
+```
+
+On Linux, use your distribution's packages for Python and ffmpeg and the [official yt-dlp installation instructions](https://github.com/yt-dlp/yt-dlp#installation). YouTube extraction may also need the supported JavaScript runtime/components described by yt-dlp. This skill disables remote component downloads and ambient yt-dlp configuration; install necessary components explicitly.
+
+### 3. Make your first summary
+
+In a Claude Code session, choose a public video you may process:
+
+```text
 /summarize-video https://www.youtube.com/watch?v=VIDEO_ID --lang en
+/summarize-video https://www.youtube.com/watch?v=VIDEO_ID --lang he --tier high --pdf
 ```
 
-## Hebrew, done properly
+Use a short, captioned lecture first. No Groq/OpenAI transcription key is needed when captions are available. The agent writes the summary into the current task directory and reports the HTML path. Opening the bundled HTML requires no server or PDF engine.
 
-The Hebrew summary is written directly from the transcript by the model (never machine-translated, never a translation of an English draft), under a written rubric: keep every number, tool name, example and reasoning chain; drop greetings, sponsors and filler; Hebrew for terms the industry uses in Hebrew, English for the rest (`skill`, `prompt`), product names untransliterated; every sentence opens in Hebrew. Before anything is rendered, `scripts/audit_summary.py` checks the summary against the transcript: every number, `backtick` identifier and URL must appear in the segments the block cites; segments must be in order and inside their chapter; no niqqud, no bidi control characters. Names that auto-captions misspell ("Open Claw") are matched fuzzily and reported for review rather than failed.
+**Before using private material:** the agent's model provider processes the transcript and the images the agent reads under that provider's settings. Local frame extraction does not make a hosted agent offline. Downloading a URL contacts the source platform and its delivery infrastructure. Audio transcription upload is **off by default**, even when a key exists. [Full data-flow and permission details](SECURITY.md#data-flow).
 
-The page itself follows the W3C bidi guidance: `dir="rtl"` on `<html>`, logical CSS, timestamps, ranges, code and English terms isolated left-to-right, the video title in its own direction, and a subset of the Heebo typeface (SIL OFL) embedded so the single file renders identically offline. `--pdf` prints it with Chrome headless (or WeasyPrint) — both implement the Unicode bidi algorithm for HTML text.
+### Videos without captions and local recordings
 
-YouTube caption tracks are chosen by provenance (manual original → manual Hebrew/English → original-language auto-captions → untranslated auto-captions); YouTube's machine-translated tracks are never used as a source. A Hebrew-language video is summarized in Hebrew without translation, under the same rubric.
+The built-in fallback uploads extracted audio to the provider you explicitly select:
 
-The deliverable is **one self-contained file** — `summary-<video-id>.html`, with every image embedded as a data URI: open it with a double click, mail it, drop it in a chat. No server involved. `--pdf` adds `summary-<video-id>.pdf` (printed by Chrome headless or WeasyPrint). Alongside it, `summary-<video-id>/` holds the editable source: `index.html`, an `assets/` folder (1280px frames + thumbnails), and `manifest.json` recording every frame's decoded timestamp, chapter, transcript segments, role, quality and asset hashes — change a caption or a frame and re-run `render.py` to regenerate both.
+```text
+/summarize-video /absolute/path/to/lecture.mp4 --lang en --whisper groq
+/summarize-video https://www.youtube.com/watch?v=VIDEO_ID --whisper openai
+```
 
-## Two tiers
+Only choose one after accepting that provider's audio processing and any charges. Configure its matching `GROQ_API_KEY` or `OPENAI_API_KEY` in your environment or in `~/.config/summarize-video/.env` (owner-only permissions, `chmod 600`). Do not paste keys into the agent conversation. The skill does not read another skill's credentials or a project's `.env`.
 
-| | `--tier standard` (default) | `--tier high` |
-|---|---|---|
-| scene pass | fixed threshold | adaptive (median + 8·MAD) |
-| samples per target | 2–3 | 5–6, 3 alternatives kept |
-| candidate pool | 48 nominal (≈ 10k image tokens; measured 10.5k) | 64 nominal (≈ 13.4k; measured 15.9k) |
-| overlay mask + family dedup | on | on |
-| grab-time refinement | — | sharpest frame within ±1.5 s that is still the triaged picture (`blurdetect`), re-verified |
-| face demotion | — | when `opencv-python-headless` is installed (optional) |
-| OCR text density | — | ffmpeg `ocr` filter as a slide-completeness ranking signal (never a text source) |
-
-Both tiers measure where a slide or board stops being built up (a scene-score probe per `slide`/`diagram` target) instead of assuming the end of the sentence, and both print an honest cost line: image tokens from the candidates' real dimensions, CPU passes, and the other tier's ceiling.
+`--no-whisper` disables this fallback and takes precedence if both flags are supplied. Without captions or authorized transcription, the pipeline stops with exit 6; it does not invent a frames-only transcript. Existing installations that relied on automatic upload must now select a provider explicitly.
 
 ## How it works
 
-Most video-summarization pipelines extract frames first and think later. This one inverts the order so that **all text decisions happen before any image token is spent**:
-
+```text
+transcript → chapters and visual targets → contact sheets → verified shortlist
+           → selected original frames → detailed prose and opening brief
+           → evidence audit → HTML and optional PDF
 ```
-transcript → chapters + visual targets → candidates (512px) → ONE triage by candidate ID → verified re-grab → render → bundle
- (free-ish)      (text only)               (ffmpeg, no model)     (the only image spend)     (zero tokens)   (manifest → HTML → one file)
-```
 
-Key design decisions:
+Text planning happens before image review. Targets reference transcript segment IDs; the engine derives search windows, decoded timestamps, and chapter placement. Scene detection also scans chapters for useful visuals the transcript did not predict. Blank and duplicate candidates are filtered before image review. The model reads the contact sheets once and the verified shortlist once; the selected output frames are re-decoded and checked against those candidates.
 
-- **Captions before download.** `yt-dlp --skip-download` fetches the transcript without touching the video. Whisper (Groq/OpenAI) is only a fallback, and the rolling overlap of auto-captions is stripped losslessly (~halves transcript tokens).
-- **Timestamps come from the transcript, not from the model.** Chapters carry `visual_targets` that reference transcript segment IDs ("as you can see…", "now I click…"); the engine derives the search windows and sample times. Nobody types seconds.
-- **Placement is arithmetic, not vision.** A frame belongs to a chapter by its decoded timestamp and sits next to the prose block that cites its segments. The model is never asked "where does this image go?"
-- **Recall and precision both.** Scene detection scans every chapter that needs frames (so an unflagged slide flip still reaches the pool), while targets add dense sampling where the transcript predicts a visual — `action_result` targets sample *after* the narrated action, because speakers talk before the screen changes.
-- **Label == content, by construction.** Every candidate is extracted by seeking to its own timestamp; the decoded `actual_t` is recorded and seek drift is rejected.
-- **Free filtering before the model looks.** Blank/transition frames are dropped (protected frames are recovered past the transition). A persistent webcam picture-in-picture or tab/subtitle bar is detected once per video (pure Python over one low-resolution decode) and masked in every signature, so the presenter moving in the corner does not make identical slides look different. Near-duplicates are then clustered across the whole video into *families* — one representative per chapter that needs the picture, revisits dropped and listed — and only the sharpest, most complete representative survives. Dropped frames cost zero tokens; every drop is logged with its reason in `dropped.json`.
-- **Selection by immutable ID, then pixel verification.** `selections.json` names candidate IDs; `grab.py` re-decodes the source at the recorded time and refuses to write an asset whose pixels don't match the candidate the model looked at. Two selections that render the same picture fail the run.
-- **Sharper, never different.** In `--tier high`, grab looks ±1.5 s around the triaged frame for the sharpest frame that is *still a near-duplicate of it* — the same predicate as the verification gate — and verifies the new pixels again. The written time and the triaged time are both recorded; captions use the written one.
-- **Targets come from content gaps.** The chaptering step looks for the five stretches of transcript that are incomplete without the picture — a dangling reference, a conclusion without its data, an unspoken operation, a silent demo, a visual comparison — not only for "as you can see".
-- **Deterministic rendering from a manifest.** `render.py` validates provenance, budgets and coverage, then produces the page and the single-file bundle. The page can be rebuilt, or one frame swapped, without re-analyzing the video.
+The brief adds a quick way into the existing detailed summary. It does not replace chapters or increase their coverage score. Old summaries without a `brief` remain valid. See [the JSON contracts](references/contracts.md) for schemas and [SKILL.md](SKILL.md) for the full workflow.
 
-## Cost, and the guards that keep it bounded
+### Hebrew and English
 
-The model looks at pictures exactly twice, and both reads are sized before they happen:
+The model writes directly from the transcript in the requested language. Manual/original caption tracks are preferred, with untranslated automatic captions used when needed; automatic captions can contain errors. The audit checks numbers, identifiers, URLs, cited segment ranges and Hebrew text hygiene, with review notices for some uncertain matches.
 
-| what the model reads | size | tokens each | typical run |
-|---|---|---|---|
-| contact sheets (4×4 tiles of 320 px with burned-in ids + a sentinel tile) | 1280×792 | 1,334 (83 per candidate) | 4–8 sheets ≈ 5k–11k |
-| shortlist (the frames it kept, re-decoded and pixel-verified) | 640×360 `standard` / 768×432 `high` | 299 / 448 | ≤ 30 frames ≈ 5k–13k |
-| transcript, chapters, reports | text | — | a few thousand |
+The page uses logical CSS and `dir="rtl"` for Hebrew, isolates timestamps and English/code runs, and embeds the Heebo subset under the SIL OFL. PDF export uses an already installed Chrome or WeasyPrint. Neither the skill nor the exporter installs a PDF engine.
 
-Per image the cost is `⌈w/28⌉ × ⌈h/28⌉` visual tokens (the documented Claude formula; other providers differ). The 1280 px deliverable frames are never read. Measured over the six benchmark videos (13–35 minutes), a run costs **≈ 8k–20k image tokens** whatever the length, because the pool, not the video, is what gets read.
+### Quality, cost, and optional tools
 
-Three guards make that a ceiling rather than an estimate:
-
-- **A budget per run.** `--max-image-tokens N` (or `SUMMARY_MAX_IMAGE_TOKENS` in `~/.config/summarize-video/.env`; default 12,000 for `standard`, 20,000 for `high`). The report prints the plan — `sheets X + shortlist ≤N × Y` — and `shortlist.py` refuses more ids than the budget allows. If even the sheets do not fit, `candidates.py` stops with exit 7 and says by how much; `--allow-over-budget` is a deliberate choice, never a default.
-- **A duration guard.** Videos over 120 minutes stop with exit 8 unless `--allow-long` (with `--sections` to process only the chapters that matter). A pasted three-hour URL is a question back to you, not a bill.
-- **Rules in the skill itself.** The model may only read frames the report lists (never the candidate directory, `assets/`, or downloads), reads the sheets once and the shortlist once, and answers follow-up questions from context. Every drop is logged with its reason in `dropped.json`, so a smaller pool is auditable, not silent.
-
-CPU is local and cheap: one 2 fps 160×90 decode per video (≈ 10–20 s for 20 minutes on Apple Silicon), one extraction pass for the pool, and the re-grab of the ≤ 20 selected frames.
-
-## What a result looks like
-
-The top of a Hebrew summary of an 18-minute screencast (`--tier high`): the one-sentence claim, the chapter list, then each chapter's prose with its frames placed after the sentences they illustrate, every caption saying what the picture shows and why it is there, and every timestamp linking back to that second of the video.
-
-![The first screen of a Hebrew visual summary](docs/example-he.png)
-
-The rest of that page is 20 frames chosen from a pool of 76 candidates, each one pixel-verified against the frame the model actually looked at. The whole run cost ≈ 15k image tokens.
-
-## Benchmark
-
-`bench/` holds a six-video corpus (a mixed screencast, a 35-minute slide lecture, a VS Code demo, a 60 Minutes interview, a 3Blue1Brown animation and a Hebrew Git tutorial), interval annotations of the essential visuals, a runner that reproduces the deterministic stages per profile, and a scorer that reports recall, precision, redundancy, alignment and cost next to uniform and random baselines at the same budget — with every missed visual attributed to the stage that lost it. Numbers per release are in [`bench/README.md`](bench/README.md). No benchmark claim in this README is made without a row there.
-
-## Requirements
-
-| | |
+| Choice | Behavior |
 |---|---|
-| `ffmpeg` / `ffprobe` | frame extraction, audio, thumbnails, `blurdetect`; the `ocr` filter (tesseract) for `--tier high`'s text signal |
-| `yt-dlp` | captions + video download (keep it updated — see Troubleshooting) |
-| Python 3.10+ | bundled scripts, stdlib only at runtime — nothing to `pip install` |
-| `Pillow` | **optional** at runtime (fast box-filter resample in the visual-state engine; a nearest-neighbour stdlib fallback is used without it). **Required to run the test suite**: `tests/test_states.py` asserts on the box-filter path |
-| Whisper API key | **optional**, only for videos with no captions |
-| Google Chrome or WeasyPrint | **optional**, only for `--pdf` |
-| `opencv-python-headless` | **optional**, enables face demotion in `--tier high`; absent → reported `unavailable` |
+| `--tier standard` | Default, smaller candidate pool and image budget |
+| `--tier high` | Denser sampling, adaptive scene threshold, verified sharpness refinement; more CPU and a larger image budget |
+| Image budget | Default 12,000 tokens for standard / 20,000 for high; contact sheets and shortlist are sized before reading |
+| Long videos | Over 120 minutes requires explicit `--allow-long`; `--sections` can limit extraction |
+| `Pillow` | Optional faster box filtering; required for the test suite |
+| `opencv-python-headless` | Optional face demotion in high tier |
+| ffmpeg OCR support | Optional slide-ranking signal; candidate metadata may retain an OCR excerpt, not just a count |
+| Chrome or WeasyPrint | Optional, for PDF export only |
 
-## Configuration (optional)
+Image token estimates use the project's documented Claude sizing formula; other providers and models can differ. Text/model charges and cloud transcription charges are separate. Budgets limit this workflow's planned image reads, not every action a host agent could take. Reproducible measurements, draft annotation status, and limits are in [bench/README.md](bench/README.md).
 
-Only needed for videos without captions. Create `~/.config/summarize-video/.env` (chmod 600):
+## Security you can inspect
 
-```
-GROQ_API_KEY=...      # preferred - cheaper, faster (console.groq.com/keys)
-OPENAI_API_KEY=...    # fallback (platform.openai.com/api-keys)
-```
+The repository adds no telemetry, background service, auto-updater, or permission bypass. Its safeguards include explicit audio-upload selection, fixed transcription endpoints with redirects blocked, isolated yt-dlp options, constrained image paths, hashing of the actual rendered assets, escaped static HTML, a restrictive browser content policy, and regression tests with synthetic secrets and files.
 
-Environment variables with the same names also work. Users of the [claude-video](https://github.com/bradautomates/claude-video) `/watch` skill don't need to configure anything — `~/.config/watch/.env` is read as a legacy fallback.
-
-## Standalone use
-
-The scripts also run outside Claude Code; the JSON contracts are in [`references/contracts.md`](references/contracts.md):
-
-```bash
-python3 scripts/transcript.py "<url-or-path>" --work WORK          # transcript, no video download
-# author WORK/chapters.json (chapters + visual_targets by seg_id)
-python3 scripts/candidates.py "<url>" --work WORK --transcript WORK/transcript.json --chapters WORK/chapters.json --tier standard
-# author WORK/selections.json (by candidate_id)
-python3 scripts/grab.py --work WORK --spec WORK/selections.json --out-dir summary-ID/assets
-# author WORK/summary.json (prose blocks citing seg_ids)
-python3 scripts/render.py --work WORK --summary WORK/summary.json --selections WORK/selections.json --assets-dir summary-ID/assets --out-dir summary-ID --pdf
-```
-
-Useful flags: `--langs "he.*,en.*"` (caption languages) · `--tier high` (see the table above; `--mode light|advanced` are aliases of the two tiers) · `--refine sharpness|none` on `grab.py` (override the tier's default) · `--pdf` on `render.py` · `--strips` (256px temporal strips for a cheaper first look; off by default — slide text isn't legible at that size) · `--sections 40-215,590-880` (explicit ranges; long videos derive them automatically) · `--max-candidates` (a hard ceiling on the pool) · `--max-image-tokens` / `--allow-over-budget` / `--allow-long` (the cost guards above) · `--engine legacy` (the 1.3 scene sampler, for ablation) · `--no-whisper`.
-
-Tests (synthesize their own ffmpeg fixtures; need `ffmpeg` and `Pillow`):
-
-```bash
-pip install Pillow
-python3 -m unittest discover -s tests -v      # 105 tests [measured], run in CI on every push
-```
-
-## Real outputs
-
-Every figure in this README is `[measured]` on one benchmark video (`ISb0nrlNoKQ`, 18 minutes,
-22 hand-annotated essential visuals) unless marked `[estimated]`. The runs are committed, not
-described: [`bench/runs/`](bench/runs/) holds each profile's `candidates.json`, `selections.json`,
-`summary.json`, `cost.json` and `REPORT.md`, and [`bench/README.md`](bench/README.md) explains the
-scoring. Re-run with `python3 bench/run.py`.
-
-## Security & privacy
-
-**Network:** `yt-dlp` talks only to the host of the URL you provide (public data — no logins, no cookies). If the video has no captions *and* you configured a Whisper key, the extracted **audio only** (mono 16 kHz mp3) is sent to `api.groq.com` or `api.openai.com`. The video itself and the frames never leave your machine. `--no-whisper` disables all transcription uploads.
-
-**Reads:** the source file/URL, and this skill's own config (`~/.config/summarize-video/.env`, legacy `~/.config/watch/.env`). It deliberately does **not** read `.env` files from your project directories.
-
-**Writes:** a temp working directory, and `summary-<video-id>/` + `summary-<video-id>.html` (+ `.pdf` with `--pdf`) in the directory where you run it. Nothing else.
-
-**Keys:** never logged or written to any output; the Groq key goes only to Groq, the OpenAI key only to OpenAI. Selection names and crop expressions are validated before they enter a path or an ffmpeg filter graph.
-
-**Local-only signals:** `--tier high` runs ffmpeg's `ocr` filter (tesseract) on candidate frames and keeps only a character count per frame — the recognized text is never stored or shown; OpenCV is imported only if already installed. `--pdf` launches a local headless Chrome (or WeasyPrint) on the generated file.
-
-The scripts are dependency-free Python — review them before first use.
+**These are scoped controls, not a sandbox or a security certification.** The host agent, installed tools, model provider, and media decoders remain part of the trust boundary. Source speech, captions, metadata and OCR are untrusted content, never permission to execute instructions. [SECURITY.md](SECURITY.md) maps these claims to code/tests, describes data retention and residual risks, and provides private reporting.
 
 ## Troubleshooting
 
-- **YouTube HTTP 403 / "PO Token" warnings** — your `yt-dlp` is outdated (YouTube rotates client requirements): `brew upgrade yt-dlp` and retry.
-- **"No transcript available"** — the source has no captions and no Whisper key is configured; the skill can still produce a frames-only summary, or add a key (see Configuration).
-- **A chapter or target is `unresolved`** — correct its segments/window or re-run it in `--tier high`; the renderer refuses to build a page with missing required evidence.
-- **`grab.py` exits 2 or 3** — an extraction mismatch, unsafe name/crop, or two selections rendering the same picture; fix the named selection, don't bypass the audit.
-- **`render.py --pdf` exits 4** — no PDF engine: install Google Chrome or `weasyprint`; the HTML is still produced.
-- **`faces: unavailable` / `OCR: unavailable`** in a `high` report — an optional signal is missing on this machine (no OpenCV / no tesseract language data); the run is still valid.
+| Symptom | Next step |
+|---|---|
+| Doctor reports a missing or incompatible dependency | Install/update that tool explicitly, then rerun the doctor. |
+| YouTube HTTP 403 / PO Token / JavaScript challenge error | Check current yt-dlp requirements and source access restrictions. Updating alone may not fix every video. Cookies/logins and remote component downloads are not enabled automatically. |
+| No transcript / exit 6 | Choose a captioned source, or explicitly authorize a configured `--whisper` provider. Local files use the same opt-in fallback. |
+| Unresolved chapter/target or audit failure | Correct the cited segments or frame selection. Inspect the report; do not bypass the audit to claim completion. |
+| PDF unavailable / exit 4 | Open the HTML. Install a PDF engine yourself if you need PDF. |
+| Faces or OCR unavailable | Optional signal absent; other extraction and verification stages still run. |
+| Unsafe asset or active HTML rejected | Regenerate from the validated summary and original frames. Do not bundle an arbitrary web page. |
 
-## Contributors
+## Standalone scripts and development
 
-- **yosishe** — project owner and maintainer.
-- **OpenAI Codex** — transcript-aligned target engine, candidate-ID selection with verified re-grab, deterministic renderer, and the test suite (PR #2).
-- **Claude Code** — original pipeline, review and integration, single-file bundle, recall/precision fixes.
+The agent authors chapters, selections, and prose between deterministic script stages. The commands below are **not** an automatic one-command summarizer:
 
-## Credits
+```bash
+python3 scripts/transcript.py "<url-or-path>" --work WORK
+# Author WORK/chapters.json with visual targets referencing transcript segments.
+python3 scripts/candidates.py "<url-or-path>" --work WORK --transcript WORK/transcript.json --chapters WORK/chapters.json
+# Review contact sheets and the verified shortlist; author WORK/selections.json.
+python3 scripts/grab.py --work WORK --spec WORK/selections.json --out-dir summary-ID/assets
+# Author WORK/summary.json with detailed chapters, then the opening brief.
+python3 scripts/render.py --work WORK --summary WORK/summary.json --selections WORK/selections.json --assets-dir summary-ID/assets --out-dir summary-ID
+```
 
-Frame-engine internals (ffmpeg scene detection via `select=gt(scene,T)` + `showinfo` pts stamps, thumbnail dedup, even-sampling) are adapted from [bradautomates/claude-video](https://github.com/bradautomates/claude-video) (MIT); `scripts/whisper.py` is copied from it. The transcript-aligned target engine, verified re-grab and renderer were developed in this repository (PR #2). The `blurdetect` sharpness gate and the "content gap" targeting rubric follow [CZX2244/dsh-bilibili](https://github.com/CZX2244/dsh-bilibili); people-frame demotion follows [ConflictHQ/PlanOpticon](https://github.com/ConflictHQ/PlanOpticon) (MIT). MIT licensed — see [LICENSE](LICENSE); third-party attributions in [NOTICE](NOTICE).
+Each script provides `--help`. Caption/audio opt-in flags belong to `transcript.py`; quality/budget flags to `candidates.py`; PDF flags to `render.py`. See [contracts](references/contracts.md), [benchmark instructions](bench/README.md), and [changelog](CHANGELOG.md).
+
+Tests synthesize media fixtures locally, need ffmpeg and Pillow, and run in GitHub CI on Python 3.11 and 3.12:
+
+```bash
+python3 -m compileall -q scripts tests
+python3 -m unittest discover -s tests -v
+```
+
+Contributions are welcome: include a reproducible case and a focused test where appropriate. For visual or language changes, include a before/after output example. Use the private reporting route for vulnerabilities; never attach API keys or private recordings to a public issue.
+
+## Credits and license
+
+Maintained by **yosishe**, with pipeline and review contributions from **OpenAI Codex** and **Claude Code**. Frame-engine internals and the original Whisper helper were adapted from [bradautomates/claude-video](https://github.com/bradautomates/claude-video); sharpness and targeting ideas draw on [CZX2244/dsh-bilibili](https://github.com/CZX2244/dsh-bilibili), and face demotion on [ConflictHQ/PlanOpticon](https://github.com/ConflictHQ/PlanOpticon). See [LICENSE](LICENSE) (MIT) and [NOTICE](NOTICE) for third-party attributions.

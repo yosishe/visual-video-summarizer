@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Clearer discovery and first-run setup.** Outcome-focused README and portable skill description; read-only `scripts/doctor.py` with optional JSON/PDF checks; explicit local/host/cloud data flows, current limitations, and private vulnerability reporting in `SECURITY.md`. Removed broad `allowed-tools` preapproval metadata; hosts retain their normal permission controls.
+- **Explicit transcription consent (behavior change).** Audio upload now requires `--whisper groq|openai`, even when a key exists. `--no-whisper` takes precedence; no legacy `/watch` credential fallback. Fixed provider endpoints reject redirects, and error output omits provider bodies and raw network exception details that may echo sensitive content.
+- **Constrained downloads and output.** yt-dlp ignores ambient configuration, plugins, exec hooks and remote components. Rendering binds hashes to the actual image filenames, rejects symlinked assets before copying, and adds a restrictive CSP. Bundling rechecks full-size siblings and the asset root. Static-output validation rejects active HTML and external resources. Atomic writes use unpredictable temporary files and reject output symlinks. PDF export no longer installs WeasyPrint through `uv`.
+- **Security regression coverage.** Synthetic upload, redirect, credential-error, symlink/path, active HTML, PDF fallback and readiness cases. CI permissions reduced to read-only repository contents and official actions pinned to verified commit IDs. Existing transcript, frame selection, evidence checks, brief and Hebrew/English rendering remain covered by the full suite.
+
 - **Concise opening brief.** Newly authored summaries include a whole-video synthesis, main points and takeaways, written after the detailed chapters and checked against transcript segments. The 150–250-word target and suggested bullet counts are flexible. Optional schema-3 `brief` items carry `text` and `seg_ids`, render with source timestamps in Hebrew/English HTML and PDF, and remain in the manifest. Legacy summaries still work. The audit validates brief references and reuses prose grounding/hygiene checks without crediting the brief toward chapter coverage or changing frame placement, hashes, extraction or budgets.
 
 - `LICENSE` is now the MIT text only; third-party attributions (claude-video, Heebo, design references) moved to `NOTICE`.

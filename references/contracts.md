@@ -103,7 +103,7 @@ Each chapter has `chapter_id`, optional display `title`, non-empty `blocks`, and
 
 ## `transcript.json`
 
-`source` (`captions` | `whisper (backend)` | null), `source_detail` (captions: `track`, `manual`, `original`, `translated` (always false — machine-translated tracks are rejected), `youtube_language`, `tracks_considered`, `rejected_translated`; whisper: `backend`, `language_hint`, `detected`), `language` (normalised: YouTube's `iw` → `he`), `video` (`id`, `title`, `uploader`, `url`, `duration`, `is_url`, `language`, `chapters` — the creator's chapter list when YouTube has one), `segments`. Exit 6 when no transcript could be obtained.
+`source` (`captions` | `whisper (backend)` | null), `source_detail` (captions: `track`, `manual`, `original`, `translated` (always false — machine-translated tracks are rejected), `youtube_language`, `tracks_considered`, `rejected_translated`; whisper: `backend`, `language_hint`, `detected`), `language` (normalised: YouTube's `iw` → `he`), `video` (`id`, `title`, `uploader`, `url`, `duration`, `is_url`, `language`, `chapters` — the creator's chapter list when YouTube has one), `segments`. Exit 6 when no transcript could be obtained. Cloud transcription is disabled unless the caller explicitly passes `--whisper groq|openai`; a stored key alone is not consent. `--no-whisper` takes precedence. See [security and data flow](../SECURITY.md).
 
 ## Generated output
 

@@ -26,6 +26,8 @@ from urllib.parse import urlparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
+from safety import ytdlp_command
+
 from frame_utils import (  # noqa: E402
     chapter_for_time,
     compare_signatures,
@@ -316,7 +318,7 @@ def resolve_parts(
             out_tpl = str(dl_dir / f"{name}.%(ext)s")
             print(f"[vsum] downloading section {format_time(start)}-{format_time(end)}…", file=sys.stderr)
             cmd = [
-                "yt-dlp", "-N", "8", "-f", fmt, "--merge-output-format", "mp4",
+                *ytdlp_command([]), "-N", "8", "-f", fmt, "--merge-output-format", "mp4",
                 "--download-sections", f"*{start:.3f}-{end:.3f}",
             ]
             if exact_sections:
@@ -350,7 +352,7 @@ def resolve_parts(
         print("[vsum] downloading video (<=720p) via yt-dlp…", file=sys.stderr)
         out_tpl = str(dl_dir / f"video_{prefix}.%(ext)s")
         cmd = [
-            "yt-dlp", "-N", "8", "-f", fmt, "--merge-output-format", "mp4",
+            *ytdlp_command([]), "-N", "8", "-f", fmt, "--merge-output-format", "mp4",
             "--no-playlist", "--ignore-errors", "-o", out_tpl, "--", source,
         ]
         result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
