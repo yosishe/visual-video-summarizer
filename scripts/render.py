@@ -22,6 +22,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
@@ -32,6 +33,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from audit_summary import HEBREW_RE, brief_items, run_audit  # noqa: E402
 from bundle import bundle as bundle_summary  # noqa: E402
 from frame_utils import chapter_for_time, format_time  # noqa: E402
+from safety import CSP, asset_file, atomic_write, validate_generated_html  # noqa: E402
 
 ENGINE_VERSION = "1.6.0"
 MANIFEST_SCHEMA = 3
@@ -131,7 +133,9 @@ def _timestamp_url(source_url: str | None, timestamp: float) -> str | None:
     if not source_url or not source_url.startswith(("http://", "https://")):
         return None
     parsed = urlparse(source_url)
-    if "youtube.com" not in parsed.netloc and "youtu.be" not in parsed.netloc:
+    host = (parsed.hostname or "").lower()
+    if parsed.username or parsed.password or not (
+            host == "youtube.com" or host.endswith(".youtube.com") or host == "youtu.be"):
         return None
     query = dict(parse_qsl(parsed.query, keep_blank_values=True))
     query["t"] = str(int(round(timestamp)))
@@ -451,7 +455,7 @@ def _find_chrome() -> str | None:
 
 
 def _find_weasyprint() -> list[str] | None:
-    """A WeasyPrint invocation, if any: in-process module, CLI, or `uv run`."""
+    """Use an already installed WeasyPrint; never install a PDF dependency."""
     try:
         import weasyprint  # type: ignore  # noqa: F401 — optional
     except Exception:
@@ -460,8 +464,6 @@ def _find_weasyprint() -> list[str] | None:
         return [sys.executable, "-m", "weasyprint"]
     if shutil.which("weasyprint"):
         return ["weasyprint"]
-    if shutil.which("uv"):
-        return ["uv", "run", "--with", "weasyprint", "weasyprint"]
     return None
 
 
@@ -471,9 +473,14 @@ def export_pdf(single_html: Path, out_pdf: Path, engine: str = "auto") -> dict:
     `loading="lazy"` (headless printers skip lazy images); the bundle itself is
     untouched. Both engines implement the Unicode bidi algorithm for HTML text,
     so Hebrew documents print correctly on either."""
-    print_html = single_html.with_name(single_html.stem + ".print.html")
     text = single_html.read_text(encoding="utf-8").replace(' loading="lazy"', "")
-    print_html.write_text(text, encoding="utf-8")
+    validate_generated_html(text)
+    if out_pdf.is_symlink():
+        raise SystemExit("Refusing PDF output symlink")
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=single_html.parent,
+                                     prefix=".vsum-print-", suffix=".html", delete=False) as stream:
+        stream.write(text)
+        print_html = Path(stream.name)
     attempts: list[str] = []
     try:
         chrome = _find_chrome() if engine in ("auto", "chrome") else None
@@ -664,6 +671,8 @@ def _render_html(
 <html lang="{lang}" dir="{direction}">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="{html.escape(CSP, quote=True)}">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)} — {html.escape(strings["title_suffix"])}</title>
 <style>
@@ -700,6 +709,20 @@ def _render_html(
 """
 
 
+def _checked_assets(payload: dict, root: Path) -> dict:
+    """Hash/render the same in-directory files; old absolute paths are advisory."""
+    if root.is_symlink():
+        raise SystemExit("Refusing symlinked assets directory")
+    for path in root.rglob("*"):
+        if path.is_symlink() or not (path.is_file() or path.is_dir()):
+            raise SystemExit("Refusing non-regular entries in assets directory")
+    for asset in payload.get("assets", []):
+        for variant in ("full", "thumb"):
+            path = asset_file(root, asset[variant].get("file"))
+            asset[variant]["path"] = str(path)
+    return payload
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Render validated HTML (Hebrew RTL or English) from summary evidence")
     parser.add_argument("--work", required=True)
@@ -718,21 +741,25 @@ def main() -> int:
 
     work = Path(args.work).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()
-    assets_dir = Path(args.assets_dir).expanduser().resolve()
+    assets_dir = Path(args.assets_dir).expanduser().absolute()
+    if assets_dir.is_symlink() or (assets_dir / "assets-manifest.json").is_symlink():
+        raise SystemExit("Refusing symlinked assets input")
+    assets_payload = _checked_assets(_load_json(assets_dir / "assets-manifest.json"), assets_dir)
+    assets_dir = assets_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     expected_assets = out_dir / "assets"
     if assets_dir != expected_assets:
         if expected_assets.exists():
             raise SystemExit(f"Refusing to replace existing assets directory: {expected_assets}")
-        shutil.copytree(assets_dir, expected_assets)
+        shutil.copytree(assets_dir, expected_assets, symlinks=True)
         assets_dir = expected_assets
+        assets_payload = _checked_assets(assets_payload, assets_dir)
 
     transcript = _load_json(work / "transcript.json")
     chapters = _load_json(work / "chapters.json")
     candidate_payload = _load_json(work / "candidates.json")
     selections = _load_json(Path(args.selections).expanduser().resolve())
     summary_payload = _load_json(Path(args.summary).expanduser().resolve())
-    assets_payload = _load_json(assets_dir / "assets-manifest.json")
     if not isinstance(chapters, list) or not isinstance(selections, list):
         raise SystemExit("chapters.json and selections.json must be arrays")
     if not isinstance(summary_payload, dict):
@@ -819,15 +846,12 @@ def main() -> int:
         except ValueError as exc:
             raise SystemExit(str(exc)) from exc
         manifest["brief"] = summary_payload["brief"]
-    (out_dir / "manifest.json").write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    atomic_write(out_dir / "manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
     candidate_count = len(candidate_payload.get("candidates", [])) or None
     html_text = _render_html(transcript, chapters, summaries, frames, overview, lang, candidate_count,
                              brief=summary_payload.get("brief"))
-    temporary_html = out_dir / "index.html.tmp"
-    temporary_html.write_text(html_text, encoding="utf-8")
-    temporary_html.replace(out_dir / "index.html")
+    validate_generated_html(html_text)
+    atomic_write(out_dir / "index.html", html_text)
     print(f"Rendered `{out_dir / 'index.html'}` and `{out_dir / 'manifest.json'}` (lang={lang}, "
           f"audit: {len(audit['errors'])} errors / {len(audit['reviews'])} reviews / {len(audit['warnings'])} warnings)")
     # The single self-contained file is the deliverable people open and share;

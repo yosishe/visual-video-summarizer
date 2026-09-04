@@ -23,9 +23,11 @@ import re
 import sys
 from pathlib import Path
 
+from safety import atomic_write, validate_generated_html
+
 MIME = {
     ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
-    ".webp": "image/webp", ".gif": "image/gif", ".svg": "image/svg+xml",
+    ".webp": "image/webp", ".gif": "image/gif",
 }
 
 
@@ -41,6 +43,7 @@ def _local_asset(summary_dir: Path, relative: str) -> Path:
     assets_root = (summary_dir / "assets").resolve()
     candidate = (summary_dir / relative).resolve()
     try:
+        assets_root.relative_to(summary_dir.resolve())
         candidate.relative_to(assets_root)
     except ValueError as exc:
         raise SystemExit(f"Unsafe asset path in index.html: {relative}") from exc
@@ -51,11 +54,14 @@ def bundle(summary_dir: Path, out: Path | None) -> Path:
     summary_dir = summary_dir.resolve()
     index = summary_dir / "index.html"
     manifest = summary_dir / "manifest.json"
+    if index.is_symlink() or manifest.is_symlink():
+        raise SystemExit("Refusing symlinked summary metadata or HTML")
     if not index.is_file():
         raise SystemExit(f"No index.html in {summary_dir}")
     if not manifest.is_file():
         raise SystemExit(f"No manifest.json in {summary_dir}; render the summary first")
     html = index.read_text(encoding="utf-8")
+    validate_generated_html(html)
 
     # 1. unwrap <a href="assets/..."> around images (data: links are blocked)
     html = re.sub(r'<a href="assets/[^"]+">\s*(<img[^>]*>)\s*</a>', r"\1", html)
@@ -67,7 +73,7 @@ def bundle(summary_dir: Path, out: Path | None) -> Path:
         rel = match.group(1)
         path = _local_asset(summary_dir, rel)
         full = path.with_name(path.name.replace("-thumb.", "-full."))
-        target = full if full.exists() else path
+        target = _local_asset(summary_dir, str(full if full.exists() else path))
         if not target.is_file():
             missing.append(rel)
             return match.group(0)
@@ -81,12 +87,11 @@ def bundle(summary_dir: Path, out: Path | None) -> Path:
     if leftovers:
         raise SystemExit(f"Unresolved asset references remain: {leftovers[:5]}")
 
-    out = (out or summary_dir.parent / f"{summary_dir.name}.html").resolve()
-    if out == index:
+    out = out or summary_dir.parent / f"{summary_dir.name}.html"
+    if out.resolve() == index:
         raise SystemExit("Refusing to overwrite the editable index.html")
-    temporary = out.with_name(f".{out.name}.tmp")
-    temporary.write_text(html, encoding="utf-8")
-    temporary.replace(out)
+    validate_generated_html(html)
+    atomic_write(out, html)
     return out
 
 
@@ -100,7 +105,7 @@ def main() -> int:
     args = ap.parse_args()
 
     summary_dir = Path(args.summary_dir).expanduser().resolve()
-    out = Path(args.out).expanduser().resolve() if args.out else None
+    out = Path(args.out).expanduser().absolute() if args.out else None
     result = bundle(summary_dir, out)
     size_mb = result.stat().st_size / (1024 * 1024)
     n_images = result.read_text(encoding="utf-8").count("data:image/")

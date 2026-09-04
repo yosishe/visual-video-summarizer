@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Transcribe a video via Groq or OpenAI Whisper API.
 
-Strategy: extract audio (mono 16kHz mp3, tiny payload), upload to whichever
-API has a key. Returns segments in the same shape as transcribe.parse_vtt so
+Strategy: extract audio (mono 16kHz mp3, tiny payload), upload only to the explicitly selected
+provider. Returns segments in the same shape as transcribe.parse_vtt so
 the rest of the pipeline (filter_range, format_transcript) doesn't care where
 the transcript came from.
 
@@ -23,7 +23,7 @@ import time
 import urllib.error
 import uuid
 from pathlib import Path
-from urllib.request import Request, urlopen
+from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler
 
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
@@ -90,13 +90,11 @@ def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, 
             return None
         return None
 
-    # Only this skill's own config home is read, plus the /watch skill's file as
-    # a documented legacy fallback. Deliberately NOT the current directory's
+    # Only this skill's own config home is read. Deliberately NOT the current directory's
     # .env — a skill run inside an unrelated project must never silently pick
     # up (and transmit audio with) that project's API keys.
     dotenv_paths = [
         Path.home() / ".config" / "summarize-video" / ".env",
-        Path.home() / ".config" / "watch" / ".env",
     ]
 
     candidates = (("GROQ_API_KEY", "groq"), ("OPENAI_API_KEY", "openai"))
@@ -238,8 +236,15 @@ MAX_429_RETRIES = 2
 RETRY_BASE_DELAY = 2.0
 
 
+class NoUploadRedirects(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, "Upload redirects are disabled", headers, None)
+
+
 def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path,
                   language: str | None = None) -> dict:
+    if endpoint not in {GROQ_ENDPOINT, OPENAI_ENDPOINT}:
+        raise SystemExit("Unapproved transcription endpoint")
     fields = {
         "model": model,
         "response_format": "verbose_json",
@@ -259,28 +264,27 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path,
         "User-Agent": "summarize-video-skill/1.0 (+claude-code; python-urllib)",
     }
 
-    context = ssl.create_default_context()
+    opener = build_opener(HTTPSHandler(context=ssl.create_default_context()), NoUploadRedirects())
     rate_limit_hits = 0
     last_exc: Exception | None = None
-    last_detail = ""
 
     for attempt in range(MAX_ATTEMPTS):
         request = Request(endpoint, data=body, headers=headers, method="POST")
         try:
-            with urlopen(request, timeout=300, context=context) as response:
+            with opener.open(request, timeout=300) as response:
                 payload = response.read().decode("utf-8", errors="replace")
         except urllib.error.HTTPError as exc:
-            detail = _read_error_body(exc)
-            last_exc, last_detail = exc, detail
+            # Provider bodies may echo credentials or private content.
+            last_exc = exc
 
             # 4xx other than 429 are client errors — no retry will fix them.
-            if 400 <= exc.code < 500 and exc.code != 429:
-                raise SystemExit(f"Whisper request failed: {exc}{detail}")
+            if 300 <= exc.code < 500 and exc.code != 429:
+                raise SystemExit(f"Whisper request failed: HTTP {exc.code}")
 
             if exc.code == 429:
                 rate_limit_hits += 1
                 if rate_limit_hits >= MAX_429_RETRIES:
-                    raise SystemExit(f"Whisper request failed: {exc}{detail}")
+                    raise SystemExit(f"Whisper request failed: HTTP {exc.code}")
                 delay = _retry_after(exc) or RETRY_BASE_DELAY * (2 ** attempt) + 1
             else:
                 delay = RETRY_BASE_DELAY * (2 ** attempt)
@@ -294,11 +298,11 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path,
                 time.sleep(delay)
             continue
         except (urllib.error.URLError, TimeoutError, ConnectionResetError, OSError) as exc:
-            last_exc, last_detail = exc, ""
+            last_exc = exc
             if attempt < MAX_ATTEMPTS - 1:
                 delay = RETRY_BASE_DELAY * (attempt + 1)
                 print(
-                    f"[vsum] whisper network error ({type(exc).__name__}: {exc}) — "
+                    f"[vsum] whisper network error ({type(exc).__name__}) — "
                     f"retrying in {delay:.1f}s (attempt {attempt + 2}/{MAX_ATTEMPTS})",
                     file=sys.stderr,
                 )
@@ -308,24 +312,11 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path,
         try:
             return json.loads(payload)
         except json.JSONDecodeError as exc:
-            raise SystemExit(f"Whisper returned non-JSON response: {exc}: {payload[:200]}")
+            raise SystemExit("Whisper returned a non-JSON response") from exc
 
     raise SystemExit(
-        f"Whisper request failed after {MAX_ATTEMPTS} attempts: {last_exc}{last_detail}"
+        f"Whisper request failed after {MAX_ATTEMPTS} attempts ({type(last_exc).__name__})"
     )
-
-
-def _read_error_body(exc: urllib.error.HTTPError) -> str:
-    try:
-        body = exc.read()
-    except Exception:
-        return ""
-    if not body:
-        return ""
-    try:
-        return f" — {body.decode('utf-8', errors='replace')[:400]}"
-    except Exception:
-        return ""
 
 
 def _retry_after(exc: urllib.error.HTTPError) -> float | None:
@@ -441,10 +432,10 @@ def transcribe_video(
     service reports back is left in `DETECTED_LANGUAGE["value"]`.
     """
     DETECTED_LANGUAGE["value"] = None
-    if backend is None or api_key is None:
-        detected_backend, detected_key = load_api_key()
-        backend = backend or detected_backend
-        api_key = api_key or detected_key
+    if backend not in {"groq", "openai"}:
+        raise SystemExit("Explicit transcription provider required: groq or openai")
+    if api_key is None:
+        _, api_key = load_api_key(backend)
 
     if not backend or not api_key:
         raise SystemExit(

@@ -9,8 +9,9 @@ Order of preference (cheapest first):
    track. Machine-translated tracks (their URL carries `tlang=`) are never
    used — the summary's language is produced by the model, not by YouTube MT.
    YouTube keys Hebrew as `iw`; it is reported as `he`.
-2. Whisper API fallback (Groq preferred, OpenAI fallback) on audio-only
-   download / local file audio, with the source language passed when known.
+2. Explicitly authorized Whisper API fallback (--whisper groq|openai) on
+   downloaded / local file audio, with the source language passed when known.
+   Key presence alone never enables upload.
 
 Emits stable segment records {seg_id, start, end, text} so frames can
 reference exact transcript spans, plus a readable transcript.txt, the
@@ -34,6 +35,7 @@ from urllib.parse import urlparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
+from safety import ytdlp_command
 from whisper import DETECTED_LANGUAGE, load_api_key, transcribe_video  # noqa: E402
 
 TS_RE = re.compile(
@@ -199,7 +201,7 @@ def rank_caption_tracks(info: dict, wanted: tuple[str, ...] = DEFAULT_WANTED) ->
 def _run_ytdlp(args: list[str]) -> int:
     if shutil.which("yt-dlp") is None:
         raise SystemExit("yt-dlp is not installed. Install with: brew install yt-dlp")
-    proc = subprocess.run(["yt-dlp", *args], stdout=sys.stderr, stderr=sys.stderr)
+    proc = subprocess.run(ytdlp_command(args), stdout=sys.stderr, stderr=sys.stderr)
     return proc.returncode
 
 
@@ -304,7 +306,7 @@ def probe(path: str) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser(
         prog="transcript",
-        description="Fetch a timestamped transcript (captions first, Whisper fallback).",
+        description="Fetch captions; upload audio only with an explicit --whisper provider.",
     )
     ap.add_argument("source", help="Video URL or local file path")
     ap.add_argument("--work", default=None, help="Working directory (default: new tmp dir)")
@@ -316,7 +318,7 @@ def main() -> int:
     ap.add_argument("--language", default=None, help="Source language hint for Whisper (ISO 639-1)")
     ap.add_argument("--no-whisper", action="store_true", help="Disable Whisper fallback")
     ap.add_argument("--whisper", choices=["groq", "openai"], default=None,
-                    help="Force a Whisper backend")
+                    help="Allow audio upload to this provider when captions are unavailable")
     args = ap.parse_args()
 
     work = Path(args.work).expanduser().resolve() if args.work else Path(
@@ -368,7 +370,7 @@ def main() -> int:
             print("[vsum] no audio stream — no transcript possible", file=sys.stderr)
             args.no_whisper = True
 
-    if not segments and not args.no_whisper:
+    if not segments and not args.no_whisper and args.whisper:
         backend, api_key = load_api_key(args.whisper)
         if backend and api_key:
             media = download_audio(args.source, dl_dir) if url_source else Path(args.source).expanduser().resolve()
@@ -388,6 +390,10 @@ def main() -> int:
                 "env or ~/.config/summarize-video/.env) — transcript unavailable",
                 file=sys.stderr,
             )
+
+    if not segments and not args.whisper and not args.no_whisper:
+        print("[vsum] cloud transcription is off. To upload audio, explicitly choose "
+              "--whisper groq or --whisper openai; a stored key alone is not consent.", file=sys.stderr)
 
     records = [
         {
@@ -451,8 +457,8 @@ def main() -> int:
         print("\n".join(txt_lines))
         print("```")
         return 0
-    print("- **Transcript:** none available — no usable captions and no Whisper key. "
-          "Add GROQ_API_KEY / OPENAI_API_KEY to ~/.config/summarize-video/.env, or pass --langs for a specific track.")
+    print("- **Transcript:** none available — no usable captions or authorized transcription. "
+          "Choose --whisper groq|openai with its key to allow audio upload, or supply a captioned source.")
     return EXIT_NO_TRANSCRIPT
 
 
