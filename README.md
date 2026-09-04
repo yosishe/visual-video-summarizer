@@ -3,6 +3,8 @@
 [![CI](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml/badge.svg)](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+**New summaries open with a concise brief:** a short synthesis, the main points, and supported takeaways, followed by the existing detailed illustrated chapters. The brief targets 150–250 words, adapts to the source, and links its claims to transcript timestamps. It works in Hebrew and English, including bundled HTML and PDF; older summaries without a brief still render normally.
+
 **A Claude Code skill that turns a video into a page worth reading.** Give `/summarize-video` a YouTube URL or a local file and it produces a detailed illustrated HTML summary — **in Hebrew (right-to-left) by default, or English with `--lang en`**: chapters synthesized from the transcript, with ~15–20 carefully chosen, pixel-verified frames (slides, screens, demos) embedded next to the exact sentences they illustrate — each caption saying what the picture shows and why it is there, and linking back to that second of the video.
 
 Built for talks, lectures, screencasts, and product demos. Transcript + frames, stitched by time. Not a frame dump.

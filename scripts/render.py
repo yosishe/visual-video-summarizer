@@ -29,7 +29,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from audit_summary import HEBREW_RE, run_audit  # noqa: E402
+from audit_summary import HEBREW_RE, brief_items, run_audit  # noqa: E402
 from bundle import bundle as bundle_summary  # noqa: E402
 from frame_utils import chapter_for_time, format_time  # noqa: E402
 
@@ -53,6 +53,10 @@ STRINGS = {
         "kicker": "Visual video summary",
         "title_suffix": "Visual Summary",
         "claim": "The claim in one line:",
+        "brief": "Short summary",
+        "main_points": "Main points",
+        "takeaways": "Takeaways",
+        "brief_sources": "Source timestamps",
         "chapters": "Chapters",
         "watch": "Watch the source video",
         "transcript": "transcript: {source}",
@@ -67,6 +71,10 @@ STRINGS = {
         "kicker": "סיכום חזותי של סרטון",
         "title_suffix": "סיכום חזותי",
         "claim": "הטענה במשפט אחד:",
+        "brief": "סיכום קצר",
+        "main_points": "עיקרי הדברים",
+        "takeaways": "תובנות ומסקנות",
+        "brief_sources": "זמנים במקור",
         "chapters": "פרקים",
         "watch": "לצפייה בסרטון המקורי",
         "transcript": "מקור התמליל: {source}",
@@ -351,6 +359,12 @@ STYLE = """
   nav.toc a { color: var(--ink); text-decoration: none; border-block-end: 1px solid var(--line); }
   nav.toc a:hover { color: var(--accent); border-color: var(--accent); }
   main { padding: 1rem 1.5rem 4rem; }
+  section.brief { max-inline-size: 46rem; margin: 2rem auto 0; }
+  .brief h3 { font-size: 1.05rem; margin-block: 1.2rem .4rem; }
+  .brief ul { padding-inline-start: 1.3rem; margin-block: .4rem; }
+  .brief li { margin-block: .55rem; }
+  .brief-sources { font-size: .8em; color: var(--muted); unicode-bidi: isolate; }
+  .brief-sources a { color: inherit; text-decoration: none; border-block-end: 1px dotted var(--muted); }
   section.chapter { max-inline-size: 46rem; margin: 3rem auto 0; padding-block-start: 2.4rem; border-block-start: 1px solid var(--line); }
   .ch-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
   .ch-num { font-weight: 800; color: var(--accent); font-size: .95rem; letter-spacing: .06em; }
@@ -387,6 +401,8 @@ STYLE = """
     main { padding: 0; }
     section.chapter { margin-block-start: 1.6rem; padding-block-start: 1.2rem; }
     h2 { break-after: avoid; }
+    .brief h3 { break-after: avoid; }
+    .brief li { break-inside: avoid; }
     figure { break-inside: avoid; box-shadow: none; }
     figure img { max-block-size: 110mm; object-fit: contain; }
     pre { white-space: pre-wrap; break-inside: avoid; background: #f4f4f4; color: #111; }
@@ -532,6 +548,46 @@ def _block_html(block: dict) -> str:
     return f"<p>{_inline(block['text'])}</p>"
 
 
+def _brief_html(brief: dict, transcript: dict, strings: dict) -> str:
+    """Render a validated brief without touching chapter blocks or frame anchors."""
+    brief_items({"brief": brief}, transcript)
+    rows = transcript.get("segments", [])
+    segments = {str(row["seg_id"]): row for row in rows}
+    order = {str(row["seg_id"]): i for i, row in enumerate(rows)}
+    source_url = transcript.get("video", {}).get("url")
+
+    def item_html(item: dict) -> str:
+        # One start link per contiguous cited run keeps cross-chapter evidence
+        # compact without inventing a continuous range between distant claims.
+        links = []
+        previous = -2
+        for seg_id in item["seg_ids"]:
+            position = order[seg_id]
+            if position != previous + 1:
+                start = float(segments[seg_id]["start"])
+                label = html.escape(format_time(start))
+                url = _timestamp_url(source_url, start)
+                links.append(f'<a href="{html.escape(url)}">{label}</a>' if url else label)
+            previous = position
+        sources = (
+            f'<span class="brief-sources" dir="ltr" aria-label="{html.escape(strings["brief_sources"])}">'
+            f'[{" · ".join(links)}]</span>'
+        )
+        return f'{_inline(item["text"])} {sources}'
+
+    body = [f'<p>{item_html(brief["synthesis"])}</p>']
+    for key in ("main_points", "takeaways"):
+        if brief[key]:
+            body.append(f'<h3>{html.escape(strings[key])}</h3><ul>')
+            body.extend(f'<li>{item_html(item)}</li>' for item in brief[key])
+            body.append('</ul>')
+    return (
+        f'<section class="brief" aria-labelledby="brief-title">'
+        f'<h2 id="brief-title">{html.escape(strings["brief"])}</h2>'
+        + ''.join(body) + '</section>'
+    )
+
+
 def _render_html(
     transcript: dict,
     chapters: list[dict],
@@ -540,6 +596,7 @@ def _render_html(
     overview: str,
     lang: str,
     candidate_count: int | None = None,
+    brief: dict | None = None,
 ) -> str:
     strings = STRINGS[lang]
     direction = "rtl" if lang == "he" else "ltr"
@@ -551,7 +608,7 @@ def _render_html(
     for frame in frames:
         frames_by_chapter.setdefault(frame["chapter_id"], []).append(frame)
 
-    sections: list[str] = []
+    sections: list[str] = [_brief_html(brief, transcript, strings)] if brief is not None else []
     toc: list[str] = []
     for number, chapter in enumerate(chapters, start=1):
         chapter_id = chapter["chapter_id"]
@@ -755,11 +812,19 @@ def main() -> int:
         "summary_sha256": canonical_json_sha256(summary_payload),
         "selections_sha256": canonical_json_sha256(selections),
     }
+    if "brief" in summary_payload:
+        # Structural errors cannot be bypassed, even in benchmark mode.
+        try:
+            brief_items(summary_payload, transcript)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
+        manifest["brief"] = summary_payload["brief"]
     (out_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     candidate_count = len(candidate_payload.get("candidates", [])) or None
-    html_text = _render_html(transcript, chapters, summaries, frames, overview, lang, candidate_count)
+    html_text = _render_html(transcript, chapters, summaries, frames, overview, lang, candidate_count,
+                             brief=summary_payload.get("brief"))
     temporary_html = out_dir / "index.html.tmp"
     temporary_html.write_text(html_text, encoding="utf-8")
     temporary_html.replace(out_dir / "index.html")

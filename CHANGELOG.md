@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Concise opening brief.** Newly authored summaries include a whole-video synthesis, main points and takeaways, written after the detailed chapters and checked against transcript segments. The 150–250-word target and suggested bullet counts are flexible. Optional schema-3 `brief` items carry `text` and `seg_ids`, render with source timestamps in Hebrew/English HTML and PDF, and remain in the manifest. Legacy summaries still work. The audit validates brief references and reuses prose grounding/hygiene checks without crediting the brief toward chapter coverage or changing frame placement, hashes, extraction or budgets.
+
 - `LICENSE` is now the MIT text only; third-party attributions (claude-video, Heebo, design references) moved to `NOTICE`.
 
 - **Caption track selection bug.** `--sub-langs` is a regex in yt-dlp: the ranked key `en` also downloaded `en-de`, `en-en`, `en-hi`, … (machine translations of the manual track) and the fallback glob then picked `video.en-de.vtt` alphabetically, so a 3Blue1Brown video was transcribed from a translated track while `source_detail` reported it as the track chosen. The ranked key is now anchored (`^en$`) and the exact `video.<key>.vtt` is used; the explicit `--langs` path prefers the shortest track name. `bench/run.py prepare` no longer passes the manifest's `langs` pattern (which bypassed the ranking) — `langs_override` forces one when needed. Tests: 2 new (`FetchCaptionsTests`).

@@ -83,6 +83,20 @@ Optional: `novelty` (`new_state` default | `build_stage` | `reprise`), `crop` (F
 
 Top-level object: `schema_version` 3, `lang` (`he` | `en`; absent = `en`), optional `source_language`, optional `glossary` (`{term: form}`), a non-empty `overview` in the document language, and one entry for every chapter.
 
+Optional additive `brief` (newly authored summaries should include it):
+
+```json
+{"synthesis": {"text": "The central argument and why it matters.", "seg_ids": ["seg_0000"]},
+ "main_points": [{"text": "An essential idea and its explanation.", "seg_ids": ["seg_0001"]}],
+ "takeaways": [{"text": "A supported conclusion with its conditions.", "seg_ids": ["seg_0002"]}]}
+```
+
+When present, `brief` must be an object with all three fields: `synthesis` is a text item; `main_points` and `takeaways` are arrays of text items (empty arrays are valid). Each item requires non-blank string `text` and a non-empty array of unique string `seg_ids` that exist in the transcript, in transcript order. `null`, strings in place of items, and missing fields are errors. Items use the document language and prose escaping/backtick rules; no code/quote exemption applies. Each item may combine different chapters; no chronology is imposed between items.
+
+Target 150–250 words total, usually 3–5 main points and 2–3 takeaways; these are writing targets, not validation quotas. The brief is synthesized after the chapters and checked against its cited transcript evidence. Its numbers, identifiers, negations, terminology, and Hebrew hygiene use the existing prose audit. Reference/shape defects are reported as `brief` errors. Brief text and citations are excluded from the existing detailed-summary statistics, coverage accounting, chapter ownership/order checks, and frame anchors. The deterministic audit cannot prove semantic completeness or paraphrase accuracy.
+
+The brief appears before the chapters with one source timestamp per contiguous cited run. Links seek into supported YouTube URLs; other sources show plain timestamps. All exact `seg_ids` are retained in the manifest. Omitting `brief` preserves the legacy document content; no brief is fabricated from an old overview. Schema versions remain 3.
+
 Each chapter has `chapter_id`, optional display `title`, non-empty `blocks`, and optional `key_points`. Every block requires `text` and one or more `seg_ids`; optional `block_id` (default `<chapter>_bNN`), `kind` (`prose` default | `code` — rendered `<pre dir="ltr">` | `quote` — rendered `<blockquote dir="auto">`), and `lang` for code. Inside prose, `backticks` are the only markup (→ `<code dir="ltr">`); everything else is escaped literally. In a Hebrew document every prose block, the overview and every caption must contain Hebrew. The renderer inserts a selected frame after the first block that overlaps its `anchor_seg_ids`.
 
 `audit_summary.py` checks the summary before rendering (and `render.py` runs it again, exit 5 on errors): numbers, `backtick` identifiers and URLs must appear in the cited segments (or the video's metadata); segments in order and inside their chapter (±5 s); Hebrew hygiene (no niqqud, no bidi control characters, Hebrew prose in Hebrew blocks); soft reviews for Latin names found elsewhere in the transcript, dropped negations, uncited stretches over 60 s and captions whose terms are not in the frame's segments or OCR text. Output `<work>/audit.json` `{errors, reviews, warnings, stats}`.
@@ -97,7 +111,7 @@ Each chapter has `chapter_id`, optional display `title`, non-empty `blocks`, and
 
 `render.py` refuses to render when extraction failed, hard duplicates exist, a timestamp (the candidate's or the asset's) belongs to another chapter, provenance does not overlap, budgets are exceeded, or assets are missing. Captions and timestamp links use the asset's `actual_t`. It writes:
 
-- `manifest.json` (schema 3): combined video, chapter, prose (blocks with `block_id`/`kind`), frame (with `triaged_t`, `refinement`, `family_id`, `novelty`, caption object), provenance, quality, and asset-hash source of truth; plus `tier`, `engine_version`, `lang`, `direction`, `source_language`, `translation_mode` (`translated` | `hebrew_passthrough` | `same_language`), `transcript_source`, an `audit` summary and `summary_sha256` / `selections_sha256` (canonical JSON hashes of the inputs). Written with `ensure_ascii=False`. Asset files are re-hashed against `assets-manifest.json` before rendering.
+- `manifest.json` (schema 3): combined video, chapter, prose (blocks with `block_id`/`kind`), frame (with `triaged_t`, `refinement`, `family_id`, `novelty`, caption object), provenance, quality, and asset-hash source of truth; plus `tier`, `engine_version`, `lang`, `direction`, `source_language`, `translation_mode` (`translated` | `hebrew_passthrough` | `same_language`), `transcript_source`, an `audit` summary and `summary_sha256` / `selections_sha256` (canonical JSON hashes of the inputs). Carries `brief` unchanged when supplied; its text and citations are included in `summary_sha256`. Written with `ensure_ascii=False`. Asset files are re-hashed against `assets-manifest.json` before rendering.
 - `index.html`: escaped, deterministic HTML in the document language — `<html lang dir>` set from `lang`, logical CSS, timestamps/ranges/code isolated LTR, the title in its own direction, Heebo subsets embedded for Hebrew; carries print CSS.
 - `../summary-<id>.html` (next to the output directory): the single self-contained deliverable produced by `bundle.py`, with every image embedded as a data URI. `render.py` bundles automatically; re-run it after any change.
 - `../summary-<id>.pdf` with `--pdf`: printed from the single file by Chrome headless (or WeasyPrint). Exit 4 when neither engine exists.

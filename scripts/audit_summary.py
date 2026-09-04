@@ -101,6 +101,39 @@ class Audit:
         getattr(self, level).append({"check": check, "where": where, "message": message})
 
 
+def brief_items(summary: dict, transcript: dict) -> list[tuple[str, dict]]:
+    """Validate the optional additive brief contract, preserving source IDs.
+
+    Lists may be empty: the writer must never invent points to fill a quota.
+    References within an item are ordered; items can synthesize across chapters.
+    """
+    if "brief" not in summary:
+        return []
+    brief = summary["brief"]
+    if not isinstance(brief, dict):
+        raise ValueError("brief must be an object when present")
+    items = [("brief/synthesis", brief.get("synthesis"))]
+    for key in ("main_points", "takeaways"):
+        if not isinstance(brief.get(key), list):
+            raise ValueError(f"brief/{key} must be an array")
+        items.extend((f"brief/{key}/{i + 1}", item) for i, item in enumerate(brief[key]))
+    order = {str(row["seg_id"]): i for i, row in enumerate(transcript.get("segments", []))}
+    for where, item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("text"), str) or not item["text"].strip():
+            raise ValueError(f"{where} needs non-empty text")
+        ids = item.get("seg_ids")
+        if not isinstance(ids, list) or not ids or any(not isinstance(s, str) or not s for s in ids):
+            raise ValueError(f"{where} needs non-empty seg_ids[] of strings")
+        if len(ids) != len(set(ids)):
+            raise ValueError(f"{where} has duplicate seg_ids")
+        missing = [s for s in ids if s not in order]
+        if missing:
+            raise ValueError(f"{where} cites unknown seg_ids: {', '.join(missing)}")
+        if ids != sorted(ids, key=order.__getitem__):
+            raise ValueError(f"{where} seg_ids are not in transcript order")
+    return items
+
+
 def run_audit(
     transcript: dict,
     chapters: list[dict],
@@ -131,6 +164,70 @@ def run_audit(
     total_words = 0
     all_text_parts: list[str] = [str(summary.get("overview") or "")]
 
+    def check_text(text: str, kind: str, cited_rows: list[dict], where: str) -> None:
+        """Shared grounding/hygiene checks; no chapter coverage or ordering side effects."""
+        cited_text = " ".join(r["text"] for r in cited_rows)
+        cited_tokens = _tokens(cited_text)
+        cited_joined = "".join(cited_tokens)
+        # 1. numbers ("one"/"אחד" are articles as often as counts — not checked)
+        cited_numbers = set(_numbers_in(cited_text))
+        for number in set(_numbers_in(text)) - {"0", "1"}:
+            if number not in cited_numbers:
+                audit.add("errors", "number", where,
+                          f"number {number} is not in the cited segments")
+
+        # 3. backtick identifiers, URLs, paths
+        for term in BACKTICK_RE.findall(text) + URL_RE.findall(text):
+            needle = re.sub(r"[\s\-_.]", "", term).casefold()
+            if needle and needle not in cited_joined and needle not in authority_joined and \
+                    needle not in all_transcript_joined:
+                audit.add("errors", "identifier", where, f"`{term}` appears nowhere in the transcript or metadata")
+
+        # 2. Latin runs in Hebrew prose: fuzzy against cited, then authority, then the whole transcript
+        if lang == "he":
+            inner_backticks = set(BACKTICK_RE.findall(text))
+            stripped = BACKTICK_RE.sub(" ", text)
+            stripped = URL_RE.sub(" ", stripped)
+            for run in set(LATIN_RUN_RE.findall(stripped)):
+                if len(run) < 3 or run in inner_backticks:
+                    continue
+                if _fuzzy_in(run, cited_tokens, cited_joined):
+                    continue
+                if _fuzzy_in(run, authority_tokens, authority_joined):
+                    continue
+                if _fuzzy_in(run, all_transcript_tokens, all_transcript_joined):
+                    audit.add("reviews", "entity", where,
+                              f"'{run}' is in the transcript but not in this block's cited segments")
+                else:
+                    audit.add("errors", "entity", where, f"'{run}' appears nowhere in the transcript or metadata")
+
+        # 4. negation parity
+        if NEGATION_SOURCE_RE.search(cited_text) and not (
+            NEGATION_TARGET_RE.search(text) or NEGATION_SOURCE_RE.search(text)
+        ):
+            audit.add("reviews", "negation", where, "cited segments negate something; the block does not")
+
+        # 7. Hebrew hygiene
+        if lang == "he":
+            hebrew = len(HEBREW_RE.findall(text))
+            latin = len(LATIN_RE.findall(BACKTICK_RE.sub("", text)))
+            if kind == "prose" and not hebrew:
+                audit.add("errors", "hebrew", where, "block has no Hebrew letters")
+            elif kind == "prose" and hebrew < 0.6 * (hebrew + latin):
+                audit.add("warnings", "hebrew", where, "less than 60 % Hebrew letters")
+            if NIQQUD_RE.search(text):
+                audit.add("errors", "niqqud", where, "niqqud marks present")
+            if BIDI_CONTROL_RE.search(text):
+                audit.add("errors", "bidi", where, "bidi control characters present — use backticks instead")
+            if DASH_RE.search(text):
+                audit.add("warnings", "dash", where, "em/en dash — prefer a comma, colon or a new sentence")
+            first = text.strip()[:1]
+            if kind == "prose" and first and LATIN_RE.match(first):
+                audit.add("warnings", "leading-latin", where, "block opens with a Latin word")
+        for sentence in SENTENCE_SPLIT_RE.split(text):
+            if len(sentence.split()) > MAX_SENTENCE_WORDS:
+                audit.add("warnings", "sentence", where, f"sentence over {MAX_SENTENCE_WORDS} words")
+
     for chapter in summary.get("chapters", []):
         chapter_id = str(chapter.get("chapter_id"))
         chapter_window = chapter_map.get(chapter_id)
@@ -143,9 +240,6 @@ def run_audit(
             seg_ids = [str(s) for s in block.get("seg_ids", [])]
             cited_rows = [segments[s] for s in seg_ids if s in segments]
             cited.update(s for s in seg_ids if s in segments)
-            cited_text = " ".join(r["text"] for r in cited_rows)
-            cited_tokens = _tokens(cited_text)
-            cited_joined = "".join(cited_tokens)
             total_words += len(text.split())
 
             # 6. ordering and ownership
@@ -173,69 +267,24 @@ def run_audit(
             if kind == "code":
                 continue
 
-            # 1. numbers ("one"/"אחד" are articles as often as counts — not checked)
-            cited_numbers = set(_numbers_in(cited_text))
-            for number in set(_numbers_in(text)) - {"0", "1"}:
-                if number not in cited_numbers:
-                    audit.add("errors", "number", where,
-                              f"number {number} is not in the cited segments")
-
-            # 3. backtick identifiers, URLs, paths
-            for term in BACKTICK_RE.findall(text) + URL_RE.findall(text):
-                needle = re.sub(r"[\s\-_.]", "", term).casefold()
-                if needle and needle not in cited_joined and needle not in authority_joined and \
-                        needle not in all_transcript_joined:
-                    audit.add("errors", "identifier", where, f"`{term}` appears nowhere in the transcript or metadata")
-
-            # 2. Latin runs in Hebrew prose: fuzzy against cited, then authority, then the whole transcript
-            if lang == "he":
-                inner_backticks = set(BACKTICK_RE.findall(text))
-                stripped = BACKTICK_RE.sub(" ", text)
-                stripped = URL_RE.sub(" ", stripped)
-                for run in set(LATIN_RUN_RE.findall(stripped)):
-                    if len(run) < 3 or run in inner_backticks:
-                        continue
-                    if _fuzzy_in(run, cited_tokens, cited_joined):
-                        continue
-                    if _fuzzy_in(run, authority_tokens, authority_joined):
-                        continue
-                    if _fuzzy_in(run, all_transcript_tokens, all_transcript_joined):
-                        audit.add("reviews", "entity", where,
-                                  f"'{run}' is in the transcript but not in this block's cited segments")
-                    else:
-                        audit.add("errors", "entity", where, f"'{run}' appears nowhere in the transcript or metadata")
-
-            # 4. negation parity
-            if NEGATION_SOURCE_RE.search(cited_text) and not (
-                NEGATION_TARGET_RE.search(text) or NEGATION_SOURCE_RE.search(text)
-            ):
-                audit.add("reviews", "negation", where, "cited segments negate something; the block does not")
-
-            # 7. Hebrew hygiene
-            if lang == "he":
-                hebrew = len(HEBREW_RE.findall(text))
-                latin = len(LATIN_RE.findall(BACKTICK_RE.sub("", text)))
-                if kind == "prose" and not hebrew:
-                    audit.add("errors", "hebrew", where, "block has no Hebrew letters")
-                elif kind == "prose" and hebrew < 0.6 * (hebrew + latin):
-                    audit.add("warnings", "hebrew", where, "less than 60 % Hebrew letters")
-                if NIQQUD_RE.search(text):
-                    audit.add("errors", "niqqud", where, "niqqud marks present")
-                if BIDI_CONTROL_RE.search(text):
-                    audit.add("errors", "bidi", where, "bidi control characters present — use backticks instead")
-                if DASH_RE.search(text):
-                    audit.add("warnings", "dash", where, "em/en dash — prefer a comma, colon or a new sentence")
-                first = text.strip()[:1]
-                if kind == "prose" and first and LATIN_RE.match(first):
-                    audit.add("warnings", "leading-latin", where, "block opens with a Latin word")
-            for sentence in SENTENCE_SPLIT_RE.split(text):
-                if len(sentence.split()) > MAX_SENTENCE_WORDS:
-                    audit.add("warnings", "sentence", where, f"sentence over {MAX_SENTENCE_WORDS} words")
+            check_text(text, kind, cited_rows, where)
 
         for point in chapter.get("key_points", []) or []:
             all_text_parts.append(str(point))
             if lang == "he" and str(point).strip()[:1] and LATIN_RE.match(str(point).strip()[:1]):
                 audit.add("warnings", "leading-latin", f"{chapter_id}/key_points", "key point opens with a Latin word")
+
+    # The brief may combine distant chapters in importance order. Its citations
+    # never count as detailed coverage, words, or chapter ordering/ownership.
+    brief_text_parts: list[str] = []
+    try:
+        items = brief_items(summary, transcript)
+    except ValueError as exc:
+        audit.add("errors", "brief", "brief", str(exc))
+        items = []
+    for where, item in items:
+        brief_text_parts.append(item["text"])
+        check_text(item["text"], "prose", [segments[s] for s in item["seg_ids"]], where)
 
     # 5. coverage
     uncited_runs: list[tuple[float, float]] = []
@@ -265,8 +314,9 @@ def run_audit(
 
     # 9. glossary consistency: the declared form is the only form used
     all_text = "\n".join(all_text_parts)
+    glossary_text = "\n".join([all_text, *brief_text_parts])
     for term, form in glossary.items():
-        if str(term) != str(form) and re.search(rf"(?<![\wא-ת]){re.escape(str(term))}(?![\wא-ת])", all_text):
+        if str(term) != str(form) and re.search(rf"(?<![\wא-ת]){re.escape(str(term))}(?![\wא-ת])", glossary_text):
             if HEBREW_RE.search(str(form)):
                 audit.add("warnings", "glossary", "summary", f"'{term}' used although the glossary form is '{form}'")
 
