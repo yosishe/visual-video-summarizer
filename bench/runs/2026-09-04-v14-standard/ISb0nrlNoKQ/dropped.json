@@ -1,0 +1,378 @@
+[
+  {
+    "t": 62.329,
+    "requested_t": 62.32,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_perplexity_switch"
+    ],
+    "kept_by_t": 61.728
+  },
+  {
+    "t": 85.452,
+    "requested_t": 85.42,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_side_panel"
+    ],
+    "kept_by_t": 84.851
+  },
+  {
+    "t": 357.557,
+    "requested_t": 357.557,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": 111.745
+  },
+  {
+    "t": 431.331,
+    "requested_t": 431.298,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": 111.745
+  },
+  {
+    "t": 177.878,
+    "requested_t": 177.86,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_mac_minis"
+    ],
+    "kept_by_t": 177.277
+  },
+  {
+    "t": 352.986,
+    "requested_t": 352.96,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_manus_skills"
+    ],
+    "kept_by_t": 352.385
+  },
+  {
+    "t": 410.51,
+    "requested_t": 410.5,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [
+      "ch06_shear_tweet"
+    ],
+    "kept_by_t": 410.143
+  },
+  {
+    "t": 419.185,
+    "requested_t": 419.18,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [
+      "ch06_shear_tweet"
+    ],
+    "kept_by_t": 410.143
+  },
+  {
+    "t": 463.73,
+    "requested_t": 463.72,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_journal_bot_telegram"
+    ],
+    "kept_by_t": 463.129
+  },
+  {
+    "t": 478.011,
+    "requested_t": 478.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_focused_agent_shape"
+    ],
+    "kept_by_t": 475.475
+  },
+  {
+    "t": 753.853,
+    "requested_t": 753.82,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_agent"
+    ],
+    "kept_by_t": 753.253
+  },
+  {
+    "t": 797.03,
+    "requested_t": 797.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_informs"
+    ],
+    "kept_by_t": 797.63
+  },
+  {
+    "t": 887.086,
+    "requested_t": 887.06,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": 886.486
+  },
+  {
+    "t": 973.639,
+    "requested_t": 973.62,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": 961.227
+  },
+  {
+    "t": 1050.016,
+    "requested_t": 1050.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 1049.115
+  },
+  {
+    "t": 1095.528,
+    "requested_t": 1095.5,
+    "reason": "dedup",
+    "reasons": [
+      "final"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 1049.115
+  },
+  {
+    "t": 103.937,
+    "requested_t": 103.904,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 108.008,
+    "requested_t": 107.975,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_manus_computer"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 190.524,
+    "requested_t": 190.5,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_openclaw_shape"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 239.606,
+    "requested_t": 239.606,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 247.914,
+    "requested_t": 247.914,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 248.248,
+    "requested_t": 248.215,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 256.656,
+    "requested_t": 256.656,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 267.0,
+    "requested_t": 267.0,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 338.004,
+    "requested_t": 338.0,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 429.629,
+    "requested_t": 429.596,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 471.237,
+    "requested_t": 471.237,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_focused_agent_shape"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 506.239,
+    "requested_t": 506.206,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_content_bot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 787.553,
+    "requested_t": 787.553,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_informs"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 839.238,
+    "requested_t": 839.238,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [],
+    "kept_by_t": null
+  }
+]

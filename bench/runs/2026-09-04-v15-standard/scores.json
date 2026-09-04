@@ -1,0 +1,355 @@
+[
+  {
+    "video_id": "ISb0nrlNoKQ",
+    "duration": 1096.0,
+    "essential_states": 22,
+    "candidates": 48,
+    "pool_recall": 0.9090909090909091,
+    "pool_missed": [
+      "s02",
+      "s26"
+    ],
+    "image_tokens": 10032,
+    "cpu_seconds": 27.1,
+    "engine_cost": {
+      "tier": "standard",
+      "candidates": 48,
+      "image_tokens_estimate": 10032,
+      "image_tokens_per_candidate": 209,
+      "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+      "frame_dimensions": {
+        "512x288": 48
+      },
+      "cpu": {
+        "scene_pass": "fixed",
+        "scene_seconds": 1053.0,
+        "terminal_probes": 0,
+        "seeks": 102,
+        "ocr_frames": 0,
+        "faces": "off",
+        "refine": "none",
+        "refine_max_decodes": 0,
+        "pip_mask": "on",
+        "overlays": 1,
+        "overlay_seconds": 0.0,
+        "dedup_scope": "family",
+        "engine": "states",
+        "scan_seconds": 13.0,
+        "states": 100
+      },
+      "other_tier": {
+        "tier": "high",
+        "cap": 64,
+        "max_image_tokens": 13376
+      }
+    },
+    "image_tokens_per_min": 549.1970802919708,
+    "selected": 20,
+    "important_visual_recall": 0.8636363636363636,
+    "precision": 1.0,
+    "redundancy_rate": 0.05,
+    "frame_efficiency": 1.0,
+    "alignment_accuracy": 0.9411764705882353,
+    "alignment_evaluated_frames": 17,
+    "baselines": {
+      "uniform_time": 0.6363636363636364,
+      "uniform_pool": 0.7727272727272727,
+      "random_mean": 0.5181818181818182,
+      "random_sd": 0.061657545301138796
+    },
+    "por": 1.6666666666666667,
+    "missed": [
+      {
+        "state_id": "s02",
+        "label": "Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent'",
+        "reason": "cap_dropped"
+      },
+      {
+        "state_id": "s26",
+        "label": "Board: Focused Agent → Open rate/Subscribe/CTR→Revenue (email agent example) + 'Narrow Focus…Reviewable' list",
+        "reason": "cap_dropped"
+      },
+      {
+        "state_id": "s28",
+        "label": "Markdown skill document open in the browser",
+        "reason": "triage_rejected"
+      }
+    ],
+    "selected_rows": [
+      {
+        "candidate_id": "c_0000",
+        "t": 62.529,
+        "chapter_id": "ch02",
+        "state_id": "s03",
+        "class": "essential",
+        "group": "s03",
+        "anchor_seg_ids": [
+          "seg_0011",
+          "seg_0012",
+          "seg_0013"
+        ]
+      },
+      {
+        "candidate_id": "c_0003",
+        "t": 113.513,
+        "chapter_id": "ch02",
+        "state_id": "s04",
+        "class": "essential",
+        "group": "s04",
+        "anchor_seg_ids": [
+          "seg_0021",
+          "seg_0022",
+          "seg_0023"
+        ]
+      },
+      {
+        "candidate_id": "c_0005",
+        "t": 141.508,
+        "chapter_id": "ch02",
+        "state_id": "s06",
+        "class": "essential",
+        "group": "s06",
+        "anchor_seg_ids": [
+          "seg_0029"
+        ]
+      },
+      {
+        "candidate_id": "c_0007",
+        "t": 226.526,
+        "chapter_id": "ch03",
+        "state_id": "s08",
+        "class": "essential",
+        "group": "s08",
+        "anchor_seg_ids": [
+          "seg_0045"
+        ]
+      },
+      {
+        "candidate_id": "c_0008",
+        "t": 260.026,
+        "chapter_id": "ch04",
+        "state_id": "s09",
+        "class": "essential",
+        "group": "s09",
+        "anchor_seg_ids": [
+          "seg_0047",
+          "seg_0048",
+          "seg_0052",
+          "seg_0053",
+          "seg_0056",
+          "seg_0057"
+        ]
+      },
+      {
+        "candidate_id": "c_0010",
+        "t": 302.002,
+        "chapter_id": "ch04",
+        "state_id": "s10",
+        "class": "essential",
+        "group": "s10",
+        "anchor_seg_ids": [
+          "seg_0059",
+          "seg_0060",
+          "seg_0061"
+        ]
+      },
+      {
+        "candidate_id": "c_0012",
+        "t": 337.003,
+        "chapter_id": "ch05",
+        "state_id": "s11",
+        "class": "essential",
+        "group": "s11",
+        "anchor_seg_ids": [
+          "seg_0065",
+          "seg_0066",
+          "seg_0067"
+        ]
+      },
+      {
+        "candidate_id": "c_0014",
+        "t": 352.519,
+        "chapter_id": "ch05",
+        "state_id": "s12",
+        "class": "essential",
+        "group": "s12",
+        "anchor_seg_ids": [
+          "seg_0070",
+          "seg_0071"
+        ]
+      },
+      {
+        "candidate_id": "c_0016",
+        "t": 393.026,
+        "chapter_id": "ch06",
+        "state_id": "s13",
+        "class": "essential",
+        "group": "s13",
+        "anchor_seg_ids": [
+          "seg_0079",
+          "seg_0081",
+          "seg_0082",
+          "seg_0083",
+          "seg_0084"
+        ]
+      },
+      {
+        "candidate_id": "c_0017",
+        "t": 419.019,
+        "chapter_id": "ch06",
+        "state_id": "s14",
+        "class": "essential",
+        "group": "s14",
+        "anchor_seg_ids": [
+          "seg_0081",
+          "seg_0082",
+          "seg_0083",
+          "seg_0084"
+        ]
+      },
+      {
+        "candidate_id": "c_0021",
+        "t": 467.033,
+        "chapter_id": "ch07",
+        "state_id": "s16",
+        "class": "essential",
+        "group": "s16",
+        "anchor_seg_ids": [
+          "seg_0093",
+          "seg_0094",
+          "seg_0095",
+          "seg_0096",
+          "seg_0097"
+        ]
+      },
+      {
+        "candidate_id": "c_0022",
+        "t": 486.519,
+        "chapter_id": "ch07",
+        "state_id": "s17",
+        "class": "essential",
+        "group": "s17",
+        "anchor_seg_ids": [
+          "seg_0096",
+          "seg_0097",
+          "seg_0099"
+        ]
+      },
+      {
+        "candidate_id": "c_0025",
+        "t": 536.503,
+        "chapter_id": "ch08",
+        "state_id": "s19",
+        "class": "essential",
+        "group": "s19",
+        "anchor_seg_ids": [
+          "seg_0106",
+          "seg_0107",
+          "seg_0111",
+          "seg_0112"
+        ]
+      },
+      {
+        "candidate_id": "c_0029",
+        "t": 649.516,
+        "chapter_id": "ch08",
+        "state_id": "s21",
+        "class": "essential",
+        "group": "s21",
+        "anchor_seg_ids": [
+          "seg_0131",
+          "seg_0132",
+          "seg_0133",
+          "seg_0134"
+        ]
+      },
+      {
+        "candidate_id": "c_0032",
+        "t": 709.008,
+        "chapter_id": "ch09",
+        "state_id": "s22",
+        "class": "essential",
+        "group": "s22",
+        "anchor_seg_ids": [
+          "seg_0145",
+          "seg_0146",
+          "seg_0147",
+          "seg_0148"
+        ]
+      },
+      {
+        "candidate_id": "c_0033",
+        "t": 720.52,
+        "chapter_id": "ch09",
+        "state_id": "s22",
+        "class": "essential",
+        "group": "s22",
+        "anchor_seg_ids": [
+          "seg_0145",
+          "seg_0146",
+          "seg_0147",
+          "seg_0148"
+        ]
+      },
+      {
+        "candidate_id": "c_0034",
+        "t": 755.021,
+        "chapter_id": "ch10",
+        "state_id": "s23",
+        "class": "essential",
+        "group": "s23",
+        "anchor_seg_ids": [
+          "seg_0154",
+          "seg_0155",
+          "seg_0156"
+        ]
+      },
+      {
+        "candidate_id": "c_0036",
+        "t": 799.532,
+        "chapter_id": "ch10",
+        "state_id": "s24",
+        "class": "essential",
+        "group": "s24",
+        "anchor_seg_ids": [
+          "seg_0163",
+          "seg_0164",
+          "seg_0165",
+          "seg_0166",
+          "seg_0167"
+        ]
+      },
+      {
+        "candidate_id": "c_0042",
+        "t": 957.523,
+        "chapter_id": "ch11",
+        "state_id": "s27",
+        "class": "essential",
+        "group": "s27",
+        "anchor_seg_ids": [
+          "seg_0201",
+          "seg_0202",
+          "seg_0203",
+          "seg_0204",
+          "seg_0205"
+        ]
+      },
+      {
+        "candidate_id": "c_0046",
+        "t": 1041.007,
+        "chapter_id": "ch12",
+        "state_id": "s29",
+        "class": "essential",
+        "group": "s29",
+        "anchor_seg_ids": [
+          "seg_0219",
+          "seg_0220",
+          "seg_0221",
+          "seg_0222",
+          "seg_0223"
+        ]
+      }
+    ],
+    "annotation_status": "draft"
+  }
+]

@@ -1,0 +1,226 @@
+[
+  {
+    "candidate_id": "c_0000",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0002",
+    "reason": "duplicate_of:c_0001"
+  },
+  {
+    "candidate_id": "c_0003",
+    "reason": "no_information"
+  },
+  {
+    "candidate_id": "c_0004",
+    "reason": "no_information"
+  },
+  {
+    "candidate_id": "c_0005",
+    "reason": "no_information"
+  },
+  {
+    "candidate_id": "c_0006",
+    "reason": "duplicate_of:c_0008"
+  },
+  {
+    "candidate_id": "c_0007",
+    "reason": "duplicate_of:c_0008"
+  },
+  {
+    "candidate_id": "c_0009",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0010",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0011",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0012",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0014",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0016",
+    "reason": "duplicate_of:c_0015"
+  },
+  {
+    "candidate_id": "c_0017",
+    "reason": "duplicate_of:c_0019"
+  },
+  {
+    "candidate_id": "c_0018",
+    "reason": "duplicate_of:c_0019"
+  },
+  {
+    "candidate_id": "c_0020",
+    "reason": "no_information"
+  },
+  {
+    "candidate_id": "c_0021",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0022",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0024",
+    "reason": "duplicate_of:c_0025"
+  },
+  {
+    "candidate_id": "c_0027",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0028",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0030",
+    "reason": "duplicate_of:c_0029"
+  },
+  {
+    "candidate_id": "c_0031",
+    "reason": "duplicate_of:c_0029"
+  },
+  {
+    "candidate_id": "c_0032",
+    "reason": "duplicate_of:c_0034"
+  },
+  {
+    "candidate_id": "c_0033",
+    "reason": "duplicate_of:c_0034"
+  },
+  {
+    "candidate_id": "c_0035",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0036",
+    "reason": "duplicate_of:c_0037"
+  },
+  {
+    "candidate_id": "c_0038",
+    "reason": "duplicate_of:c_0034"
+  },
+  {
+    "candidate_id": "c_0039",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0040",
+    "reason": "duplicate_of:c_0037"
+  },
+  {
+    "candidate_id": "c_0041",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0042",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0043",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0045",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0046",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0047",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0049",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0050",
+    "reason": "duplicate_of:c_0051"
+  },
+  {
+    "candidate_id": "c_0053",
+    "reason": "duplicate_of:c_0052"
+  },
+  {
+    "candidate_id": "c_0054",
+    "reason": "duplicate_of:c_0056"
+  },
+  {
+    "candidate_id": "c_0055",
+    "reason": "duplicate_of:c_0056"
+  },
+  {
+    "candidate_id": "c_0057",
+    "reason": "duplicate_of:c_0059"
+  },
+  {
+    "candidate_id": "c_0058",
+    "reason": "duplicate_of:c_0059"
+  },
+  {
+    "candidate_id": "c_0060",
+    "reason": "duplicate_of:c_0013"
+  },
+  {
+    "candidate_id": "c_0061",
+    "reason": "duplicate_of:c_0013"
+  },
+  {
+    "candidate_id": "c_0062",
+    "reason": "duplicate_of:c_0013"
+  },
+  {
+    "candidate_id": "c_0063",
+    "reason": "duplicate_of:c_0064"
+  },
+  {
+    "candidate_id": "c_0065",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0066",
+    "reason": "duplicate_of:c_0048"
+  },
+  {
+    "candidate_id": "c_0067",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0068",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0070",
+    "reason": "duplicate_of:c_0069"
+  },
+  {
+    "candidate_id": "c_0072",
+    "reason": "duplicate_of:c_0071"
+  },
+  {
+    "candidate_id": "c_0073",
+    "reason": "duplicate_of:c_0071"
+  },
+  {
+    "candidate_id": "c_0074",
+    "reason": "duplicate_of:c_0071"
+  },
+  {
+    "candidate_id": "c_0075",
+    "reason": "duplicate_of:c_0071"
+  }
+]

@@ -32,7 +32,7 @@ from frame_utils import (  # noqa: E402
     faces_available,
     format_time,
     is_near_duplicate,
-    ocr_text_density,
+    ocr_text,
     parse_metadata_series,
     parse_time,
     probe_media,
@@ -40,8 +40,12 @@ from frame_utils import (  # noqa: E402
     segment_ids_for_time,
     visual_signature,
 )
+from layout import detect_static_overlays, mask_fraction, overlay_mask  # noqa: E402
+from sheets import build_sheets  # noqa: E402
+from states import scan_video, states_to_points  # noqa: E402
+import time  # noqa: E402
 
-ENGINE_VERSION = "1.3.0"
+ENGINE_VERSION = "1.6.0"
 
 # Every tier-dependent number lives here. `standard` is the default: it
 # reserves up to two frames per target plus one per chapter before any
@@ -60,6 +64,9 @@ PROFILES: dict[str, dict] = {
         "slide_fractions": (),  # slide/diagram = anchor + measured terminal
         "coverage_min": 1, "cue_offsets": (0.5, 1.5),
         "refine": "none", "faces": "off", "ocr": "off", "resolution": 512,
+        "pip_mask": "on", "dedup_scope": "family",
+        "engine": "states", "scan_fps": 2.0,
+        "sheets": "on", "sheet_tiles": 16, "shortlist_px": 640,
     },
     "high": {
         "cap": 64, "per_target": 3, "unplanned_floor": 16,
@@ -69,6 +76,9 @@ PROFILES: dict[str, dict] = {
         "slide_fractions": (0.30, 0.70),  # + anchor + measured terminal
         "coverage_min": 2, "cue_offsets": (0.2, 0.5, 1.0, 1.5, 2.0),
         "refine": "sharpness", "faces": "auto", "ocr": "on", "resolution": 512,
+        "pip_mask": "on", "dedup_scope": "family",
+        "engine": "states", "scan_fps": 2.0,
+        "sheets": "on", "sheet_tiles": 16, "shortlist_px": 768,
     },
 }
 MODE_ALIASES = {"light": "standard", "advanced": "high"}
@@ -79,12 +89,20 @@ ADVANCED_CAP = PROFILES["high"]["cap"]
 UNPLANNED_FLOOR = PROFILES["standard"]["unplanned_floor"]
 LIGHT_SCENE_THRESHOLD = PROFILES["standard"]["scene_threshold"]
 ADVANCED_SCENE_FLOOR = PROFILES["high"]["scene_floor"]
-IMAGE_TOKEN_DIVISOR = 750  # Anthropic: ≈ w×h/750 tokens per image
+IMAGE_PATCH = 28  # Anthropic vision: ⌈w/28⌉ × ⌈h/28⌉ visual tokens per image (verified 2026-09-04)
+
+
+def image_tokens(width: int, height: int) -> int:
+    """Exact visual-token cost of one image on the Claude API: one token per
+    28×28 patch, ceilings on both axes (512×288 → 19×11 = 209)."""
+    if width <= 0 or height <= 0:
+        return 0
+    return -(-width // IMAGE_PATCH) * -(-height // IMAGE_PATCH)
 MERGE_EPS = 0.20
 LONG_VIDEO_SECONDS = 20 * 60
 SECTION_PADDING = 5.0
 MAX_READ_DIMENSION = 1998
-REASON_PRIORITY = ("target", "cue", "pin", "coverage", "scene", "final", "safety")
+REASON_PRIORITY = ("target", "cue", "pin", "coverage", "state", "scene", "final")
 PROTECTED = {"target", "cue", "pin", "coverage"}
 SHOWINFO_TS_RE = re.compile(r"pts_time:([-0-9.]+)")
 SCENE_SCORE_RE = re.compile(
@@ -657,7 +675,7 @@ def make_point(
     seg_ids = {str(seg_id) for row in target_rows for seg_id in row.get("seg_ids", [])}
     if not seg_ids:
         seg_ids.update(segment_ids_for_time(segments, timestamp))
-    priority = {"target": 100, "cue": 90, "pin": 80, "coverage": 70, "scene": 40, "final": 20, "safety": 10}.get(reason, 0)
+    priority = {"target": 100, "cue": 90, "pin": 80, "coverage": 70, "state": 50, "scene": 40, "final": 20}.get(reason, 0)
     return {
         "requested_t": round(timestamp, 3),
         "reasons": {reason},
@@ -669,6 +687,43 @@ def make_point(
         "scene_score": scene_score,
         "priority": priority,
     }
+
+
+def _read_heatmap(work: Path) -> list[dict]:
+    """YouTube's most-replayed curve (100 bins) from the cached info.json — a free
+    human-attention prior for state importance; [] for local files."""
+    path = work / "download" / "video.info.json"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    rows = raw.get("heatmap") or []
+    return [r for r in rows if isinstance(r, dict)]
+
+
+def parse_profile_override(raw: str | None, profile: dict) -> dict:
+    """`--profile-override` JSON: only keys the tier already has, so an ablation
+    cannot silently invent a knob the engine never reads."""
+    if not raw:
+        return {}
+    try:
+        override = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"--profile-override is not valid JSON: {exc}")
+    if not isinstance(override, dict):
+        raise SystemExit("--profile-override must be a JSON object")
+    unknown = sorted(set(override) - set(profile))
+    if unknown:
+        raise SystemExit(f"--profile-override: unknown profile keys {unknown}; known: {sorted(profile)}")
+    for key, value in override.items():
+        if isinstance(value, list):
+            override[key] = tuple(value)
+    return override
+
+
+def profile_digest(profile: dict) -> str:
+    canonical = json.dumps(profile, sort_keys=True, separators=(",", ":"), default=list)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def resolve_profile(tier: str | None, mode: str | None) -> tuple[str, dict]:
@@ -793,7 +848,22 @@ def point_grab(
     }
 
 
-def drop_frame(frame: dict) -> None:
+DROP_LOG: list[dict] = []
+
+
+def drop_frame(frame: dict, reason: str = "unspecified", kept_by: dict | None = None) -> None:
+    """Delete a raw frame and remember why. `dropped.json` (written by main)
+    is the benchmark's loss-attribution input: a missed essential visual is
+    then classified as blank / dedup / cap dropped rather than "not in pool"."""
+    DROP_LOG.append({
+        "t": frame.get("actual_t"),
+        "requested_t": frame.get("requested_t"),
+        "reason": reason,
+        "reasons": sorted(frame.get("reasons", ())),
+        "chapter_id": frame.get("chapter_id"),
+        "target_ids": sorted(frame.get("target_ids", ())),
+        "kept_by_t": kept_by.get("actual_t") if kept_by else None,
+    })
     try:
         Path(frame["path"]).unlink()
     except OSError:
@@ -835,17 +905,37 @@ def _same_dedup_scope(first: dict, second: dict) -> bool:
     return bool(first_targets & second_targets) or (not first_targets and not second_targets)
 
 
-def deduplicate_frames(frames: list[dict], *, cluster_hook=None) -> tuple[list[dict], int]:
-    """Cluster near-duplicates (same chapter + target scope) and keep the best
-    member of each. `cluster_hook(cluster)` runs on multi-member clusters
-    before the representative is chosen — the place for signals that only
-    matter when there is a choice to make (OCR text density in `high`)."""
+def _merge_into(representative: dict, member: dict) -> None:
+    for field in ("reasons", "target_ids", "target_kinds", "seg_ids"):
+        representative[field] |= member[field]
+    representative["target_anchors"].update(member["target_anchors"])
+
+
+def deduplicate_frames(
+    frames: list[dict], *, cluster_hook=None, scope: str = "family"
+) -> tuple[list[dict], int]:
+    """Cluster near-duplicates and keep the best member of each cluster.
+
+    `scope="family"` (default) compares every frame with every other frame of
+    the video — a slide reached by a target and by a scene cut, or shown again
+    three chapters later, lands in one *family*. Inside a family one
+    representative survives per chapter that holds a protected frame (target,
+    coverage, cue, pin), so chapter coverage and per-chapter frame ownership
+    are untouched; unprotected members in other chapters are dropped as
+    revisits and listed on the keepers as `family_revisits`.
+
+    `scope="chapter"` is the pre-1.4 behaviour (same chapter and shared target,
+    or both target-less), kept for ablation.
+
+    `cluster_hook(cluster)` runs on multi-member clusters before the
+    representative is chosen — the place for signals that only matter when
+    there is a choice to make (OCR text density in `high`)."""
     clusters: list[list[dict]] = []
     for frame in sorted(frames, key=lambda item: item["actual_t"]):
         cluster = next(
             (
                 row for row in clusters
-                if _same_dedup_scope(row[0], frame)
+                if (scope == "family" or _same_dedup_scope(row[0], frame))
                 and any(is_near_duplicate(member["_signature"], frame["_signature"]) for member in row)
             ),
             None,
@@ -856,19 +946,46 @@ def deduplicate_frames(frames: list[dict], *, cluster_hook=None) -> tuple[list[d
             cluster.append(frame)
     kept: list[dict] = []
     dropped = 0
+    family_number = 0
     for cluster in clusters:
         if cluster_hook is not None and len(cluster) > 1:
             cluster_hook(cluster)
-        representative = max(cluster, key=_frame_score)
+        family_id = None
+        if len(cluster) > 1:
+            family_number += 1
+            family_id = f"f_{family_number:03d}"
+        if scope != "family":
+            keepers = {None: max(cluster, key=_frame_score)}
+        else:
+            protected_chapters = {
+                member.get("chapter_id") for member in cluster if member["reasons"] & PROTECTED
+            }
+            if protected_chapters:
+                keepers = {
+                    chapter: max((m for m in cluster if m.get("chapter_id") == chapter), key=_frame_score)
+                    for chapter in protected_chapters
+                }
+            else:
+                best = max(cluster, key=_frame_score)
+                keepers = {best.get("chapter_id"): best}
+        keeper_ids = {id(k) for k in keepers.values()}
+        primary = max(keepers.values(), key=_frame_score)
+        for keeper in keepers.values():
+            keeper["family_id"] = family_id
+            keeper.setdefault("family_revisits", [])
         for member in cluster:
-            if member is representative:
+            if id(member) in keeper_ids:
                 continue
-            for field in ("reasons", "target_ids", "target_kinds", "seg_ids"):
-                representative[field] |= member[field]
-            representative["target_anchors"].update(member["target_anchors"])
-            drop_frame(member)
+            keeper = keepers.get(member.get("chapter_id")) if scope == "family" else primary
+            if keeper is None:
+                # a revisit in a chapter that keeps nothing: remember where, drop the frame
+                primary["family_revisits"].append(round(float(member["actual_t"]), 3))
+                drop_frame(member, "dedup", primary)
+            else:
+                _merge_into(keeper, member)
+                drop_frame(member, "dedup", keeper)
             dropped += 1
-        kept.append(representative)
+        kept.extend(keepers.values())
     return sorted(kept, key=lambda item: item["actual_t"]), dropped
 
 
@@ -879,6 +996,7 @@ def _recover_blank(
     resolution: int,
     sequence: int,
     chapters: list[dict],
+    mask: bytes | None = None,
 ) -> dict | None:
     if not (frame["reasons"] & PROTECTED):
         return None
@@ -892,14 +1010,14 @@ def _recover_blank(
         recovered = point_grab(parts, point, raw_dir, resolution, f"{sequence:04d}_r{retry}")
         if not recovered:
             continue
-        signature = visual_signature(recovered["path"])
+        signature = visual_signature(recovered["path"], mask)
         recovered["_signature"] = signature
         recovered["quality"] = public_quality(signature)
         if not signature["blank"]:
             recovered["reasons"].add("recovered")
             recovered.pop("chapters", None)
             return recovered
-        drop_frame(recovered)
+        drop_frame(recovered, "blank")
     return None
 
 
@@ -948,20 +1066,66 @@ def select_with_budget(
         frame for frame in frames
         if frame["path"] not in keep_paths and not frame.get("target_ids")
     ]
+    uniform_baseline: list[float] = []
     if slots > 0 and remaining:
+        ordered = sorted(remaining, key=lambda item: item["actual_t"])
         if len(remaining) <= slots:
             selected.extend(remaining)
-        elif slots == 1:
-            selected.append(max(remaining, key=_frame_score))
+            uniform_baseline = [f["actual_t"] for f in ordered]
         else:
-            ordered = sorted(remaining, key=lambda item: item["actual_t"])
-            indices = sorted({round(i * (len(ordered) - 1) / (slots - 1)) for i in range(slots)})
-            selected.extend(ordered[index] for index in indices)
+            # The uniform pick is always computed (and reported) — it is the
+            # baseline the greedy fill has to beat on the benchmark.
+            indices = sorted({round(i * (len(ordered) - 1) / max(slots - 1, 1)) for i in range(slots)})
+            uniform_baseline = [ordered[index]["actual_t"] for index in indices]
+            selected.extend(_greedy_fill(remaining, selected, slots))
+    select_with_budget.last["uniform_baseline"] = uniform_baseline
     selected_paths = {frame["path"] for frame in selected}
     for frame in frames:
         if frame["path"] not in selected_paths:
-            drop_frame(frame)
+            drop_frame(frame, "cap")
     return sorted(selected, key=lambda item: item["actual_t"]), len(frames) - len(selected), trimmed
+
+
+def _quick_distance(first: dict, second: dict) -> float:
+    """Cheap picture distance in [0, 1]: mean luma difference on every 4th
+    signature pixel, saturating at 12 levels (the pixel-change threshold)."""
+    a = first.get("pixels", b"")[::4]
+    b = second.get("pixels", b"")[::4]
+    if not a or len(a) != len(b):
+        return 1.0
+    return min(1.0, sum(abs(x - y) for x, y in zip(a, b)) / len(a) / 12.0)
+
+
+def _greedy_fill(remaining: list[dict], selected: list[dict], slots: int) -> list[dict]:
+    """Fill the unplanned slots by greedy argmax of
+    0.5·importance + 0.3·novelty + 0.2·uniformity — the submodular mixture of
+    Gygli et al. (interestingness / representativeness / uniformity) with the
+    weights fixed instead of learned. Importance comes from the state engine
+    (targets, cues, heatmap, mode prior); novelty is the distance to the nearest
+    already-chosen picture; uniformity the time gap to the nearest chosen frame,
+    normalised to a quarter of the covered span."""
+    times = [f["actual_t"] for f in remaining + selected]
+    span = max(max(times) - min(times), 1.0) if times else 1.0
+    chosen: list[dict] = []
+    pool = list(remaining)
+    while pool and len(chosen) < slots:
+        anchors = selected + chosen
+
+        def score(frame: dict) -> float:
+            importance = float(frame.get("importance") or 0.0)
+            if anchors:
+                signature = frame.get("_signature") or {}
+                novelty = min(_quick_distance(signature, a.get("_signature") or {}) for a in anchors)
+                gap = min(abs(frame["actual_t"] - a["actual_t"]) for a in anchors)
+                uniformity = min(1.0, gap / (span / 4.0))
+            else:
+                novelty = uniformity = 1.0
+            return 0.5 * importance + 0.3 * novelty + 0.2 * uniformity
+
+        best = max(pool, key=score)
+        chosen.append(best)
+        pool.remove(best)
+    return chosen
 
 
 def _scaled_dimensions(width: int, height: int, resolution: int) -> tuple[int, int]:
@@ -984,10 +1148,15 @@ def cost_estimate(
     faces_status: str,
     ocr_frames: int,
     refine_selections: int = 20,
+    overlays: int = 0,
+    overlay_seconds: float = 0.0,
+    engine: str = "legacy",
+    scan_seconds: float = 0.0,
+    states: int = 0,
 ) -> dict:
     """An honest cost line: image tokens use each candidate's real dimensions
-    (w×h/750, the Anthropic estimate — other providers differ), CPU passes are
-    listed, and the other tier's ceiling is quoted for comparison."""
+    (⌈w/28⌉×⌈h/28⌉ patches, the documented Claude formula — other providers
+    differ), CPU passes are listed, and the other tier's ceiling is quoted."""
     dimensions: Counter[str] = Counter()
     tokens = 0
     for record in records:
@@ -995,7 +1164,7 @@ def cost_estimate(
         if width <= 0 or height <= 0:
             width, height = profile["resolution"], round(profile["resolution"] * 9 / 16)
         dimensions[f"{width}x{height}"] += 1
-        tokens += max(1, round(width * height / IMAGE_TOKEN_DIVISOR))
+        tokens += image_tokens(width, height)
     per_image = round(tokens / len(records)) if records else 0
     other_tier = "high" if tier == "standard" else "standard"
     other_cap = PROFILES[other_tier]["cap"]
@@ -1004,7 +1173,7 @@ def cost_estimate(
         "candidates": len(records),
         "image_tokens_estimate": tokens,
         "image_tokens_per_candidate": per_image,
-        "token_formula": f"w*h/{IMAGE_TOKEN_DIVISOR} per image (Anthropic estimate); one batched Read",
+        "token_formula": f"ceil(w/{IMAGE_PATCH})*ceil(h/{IMAGE_PATCH}) per image (Anthropic vision docs); one batched Read",
         "frame_dimensions": dict(dimensions),
         "cpu": {
             "scene_pass": profile["scene"],
@@ -1015,11 +1184,18 @@ def cost_estimate(
             "faces": faces_status,
             "refine": profile["refine"],
             "refine_max_decodes": refine_selections if profile["refine"] != "none" else 0,
+            "pip_mask": profile["pip_mask"],
+            "overlays": overlays,
+            "overlay_seconds": overlay_seconds,
+            "dedup_scope": profile["dedup_scope"],
+            "engine": engine,
+            "scan_seconds": scan_seconds,
+            "states": states,
         },
         "other_tier": {
             "tier": other_tier,
             "cap": other_cap,
-            "max_image_tokens": other_cap * (per_image or round(512 * 288 / IMAGE_TOKEN_DIVISOR)),
+            "max_image_tokens": other_cap * (per_image or image_tokens(512, 288)),
         },
     }
 
@@ -1142,7 +1318,14 @@ def main() -> int:
     parser.add_argument("--max-candidates", type=int, default=None,
                         help="Hard ceiling on the pool (reserved target frames included).")
     parser.add_argument("--min-per-chapter", type=int, default=None)
+    parser.add_argument("--profile-override", default=None,
+                        help="JSON object merged over the tier's PROFILES entry (benchmark ablations, "
+                             "e.g. '{\"scene_threshold\": 0.10}'). Keys must exist in the profile; the "
+                             "effective profile and its sha256 are recorded in candidates.json.")
     parser.add_argument("--no-dedup", action="store_true")
+    parser.add_argument("--engine", choices=("states", "legacy"), default=None,
+                        help="states (default): one dense 2 fps scan → visual states → one candidate per state; "
+                             "legacy: the 1.3 scene-detection + target-offset sampler (ablation).")
     parser.add_argument("--strips", action="store_true",
                         help="Also render 256px temporal strips per target for a cheaper first "
                              "look. Off by default: slides and UI text are not reliably legible "
@@ -1155,6 +1338,11 @@ def main() -> int:
         raise SystemExit("Candidate resolution is capped at 512px; use grab.py for deliverable quality")
     tier, profile = resolve_profile(args.tier, args.mode)
     mode_alias = TIER_TO_MODE[tier]
+    profile_override = parse_profile_override(args.profile_override, profile)
+    profile = {**profile, **profile_override}
+    if args.engine:
+        profile["engine"] = args.engine
+    DROP_LOG.clear()
 
     work = Path(args.work).expanduser().resolve()
     if not work.exists():
@@ -1179,6 +1367,31 @@ def main() -> int:
     parts = resolve_parts(args.source, work, sections, exact_sections=bool(sections))
     total_end = duration or max(float(part["source_start"]) + float(part["duration"]) for part in parts)
 
+    # Persistent overlays (webcam PiP, tab/subtitle bars) are masked in every
+    # signature so dedup and the re-grab gate compare the content, not the
+    # presenter. Sections of one video share a layout: one mask for all parts.
+    overlays: list[dict] = []
+    overlay_seconds = 0.0
+    scan: dict | None = None
+    scan_seconds = 0.0
+    if profile["engine"] == "states":
+        # One dense decode gives the overlay mask AND the visual states.
+        started = time.monotonic()
+        heatmap = _read_heatmap(work)
+        scan = scan_video(parts, chapters, segments, fps=float(profile["scan_fps"]),
+                          heatmap=heatmap, pip_mask=profile["pip_mask"] == "on")
+        overlays = scan["overlays"]
+        scan_seconds = round(time.monotonic() - started, 2)
+        (work / "states.json").write_text(json.dumps(scan, indent=2) + "\n", encoding="utf-8")
+    elif profile["pip_mask"] == "on":
+        started = time.monotonic()
+        for part in parts:
+            for overlay in detect_static_overlays(part):
+                if not any(overlay["bbox"] == known["bbox"] for known in overlays):
+                    overlays.append(overlay)
+        overlay_seconds = round(time.monotonic() - started, 2)
+    mask = overlay_mask(overlays)
+
     raw_dir = work / "raw"
     candidate_dir = work / "candidates"
     for directory in (raw_dir, candidate_dir):
@@ -1192,7 +1405,29 @@ def main() -> int:
     scene_seconds = sum(end - start for start, end in windows)
     points: list[dict] = []
     scene_points: list[tuple[float, float]] = []
-    if profile["scene"] == "adaptive":
+    terminal_probes: list[dict] = []
+    if scan is not None:
+        scene_setting = f"states engine ({scan['counts']['states']} states from a {profile['scan_fps']} fps scan)"
+        target_map = {t["target_id"]: t for c in chapters for t in c.get("visual_targets", [])}
+        for descriptor in states_to_points(scan["states"], chapters):
+            state = descriptor["state"]
+            point = make_point(descriptor["t"], descriptor["reason"], chapters, segments)
+            point["target_ids"] = set(state["target_ids"])
+            point["target_kinds"] = set(state["target_kinds"])
+            point["target_anchors"] = {
+                tid: target_map[tid]["anchor_t"] for tid in state["target_ids"] if tid in target_map
+            }
+            target_segs = {s for tid in state["target_ids"] if tid in target_map for s in target_map[tid].get("seg_ids", [])}
+            point["seg_ids"] = set(point["seg_ids"]) | target_segs | set(state["aligned_seg_ids"][:0])
+            point["aligned_seg_ids"] = list(state["aligned_seg_ids"])
+            point["state_id"] = state["state_id"]
+            point["state_family"] = state["family_id"]
+            point["mode"] = state["mode"]
+            point["importance"] = state["importance"]
+            if descriptor.get("stage"):
+                point["stage"] = descriptor["stage"]
+            points.append(point)
+    elif profile["scene"] == "adaptive":
         scene_floor = args.scene_threshold or profile["scene_floor"]
         scene_setting = f"adaptive (median+8·MAD, floor {scene_floor})"
         for part in parts:
@@ -1205,28 +1440,34 @@ def main() -> int:
     for timestamp, score in scene_points:
         points.append(make_point(timestamp, "scene", chapters, segments, scene_score=score))
 
-    # Slide/diagram targets: measure where the build-up ends instead of assuming
-    # the end of the referenced segments (both tiers; one cheap probe each).
-    terminal_probes: list[dict] = []
-    for chapter in chapters:
-        if not chapter["needs_frames"]:
-            continue
-        for target in chapter.get("visual_targets", []):
-            if target["kind"] not in ("slide", "diagram"):
+    # Legacy engine only — slide/diagram targets: measure where the build-up
+    # ends instead of assuming the end of the referenced segments. The states
+    # engine gets this from the run itself (last settled frame).
+    if scan is None:
+        for chapter in chapters:
+            if not chapter["needs_frames"]:
                 continue
-            measured = measure_stable_terminal(parts, target)
-            if measured:
-                target["terminal_t"] = measured["terminal_t"]
-                target["terminal"] = measured
-                terminal_probes.append({"target_id": target["target_id"], **measured})
+            for target in chapter.get("visual_targets", []):
+                if target["kind"] not in ("slide", "diagram"):
+                    continue
+                measured = measure_stable_terminal(parts, target)
+                if measured:
+                    target["terminal_t"] = measured["terminal_t"]
+                    target["terminal"] = measured
+                    terminal_probes.append({"target_id": target["target_id"], **measured})
 
+    covered_targets = {tid for point in points for tid in point.get("target_ids", set())}
     for chapter in chapters:
         if not chapter["needs_frames"]:
             continue
         for target in chapter.get("visual_targets", []):
+            if scan is not None and target["target_id"] in covered_targets:
+                continue   # a state already carries this target
             for timestamp in target_sample_times(target, profile):
                 points.append(make_point(timestamp, "target", chapters, segments, target=target))
         minimum = args.min_per_chapter if args.min_per_chapter is not None else profile["coverage_min"]
+        if scan is not None and any(p.get("chapter_id") == chapter["chapter_id"] for p in points):
+            continue   # the chapter has states; no blind midpoint needed
         span = chapter["end"] - chapter["start"]
         for fraction in ((0.5,) if minimum == 1 else (0.5, 0.25, 0.75))[:minimum]:
             points.append(make_point(chapter["start"] + span * fraction, "coverage", chapters, segments))
@@ -1261,14 +1502,15 @@ def main() -> int:
         for frame in cluster:
             if ocr_state["frames"] >= ocr_state["budget"]:
                 return
-            text = ocr_text_density(frame["path"])
-            if text is None:
+            read = ocr_text(frame["path"])
+            if read is None:
                 ocr_state["status"] = "unavailable"
                 ocr_state["budget"] = 0
                 return
             ocr_state["frames"] += 1
+            count, text = read
             frame["quality"] = public_quality(
-                frame["_signature"], faces=frame["quality"].get("faces"), text_chars=text,
+                frame["_signature"], faces=frame["quality"].get("faces"), text_chars=count, ocr_text=text,
             )
 
     seeks = 0
@@ -1279,12 +1521,12 @@ def main() -> int:
         if not frame:
             continue
         frame.pop("chapters", None)
-        signature = visual_signature(frame["path"])
+        signature = visual_signature(frame["path"], mask)
         frame["_signature"] = signature
         frame["quality"] = public_quality(signature)
         if signature["blank"]:
-            recovered = _recover_blank(frame, parts, raw_dir, args.resolution, sequence, chapters)
-            drop_frame(frame)
+            recovered = _recover_blank(frame, parts, raw_dir, args.resolution, sequence, chapters, mask)
+            drop_frame(frame, "blank")
             if recovered:
                 frames.append(recovered)
             continue
@@ -1302,7 +1544,9 @@ def main() -> int:
 
     dedup_dropped = 0
     if not args.no_dedup:
-        frames, dedup_dropped = deduplicate_frames(frames, cluster_hook=_ocr_cluster)
+        frames, dedup_dropped = deduplicate_frames(
+            frames, cluster_hook=_ocr_cluster, scope=profile["dedup_scope"]
+        )
     ocr_frames = ocr_state["frames"]
     ocr_status = ocr_state["status"]
     hard_cap = args.max_candidates is not None
@@ -1344,14 +1588,26 @@ def main() -> int:
             "quality": frame["quality"],
             "scene_score": round(float(frame.get("scene_score", 0.0)), 6),
             "part_mapping_confidence": frame.get("part_mapping_confidence", "unknown"),
+            "family_id": frame.get("family_id"),
+            "family_revisits": sorted(frame.get("family_revisits", [])),
+            "state_id": frame.get("state_id"),
+            "state_family": frame.get("state_family"),
+            "mode": frame.get("mode"),
+            "importance": frame.get("importance"),
+            "aligned_seg_ids": sorted(frame.get("aligned_seg_ids", [])),
+            "stage": frame.get("stage"),
         })
     shutil.rmtree(raw_dir, ignore_errors=True)
+    (work / "dropped.json").write_text(json.dumps(DROP_LOG, indent=2) + "\n", encoding="utf-8")
     strips = generate_strips(work, chapters, records) if (args.strips and chapters) else []
     coverage = coverage_report(chapters, records)
     cost = cost_estimate(
         records, tier, profile,
         scene_seconds=scene_seconds, terminal_probes=len(terminal_probes), seeks=seeks,
         faces_status=faces_status, ocr_frames=ocr_frames,
+        overlays=len(overlays), overlay_seconds=overlay_seconds,
+        engine=profile["engine"], scan_seconds=scan_seconds,
+        states=scan["counts"]["states"] if scan else 0,
     )
     strip_pixels = sum(strip["pixel_area"] for strip in strips)
     baseline_pixels = 60 * 512 * 288
@@ -1365,6 +1621,14 @@ def main() -> int:
         "tier": tier,
         "mode": mode_alias,
         "profile": profile,
+        "profile_override": profile_override,
+        "profile_sha256": profile_digest(profile),
+        "overlays": overlays,
+        "mask_fraction": round(mask_fraction(mask), 4),
+        "states": {
+            "counts": scan["counts"], "modes": scan["modes"], "frames_scanned": scan["frames_scanned"],
+            "path": str(work / "states.json"),
+        } if scan else None,
         "parts": parts,
         "counts": {
             "scene": len(scene_points), "raw": raw_count,
@@ -1374,11 +1638,16 @@ def main() -> int:
             "cap": cap, "cap_effective": budget["cap_effective"], "reserved": budget["reserved"],
             "final": len(records),
         },
+        "baselines": {"uniform_fill": budget.get("uniform_baseline", [])},
         "coverage": coverage,
         "terminal_probes": terminal_probes,
         "cost": cost,
         "triage": {
-            "instructions": "Read temporal strips first; open individual 512px candidates only when selected or uncertain.",
+            "instructions": (
+                "Read temporal strips first; open individual 512px candidates only when selected or uncertain."
+                if strips else
+                "Read every candidate path in one message (parallel Reads), then select by candidate_id."
+            ),
             "strips": strips,
             "pixel_area": strip_pixels,
             "projected_individual_reads": projected_individual_reads,
@@ -1390,22 +1659,45 @@ def main() -> int:
         "candidates": records,
     }
     (work / "candidates.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    sheet_block = None
+    if profile.get("sheets") == "on" and records:
+        sheet_block = build_sheets(work, int(profile.get("sheet_tiles", 16)), 320)
+        payload["sheets"] = sheet_block
 
     print()
     print("# candidate frames report")
     print()
-    print(f"- **Tier:** {tier} (alias: --mode {mode_alias}) — scene pass: {scene_setting}")
+    print(f"- **Tier:** {tier} (alias: --mode {mode_alias}) — {scene_setting}")
+    if scan:
+        modes = "".join(w["mode"] for w in scan["modes"])
+        counts = scan["counts"]
+        print(f"- **Visual states:** {counts['states']} (A talk {counts['by_mode']['A']}, B static {counts['by_mode']['B']}, "
+              f"C canvas {counts['by_mode']['C']}, D dynamic UI {counts['by_mode']['D']}); "
+              f"{counts['families']} families, {counts['builds']} builds; mode timeline per 20 s: `{modes}`; "
+              f"scan {scan_seconds:.1f}s — `states.json` in the work dir")
     cap_note = f"pool {cap}"
     if budget["cap_effective"] > cap:
         cap_note += (
             f" lifted to {budget['cap_effective']}: {budget['reserved']} reserved target/coverage frames "
             f"+ {profile['unplanned_floor']} unplanned slots"
         )
-    print(f"- **Candidates:** {len(records)} ({cap_note}; raw {raw_count}; dedup {dedup_dropped}; cap {cap_dropped})")
+    print(f"- **Candidates:** {len(records)} ({cap_note}; raw {raw_count}; dedup {dedup_dropped} [{profile['dedup_scope']} scope]; cap {cap_dropped})")
+    if profile["pip_mask"] != "on":
+        print("- **Overlay mask:** off (profile)")
+    elif overlays:
+        boxes = "; ".join(
+            f"{o['kind']} at x={o['bbox'][0]:.2f} y={o['bbox'][1]:.2f} w={o['bbox'][2] - o['bbox'][0]:.2f} "
+            f"h={o['bbox'][3] - o['bbox'][1]:.2f} (moves in {o['motion_fraction']:.0%} of pairs)"
+            for o in overlays
+        )
+        print(f"- **Overlay mask:** {boxes} — {mask_fraction(mask):.1%} of every signature ignored for "
+              f"dedup and the re-grab gate; written frames are untouched ({overlay_seconds:.1f}s)")
+    else:
+        print(f"- **Overlay mask:** none detected — no persistent picture-in-picture or bar ({overlay_seconds:.1f}s)")
     dims = ", ".join(f"{n}×{size}" for size, n in cost["frame_dimensions"].items()) or "-"
     print(
         f"- **Image tokens (estimate):** ≈{cost['image_tokens_estimate']:,} for one batched Read "
-        f"({dims}; ≈{cost['image_tokens_per_candidate']} each, w×h/{IMAGE_TOKEN_DIVISOR}; other providers differ)"
+        f"({dims}; {cost['image_tokens_per_candidate']} each, ⌈w/{IMAGE_PATCH}⌉×⌈h/{IMAGE_PATCH}⌉; other providers differ)"
     )
     cpu = cost["cpu"]
     refine_note = (
@@ -1464,10 +1756,27 @@ def main() -> int:
             print(f"- `{strip['path']}` → {', '.join(strip['candidate_ids'])}")
         print()
         print("Open an individual candidate only when selected or uncertain:")
+    elif sheet_block and sheet_block.get("status") == "ok":
+        shortlist_px = int(profile.get("shortlist_px", 640))
+        print(f"**Two-stage triage.** Stage 1 — Read ALL {len(sheet_block['sheets'])} contact sheets in one message "
+              f"(≈{sheet_block['image_tokens']:,} image tokens for the whole pool; reading every candidate "
+              f"individually would cost {sheet_block['individual_tokens']:,}): for every tile decide keep/drop by its "
+              "burned-in id, group the same picture into one family, and report each sheet's sentinel tile as blank "
+              "(if you cannot find it, fall back to reading the candidates below individually). Stage 2 — "
+              f"`python3 \"$SKILL_DIR/scripts/shortlist.py\" --work \"<work>\" --ids <kept ids>` re-decodes the kept "
+              f"frames at {shortlist_px}px (verified against the candidates); Read those, then write selections.json "
+              "by `candidate_id` — never copy times.")
+        print()
+        for sheet in sheet_block["sheets"]:
+            ids = ", ".join(t["candidate_id"] for t in sheet["tiles"] if not t.get("sentinel"))
+            print(f"- `{sheet['path']}` → {ids}; sentinel `{sheet['sentinel_id']}`")
+        print()
+        print("Candidates (for stage 2 and for the `spoken`/`text` provenance of captions):")
     else:
         print("**Read ALL candidate paths below in a single message (parallel Read calls), "
               "then triage per the skill rubric. Select by `candidate_id` — never copy times.**")
         print()
+    segment_text = {str(s["seg_id"]): str(s.get("text") or "") for s in segments}
     for record in records:
         extras = ""
         quality = record["quality"]
@@ -1478,12 +1787,37 @@ def main() -> int:
                 extras += " (people frame)"
         if quality.get("text_chars") is not None:
             extras += f", text={quality['text_chars']}"
+        if record.get("state_id"):
+            extras += f", state={record['state_id']}/{record['mode']}"
+            if record.get("stage"):
+                extras += f" ({record['stage']} stage)"
+        if record.get("family_id"):
+            extras += f", family={record['family_id']}"
+            if record.get("family_revisits"):
+                extras += " (same picture also at " + ", ".join(
+                    format_time(t) for t in record["family_revisits"][:4]
+                ) + ")"
         print(
             f"- `{record['path']}` ({record['candidate_id']}, "
             f"actual_t={record['actual_t']:.3f} [{format_time(record['actual_t'])}], "
             f"chapter={record['chapter_id']}, targets={','.join(record['target_ids']) or '-'}{extras})"
+            + _provenance_line(record, segment_text)
         )
     return 0
+
+
+def _provenance_line(record: dict, segment_text: dict[str, str]) -> str:
+    """What was being said while the frame was on screen, and what OCR read on
+    it — the two sources a caption's `shows`/`why` may draw on."""
+    spoken = " ".join(segment_text.get(seg, "") for seg in record.get("aligned_seg_ids") or record.get("seg_ids") or [])
+    spoken = " ".join(spoken.split())
+    parts = []
+    if spoken:
+        parts.append(f'spoken: "{spoken[:160]}{"…" if len(spoken) > 160 else ""}"')
+    ocr = record.get("quality", {}).get("ocr_text")
+    if ocr:
+        parts.append(f'ocr: "{ocr[:120]}{"…" if len(ocr) > 120 else ""}"')
+    return ("\n  " + " — ".join(parts)) if parts else ""
 
 
 if __name__ == "__main__":

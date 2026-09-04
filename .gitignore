@@ -1,3 +1,9 @@
 __pycache__/
 *.py[cod]
 .DS_Store
+bench/sheets/
+bench/runs/*/*/work/
+bench/runs/*/*/summary-*/
+bench/runs/*/*/candidates-stderr.txt
+bench/runs/*/*/summary-*.html
+bench/runs/*/*/summary-*.pdf

@@ -1,0 +1,2114 @@
+{
+  "schema_version": 2,
+  "engine_version": "1.3.0",
+  "tier": "standard",
+  "mode": "light",
+  "profile": {
+    "cap": 48,
+    "per_target": 2,
+    "unplanned_floor": 12,
+    "scene": "fixed",
+    "scene_threshold": 0.15,
+    "scene_floor": null,
+    "action_offsets": [
+      0.2,
+      0.8,
+      1.6
+    ],
+    "state_offsets": [
+      0.0,
+      0.6
+    ],
+    "state_fractions": [],
+    "slide_fractions": [],
+    "coverage_min": 1,
+    "cue_offsets": [
+      0.5,
+      1.5
+    ],
+    "refine": "none",
+    "faces": "off",
+    "ocr": "off",
+    "resolution": 512
+  },
+  "parts": [
+    {
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/download/video_24ff4f03d8.mp4",
+      "source_start": 0.0,
+      "offset": 0.0,
+      "media_start": 0.0,
+      "duration": 1095.921,
+      "frame_duration": 0.03336666666666667,
+      "mapping_confidence": "exact"
+    }
+  ],
+  "counts": {
+    "scene": 31,
+    "raw": 80,
+    "blank_or_seek_dropped": 0,
+    "recovered": 0,
+    "dedup_dropped": 13,
+    "cap_dropped": 17,
+    "reserved_trimmed": 0,
+    "cap": 48,
+    "cap_effective": 50,
+    "reserved": 38,
+    "final": 50
+  },
+  "coverage": {
+    "chapters": [
+      {
+        "chapter_id": "ch01",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000",
+          "c_0001",
+          "c_0002",
+          "c_0003",
+          "c_0004",
+          "c_0005",
+          "c_0006"
+        ]
+      },
+      {
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0007",
+          "c_0008",
+          "c_0009"
+        ]
+      },
+      {
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0010",
+          "c_0011",
+          "c_0012",
+          "c_0013"
+        ]
+      },
+      {
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0014",
+          "c_0015",
+          "c_0016",
+          "c_0017",
+          "c_0018",
+          "c_0019"
+        ]
+      },
+      {
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0020",
+          "c_0021",
+          "c_0022",
+          "c_0023"
+        ]
+      },
+      {
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0024",
+          "c_0025",
+          "c_0026",
+          "c_0027"
+        ]
+      },
+      {
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0028",
+          "c_0029",
+          "c_0030",
+          "c_0031",
+          "c_0032",
+          "c_0033",
+          "c_0034",
+          "c_0035"
+        ]
+      },
+      {
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0036",
+          "c_0037"
+        ]
+      },
+      {
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0038",
+          "c_0039",
+          "c_0040",
+          "c_0041",
+          "c_0042",
+          "c_0043"
+        ]
+      },
+      {
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0044",
+          "c_0045"
+        ]
+      },
+      {
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0046",
+          "c_0047",
+          "c_0048",
+          "c_0049"
+        ]
+      }
+    ],
+    "targets": [
+      {
+        "target_id": "ch02_perplexity_switch",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0001",
+          "c_0002"
+        ]
+      },
+      {
+        "target_id": "ch02_side_panel",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0003"
+        ]
+      },
+      {
+        "target_id": "ch02_manus_computer",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0005",
+          "c_0006"
+        ]
+      },
+      {
+        "target_id": "ch03_mac_minis",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0007"
+        ]
+      },
+      {
+        "target_id": "ch03_openclaw_shape",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0008",
+          "c_0009"
+        ]
+      },
+      {
+        "target_id": "ch04_skills_overview",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0010",
+          "c_0011"
+        ]
+      },
+      {
+        "target_id": "ch04_dependability_chart",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0012",
+          "c_0013"
+        ]
+      },
+      {
+        "target_id": "ch05_sweet_spot",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0014",
+          "c_0015"
+        ]
+      },
+      {
+        "target_id": "ch05_manus_skills",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0017",
+          "c_0018"
+        ]
+      },
+      {
+        "target_id": "ch06_shear_tweet",
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0020"
+        ]
+      },
+      {
+        "target_id": "ch07_journal_bot_telegram",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0024",
+          "c_0025"
+        ]
+      },
+      {
+        "target_id": "ch07_focused_agent_shape",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0026",
+          "c_0027"
+        ]
+      },
+      {
+        "target_id": "ch08_content_bot",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0028",
+          "c_0029"
+        ]
+      },
+      {
+        "target_id": "ch08_goals_skills",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0030",
+          "c_0031"
+        ]
+      },
+      {
+        "target_id": "ch08_direct_path",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0034",
+          "c_0035"
+        ]
+      },
+      {
+        "target_id": "ch09_remix",
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0036",
+          "c_0037"
+        ]
+      },
+      {
+        "target_id": "ch10_journal_agent",
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0038",
+          "c_0039"
+        ]
+      },
+      {
+        "target_id": "ch10_journal_informs",
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0040",
+          "c_0041"
+        ]
+      },
+      {
+        "target_id": "ch11_markdown_skills",
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0044"
+        ]
+      },
+      {
+        "target_id": "ch11_loops",
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0045"
+        ]
+      },
+      {
+        "target_id": "ch12_team",
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0046"
+        ]
+      },
+      {
+        "target_id": "ch12_open_questions",
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0047",
+          "c_0048"
+        ]
+      }
+    ]
+  },
+  "terminal_probes": [
+    {
+      "target_id": "ch03_openclaw_shape",
+      "terminal_t": 206.82,
+      "run_start": 184.63,
+      "stop": 207.07,
+      "flipped": false,
+      "build_steps": 7,
+      "events": 7,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch04_skills_overview",
+      "terminal_t": 289.9,
+      "run_start": 256.823,
+      "stop": 290.15,
+      "flipped": false,
+      "build_steps": 76,
+      "events": 119,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch04_dependability_chart",
+      "terminal_t": 306.749,
+      "run_start": 293.35,
+      "stop": 306.999,
+      "flipped": false,
+      "build_steps": 28,
+      "events": 28,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch05_sweet_spot",
+      "terminal_t": 340.54,
+      "run_start": 320.99,
+      "stop": 340.79,
+      "flipped": false,
+      "build_steps": 58,
+      "events": 58,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch06_shear_tweet",
+      "terminal_t": 419.18,
+      "run_start": 401.31,
+      "stop": 419.43,
+      "flipped": false,
+      "build_steps": 2,
+      "events": 2,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch07_focused_agent_shape",
+      "terminal_t": 481.26,
+      "run_start": 471.237,
+      "stop": 481.51,
+      "flipped": false,
+      "build_steps": 6,
+      "events": 7,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch08_goals_skills",
+      "terminal_t": 559.5,
+      "run_start": 521.35,
+      "stop": 559.75,
+      "flipped": false,
+      "build_steps": 23,
+      "events": 23,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch08_direct_path",
+      "terminal_t": 660.86,
+      "run_start": 641.39,
+      "stop": 661.11,
+      "flipped": false,
+      "build_steps": 15,
+      "events": 15,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch09_remix",
+      "terminal_t": 724.14,
+      "run_start": 706.83,
+      "stop": 724.39,
+      "flipped": false,
+      "build_steps": 46,
+      "events": 46,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch10_journal_informs",
+      "terminal_t": 809.9,
+      "run_start": 787.553,
+      "stop": 810.15,
+      "flipped": false,
+      "build_steps": 14,
+      "events": 15,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch11_loops",
+      "terminal_t": 973.62,
+      "run_start": 949.07,
+      "stop": 973.87,
+      "flipped": false,
+      "build_steps": 30,
+      "events": 30,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch12_open_questions",
+      "terminal_t": 1049.1,
+      "run_start": 1027.39,
+      "stop": 1049.35,
+      "flipped": false,
+      "build_steps": 8,
+      "events": 8,
+      "step_tau": 0.015
+    }
+  ],
+  "cost": {
+    "tier": "standard",
+    "candidates": 50,
+    "image_tokens_estimate": 9850,
+    "image_tokens_per_candidate": 197,
+    "token_formula": "w*h/750 per image (Anthropic estimate); one batched Read",
+    "frame_dimensions": {
+      "512x288": 50
+    },
+    "cpu": {
+      "scene_pass": "fixed",
+      "scene_seconds": 1053.0,
+      "terminal_probes": 12,
+      "seeks": 80,
+      "ocr_frames": 0,
+      "faces": "off",
+      "refine": "none",
+      "refine_max_decodes": 0
+    },
+    "other_tier": {
+      "tier": "high",
+      "cap": 64,
+      "max_image_tokens": 12608
+    }
+  },
+  "triage": {
+    "instructions": "Read temporal strips first; open individual 512px candidates only when selected or uncertain.",
+    "strips": [],
+    "pixel_area": 0,
+    "projected_individual_reads": 50,
+    "projected_total_pixel_area": 7372800,
+    "baseline_60x512_pixel_area": 8847360,
+    "strip_to_baseline_ratio": 0.0,
+    "projected_to_baseline_ratio": 0.8333
+  },
+  "candidates": [
+    {
+      "candidate_id": "c_0000",
+      "frame_id": "c_0000",
+      "requested_t": 43.01,
+      "actual_t": 43.043,
+      "t": 43.043,
+      "timestamp_error": 0.033,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0000_t0043.043_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0009"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 219.168,
+        "contrast": 66.12,
+        "sharpness": 10.754,
+        "blank": false,
+        "fingerprint": "32cad7bfd682c443cc514ca7733876f8ad8df5d55dc832e8990b5195426118c6"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0001",
+      "frame_id": "c_0001",
+      "requested_t": 54.187,
+      "actual_t": 54.187,
+      "t": 54.187,
+      "timestamp_error": 0.0005,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0001_t0054.187_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 214.882,
+        "contrast": 68.415,
+        "sharpness": 9.651,
+        "blank": false,
+        "fingerprint": "32e8b5850739d6c10c6e8e0af630a28c8ed3096e3720e9142c665132785fad8b"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0002",
+      "frame_id": "c_0002",
+      "requested_t": 61.72,
+      "actual_t": 61.728,
+      "t": 61.728,
+      "timestamp_error": 0.0083,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0002_t0061.728_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.029,
+        "contrast": 62.037,
+        "sharpness": 9.289,
+        "blank": false,
+        "fingerprint": "59678869a182850b82a050d12e524164c8785030f5cb9690b9c27b348b3c815e"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0003",
+      "frame_id": "c_0003",
+      "requested_t": 84.82,
+      "actual_t": 84.851,
+      "t": 84.851,
+      "timestamp_error": 0.0314,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0003_t0084.851_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_side_panel"
+      ],
+      "seg_ids": [
+        "seg_0016",
+        "seg_0017"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 214.393,
+        "contrast": 66.79,
+        "sharpness": 9.819,
+        "blank": false,
+        "fingerprint": "a4697a3ef3178cb12daa47c414eb0726ae110f498d580199d93e2cc68170c325"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0004",
+      "frame_id": "c_0004",
+      "requested_t": 103.904,
+      "actual_t": 103.937,
+      "t": 103.937,
+      "timestamp_error": 0.0332,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0004_t0103.937_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0020"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 158.652,
+        "contrast": 79.295,
+        "sharpness": 11.036,
+        "blank": false,
+        "fingerprint": "e728ae4ffe0848e68b36b32456e1e760ceaf00395ed971f4eb5a239037160ed6"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0005",
+      "frame_id": "c_0005",
+      "requested_t": 111.74,
+      "actual_t": 111.745,
+      "t": 111.745,
+      "timestamp_error": 0.005,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0005_t0111.745_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 210.955,
+        "contrast": 65.239,
+        "sharpness": 11.403,
+        "blank": false,
+        "fingerprint": "5fb20d180f32c6fc51e9d5d645f98c6e63006f3aa204018261836200322bcba7"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0006",
+      "frame_id": "c_0006",
+      "requested_t": 112.34,
+      "actual_t": 112.346,
+      "t": 112.346,
+      "timestamp_error": 0.0056,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0006_t0112.346_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 210.967,
+        "contrast": 65.19,
+        "sharpness": 11.186,
+        "blank": false,
+        "fingerprint": "266dcf0e278d0164f363cd67f93052da0b4f38b4c0ef11d5ac15010097a7d7a0"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0007",
+      "frame_id": "c_0007",
+      "requested_t": 177.26,
+      "actual_t": 177.277,
+      "t": 177.277,
+      "timestamp_error": 0.0171,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0007_t0177.277_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_mac_minis"
+      ],
+      "seg_ids": [
+        "seg_0035",
+        "seg_0036",
+        "seg_0037"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.775,
+        "contrast": 69.16,
+        "sharpness": 9.249,
+        "blank": false,
+        "fingerprint": "76a2ac457f2024ccc9b2e1a44b8770734ddccc6c0e3e8dff702038122f829141"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0008",
+      "frame_id": "c_0008",
+      "requested_t": 195.6,
+      "actual_t": 195.629,
+      "t": 195.629,
+      "timestamp_error": 0.0288,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0008_t0195.629_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_openclaw_shape"
+      ],
+      "seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.276,
+        "contrast": 68.774,
+        "sharpness": 10.34,
+        "blank": false,
+        "fingerprint": "2566e90dba1dea5ac830e101b1cdcc9e547c7f7d73eb5b3f4b0a487e85cc90e6"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0009",
+      "frame_id": "c_0009",
+      "requested_t": 206.82,
+      "actual_t": 206.84,
+      "t": 206.84,
+      "timestamp_error": 0.02,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0009_t0206.840_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_openclaw_shape"
+      ],
+      "seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.473,
+        "contrast": 68.6,
+        "sharpness": 11.101,
+        "blank": false,
+        "fingerprint": "c4a80f970ca3b8f6d5b457276d04bd5ea747e97178bdcb1177cc3c642eb65eb3"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0010",
+      "frame_id": "c_0010",
+      "requested_t": 261.42,
+      "actual_t": 261.428,
+      "t": 261.428,
+      "timestamp_error": 0.0078,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0010_t0261.428_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.138,
+        "contrast": 64.201,
+        "sharpness": 11.57,
+        "blank": false,
+        "fingerprint": "f370b1b13a8705a4dc33b963fc909509da8c16b65404ee4c50c3b2205495e173"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0011",
+      "frame_id": "c_0011",
+      "requested_t": 289.9,
+      "actual_t": 289.923,
+      "t": 289.923,
+      "timestamp_error": 0.023,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0011_t0289.923_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.944,
+        "contrast": 64.196,
+        "sharpness": 11.931,
+        "blank": false,
+        "fingerprint": "41e3bbdaaa4a0c008034a892b50f37cf3fde76f31e98924a7c3318061915c342"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0012",
+      "frame_id": "c_0012",
+      "requested_t": 300.5,
+      "actual_t": 300.5,
+      "t": 300.5,
+      "timestamp_error": 0.0002,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0012_t0300.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.739,
+        "contrast": 66.06,
+        "sharpness": 11.212,
+        "blank": false,
+        "fingerprint": "3ddb39c6429d05689719cfa12b7be090525e3a8f26dc7baa992bb1540da22aa3"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0013",
+      "frame_id": "c_0013",
+      "requested_t": 306.749,
+      "actual_t": 306.773,
+      "t": 306.773,
+      "timestamp_error": 0.0241,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0013_t0306.773_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.784,
+        "contrast": 66.209,
+        "sharpness": 11.234,
+        "blank": false,
+        "fingerprint": "d1e14973b404123e27a7bb570662d2df3c5e5e16e7882f7bb0da8bf1253b2445"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0014",
+      "frame_id": "c_0014",
+      "requested_t": 330.64,
+      "actual_t": 330.664,
+      "t": 330.664,
+      "timestamp_error": 0.0237,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0014_t0330.664_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.317,
+        "contrast": 64.596,
+        "sharpness": 11.312,
+        "blank": false,
+        "fingerprint": "36d25eefc7a864a1f7f6ff3a3d459319a7bfe2bbbef4f965cc5d8f5870b7f8d8"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0015",
+      "frame_id": "c_0015",
+      "requested_t": 340.54,
+      "actual_t": 340.54,
+      "t": 340.54,
+      "timestamp_error": 0.0002,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0015_t0340.540_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.951,
+        "contrast": 64.735,
+        "sharpness": 11.546,
+        "blank": false,
+        "fingerprint": "1b57544c0deaddadedc9ace616e2b32085aaaafa522586c2638200618770f8a3"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0016",
+      "frame_id": "c_0016",
+      "requested_t": 341.975,
+      "actual_t": 342.008,
+      "t": 342.008,
+      "timestamp_error": 0.0333,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0016_t0342.008_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0068"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 213.124,
+        "contrast": 62.803,
+        "sharpness": 11.296,
+        "blank": false,
+        "fingerprint": "676da721065f2bfaa176841d646aa0d2ae566bc133d998f80eb4cbe8b9a175d2"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0017",
+      "frame_id": "c_0017",
+      "requested_t": 352.36,
+      "actual_t": 352.385,
+      "t": 352.385,
+      "timestamp_error": 0.0254,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0017_t0352.385_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_manus_skills"
+      ],
+      "seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 135.895,
+        "contrast": 66.046,
+        "sharpness": 10.002,
+        "blank": false,
+        "fingerprint": "1195ee9cfa5cd7d04d9821021345b6287ddf4e2c2b91da9f737589213af5b390"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0018",
+      "frame_id": "c_0018",
+      "requested_t": 353.76,
+      "actual_t": 353.787,
+      "t": 353.787,
+      "timestamp_error": 0.0268,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0018_t0353.787_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_manus_skills"
+      ],
+      "seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 136.316,
+        "contrast": 66.134,
+        "sharpness": 10.046,
+        "blank": false,
+        "fingerprint": "05eeb96ca23fc0247a3e4917654269edabba0376bb17204778e3dc3e4e1a2a88"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0019",
+      "frame_id": "c_0019",
+      "requested_t": 357.557,
+      "actual_t": 357.557,
+      "t": 357.557,
+      "timestamp_error": 0.0002,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0019_t0357.557_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0072"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 212.837,
+        "contrast": 62.563,
+        "sharpness": 11.605,
+        "blank": false,
+        "fingerprint": "e513562431c8b8341182e38cbf4c4e0e5785dcc5d05f1f1a3e6dab6d3739de3a"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0020",
+      "frame_id": "c_0020",
+      "requested_t": 410.12,
+      "actual_t": 410.143,
+      "t": 410.143,
+      "timestamp_error": 0.0231,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0020_t0410.143_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 212.334,
+        "contrast": 66.511,
+        "sharpness": 15.551,
+        "blank": false,
+        "fingerprint": "9dd7649f1d571579bc0ed0e2eebb5d6484861b5b882b2a95047e34120cde135f"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0021",
+      "frame_id": "c_0021",
+      "requested_t": 422.522,
+      "actual_t": 422.522,
+      "t": 422.522,
+      "timestamp_error": 0.0001,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0021_t0422.522_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0085"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 213.369,
+        "contrast": 67.542,
+        "sharpness": 15.525,
+        "blank": false,
+        "fingerprint": "8fc932318175dbc11a7cdd2225563cc7c1bbecd8f1b8509ff79572605438fb2b"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0022",
+      "frame_id": "c_0022",
+      "requested_t": 429.596,
+      "actual_t": 429.629,
+      "t": 429.629,
+      "timestamp_error": 0.0332,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0022_t0429.629_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0086"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 212.174,
+        "contrast": 66.503,
+        "sharpness": 15.794,
+        "blank": false,
+        "fingerprint": "5a44a4b7abc3d1406d328d3d3ea5e1f6d205b39823a0425fd082bf1148521cc6"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0023",
+      "frame_id": "c_0023",
+      "requested_t": 431.298,
+      "actual_t": 431.331,
+      "t": 431.331,
+      "timestamp_error": 0.0329,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0023_t0431.331_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0087"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 213.006,
+        "contrast": 62.411,
+        "sharpness": 11.558,
+        "blank": false,
+        "fingerprint": "2e062e7c4ae217b15c2536abc1c20cf33ba014d33c9a164ef81092244ab6cf36"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0024",
+      "frame_id": "c_0024",
+      "requested_t": 459.993,
+      "actual_t": 460.026,
+      "t": 460.026,
+      "timestamp_error": 0.0332,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0024_t0460.026_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 170.039,
+        "contrast": 93.415,
+        "sharpness": 16.374,
+        "blank": false,
+        "fingerprint": "85684eceae42b029d3e2c8ffa0c557769e49ea35410031455c411497c2d01bb9"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0025",
+      "frame_id": "c_0025",
+      "requested_t": 463.12,
+      "actual_t": 463.129,
+      "t": 463.129,
+      "timestamp_error": 0.0093,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0025_t0463.129_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 169.265,
+        "contrast": 93.833,
+        "sharpness": 15.776,
+        "blank": false,
+        "fingerprint": "32e5e73db75f1a717f709f3baf0814147c324b8487ee7e2cd1bc64277b9c3533"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0026",
+      "frame_id": "c_0026",
+      "requested_t": 475.46,
+      "actual_t": 475.475,
+      "t": 475.475,
+      "timestamp_error": 0.015,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0026_t0475.475_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.633,
+        "contrast": 65.755,
+        "sharpness": 10.989,
+        "blank": false,
+        "fingerprint": "4f4340e9c475bb105237e1810b133ff217ff09a38849c82ed5c4100a39301de8"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0027",
+      "frame_id": "c_0027",
+      "requested_t": 481.26,
+      "actual_t": 481.281,
+      "t": 481.281,
+      "timestamp_error": 0.0208,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0027_t0481.281_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.697,
+        "contrast": 65.798,
+        "sharpness": 10.9,
+        "blank": false,
+        "fingerprint": "8282c24704b357a9c61650340784e21f757cee71bd0184941a9e20d564ff92de"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0028",
+      "frame_id": "c_0028",
+      "requested_t": 512.82,
+      "actual_t": 512.846,
+      "t": 512.846,
+      "timestamp_error": 0.0257,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0028_t0512.846_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_content_bot"
+      ],
+      "seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 168.327,
+        "contrast": 93.931,
+        "sharpness": 16.234,
+        "blank": false,
+        "fingerprint": "133494bc0f1cb3224de593ccdaae5ca2e6794767f31c91ec62a248b52b52e16f"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0029",
+      "frame_id": "c_0029",
+      "requested_t": 513.42,
+      "actual_t": 513.446,
+      "t": 513.446,
+      "timestamp_error": 0.0263,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0029_t0513.446_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_content_bot"
+      ],
+      "seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.357,
+        "contrast": 66.013,
+        "sharpness": 11.633,
+        "blank": false,
+        "fingerprint": "277f78f9b42138631f49b342b9ac892f7703d8697f0a11e0f7d04eb2a95cdcb6"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0030",
+      "frame_id": "c_0030",
+      "requested_t": 540.3,
+      "actual_t": 540.306,
+      "t": 540.306,
+      "timestamp_error": 0.0064,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0030_t0540.306_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.609,
+        "contrast": 65.487,
+        "sharpness": 12.302,
+        "blank": false,
+        "fingerprint": "bf9e4d57bbbc22e8919070e6ee4a2491fd2bb05e5ffde2ce9f4399769fda5380"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0031",
+      "frame_id": "c_0031",
+      "requested_t": 559.5,
+      "actual_t": 559.526,
+      "t": 559.526,
+      "timestamp_error": 0.0256,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0031_t0559.526_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.586,
+        "contrast": 64.926,
+        "sharpness": 13.032,
+        "blank": false,
+        "fingerprint": "55a5add8adab44fcbee9e58cfaf456584493b6a0fd80b451ce4ca2ac7f712fb9"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0032",
+      "frame_id": "c_0032",
+      "requested_t": 584.0,
+      "actual_t": 584.017,
+      "t": 584.017,
+      "timestamp_error": 0.0168,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0032_t0584.017_coverage.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0118"
+      ],
+      "reasons": [
+        "coverage"
+      ],
+      "quality": {
+        "mean_luma": 215.424,
+        "contrast": 64.748,
+        "sharpness": 13.122,
+        "blank": false,
+        "fingerprint": "ceec97e773de29ed9de8af607a8a52b8ce7d27697959e0e24f94cf82b7d85514"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0033",
+      "frame_id": "c_0033",
+      "requested_t": 628.495,
+      "actual_t": 628.528,
+      "t": 628.528,
+      "timestamp_error": 0.0329,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0033_t0628.528_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0127"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 210.308,
+        "contrast": 64.947,
+        "sharpness": 15.597,
+        "blank": false,
+        "fingerprint": "edbfadaf698a45d741e7708df3d6f434da9df1a7409812512ce29e54e182b9da"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0034",
+      "frame_id": "c_0034",
+      "requested_t": 651.0,
+      "actual_t": 651.017,
+      "t": 651.017,
+      "timestamp_error": 0.017,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0034_t0651.017_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 214.622,
+        "contrast": 65.116,
+        "sharpness": 13.75,
+        "blank": false,
+        "fingerprint": "0b852ac7be6224155c2203ece7c90af0037ac0fd42f8b0cbdab7d897514346ac"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0035",
+      "frame_id": "c_0035",
+      "requested_t": 660.86,
+      "actual_t": 660.86,
+      "t": 660.86,
+      "timestamp_error": 0.0002,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0035_t0660.860_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.721,
+        "contrast": 65.336,
+        "sharpness": 13.538,
+        "blank": false,
+        "fingerprint": "4e7cdb7e28c0f75ab69b77ebaa9b2169a98bb0e671cae485c01d4141a068d027"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0036",
+      "frame_id": "c_0036",
+      "requested_t": 715.36,
+      "actual_t": 715.381,
+      "t": 715.381,
+      "timestamp_error": 0.0213,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0036_t0715.381_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.784,
+        "contrast": 65.269,
+        "sharpness": 10.517,
+        "blank": false,
+        "fingerprint": "318c584216014c7b3be94cf177d7797565e10432950acf4f9c75b9957c5bbada"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0037",
+      "frame_id": "c_0037",
+      "requested_t": 724.14,
+      "actual_t": 724.157,
+      "t": 724.157,
+      "timestamp_error": 0.0168,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0037_t0724.157_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.243,
+        "contrast": 65.127,
+        "sharpness": 10.136,
+        "blank": false,
+        "fingerprint": "8da54521931c9f3286a7f8b8f8b56cd74bf400ca0de4b12e1bdc1f40b4ea9b3a"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0038",
+      "frame_id": "c_0038",
+      "requested_t": 753.22,
+      "actual_t": 753.253,
+      "t": 753.253,
+      "timestamp_error": 0.0325,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0038_t0753.253_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.605,
+        "contrast": 65.099,
+        "sharpness": 10.499,
+        "blank": false,
+        "fingerprint": "01bee2d7c80fb0fef3c93bcde724eafcd068f72cfafad457cae88c62d08bea9c"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0039",
+      "frame_id": "c_0039",
+      "requested_t": 755.455,
+      "actual_t": 755.488,
+      "t": 755.488,
+      "timestamp_error": 0.0331,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0039_t0755.488_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 168.52,
+        "contrast": 93.671,
+        "sharpness": 15.789,
+        "blank": false,
+        "fingerprint": "4e578d856bfe6e537dd9468d25c8c6cc4a033c07bf2b971f6f4b099f861f9f5e"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0040",
+      "frame_id": "c_0040",
+      "requested_t": 797.6,
+      "actual_t": 797.63,
+      "t": 797.63,
+      "timestamp_error": 0.0302,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0040_t0797.630_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.287,
+        "contrast": 64.251,
+        "sharpness": 11.806,
+        "blank": false,
+        "fingerprint": "d9e7b4832efd2db020fdf1ecb200eca770a7c745c652997ded1504f1d556dc61"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0041",
+      "frame_id": "c_0041",
+      "requested_t": 809.9,
+      "actual_t": 809.909,
+      "t": 809.909,
+      "timestamp_error": 0.0091,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0041_t0809.909_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.863,
+        "contrast": 63.996,
+        "sharpness": 12.805,
+        "blank": false,
+        "fingerprint": "1c8b391f9acec33e9ebfa5d883cef8136694ef6cd597aaf47d70b48912a4fef7"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0042",
+      "frame_id": "c_0042",
+      "requested_t": 839.238,
+      "actual_t": 839.238,
+      "t": 839.238,
+      "timestamp_error": 0.0004,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0042_t0839.238_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0174"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 211.388,
+        "contrast": 62.796,
+        "sharpness": 16.238,
+        "blank": false,
+        "fingerprint": "c42330f5990cc234947e923cb437673b7180f3a5eeaa09bc496e72aa2d6a53fe"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0043",
+      "frame_id": "c_0043",
+      "requested_t": 839.505,
+      "actual_t": 839.505,
+      "t": 839.505,
+      "timestamp_error": 0.0003,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0043_t0839.505_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0174"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 213.688,
+        "contrast": 62.827,
+        "sharpness": 15.291,
+        "blank": false,
+        "fingerprint": "714e7a319d1b0127b19fafdcde26c331415b0462cabf9b6a046e2df455cf93c2"
+      },
+      "scene_score": 0.15,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0044",
+      "frame_id": "c_0044",
+      "requested_t": 886.46,
+      "actual_t": 886.486,
+      "t": 886.486,
+      "timestamp_error": 0.0256,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0044_t0886.486_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_markdown_skills"
+      ],
+      "seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.904,
+        "contrast": 65.306,
+        "sharpness": 12.136,
+        "blank": false,
+        "fingerprint": "12caa1a75522932387773ce4a41cca9ced784b6d23d171fb47fc1ebba827f9b1"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0045",
+      "frame_id": "c_0045",
+      "requested_t": 961.22,
+      "actual_t": 961.227,
+      "t": 961.227,
+      "timestamp_error": 0.0069,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0045_t0961.227_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.573,
+        "contrast": 65.585,
+        "sharpness": 10.673,
+        "blank": false,
+        "fingerprint": "1e0a55ccb87e56986261426c249e1aabaacc4fc790053396c67eb3aeffba8356"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0046",
+      "frame_id": "c_0046",
+      "requested_t": 1004.0,
+      "actual_t": 1004.003,
+      "t": 1004.003,
+      "timestamp_error": 0.003,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0046_t1004.003_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_team"
+      ],
+      "seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.651,
+        "contrast": 65.273,
+        "sharpness": 11.027,
+        "blank": false,
+        "fingerprint": "cac3a98046a284565bf2ee486939b0dd203d1f880279fe536b1b0545f796c62c"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0047",
+      "frame_id": "c_0047",
+      "requested_t": 1038.12,
+      "actual_t": 1038.137,
+      "t": 1038.137,
+      "timestamp_error": 0.0171,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0047_t1038.137_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.732,
+        "contrast": 66.268,
+        "sharpness": 11.35,
+        "blank": false,
+        "fingerprint": "e484b9261d361fe77ca7c59856c4265cea6d62f2cde42ed46ea89658c2dc5e22"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0048",
+      "frame_id": "c_0048",
+      "requested_t": 1049.1,
+      "actual_t": 1049.115,
+      "t": 1049.115,
+      "timestamp_error": 0.0147,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0048_t1049.115_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 222.529,
+        "contrast": 66.444,
+        "sharpness": 10.692,
+        "blank": false,
+        "fingerprint": "81416b1c24d43abc4a877c682717ca7612776db41826d054ccda7f8e75cce798"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    },
+    {
+      "candidate_id": "c_0049",
+      "frame_id": "c_0049",
+      "requested_t": 1050.0,
+      "actual_t": 1050.016,
+      "t": 1050.016,
+      "timestamp_error": 0.0156,
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/candidates/c_0049_t1050.016_coverage.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0224",
+        "seg_0236"
+      ],
+      "reasons": [
+        "coverage",
+        "final"
+      ],
+      "quality": {
+        "mean_luma": 222.442,
+        "contrast": 66.616,
+        "sharpness": 10.683,
+        "blank": false,
+        "fingerprint": "0a31cba6fefa16e7a6ca95b0059e5fa3e51e21ee3606bb0a5b873792eb20536c"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact"
+    }
+  ]
+}

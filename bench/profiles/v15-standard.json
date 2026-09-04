@@ -1,0 +1,6 @@
+{
+  "name": "v15-standard",
+  "description": "1.5: visual-state engine (dense 2 fps scan, runs → states, greedy fill), --tier standard.",
+  "tier": "standard",
+  "override": {}
+}

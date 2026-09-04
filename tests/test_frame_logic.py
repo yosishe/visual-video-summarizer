@@ -84,10 +84,29 @@ class ChapterAndCandidateTests(unittest.TestCase):
         self.assertIn("target", kept[0]["reasons"])
         self.assertIn("scene", kept[0]["reasons"])
 
-    def test_dedup_does_not_cross_semantic_targets(self) -> None:
+    def test_dedup_merges_identical_pictures_across_targets_without_losing_coverage(self) -> None:
+        # Family scope (1.4): the same picture reached by two targets is one
+        # candidate that carries both target ids — the pool shrinks, the
+        # coverage report still resolves every target.
         first = frame(3.1, "target", "vt1")
         second = frame(3.2, "target", "vt2")
-        kept, dropped = candidates.deduplicate_frames([first, second])
+        kept, dropped = candidates.deduplicate_frames([first, second], scope="family")
+        self.assertEqual(dropped, 1)
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0]["target_ids"], {"vt1", "vt2"})
+        self.assertEqual(kept[0]["family_id"], "f_001")
+        chapters = [{"chapter_id": "ch02", "start": 3, "end": 6, "needs_frames": True,
+                     "visual_targets": [{"target_id": "vt1"}, {"target_id": "vt2"}]}]
+        report = candidates.coverage_report(chapters, [
+            {"candidate_id": "c_0000", "chapter_id": "ch02", "target_ids": sorted(kept[0]["target_ids"]),
+             "reasons": ["target"]}
+        ])
+        self.assertTrue(all(row["status"] != "unresolved" for row in report["targets"]))
+
+    def test_dedup_chapter_scope_keeps_the_legacy_target_isolation(self) -> None:
+        first = frame(3.1, "target", "vt1")
+        second = frame(3.2, "target", "vt2")
+        kept, dropped = candidates.deduplicate_frames([first, second], scope="chapter")
         self.assertEqual(dropped, 0)
         self.assertEqual(len(kept), 2)
 

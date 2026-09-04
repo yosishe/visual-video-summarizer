@@ -1,0 +1,522 @@
+{
+ "overview": "After two weeks of building agent workflows across OpenClaw, Manus, Claude Code and Perplexity Computer, the presenter argues that the winning form of AI agent is not one general assistant with a cloud computer but a team of narrow agents, each holding 7-10 skills and two or three explicit goals - because dependability falls as skills accumulate, and because narrow agents are duplicable, sharable, understandable, reviewable and easy to loop.",
+ "chapters": [
+  {
+   "chapter_id": "ch01",
+   "title": "The thesis: narrow agents are the future",
+   "blocks": [
+    {
+     "text": "The video opens with a claim earned from volume rather than theory: two weeks spent building hundreds of agent workflows, mostly in OpenClaw but also across Manus, Claude Code and the newly released Perplexity Computer. The conclusion drawn from that sprint is that companies will not run one omnicompetent assistant - they will run very narrow AI agents that operate as a team.",
+     "seg_ids": [
+      "seg_0000",
+      "seg_0001",
+      "seg_0002",
+      "seg_0003"
+     ]
+    },
+    {
+     "text": "The commitment is concrete rather than speculative: the plan is to build 15 high-quality agents that run the entire growth division at vibecheck.dev. The rest of the video sets out why narrow agents win, and why OpenClaw is the chosen substrate for that team.",
+     "seg_ids": [
+      "seg_0004",
+      "seg_0005",
+      "seg_0006",
+      "seg_0007",
+      "seg_0008"
+     ]
+    }
+   ],
+   "key_points": [
+    "Two weeks, hundreds of workflows, four tools tested",
+    "Thesis: narrow agents operating as a team, not one general agent",
+    "Concrete plan: 15 agents running an entire growth division"
+   ]
+  },
+  {
+   "chapter_id": "ch02",
+   "title": "The general agents tested: Perplexity Computer and Manus",
+   "blocks": [
+    {
+     "text": "Four tools were tested: OpenClaw, Manus, Claude Code and Perplexity Computer. Perplexity Computer is a mode switch inside Perplexity - you move from Search to Computer, hand the agent a single task like 'please make an app', and it starts working the way ChatGPT would.",
+     "seg_ids": [
+      "seg_0009",
+      "seg_0010",
+      "seg_0011",
+      "seg_0012",
+      "seg_0013",
+      "seg_0014"
+     ]
+    },
+    {
+     "text": "The difference from a chatbot is that the task gets a sandbox - a computer running in the cloud - so the agent can actually create files, and whatever it creates opens in a side panel. The presenter's summary is blunt: it is ChatGPT with a computer, which is exactly what Manus already was.",
+     "seg_ids": [
+      "seg_0015",
+      "seg_0016",
+      "seg_0017",
+      "seg_0018"
+     ]
+    },
+    {
+     "text": "Manus predates Perplexity Computer and works identically. It was the first general agent tool where every task you submit gets access to a computer, and the interface exposes this directly through a 'view Manus's computer' panel where you can watch it create and edit files.",
+     "seg_ids": [
+      "seg_0019",
+      "seg_0020",
+      "seg_0021",
+      "seg_0022",
+      "seg_0023",
+      "seg_0024"
+     ]
+    },
+    {
+     "text": "The shared architecture is therefore one computer per task: five tasks means five little computers, and what those computers do depends entirely on how you phrased the prompt. The presenter's name for this pattern is a command center for agents that have access to a computer - and that framing is what he goes on to reject.",
+     "seg_ids": [
+      "seg_0025",
+      "seg_0026",
+      "seg_0027",
+      "seg_0028",
+      "seg_0029",
+      "seg_0030",
+      "seg_0031"
+     ]
+    }
+   ],
+   "key_points": [
+    "Perplexity Computer and Manus share one architecture: a fresh cloud computer per task",
+    "Both are 'ChatGPT with a computer' - a command center, not an employee"
+   ]
+  },
+  {
+   "chapter_id": "ch03",
+   "title": "Why OpenClaw's shape wins: one computer, memory, skills, gateway",
+   "blocks": [
+    {
+     "text": "The command-center pattern is called useful for certain things but not the most useful form of AI agent. The alternative the presenter backs is OpenClaw: an agent that runs on one computer rather than spinning a new one per task. As evidence of how much demand this has created, he points out that Mac Minis and Mac Studios are effectively sold out because so many people are running OpenClaw on them.",
+     "seg_ids": [
+      "seg_0032",
+      "seg_0033",
+      "seg_0034",
+      "seg_0035",
+      "seg_0036",
+      "seg_0037"
+     ]
+    },
+    {
+     "text": "What OpenClaw added on top of 'an agent on a computer' is three things: good memory, structured skills that are easy to add, and a gateway. The gateway is the piece that made it go viral - it lets you talk to the agent from Telegram, WhatsApp, Discord or Slack, which means the agent lives inside the tools you already use to talk to people rather than in a separate console you have to remember to visit.",
+     "seg_ids": [
+      "seg_0038",
+      "seg_0039",
+      "seg_0040",
+      "seg_0041",
+      "seg_0042",
+      "seg_0043",
+      "seg_0044",
+      "seg_0045"
+     ]
+    }
+   ],
+   "key_points": [
+    "OpenClaw = one persistent computer, not one per task",
+    "Memory + structured skills + a messaging gateway",
+    "The gateway is why it spread: the agent reaches you where you already are"
+   ]
+  },
+  {
+   "chapter_id": "ch04",
+   "title": "Skill sprawl: more skills, less dependability",
+   "blocks": [
+    {
+     "text": "The first OpenClaw agent the presenter built was given everything. The skill map covers a social media transcript analyzer built on the Supadata API (which turns any YouTube, Twitter, Instagram or TikTok link into a transcript), Notion control, the whole Google Workspace - calendar, email, Docs, Sheets - plus Linear for product status, Figma control on his own machine, media generation through FAL, and even video editing.",
+     "seg_ids": [
+      "seg_0046",
+      "seg_0047",
+      "seg_0048",
+      "seg_0049",
+      "seg_0050",
+      "seg_0051",
+      "seg_0052",
+      "seg_0053",
+      "seg_0054",
+      "seg_0055",
+      "seg_0056",
+      "seg_0057",
+      "seg_0058"
+     ]
+    },
+    {
+     "text": "The failure was not dramatic; it was gradual. As the number of skills increased, the dependability of the agent decreased. The specific symptoms are worth naming because they are the diagnostic signs of an over-scoped agent: it stops invoking skills at the right time, the context becomes clouded, it reaches for the wrong integrations, and the personalities get jumbled together.",
+     "seg_ids": [
+      "seg_0059",
+      "seg_0060",
+      "seg_0061",
+      "seg_0062",
+      "seg_0063",
+      "seg_0064"
+     ]
+    }
+   ],
+   "key_points": [
+    "Skills up, dependability down - the video's central relationship",
+    "Symptoms: wrong skill at the wrong time, clouded context, wrong integrations, jumbled personality"
+   ]
+  },
+  {
+   "chapter_id": "ch05",
+   "title": "The 7-10 skill sweet spot, and the command-center problem",
+   "blocks": [
+    {
+     "text": "The conclusion is a number rather than a principle: build a team of agents holding roughly seven to ten skills each, instead of single agents carrying thirty. That is the stated sweet spot; above it, performance degrades.",
+     "seg_ids": [
+      "seg_0065",
+      "seg_0066",
+      "seg_0067",
+      "seg_0068"
+     ]
+    },
+    {
+     "text": "This is also the precise reason Manus is judged to have potential but is not the tool of choice. Its skill catalogue is genuinely good, but when you open Manage Skills you are not attaching a skill to a specific agent - you are attaching it to your command center. Everything therefore stays proactive in the wrong direction: you must go to the command center and ask for work to happen.",
+     "seg_ids": [
+      "seg_0069",
+      "seg_0070",
+      "seg_0071",
+      "seg_0072",
+      "seg_0073",
+      "seg_0074"
+     ]
+    }
+   ],
+   "key_points": [
+    "The rule: 7-10 skills per agent, not 30",
+    "Manus attaches skills to the command center, not to an agent - so nothing acts on its own"
+   ]
+  },
+  {
+   "chapter_id": "ch06",
+   "title": "From prompts to intent",
+   "blocks": [
+    {
+     "text": "The standard the presenter holds agents to is an employee standard. People want something that gets things done, that occasionally does things that surprise you, and that makes useful suggestions. Doing all three requires specific goals - or, in the vocabulary he adopts, intent.",
+     "seg_ids": [
+      "seg_0075",
+      "seg_0076",
+      "seg_0077",
+      "seg_0078",
+      "seg_0079",
+      "seg_0080"
+     ]
+    },
+    {
+     "text": "The term is borrowed from a post by Emmett Shear - briefly interim CEO during the OpenAI leadership crisis - reading, in the presenter's rendering, that prompts are so late 2025 and we are giving models intents now. He extends it: we are giving AI agents with computers intents, and intent simply means intention or purpose.",
+     "seg_ids": [
+      "seg_0081",
+      "seg_0082",
+      "seg_0083",
+      "seg_0084",
+      "seg_0085",
+      "seg_0086"
+     ]
+    },
+    {
+     "text": "The argument closes the loop with the previous chapter. Purpose is hard to give a general agent precisely because it is general - too many skills, too broad a surface, too proactive in the wrong sense. That is the stated reason for rejecting Perplexity Computer and Manus, and for building a team of narrow OpenClaw agents with specific goals and specific skills instead.",
+     "seg_ids": [
+      "seg_0087",
+      "seg_0088",
+      "seg_0089",
+      "seg_0090",
+      "seg_0091"
+     ]
+    }
+   ],
+   "key_points": [
+    "The bar is an employee: gets things done, surprises you, suggests usefully",
+    "Intent = intention or purpose; a general agent cannot hold one"
+   ]
+  },
+  {
+   "chapter_id": "ch07",
+   "title": "What a focused agent looks like in practice",
+   "blocks": [
+    {
+     "text": "These agents are already running. Several live in Telegram, including a journal bot, and after two weeks of testing them the presenter says the direction of the whole space is clear.",
+     "seg_ids": [
+      "seg_0092",
+      "seg_0093",
+      "seg_0094",
+      "seg_0095"
+     ]
+    },
+    {
+     "text": "The unit he settles on has three defining properties: a specific personality, specific tasks, and a specific heartbeat - the cadence on which it wakes up and acts. All three work better when they are confined to a narrow focus, and the practical payoff is that narrowness tells you which skills and integrations are worth adding at all, because they only need to serve one goal.",
+     "seg_ids": [
+      "seg_0096",
+      "seg_0097",
+      "seg_0098",
+      "seg_0099",
+      "seg_0100",
+      "seg_0101",
+      "seg_0102"
+     ]
+    }
+   ],
+   "key_points": [
+    "A focused agent = personality + tasks + heartbeat",
+    "Narrow scope is what makes the skill/integration question answerable"
+   ]
+  },
+  {
+   "chapter_id": "ch08",
+   "title": "Anatomy of the YouTube agent: goals to skills to integrations",
+   "blocks": [
+    {
+     "text": "The worked example is the presenter's favourite agent: a content bot he messages in Telegram whose only job is creating YouTube videos. Its files contain three goals it knows it is optimizing for - subscribers, views and conversions. He is careful not to overclaim: not everything he does on YouTube is optimized for those three, but whenever he asks the agent for a script, that is the objective function it works against.",
+     "seg_ids": [
+      "seg_0103",
+      "seg_0104",
+      "seg_0105",
+      "seg_0106",
+      "seg_0107",
+      "seg_0108",
+      "seg_0109",
+      "seg_0110"
+     ]
+    },
+    {
+     "text": "The reason narrow goals matter operationally is that they turn skill selection into a test rather than a preference. A candidate skill either serves the agent's goals or it does not, and if it does not, you do not add it. Skill one is YouTube research, and the goal test immediately answers the next question - which integrations does that skill need? Two: the SERP API for searching YouTube, and the Supadata API for scraping transcripts.",
+     "seg_ids": [
+      "seg_0111",
+      "seg_0112",
+      "seg_0113",
+      "seg_0114",
+      "seg_0115",
+      "seg_0116",
+      "seg_0117",
+      "seg_0118",
+      "seg_0119",
+      "seg_0120"
+     ]
+    },
+    {
+     "text": "Skill two is a thumbnail generator. Every morning the agent scrapes competitors' thumbnails and proposes modified versions with the presenter's own face on them, which requires the Nano Banana integration plus a piece of standing context - a set of photos of Riley - so the model can render him. Skill three is Notion control, where all his scripts live, and it needs nothing more than the Notion integration.",
+     "seg_ids": [
+      "seg_0121",
+      "seg_0122",
+      "seg_0123",
+      "seg_0124",
+      "seg_0125",
+      "seg_0126",
+      "seg_0127",
+      "seg_0128",
+      "seg_0129",
+      "seg_0130"
+     ]
+    },
+    {
+     "text": "The result is a single direct path: the agent exists to raise subscribers, views and conversions; three skills serve those goals; four integrations serve those skills. Asking the agent what it needs now has a determinate answer. The analogy offered is hiring - the most frustrating hires are people with vague skills and no specific goals, good at talking and good at distracting from the target; the best are people who state what they are good at and how it moves the company's numbers.",
+     "seg_ids": [
+      "seg_0131",
+      "seg_0132",
+      "seg_0133",
+      "seg_0134",
+      "seg_0135",
+      "seg_0136",
+      "seg_0137",
+      "seg_0138",
+      "seg_0139",
+      "seg_0140",
+      "seg_0141",
+      "seg_0142"
+     ]
+    }
+   ],
+   "key_points": [
+    "Goals: subs, views, conversions - written into the agent's files",
+    "Skills: YouTube research, thumbnail generator, Notion control",
+    "Integrations: SERP API, Supadata, Nano Banana, Notion (+ photos of Riley as context)",
+    "A skill that does not serve a goal does not get added"
+   ]
+  },
+  {
+   "chapter_id": "ch09",
+   "title": "Narrow agents are easy to duplicate and remix",
+   "blocks": [
+    {
+     "text": "The first reason to prefer narrow agents is reuse. Once you find one that works, it is cheap to duplicate and remix: a YouTube agent becomes a TikTok agent, or a Substack agent, with comparatively small edits. The contrast is a fifty-skill mega-agent, where extracting just the portion you wanted to reuse is genuinely hard.",
+     "seg_ids": [
+      "seg_0143",
+      "seg_0144",
+      "seg_0145",
+      "seg_0146",
+      "seg_0147",
+      "seg_0148",
+      "seg_0149",
+      "seg_0150",
+      "seg_0151",
+      "seg_0152",
+      "seg_0153"
+     ]
+    }
+   ],
+   "key_points": [
+    "A working narrow agent is a template; a mega-agent is not"
+   ]
+  },
+  {
+   "chapter_id": "ch10",
+   "title": "The journal agent: shareable, and memory for the whole team",
+   "blocks": [
+    {
+     "text": "The second reason is shareability, illustrated by a journal agent built the same day. It lives in Telegram and is deliberately hands-on: it reaches out roughly every 30 minutes - staying quiet when there is nothing to do - and analyses everything the presenter does, every meeting and every video, asking for more context when it needs it. Several times a day it writes journal entries, building a running log of what matters to the business and to content.",
+     "seg_ids": [
+      "seg_0154",
+      "seg_0155",
+      "seg_0156",
+      "seg_0157",
+      "seg_0158",
+      "seg_0159",
+      "seg_0160",
+      "seg_0161",
+      "seg_0162"
+     ]
+    },
+    {
+     "text": "Its real purpose is to inform the other agents. Every agent in the team has Notion access and is aware of the journal, so the email newsletter agent simply reads the journal each day and drafts newsletters from it - if the journal records a product update, a draft for the 300,000-person list follows. Crucially the newsletter agent keeps its own goals - conversions, click-through rate, open rate - and is never clouded by the journal agent's goals. It shares the journal, not the objective.",
+     "seg_ids": [
+      "seg_0163",
+      "seg_0164",
+      "seg_0165",
+      "seg_0166",
+      "seg_0167",
+      "seg_0168",
+      "seg_0169",
+      "seg_0170",
+      "seg_0171",
+      "seg_0172",
+      "seg_0173",
+      "seg_0174",
+      "seg_0175",
+      "seg_0176"
+     ]
+    },
+    {
+     "text": "Shareability then shows up as a measured result rather than a claim: because the journal agent was narrow, the presenter handed his entire OpenClaw agent to his co-founder Ange, who reproduced it in about five minutes.",
+     "seg_ids": [
+      "seg_0177",
+      "seg_0178",
+      "seg_0179",
+      "seg_0180"
+     ]
+    }
+   ],
+   "key_points": [
+    "Journal agent: 30-minute heartbeat, writes a running log of the business",
+    "Shared memory, separate goals - other agents read the journal without inheriting its objectives",
+    "A co-founder duplicated the whole agent in about five minutes"
+   ]
+  },
+  {
+   "chapter_id": "ch11",
+   "title": "Understandable, reviewable, and easy to loop",
+   "blocks": [
+    {
+     "text": "Reason three is comprehensibility. An OpenClaw agent is a computer with files - every time you use it you are effectively editing files, and its skills are just markdown documents in the OpenClaw folder. An agent with a few skills and a handful of integrations is therefore something another person can actually read and understand when you send it to them.",
+     "seg_ids": [
+      "seg_0181",
+      "seg_0182",
+      "seg_0183",
+      "seg_0184",
+      "seg_0185",
+      "seg_0186",
+      "seg_0187",
+      "seg_0188"
+     ]
+    },
+    {
+     "text": "Reason four is evaluability, and it is the sharpest argument in the video. Narrow goals are concrete KPIs - for a newsletter: open rate, subscriptions, click-through rate, and in a newsletter business, revenue. Narrow goals make an agent reviewable: you can look at it and say it did a good job or it did not, and you know exactly what needs to change. Judgement collapses to pass/fail. That matters because most agents built over the next few years will not be worth keeping, and pass/fail is what makes cutting them easy.",
+     "seg_ids": [
+      "seg_0189",
+      "seg_0190",
+      "seg_0191",
+      "seg_0192",
+      "seg_0193",
+      "seg_0194",
+      "seg_0195",
+      "seg_0196",
+      "seg_0197",
+      "seg_0198",
+      "seg_0199",
+      "seg_0200"
+     ]
+    },
+    {
+     "text": "Reasons five and six travel together: simpler loops and greater autonomy. Several of the presenter's narrow agents run three fixed tasks a day against a known objective, triggered by cron jobs at set times, and simply repeat. The narrower the agent, the more predictable the loop, and the more safely it can be left running - something a sprawling mega-agent cannot offer.",
+     "seg_ids": [
+      "seg_0201",
+      "seg_0202",
+      "seg_0203",
+      "seg_0204",
+      "seg_0205",
+      "seg_0206",
+      "seg_0207",
+      "seg_0208"
+     ]
+    }
+   ],
+   "key_points": [
+    "Skills are markdown files in a folder - readable by whoever you send them to",
+    "Narrow goals make review pass/fail, which makes pruning easy",
+    "Cron-triggered loops of two or three tasks are what make an agent autonomous"
+   ]
+  },
+  {
+   "chapter_id": "ch12",
+   "title": "The agent team, the cloud, and the open questions",
+   "blocks": [
+    {
+     "text": "The objective is restated plainly: very narrow agents with very specific goals, operating as a team. The exact roster is left open - the presenter expects to notice where a new agent is needed as more workflows accumulate rather than designing the org chart up front.",
+     "seg_ids": [
+      "seg_0209",
+      "seg_0210",
+      "seg_0211",
+      "seg_0212"
+     ]
+    },
+    {
+     "text": "One concession is made to the tools he rejected: Perplexity and Manus are right that the computer belongs in the cloud. His disagreement is only about granularity - not a computer per task, but OpenClaw itself running on a computer in the cloud. That turns into an engineering problem for his company: if twenty people each run twenty agents, that is hundreds of agents to host efficiently, and it is not obvious yet how to do it.",
+     "seg_ids": [
+      "seg_0213",
+      "seg_0214",
+      "seg_0215",
+      "seg_0216",
+      "seg_0217",
+      "seg_0218",
+      "seg_0219",
+      "seg_0220"
+     ]
+    },
+    {
+     "text": "Three questions are named as the subject of future videos: how to run these agents efficiently in the cloud, how to share them across a team, and how to get them to communicate or at least share memory. The last one is where the design tension lives - each agent's files are properly contained to that agent, so the interesting work is finding safe channels to pass useful information between them, the way an engineering team communicates to marketing. The closing claim is the opening one: narrow agents running in the cloud are what will win.",
+     "seg_ids": [
+      "seg_0221",
+      "seg_0222",
+      "seg_0223",
+      "seg_0224",
+      "seg_0225",
+      "seg_0226",
+      "seg_0227",
+      "seg_0228",
+      "seg_0229",
+      "seg_0230",
+      "seg_0231",
+      "seg_0232",
+      "seg_0233",
+      "seg_0234",
+      "seg_0235",
+      "seg_0236"
+     ]
+    }
+   ],
+   "key_points": [
+    "Agreement with Manus/Perplexity: the computer belongs in the cloud - but per agent, not per task",
+    "Open problems: efficient cloud hosting, team sharing, inter-agent memory"
+   ]
+  }
+ ]
+}

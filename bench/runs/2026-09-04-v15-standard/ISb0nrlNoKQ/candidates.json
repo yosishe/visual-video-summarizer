@@ -1,0 +1,3238 @@
+{
+  "schema_version": 2,
+  "engine_version": "1.3.0",
+  "tier": "standard",
+  "mode": "light",
+  "profile": {
+    "cap": 48,
+    "per_target": 2,
+    "unplanned_floor": 12,
+    "scene": "fixed",
+    "scene_threshold": 0.15,
+    "scene_floor": null,
+    "action_offsets": [
+      0.2,
+      0.8,
+      1.6
+    ],
+    "state_offsets": [
+      0.0,
+      0.6
+    ],
+    "state_fractions": [],
+    "slide_fractions": [],
+    "coverage_min": 1,
+    "cue_offsets": [
+      0.5,
+      1.5
+    ],
+    "refine": "none",
+    "faces": "off",
+    "ocr": "off",
+    "resolution": 512,
+    "pip_mask": "on",
+    "dedup_scope": "family",
+    "engine": "states",
+    "scan_fps": 2.0
+  },
+  "profile_override": {},
+  "profile_sha256": "25c6cb5c56bf4ec9c484aca2c2cd3a4c762974ee4a6016124268ea147b3c2ab1",
+  "overlays": [
+    {
+      "kind": "webcam",
+      "bbox": [
+        0.0,
+        0.6889,
+        0.15,
+        1.0
+      ],
+      "motion_fraction": 0.318,
+      "pairs": 400
+    }
+  ],
+  "mask_fraction": 0.0521,
+  "states": {
+    "counts": {
+      "runs": 90,
+      "states": 100,
+      "by_mode": {
+        "A": 0,
+        "B": 14,
+        "C": 86,
+        "D": 0
+      },
+      "families": 10,
+      "builds": 1
+    },
+    "modes": [
+      {
+        "start": 43.0,
+        "end": 63.0,
+        "mode": "C",
+        "motion_freq": 0.205,
+        "big_motion": 0.026,
+        "luma": 225.2,
+        "edge": 7.83,
+        "ink_first": 0.117,
+        "ink_last": 0.0547
+      },
+      {
+        "start": 63.0,
+        "end": 83.0,
+        "mode": "C",
+        "motion_freq": 0.179,
+        "big_motion": 0.077,
+        "luma": 218.1,
+        "edge": 8.16,
+        "ink_first": 0.0711,
+        "ink_last": 0.1352
+      },
+      {
+        "start": 83.0,
+        "end": 103.0,
+        "mode": "C",
+        "motion_freq": 0.103,
+        "big_motion": 0.0,
+        "luma": 215.7,
+        "edge": 9.33,
+        "ink_first": 0.1357,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 103.0,
+        "end": 123.0,
+        "mode": "C",
+        "motion_freq": 0.231,
+        "big_motion": 0.077,
+        "luma": 206.2,
+        "edge": 9.9,
+        "ink_first": 0.4119,
+        "ink_last": 0.1337
+      },
+      {
+        "start": 123.0,
+        "end": 143.0,
+        "mode": "C",
+        "motion_freq": 0.179,
+        "big_motion": 0.026,
+        "luma": 219.0,
+        "edge": 10.08,
+        "ink_first": 0.1349,
+        "ink_last": 0.1351
+      },
+      {
+        "start": 143.0,
+        "end": 163.0,
+        "mode": "C",
+        "motion_freq": 0.154,
+        "big_motion": 0.0,
+        "luma": 220.0,
+        "edge": 10.31,
+        "ink_first": 0.1343,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 163.0,
+        "end": 183.0,
+        "mode": "C",
+        "motion_freq": 0.026,
+        "big_motion": 0.0,
+        "luma": 221.6,
+        "edge": 8.66,
+        "ink_first": 0.135,
+        "ink_last": 0.1347
+      },
+      {
+        "start": 183.0,
+        "end": 203.0,
+        "mode": "C",
+        "motion_freq": 0.256,
+        "big_motion": 0.0,
+        "luma": 220.6,
+        "edge": 9.66,
+        "ink_first": 0.1348,
+        "ink_last": 0.1344
+      },
+      {
+        "start": 203.0,
+        "end": 223.0,
+        "mode": "C",
+        "motion_freq": 0.179,
+        "big_motion": 0.0,
+        "luma": 219.3,
+        "edge": 11.13,
+        "ink_first": 0.1345,
+        "ink_last": 0.1341
+      },
+      {
+        "start": 223.0,
+        "end": 243.0,
+        "mode": "C",
+        "motion_freq": 0.385,
+        "big_motion": 0.077,
+        "luma": 218.7,
+        "edge": 10.61,
+        "ink_first": 0.1346,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 243.0,
+        "end": 263.0,
+        "mode": "C",
+        "motion_freq": 0.282,
+        "big_motion": 0.128,
+        "luma": 213.7,
+        "edge": 13.17,
+        "ink_first": 0.1351,
+        "ink_last": 0.1345
+      },
+      {
+        "start": 263.0,
+        "end": 283.0,
+        "mode": "C",
+        "motion_freq": 0.333,
+        "big_motion": 0.026,
+        "luma": 216.0,
+        "edge": 10.79,
+        "ink_first": 0.1344,
+        "ink_last": 0.1347
+      },
+      {
+        "start": 283.0,
+        "end": 303.0,
+        "mode": "C",
+        "motion_freq": 0.385,
+        "big_motion": 0.026,
+        "luma": 218.1,
+        "edge": 10.48,
+        "ink_first": 0.1344,
+        "ink_last": 0.1344
+      },
+      {
+        "start": 303.0,
+        "end": 323.0,
+        "mode": "C",
+        "motion_freq": 0.205,
+        "big_motion": 0.026,
+        "luma": 220.7,
+        "edge": 10.2,
+        "ink_first": 0.1342,
+        "ink_last": 0.1344
+      },
+      {
+        "start": 323.0,
+        "end": 343.0,
+        "mode": "C",
+        "motion_freq": 0.41,
+        "big_motion": 0.051,
+        "luma": 218.1,
+        "edge": 10.26,
+        "ink_first": 0.1343,
+        "ink_last": 0.1348
+      },
+      {
+        "start": 343.0,
+        "end": 363.0,
+        "mode": "C",
+        "motion_freq": 0.41,
+        "big_motion": 0.154,
+        "luma": 190.3,
+        "edge": 9.3,
+        "ink_first": 0.0778,
+        "ink_last": 0.1336
+      },
+      {
+        "start": 363.0,
+        "end": 383.0,
+        "mode": "C",
+        "motion_freq": 0.154,
+        "big_motion": 0.0,
+        "luma": 219.8,
+        "edge": 10.82,
+        "ink_first": 0.1351,
+        "ink_last": 0.1343
+      },
+      {
+        "start": 383.0,
+        "end": 403.0,
+        "mode": "C",
+        "motion_freq": 0.154,
+        "big_motion": 0.026,
+        "luma": 218.8,
+        "edge": 11.87,
+        "ink_first": 0.1344,
+        "ink_last": 0.1361
+      },
+      {
+        "start": 403.0,
+        "end": 423.0,
+        "mode": "C",
+        "motion_freq": 0.103,
+        "big_motion": 0.051,
+        "luma": 211.6,
+        "edge": 15.47,
+        "ink_first": 0.1524,
+        "ink_last": 0.1538
+      },
+      {
+        "start": 423.0,
+        "end": 443.0,
+        "mode": "C",
+        "motion_freq": 0.308,
+        "big_motion": 0.179,
+        "luma": 212.5,
+        "edge": 12.74,
+        "ink_first": 0.154,
+        "ink_last": 0.1342
+      },
+      {
+        "start": 443.0,
+        "end": 463.0,
+        "mode": "C",
+        "motion_freq": 0.487,
+        "big_motion": 0.051,
+        "luma": 212.1,
+        "edge": 10.81,
+        "ink_first": 0.1346,
+        "ink_last": 0.2999
+      },
+      {
+        "start": 463.0,
+        "end": 483.0,
+        "mode": "C",
+        "motion_freq": 0.103,
+        "big_motion": 0.026,
+        "luma": 198.9,
+        "edge": 12.08,
+        "ink_first": 0.4056,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 483.0,
+        "end": 503.0,
+        "mode": "C",
+        "motion_freq": 0.205,
+        "big_motion": 0.0,
+        "luma": 219.2,
+        "edge": 10.2,
+        "ink_first": 0.1344,
+        "ink_last": 0.1347
+      },
+      {
+        "start": 503.0,
+        "end": 523.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.051,
+        "luma": 198.9,
+        "edge": 12.86,
+        "ink_first": 0.2472,
+        "ink_last": 0.1348
+      },
+      {
+        "start": 523.0,
+        "end": 543.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 217.3,
+        "edge": 11.51,
+        "ink_first": 0.1346,
+        "ink_last": 0.1356
+      },
+      {
+        "start": 543.0,
+        "end": 563.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 215.6,
+        "edge": 12.04,
+        "ink_first": 0.1349,
+        "ink_last": 0.1348
+      },
+      {
+        "start": 563.0,
+        "end": 583.0,
+        "mode": "B",
+        "motion_freq": 0.026,
+        "big_motion": 0.0,
+        "luma": 214.8,
+        "edge": 12.63,
+        "ink_first": 0.1353,
+        "ink_last": 0.135
+      },
+      {
+        "start": 583.0,
+        "end": 603.0,
+        "mode": "B",
+        "motion_freq": 0.026,
+        "big_motion": 0.0,
+        "luma": 214.8,
+        "edge": 12.54,
+        "ink_first": 0.1346,
+        "ink_last": 0.1347
+      },
+      {
+        "start": 603.0,
+        "end": 623.0,
+        "mode": "C",
+        "motion_freq": 0.282,
+        "big_motion": 0.077,
+        "luma": 213.9,
+        "edge": 13.18,
+        "ink_first": 0.135,
+        "ink_last": 0.1351
+      },
+      {
+        "start": 623.0,
+        "end": 643.0,
+        "mode": "C",
+        "motion_freq": 0.154,
+        "big_motion": 0.077,
+        "luma": 213.6,
+        "edge": 13.54,
+        "ink_first": 0.136,
+        "ink_last": 0.1356
+      },
+      {
+        "start": 643.0,
+        "end": 663.0,
+        "mode": "C",
+        "motion_freq": 0.205,
+        "big_motion": 0.0,
+        "luma": 214.2,
+        "edge": 13.11,
+        "ink_first": 0.1357,
+        "ink_last": 0.1356
+      },
+      {
+        "start": 663.0,
+        "end": 683.0,
+        "mode": "C",
+        "motion_freq": 0.231,
+        "big_motion": 0.103,
+        "luma": 215.4,
+        "edge": 12.18,
+        "ink_first": 0.1347,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 683.0,
+        "end": 703.0,
+        "mode": "C",
+        "motion_freq": 0.077,
+        "big_motion": 0.026,
+        "luma": 216.1,
+        "edge": 10.96,
+        "ink_first": 0.1348,
+        "ink_last": 0.1348
+      },
+      {
+        "start": 703.0,
+        "end": 723.0,
+        "mode": "C",
+        "motion_freq": 0.59,
+        "big_motion": 0.128,
+        "luma": 218.7,
+        "edge": 9.72,
+        "ink_first": 0.1346,
+        "ink_last": 0.1347
+      },
+      {
+        "start": 723.0,
+        "end": 743.0,
+        "mode": "C",
+        "motion_freq": 0.179,
+        "big_motion": 0.0,
+        "luma": 216.8,
+        "edge": 9.83,
+        "ink_first": 0.1344,
+        "ink_last": 0.1345
+      },
+      {
+        "start": 743.0,
+        "end": 763.0,
+        "mode": "C",
+        "motion_freq": 0.256,
+        "big_motion": 0.026,
+        "luma": 199.0,
+        "edge": 11.96,
+        "ink_first": 0.1348,
+        "ink_last": 0.4029
+      },
+      {
+        "start": 763.0,
+        "end": 783.0,
+        "mode": "B",
+        "motion_freq": 0.0,
+        "big_motion": 0.0,
+        "luma": 168.8,
+        "edge": 14.52,
+        "ink_first": 0.402,
+        "ink_last": 0.4025
+      },
+      {
+        "start": 783.0,
+        "end": 803.0,
+        "mode": "B",
+        "motion_freq": 0.103,
+        "big_motion": 0.051,
+        "luma": 205.3,
+        "edge": 12.44,
+        "ink_first": 0.3753,
+        "ink_last": 0.1348
+      },
+      {
+        "start": 803.0,
+        "end": 823.0,
+        "mode": "B",
+        "motion_freq": 0.0,
+        "big_motion": 0.0,
+        "luma": 216.1,
+        "edge": 12.41,
+        "ink_first": 0.1351,
+        "ink_last": 0.1351
+      },
+      {
+        "start": 823.0,
+        "end": 843.0,
+        "mode": "C",
+        "motion_freq": 0.154,
+        "big_motion": 0.051,
+        "luma": 215.7,
+        "edge": 12.45,
+        "ink_first": 0.1352,
+        "ink_last": 0.1351
+      },
+      {
+        "start": 843.0,
+        "end": 863.0,
+        "mode": "C",
+        "motion_freq": 0.231,
+        "big_motion": 0.026,
+        "luma": 215.9,
+        "edge": 12.38,
+        "ink_first": 0.1351,
+        "ink_last": 0.1352
+      },
+      {
+        "start": 863.0,
+        "end": 883.0,
+        "mode": "C",
+        "motion_freq": 0.385,
+        "big_motion": 0.0,
+        "luma": 217.5,
+        "edge": 10.72,
+        "ink_first": 0.1347,
+        "ink_last": 0.1348
+      },
+      {
+        "start": 883.0,
+        "end": 903.0,
+        "mode": "C",
+        "motion_freq": 0.333,
+        "big_motion": 0.026,
+        "luma": 218.5,
+        "edge": 11.15,
+        "ink_first": 0.1346,
+        "ink_last": 0.1348
+      },
+      {
+        "start": 903.0,
+        "end": 923.0,
+        "mode": "C",
+        "motion_freq": 0.205,
+        "big_motion": 0.0,
+        "luma": 219.7,
+        "edge": 10.01,
+        "ink_first": 0.1346,
+        "ink_last": 0.1347
+      },
+      {
+        "start": 923.0,
+        "end": 943.0,
+        "mode": "C",
+        "motion_freq": 0.231,
+        "big_motion": 0.0,
+        "luma": 219.8,
+        "edge": 9.93,
+        "ink_first": 0.1345,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 943.0,
+        "end": 963.0,
+        "mode": "C",
+        "motion_freq": 0.333,
+        "big_motion": 0.051,
+        "luma": 218.3,
+        "edge": 10.66,
+        "ink_first": 0.1346,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 963.0,
+        "end": 983.0,
+        "mode": "C",
+        "motion_freq": 0.026,
+        "big_motion": 0.0,
+        "luma": 219.6,
+        "edge": 9.82,
+        "ink_first": 0.1347,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 983.0,
+        "end": 1003.0,
+        "mode": "C",
+        "motion_freq": 0.282,
+        "big_motion": 0.0,
+        "luma": 219.5,
+        "edge": 9.95,
+        "ink_first": 0.1344,
+        "ink_last": 0.1347
+      },
+      {
+        "start": 1003.0,
+        "end": 1023.0,
+        "mode": "C",
+        "motion_freq": 0.179,
+        "big_motion": 0.026,
+        "luma": 213.7,
+        "edge": 10.51,
+        "ink_first": 0.134,
+        "ink_last": 0.1337
+      },
+      {
+        "start": 1023.0,
+        "end": 1043.0,
+        "mode": "C",
+        "motion_freq": 0.308,
+        "big_motion": 0.026,
+        "luma": 221.0,
+        "edge": 9.53,
+        "ink_first": 0.1343,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 1043.0,
+        "end": 1063.0,
+        "mode": "B",
+        "motion_freq": 0.128,
+        "big_motion": 0.0,
+        "luma": 221.4,
+        "edge": 10.08,
+        "ink_first": 0.1346,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 1063.0,
+        "end": 1083.0,
+        "mode": "B",
+        "motion_freq": 0.0,
+        "big_motion": 0.0,
+        "luma": 221.4,
+        "edge": 10.15,
+        "ink_first": 0.1346,
+        "ink_last": 0.1346
+      },
+      {
+        "start": 1083.0,
+        "end": 1096.0,
+        "mode": "B",
+        "motion_freq": 0.0,
+        "big_motion": 0.0,
+        "luma": 221.4,
+        "edge": 10.14,
+        "ink_first": 0.1346,
+        "ink_last": 0.1345
+      }
+    ],
+    "frames_scanned": 2106,
+    "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/states.json"
+  },
+  "parts": [
+    {
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/download/video_24ff4f03d8.mp4",
+      "source_start": 0.0,
+      "offset": 0.0,
+      "media_start": 0.0,
+      "duration": 1095.921,
+      "frame_duration": 0.03336666666666667,
+      "mapping_confidence": "exact"
+    }
+  ],
+  "counts": {
+    "scene": 0,
+    "raw": 102,
+    "blank_or_seek_dropped": 0,
+    "recovered": 0,
+    "dedup_dropped": 16,
+    "cap_dropped": 38,
+    "reserved_trimmed": 0,
+    "cap": 48,
+    "cap_effective": 48,
+    "reserved": 34,
+    "final": 48
+  },
+  "baselines": {
+    "uniform_fill": [
+      132.532,
+      150.517,
+      350.517,
+      367.033,
+      431.031,
+      454.02,
+      620.52,
+      689.522,
+      845.011,
+      861.027,
+      900.533,
+      943.509,
+      984.517,
+      999.532
+    ]
+  },
+  "coverage": {
+    "chapters": [
+      {
+        "chapter_id": "ch01",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000",
+          "c_0001",
+          "c_0002",
+          "c_0003",
+          "c_0004",
+          "c_0005"
+        ]
+      },
+      {
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0006",
+          "c_0007"
+        ]
+      },
+      {
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0008",
+          "c_0009",
+          "c_0010"
+        ]
+      },
+      {
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0011",
+          "c_0012",
+          "c_0013",
+          "c_0014",
+          "c_0015"
+        ]
+      },
+      {
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0016",
+          "c_0017",
+          "c_0018",
+          "c_0019"
+        ]
+      },
+      {
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0020",
+          "c_0021",
+          "c_0022"
+        ]
+      },
+      {
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0023",
+          "c_0024",
+          "c_0025",
+          "c_0026",
+          "c_0027",
+          "c_0028",
+          "c_0029"
+        ]
+      },
+      {
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0030",
+          "c_0031",
+          "c_0032",
+          "c_0033"
+        ]
+      },
+      {
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0034",
+          "c_0035",
+          "c_0036",
+          "c_0037",
+          "c_0038"
+        ]
+      },
+      {
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0039",
+          "c_0040",
+          "c_0041",
+          "c_0042",
+          "c_0043",
+          "c_0044"
+        ]
+      },
+      {
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0045",
+          "c_0046",
+          "c_0047"
+        ]
+      }
+    ],
+    "targets": [
+      {
+        "target_id": "ch02_perplexity_switch",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000",
+          "c_0001"
+        ]
+      },
+      {
+        "target_id": "ch02_side_panel",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0001"
+        ]
+      },
+      {
+        "target_id": "ch02_manus_computer",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0002",
+          "c_0003"
+        ]
+      },
+      {
+        "target_id": "ch03_mac_minis",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0006"
+        ]
+      },
+      {
+        "target_id": "ch03_openclaw_shape",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0006"
+        ]
+      },
+      {
+        "target_id": "ch04_skills_overview",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0008",
+          "c_0009"
+        ]
+      },
+      {
+        "target_id": "ch04_dependability_chart",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0010"
+        ]
+      },
+      {
+        "target_id": "ch05_sweet_spot",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0011",
+          "c_0012"
+        ]
+      },
+      {
+        "target_id": "ch05_manus_skills",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0015"
+        ]
+      },
+      {
+        "target_id": "ch06_shear_tweet",
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0016",
+          "c_0017"
+        ]
+      },
+      {
+        "target_id": "ch07_journal_bot_telegram",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0020",
+          "c_0021"
+        ]
+      },
+      {
+        "target_id": "ch07_focused_agent_shape",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0021",
+          "c_0022"
+        ]
+      },
+      {
+        "target_id": "ch08_content_bot",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0023",
+          "c_0024"
+        ]
+      },
+      {
+        "target_id": "ch08_goals_skills",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0024",
+          "c_0025"
+        ]
+      },
+      {
+        "target_id": "ch08_direct_path",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0028",
+          "c_0029"
+        ]
+      },
+      {
+        "target_id": "ch09_remix",
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0032",
+          "c_0033"
+        ]
+      },
+      {
+        "target_id": "ch10_journal_agent",
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0034",
+          "c_0035"
+        ]
+      },
+      {
+        "target_id": "ch10_journal_informs",
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0035",
+          "c_0036",
+          "c_0037"
+        ]
+      },
+      {
+        "target_id": "ch11_markdown_skills",
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0039",
+          "c_0040"
+        ]
+      },
+      {
+        "target_id": "ch11_loops",
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0041",
+          "c_0042"
+        ]
+      },
+      {
+        "target_id": "ch12_team",
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0045"
+        ]
+      },
+      {
+        "target_id": "ch12_open_questions",
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0046",
+          "c_0047"
+        ]
+      }
+    ]
+  },
+  "terminal_probes": [],
+  "cost": {
+    "tier": "standard",
+    "candidates": 48,
+    "image_tokens_estimate": 10032,
+    "image_tokens_per_candidate": 209,
+    "token_formula": "ceil(w/28)*ceil(h/28) per image (Anthropic vision docs); one batched Read",
+    "frame_dimensions": {
+      "512x288": 48
+    },
+    "cpu": {
+      "scene_pass": "fixed",
+      "scene_seconds": 1053.0,
+      "terminal_probes": 0,
+      "seeks": 102,
+      "ocr_frames": 0,
+      "faces": "off",
+      "refine": "none",
+      "refine_max_decodes": 0,
+      "pip_mask": "on",
+      "overlays": 1,
+      "overlay_seconds": 0.0,
+      "dedup_scope": "family",
+      "engine": "states",
+      "scan_seconds": 13.0,
+      "states": 100
+    },
+    "other_tier": {
+      "tier": "high",
+      "cap": 64,
+      "max_image_tokens": 13376
+    }
+  },
+  "triage": {
+    "instructions": "Read every candidate path in one message (parallel Reads), then select by candidate_id.",
+    "strips": [],
+    "pixel_area": 0,
+    "projected_individual_reads": 48,
+    "projected_total_pixel_area": 7077888,
+    "baseline_60x512_pixel_area": 8847360,
+    "strip_to_baseline_ratio": 0.0,
+    "projected_to_baseline_ratio": 0.8
+  },
+  "candidates": [
+    {
+      "candidate_id": "c_0000",
+      "frame_id": "c_0000",
+      "requested_t": 62.5,
+      "actual_t": 62.529,
+      "t": 62.529,
+      "timestamp_error": 0.0291,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0000_t0062.529_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 222.415,
+        "contrast": 56.631,
+        "sharpness": 8.14,
+        "blank": false,
+        "fingerprint": "3fa08c3be6ddcf0a95c346324f092e188ffd98470f95fd7f2a6cefe07759101b"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_001",
+      "family_revisits": [],
+      "state_id": "s_0002",
+      "state_family": "f_001",
+      "mode": "C",
+      "importance": 0.833,
+      "aligned_seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0001",
+      "frame_id": "c_0001",
+      "requested_t": 92.0,
+      "actual_t": 92.025,
+      "t": 92.025,
+      "timestamp_error": 0.0253,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0001_t0092.025_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_perplexity_switch",
+        "ch02_side_panel"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013",
+        "seg_0016",
+        "seg_0017",
+        "seg_0018"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.703,
+        "contrast": 61.822,
+        "sharpness": 8.416,
+        "blank": false,
+        "fingerprint": "d0e0bfed117c4c4b431f9568eb4f8f659745f253928c4d47d058a7e9cee3b11e"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0004",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.826,
+      "aligned_seg_ids": [
+        "seg_0013",
+        "seg_0014",
+        "seg_0015",
+        "seg_0016",
+        "seg_0017",
+        "seg_0018",
+        "seg_0019",
+        "seg_0020"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0002",
+      "frame_id": "c_0002",
+      "requested_t": 107.5,
+      "actual_t": 107.507,
+      "t": 107.507,
+      "timestamp_error": 0.0074,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0002_t0107.507_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 161.9,
+        "contrast": 76.054,
+        "sharpness": 10.202,
+        "blank": false,
+        "fingerprint": "f84d4509b793914c72af8ece33eecbe18d220917ce54935f885b10b90089114c"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0005",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.82,
+      "aligned_seg_ids": [
+        "seg_0020",
+        "seg_0021"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0003",
+      "frame_id": "c_0003",
+      "requested_t": 113.5,
+      "actual_t": 113.513,
+      "t": 113.513,
+      "timestamp_error": 0.0134,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0003_t0113.513_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 212.78,
+        "contrast": 60.289,
+        "sharpness": 10.232,
+        "blank": false,
+        "fingerprint": "a03e33ed3e6b0ed175091314305df4d2e799a07eb970c383c08ed1b8416d3320"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_002",
+      "family_revisits": [],
+      "state_id": "s_0007",
+      "state_family": "f_003",
+      "mode": "C",
+      "importance": 0.82,
+      "aligned_seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023",
+        "seg_0024",
+        "seg_0025"
+      ],
+      "stage": "first"
+    },
+    {
+      "candidate_id": "c_0004",
+      "frame_id": "c_0004",
+      "requested_t": 132.5,
+      "actual_t": 132.532,
+      "t": 132.532,
+      "timestamp_error": 0.0324,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0004_t0132.532_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0027"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 219.731,
+        "contrast": 64.376,
+        "sharpness": 9.357,
+        "blank": false,
+        "fingerprint": "c47ff54de9828676ed9334bba338fbb29a1262beeefe2267a929b42157090803"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0008",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.32,
+      "aligned_seg_ids": [
+        "seg_0024",
+        "seg_0025",
+        "seg_0026",
+        "seg_0027",
+        "seg_0028"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0005",
+      "frame_id": "c_0005",
+      "requested_t": 141.5,
+      "actual_t": 141.508,
+      "t": 141.508,
+      "timestamp_error": 0.008,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0005_t0141.508_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0029"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 218.199,
+        "contrast": 63.529,
+        "sharpness": 10.381,
+        "blank": false,
+        "fingerprint": "36e95712ce35e0e2a7a38d6d195128aefe215e6b62d0c5f9f38773f09ad642bb"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0009",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.32,
+      "aligned_seg_ids": [
+        "seg_0027",
+        "seg_0028",
+        "seg_0029"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0006",
+      "frame_id": "c_0006",
+      "requested_t": 197.0,
+      "actual_t": 197.03,
+      "t": 197.03,
+      "timestamp_error": 0.0302,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0006_t0197.030_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_mac_minis",
+        "ch03_openclaw_shape"
+      ],
+      "seg_ids": [
+        "seg_0035",
+        "seg_0036",
+        "seg_0037",
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.513,
+        "contrast": 63.98,
+        "sharpness": 9.496,
+        "blank": false,
+        "fingerprint": "7b00edffca9df846e9ab9793ee250da37b3f8d3b57dc0c04ac901fc08224575f"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0011",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.832,
+      "aligned_seg_ids": [
+        "seg_0031",
+        "seg_0032",
+        "seg_0033",
+        "seg_0034",
+        "seg_0035",
+        "seg_0036",
+        "seg_0037",
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041",
+        "seg_0042",
+        "seg_0043",
+        "seg_0044"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0007",
+      "frame_id": "c_0007",
+      "requested_t": 226.5,
+      "actual_t": 226.526,
+      "t": 226.526,
+      "timestamp_error": 0.0263,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0007_t0226.526_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0045"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 219.0,
+        "contrast": 63.727,
+        "sharpness": 10.755,
+        "blank": false,
+        "fingerprint": "9a710ef51e3dde12cf932aaf893d9aec42801783507f52600f2c0462cf6bdedf"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_003",
+      "family_revisits": [],
+      "state_id": "s_0013",
+      "state_family": "f_002",
+      "mode": "C",
+      "importance": 0.332,
+      "aligned_seg_ids": [
+        "seg_0045",
+        "seg_0046"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0008",
+      "frame_id": "c_0008",
+      "requested_t": 260.0,
+      "actual_t": 260.026,
+      "t": 260.026,
+      "timestamp_error": 0.0264,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0008_t0260.026_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.03,
+        "contrast": 62.704,
+        "sharpness": 10.04,
+        "blank": false,
+        "fingerprint": "4108261f9edb9d312b129e7b8a350569371a450a28ae9d6d9f917820676cd6db"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0018",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.706,
+      "aligned_seg_ids": [
+        "seg_0051",
+        "seg_0052"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0009",
+      "frame_id": "c_0009",
+      "requested_t": 262.5,
+      "actual_t": 262.529,
+      "t": 262.529,
+      "timestamp_error": 0.0289,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0009_t0262.529_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.769,
+        "contrast": 62.558,
+        "sharpness": 10.093,
+        "blank": false,
+        "fingerprint": "ac7404168a2c9148eafccdc30615aebab35ce99aa7c43411e5e30ad8cc9f318c"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0019",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.7,
+      "aligned_seg_ids": [
+        "seg_0051",
+        "seg_0052"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0010",
+      "frame_id": "c_0010",
+      "requested_t": 302.0,
+      "actual_t": 302.002,
+      "t": 302.002,
+      "timestamp_error": 0.0017,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0010_t0302.002_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.287,
+        "contrast": 64.615,
+        "sharpness": 9.824,
+        "blank": false,
+        "fingerprint": "12cde1b016d5a1733cfd0d5384b230557617ed75b47ce3784943ef8a7013a4ef"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0025",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.687,
+      "aligned_seg_ids": [
+        "seg_0058",
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0011",
+      "frame_id": "c_0011",
+      "requested_t": 326.5,
+      "actual_t": 326.526,
+      "t": 326.526,
+      "timestamp_error": 0.0262,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0011_t0326.526_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.401,
+        "contrast": 63.309,
+        "sharpness": 9.553,
+        "blank": false,
+        "fingerprint": "0b66f3ec0eecf762c70509a80b7df706446415a9a234084b21d98e684e87ed16"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0027",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.704,
+      "aligned_seg_ids": [
+        "seg_0064",
+        "seg_0065"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0012",
+      "frame_id": "c_0012",
+      "requested_t": 337.0,
+      "actual_t": 337.003,
+      "t": 337.003,
+      "timestamp_error": 0.0033,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0012_t0337.003_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.366,
+        "contrast": 62.827,
+        "sharpness": 10.327,
+        "blank": false,
+        "fingerprint": "a44cd12f1b7ce42f1829866999a0dbedfdfb49d4e2b508457ab95724ac2fb89b"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0028",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.692,
+      "aligned_seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0013",
+      "frame_id": "c_0013",
+      "requested_t": 350.5,
+      "actual_t": 350.517,
+      "t": 350.517,
+      "timestamp_error": 0.0168,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0013_t0350.517_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0070"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 158.988,
+        "contrast": 65.679,
+        "sharpness": 7.69,
+        "blank": false,
+        "fingerprint": "5e5cb732eb5299c95cbc6db59e9be4dec00fbb5823f313259bb6e6bfaf48ddda"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0031",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.324,
+      "aligned_seg_ids": [
+        "seg_0069",
+        "seg_0070"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0014",
+      "frame_id": "c_0014",
+      "requested_t": 352.5,
+      "actual_t": 352.519,
+      "t": 352.519,
+      "timestamp_error": 0.0188,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0014_t0352.519_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 137.966,
+        "contrast": 64.363,
+        "sharpness": 8.927,
+        "blank": false,
+        "fingerprint": "ef080cd114fc6699515a3ab5969d52b42308288ff3710265254437adb30dd4a4"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0032",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.321,
+      "aligned_seg_ids": [
+        "seg_0070",
+        "seg_0071",
+        "seg_0072"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0015",
+      "frame_id": "c_0015",
+      "requested_t": 361.0,
+      "actual_t": 361.027,
+      "t": 361.027,
+      "timestamp_error": 0.0273,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0015_t0361.027_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_manus_skills"
+      ],
+      "seg_ids": [
+        "seg_0069",
+        "seg_0070",
+        "seg_0071",
+        "seg_0073"
+      ],
+      "reasons": [
+        "state",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 212.711,
+        "contrast": 60.294,
+        "sharpness": 10.306,
+        "blank": false,
+        "fingerprint": "d5718a865cf7b8154f128cfe1cedd584096938bfcf7309e4c83fdf584bd4575e"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_002",
+      "family_revisits": [
+        437.504,
+        1007.006,
+        1010.009,
+        1021.02
+      ],
+      "state_id": "s_0033",
+      "state_family": "f_003",
+      "mode": "C",
+      "importance": 0.673,
+      "aligned_seg_ids": [
+        "seg_0071",
+        "seg_0072",
+        "seg_0073"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0016",
+      "frame_id": "c_0016",
+      "requested_t": 393.0,
+      "actual_t": 393.026,
+      "t": 393.026,
+      "timestamp_error": 0.026,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0016_t0393.026_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "seg_ids": [
+        "seg_0079",
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.5,
+        "contrast": 64.282,
+        "sharpness": 10.958,
+        "blank": false,
+        "fingerprint": "63212616ff1d8f999d459d334c97cc8f032a27365c5e4bbe2917c47682f04878"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0035",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.67,
+      "aligned_seg_ids": [
+        "seg_0074",
+        "seg_0075",
+        "seg_0076",
+        "seg_0077",
+        "seg_0078",
+        "seg_0079",
+        "seg_0080",
+        "seg_0081"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0017",
+      "frame_id": "c_0017",
+      "requested_t": 419.0,
+      "actual_t": 419.019,
+      "t": 419.019,
+      "timestamp_error": 0.0186,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0017_t0419.019_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 211.866,
+        "contrast": 64.682,
+        "sharpness": 14.148,
+        "blank": false,
+        "fingerprint": "489e9360689288ba0a52aad3752c469dc9120d7e266866adba21e0e6081e9511"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0036",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.675,
+      "aligned_seg_ids": [
+        "seg_0080",
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084",
+        "seg_0085"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0018",
+      "frame_id": "c_0018",
+      "requested_t": 425.5,
+      "actual_t": 425.525,
+      "t": 425.525,
+      "timestamp_error": 0.0251,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0018_t0425.525_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0086"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 211.115,
+        "contrast": 66.512,
+        "sharpness": 14.804,
+        "blank": false,
+        "fingerprint": "d557a4fe9b40590f09d83c0bd202d806385fc217c25ebfaa47fe319ee20aa467"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0037",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.32,
+      "aligned_seg_ids": [
+        "seg_0085",
+        "seg_0086",
+        "seg_0087"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0019",
+      "frame_id": "c_0019",
+      "requested_t": 431.0,
+      "actual_t": 431.031,
+      "t": 431.031,
+      "timestamp_error": 0.0306,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0019_t0431.031_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0087"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 212.911,
+        "contrast": 64.237,
+        "sharpness": 13.201,
+        "blank": false,
+        "fingerprint": "55c366c3c812ac2dc272b5c1086f0e7d08b5b938be7643fb2967230b2380c483"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0038",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.322,
+      "aligned_seg_ids": [
+        "seg_0086",
+        "seg_0087"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0020",
+      "frame_id": "c_0020",
+      "requested_t": 458.0,
+      "actual_t": 458.024,
+      "t": 458.024,
+      "timestamp_error": 0.0242,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0020_t0458.024_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.377,
+        "contrast": 64.014,
+        "sharpness": 9.543,
+        "blank": false,
+        "fingerprint": "72956e5355975796153fbbfde812234757d272aec9dfb6cebfd3f52d486d3c5f"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0043",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.693,
+      "aligned_seg_ids": [
+        "seg_0091",
+        "seg_0092",
+        "seg_0093"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0021",
+      "frame_id": "c_0021",
+      "requested_t": 467.0,
+      "actual_t": 467.033,
+      "t": 467.033,
+      "timestamp_error": 0.0332,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0021_t0467.033_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_focused_agent_shape",
+        "ch07_journal_bot_telegram"
+      ],
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095",
+        "seg_0096",
+        "seg_0097"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 168.72,
+        "contrast": 92.305,
+        "sharpness": 14.498,
+        "blank": false,
+        "fingerprint": "24cdd926b21620b9b3bcee2946018c8474d7d3b1971970efe7a2154b00620dfb"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0044",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.688,
+      "aligned_seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095",
+        "seg_0096"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0022",
+      "frame_id": "c_0022",
+      "requested_t": 486.5,
+      "actual_t": 486.519,
+      "t": 486.519,
+      "timestamp_error": 0.0194,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0022_t0486.519_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097",
+        "seg_0099"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.255,
+        "contrast": 64.015,
+        "sharpness": 9.649,
+        "blank": false,
+        "fingerprint": "bdd586c52ab52ac7c9bed43f6552812c5ba43e4ff5b0e238eeffc73f6103d174"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0045",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.675,
+      "aligned_seg_ids": [
+        "seg_0095",
+        "seg_0096",
+        "seg_0097",
+        "seg_0098",
+        "seg_0099",
+        "seg_0100",
+        "seg_0101"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0023",
+      "frame_id": "c_0023",
+      "requested_t": 513.0,
+      "actual_t": 513.013,
+      "t": 513.013,
+      "timestamp_error": 0.0125,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0023_t0513.013_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_content_bot"
+      ],
+      "seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 167.889,
+        "contrast": 92.427,
+        "sharpness": 14.867,
+        "blank": false,
+        "fingerprint": "2af91b3d6697e152aa05426cb845d00069c0cb1b741875b6f60a430fa3090354"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0049",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.658,
+      "aligned_seg_ids": [
+        "seg_0102",
+        "seg_0103",
+        "seg_0104"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0024",
+      "frame_id": "c_0024",
+      "requested_t": 520.5,
+      "actual_t": 520.52,
+      "t": 520.52,
+      "timestamp_error": 0.02,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0024_t0520.520_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_content_bot",
+        "ch08_goals_skills"
+      ],
+      "seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105",
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.688,
+        "contrast": 63.596,
+        "sharpness": 10.674,
+        "blank": false,
+        "fingerprint": "c48fbeae587fab984a5ebc0703327fd63732f67add24900e6ac3f7032eaf0994"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0050",
+      "state_family": "f_004",
+      "mode": "B",
+      "importance": 0.654,
+      "aligned_seg_ids": [
+        "seg_0104",
+        "seg_0105",
+        "seg_0106"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0025",
+      "frame_id": "c_0025",
+      "requested_t": 536.5,
+      "actual_t": 536.503,
+      "t": 536.503,
+      "timestamp_error": 0.0026,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0025_t0536.503_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.595,
+        "contrast": 63.743,
+        "sharpness": 10.869,
+        "blank": false,
+        "fingerprint": "2c03f823cda954103f5ecaa88fa9c303fb3e361eef2d1b6f55ffaf3f1a0c0d97"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0053",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.645,
+      "aligned_seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0108",
+        "seg_0109",
+        "seg_0110"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0026",
+      "frame_id": "c_0026",
+      "requested_t": 620.5,
+      "actual_t": 620.52,
+      "t": 620.52,
+      "timestamp_error": 0.0199,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0026_t0620.520_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0125"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 214.181,
+        "contrast": 63.236,
+        "sharpness": 12.515,
+        "blank": false,
+        "fingerprint": "4d02917507dd37ea54f2fe6473c7405bcbb9e8726d29e46106bb44ac0f94f165"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0057",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.315,
+      "aligned_seg_ids": [
+        "seg_0124",
+        "seg_0125",
+        "seg_0126",
+        "seg_0127"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0027",
+      "frame_id": "c_0027",
+      "requested_t": 627.5,
+      "actual_t": 627.527,
+      "t": 627.527,
+      "timestamp_error": 0.0269,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0027_t0627.527_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0127"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 213.205,
+        "contrast": 63.61,
+        "sharpness": 12.929,
+        "blank": false,
+        "fingerprint": "9b4953893372e9bbb2fb9862fff4eb16677c22b354f96ff7f6dff3056bd43f15"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0058",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.312,
+      "aligned_seg_ids": [
+        "seg_0126",
+        "seg_0127"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0028",
+      "frame_id": "c_0028",
+      "requested_t": 643.5,
+      "actual_t": 643.51,
+      "t": 643.51,
+      "timestamp_error": 0.0095,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0028_t0643.510_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 214.053,
+        "contrast": 63.178,
+        "sharpness": 12.5,
+        "blank": false,
+        "fingerprint": "c8974e9e51c829eb4ed9763b4e6f369d8fc0f845871607328148709f2018ae0e"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0059",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.812,
+      "aligned_seg_ids": [
+        "seg_0127",
+        "seg_0128",
+        "seg_0129",
+        "seg_0130",
+        "seg_0131"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0029",
+      "frame_id": "c_0029",
+      "requested_t": 649.5,
+      "actual_t": 649.516,
+      "t": 649.516,
+      "timestamp_error": 0.0155,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0029_t0649.516_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 214.165,
+        "contrast": 63.21,
+        "sharpness": 12.362,
+        "blank": false,
+        "fingerprint": "c28c30644c1f66439a587bac88ff42906eb409708eeb7caf6828f3645af2e55d"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0060",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.811,
+      "aligned_seg_ids": [
+        "seg_0130",
+        "seg_0131",
+        "seg_0132",
+        "seg_0133"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0030",
+      "frame_id": "c_0030",
+      "requested_t": 689.5,
+      "actual_t": 689.522,
+      "t": 689.522,
+      "timestamp_error": 0.0222,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0030_t0689.522_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0141"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 215.776,
+        "contrast": 63.46,
+        "sharpness": 11.134,
+        "blank": false,
+        "fingerprint": "ad2a2f0a7f90db5c52954c1dfffff839cd949e59598178cd76f46eaf29c2c86a"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0064",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.328,
+      "aligned_seg_ids": [
+        "seg_0136",
+        "seg_0137",
+        "seg_0138",
+        "seg_0139",
+        "seg_0140",
+        "seg_0141",
+        "seg_0142"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0031",
+      "frame_id": "c_0031",
+      "requested_t": 701.0,
+      "actual_t": 701.0,
+      "t": 701.0,
+      "timestamp_error": 0.0003,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0031_t0701.000_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0143"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 217.01,
+        "contrast": 62.935,
+        "sharpness": 9.203,
+        "blank": false,
+        "fingerprint": "dabc69eb85c695dc0578d130fc70366a679194725089989c418c9f1ff08127ec"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0065",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.342,
+      "aligned_seg_ids": [
+        "seg_0142",
+        "seg_0143",
+        "seg_0144"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0032",
+      "frame_id": "c_0032",
+      "requested_t": 709.0,
+      "actual_t": 709.008,
+      "t": 709.008,
+      "timestamp_error": 0.0083,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0032_t0709.008_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.633,
+        "contrast": 63.11,
+        "sharpness": 9.076,
+        "blank": false,
+        "fingerprint": "7d8cf046dfd5018130c165d985235845cfbf6816745dc39d3a7f3406bef8d081"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0066",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.686,
+      "aligned_seg_ids": [
+        "seg_0144",
+        "seg_0145"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0033",
+      "frame_id": "c_0033",
+      "requested_t": 720.5,
+      "actual_t": 720.52,
+      "t": 720.52,
+      "timestamp_error": 0.0198,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0033_t0720.520_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.299,
+        "contrast": 63.579,
+        "sharpness": 9.007,
+        "blank": false,
+        "fingerprint": "065a52fde872dc8dc9a7386310991d118b39f1525de0284b95bab1a93d0f71f3"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0067",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.681,
+      "aligned_seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0034",
+      "frame_id": "c_0034",
+      "requested_t": 755.0,
+      "actual_t": 755.021,
+      "t": 755.021,
+      "timestamp_error": 0.0209,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0034_t0755.021_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.54,
+        "contrast": 66.644,
+        "sharpness": 10.982,
+        "blank": false,
+        "fingerprint": "418a109bd29e4c0624038bba35bcfc6fd089d27b1c94d3ea697428831d79cf4d"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0069",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.719,
+      "aligned_seg_ids": [
+        "seg_0153",
+        "seg_0154",
+        "seg_0155"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0035",
+      "frame_id": "c_0035",
+      "requested_t": 762.5,
+      "actual_t": 762.528,
+      "t": 762.528,
+      "timestamp_error": 0.0284,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0035_t0762.528_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_agent",
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156",
+        "seg_0157",
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 168.869,
+        "contrast": 91.5,
+        "sharpness": 14.226,
+        "blank": false,
+        "fingerprint": "9348f09575cff6df3bd7218716ca1abd6cbc875f6835e3cdf1e144d892f9c2ea"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_008",
+      "family_revisits": [],
+      "state_id": "s_0070",
+      "state_family": "f_007",
+      "mode": "C",
+      "importance": 0.707,
+      "aligned_seg_ids": [
+        "seg_0155",
+        "seg_0156",
+        "seg_0157"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0036",
+      "frame_id": "c_0036",
+      "requested_t": 799.5,
+      "actual_t": 799.532,
+      "t": 799.532,
+      "timestamp_error": 0.0321,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0036_t0799.532_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.004,
+        "contrast": 62.731,
+        "sharpness": 10.31,
+        "blank": false,
+        "fingerprint": "c74feee4a6c540da109e9f56747c4c5ae3f47e48868ec073ec414b31ad3dfddf"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0072",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.661,
+      "aligned_seg_ids": [
+        "seg_0162",
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0037",
+      "frame_id": "c_0037",
+      "requested_t": 802.5,
+      "actual_t": 802.502,
+      "t": 802.502,
+      "timestamp_error": 0.0017,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0037_t0802.502_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 213.032,
+        "contrast": 61.659,
+        "sharpness": 14.051,
+        "blank": false,
+        "fingerprint": "6ac2ad66b9617734d214729f092b42840ec08a0b046676d1d498db06485a66f1"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0073",
+      "state_family": null,
+      "mode": "B",
+      "importance": 0.658,
+      "aligned_seg_ids": [
+        "seg_0165",
+        "seg_0166"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0038",
+      "frame_id": "c_0038",
+      "requested_t": 845.0,
+      "actual_t": 845.011,
+      "t": 845.011,
+      "timestamp_error": 0.0108,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0038_t0845.011_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0176"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 216.11,
+        "contrast": 62.468,
+        "sharpness": 11.324,
+        "blank": false,
+        "fingerprint": "6d246eeb0c255ef354c256a9f85b537d262b7ab901d7a55bc7dbc2bddaed5c66"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_009",
+      "family_revisits": [
+        848.514
+      ],
+      "state_id": "s_0075",
+      "state_family": "f_008",
+      "mode": "C",
+      "importance": 0.322,
+      "aligned_seg_ids": [
+        "seg_0174",
+        "seg_0175",
+        "seg_0176",
+        "seg_0177"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0039",
+      "frame_id": "c_0039",
+      "requested_t": 879.0,
+      "actual_t": 879.011,
+      "t": 879.011,
+      "timestamp_error": 0.0115,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0039_t0879.011_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_markdown_skills"
+      ],
+      "seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.894,
+        "contrast": 63.975,
+        "sharpness": 10.279,
+        "blank": false,
+        "fingerprint": "36df6e6583f757c0cc5ab583d6db4d8944c42956751077acd60b539e3c124f89"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0080",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.67,
+      "aligned_seg_ids": [
+        "seg_0182",
+        "seg_0183",
+        "seg_0184"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0040",
+      "frame_id": "c_0040",
+      "requested_t": 888.5,
+      "actual_t": 888.521,
+      "t": 888.521,
+      "timestamp_error": 0.021,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0040_t0888.521_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_markdown_skills"
+      ],
+      "seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.785,
+        "contrast": 63.688,
+        "sharpness": 11.099,
+        "blank": false,
+        "fingerprint": "61c530a514c820d51933e60dabeb6e781039469d155a071aa64096ad096c5e10"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0081",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.669,
+      "aligned_seg_ids": [
+        "seg_0183",
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0041",
+      "frame_id": "c_0041",
+      "requested_t": 953.5,
+      "actual_t": 953.519,
+      "t": 953.519,
+      "timestamp_error": 0.0192,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0041_t0953.519_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.567,
+        "contrast": 63.031,
+        "sharpness": 10.69,
+        "blank": false,
+        "fingerprint": "5ce1f7fac621c5350c01af5dea35cb609dfc851568630078ce653bc1f4fc0569"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0086",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.664,
+      "aligned_seg_ids": [
+        "seg_0199",
+        "seg_0200",
+        "seg_0201",
+        "seg_0202"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0042",
+      "frame_id": "c_0042",
+      "requested_t": 957.5,
+      "actual_t": 957.523,
+      "t": 957.523,
+      "timestamp_error": 0.0232,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0042_t0957.523_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.995,
+        "contrast": 63.763,
+        "sharpness": 10.334,
+        "blank": false,
+        "fingerprint": "fc4eb365ad40932b336ce63ea500f40593b612e561a9259dfefd8778d3e6ccda"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0087",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.663,
+      "aligned_seg_ids": [
+        "seg_0201",
+        "seg_0202"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0043",
+      "frame_id": "c_0043",
+      "requested_t": 984.5,
+      "actual_t": 984.517,
+      "t": 984.517,
+      "timestamp_error": 0.0169,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0043_t0984.517_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0209"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 218.861,
+        "contrast": 63.631,
+        "sharpness": 9.74,
+        "blank": false,
+        "fingerprint": "dcd95f42ca8f7629eb08835de6d0b55c4d682165fc2c331b8805b0cd58c59503"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0090",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.31,
+      "aligned_seg_ids": [
+        "seg_0208",
+        "seg_0209"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0044",
+      "frame_id": "c_0044",
+      "requested_t": 999.5,
+      "actual_t": 999.532,
+      "t": 999.532,
+      "timestamp_error": 0.0319,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0044_t0999.532_state.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0212"
+      ],
+      "reasons": [
+        "state"
+      ],
+      "quality": {
+        "mean_luma": 219.183,
+        "contrast": 63.471,
+        "sharpness": 9.66,
+        "blank": false,
+        "fingerprint": "b678f6159149f66631eeff36260c419460cd05b622fad379b9ba0f217794b6a5"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0092",
+      "state_family": null,
+      "mode": "C",
+      "importance": 0.471,
+      "aligned_seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211",
+        "seg_0212",
+        "seg_0213"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0045",
+      "frame_id": "c_0045",
+      "requested_t": 1005.5,
+      "actual_t": 1005.505,
+      "t": 1005.505,
+      "timestamp_error": 0.0045,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0045_t1005.505_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_team"
+      ],
+      "seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211",
+        "seg_0213",
+        "seg_0215"
+      ],
+      "reasons": [
+        "state",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.738,
+        "contrast": 61.115,
+        "sharpness": 8.766,
+        "blank": false,
+        "fingerprint": "1ac2a82badb988e84001b617bf27738aa15489c60c55c73123cb01463315c7b4"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_004",
+      "family_revisits": [
+        441.508
+      ],
+      "state_id": "s_0093",
+      "state_family": "f_009",
+      "mode": "C",
+      "importance": 0.818,
+      "aligned_seg_ids": [
+        "seg_0212",
+        "seg_0213"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0046",
+      "frame_id": "c_0046",
+      "requested_t": 1041.0,
+      "actual_t": 1041.007,
+      "t": 1041.007,
+      "timestamp_error": 0.0066,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0046_t1041.007_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.355,
+        "contrast": 64.359,
+        "sharpness": 9.844,
+        "blank": false,
+        "fingerprint": "687fb1e92ad1b1ee16f6cd75a1a8722ca242c84939b8ef34abb337ae1a44b1c5"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": [],
+      "state_id": "s_0098",
+      "state_family": "f_010",
+      "mode": "C",
+      "importance": 0.664,
+      "aligned_seg_ids": [
+        "seg_0217",
+        "seg_0218",
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "stage": null
+    },
+    {
+      "candidate_id": "c_0047",
+      "frame_id": "c_0047",
+      "requested_t": 1095.0,
+      "actual_t": 1095.027,
+      "t": 1095.027,
+      "timestamp_error": 0.0273,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v15-standard/ISb0nrlNoKQ/work/candidates/c_0047_t1095.027_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223",
+        "seg_0236"
+      ],
+      "reasons": [
+        "final",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 222.163,
+        "contrast": 64.528,
+        "sharpness": 9.235,
+        "blank": false,
+        "fingerprint": "942c5354fe8009e965349cfc48cea67213a8519cdddd64738a5a9ad166f238d0"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_010",
+      "family_revisits": [],
+      "state_id": "s_0099",
+      "state_family": "f_010",
+      "mode": "B",
+      "importance": 0.628,
+      "aligned_seg_ids": [
+        "seg_0222",
+        "seg_0223",
+        "seg_0224",
+        "seg_0225",
+        "seg_0226",
+        "seg_0227",
+        "seg_0228",
+        "seg_0229",
+        "seg_0230",
+        "seg_0231",
+        "seg_0232",
+        "seg_0233",
+        "seg_0234",
+        "seg_0235",
+        "seg_0236"
+      ],
+      "stage": null
+    }
+  ]
+}

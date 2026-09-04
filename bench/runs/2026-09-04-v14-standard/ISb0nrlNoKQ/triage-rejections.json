@@ -1,0 +1,122 @@
+[
+  {
+    "candidate_id": "c_0001",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0003",
+    "reason": "no_information"
+  },
+  {
+    "candidate_id": "c_0004",
+    "reason": "no_information"
+  },
+  {
+    "candidate_id": "c_0005",
+    "reason": "duplicate_of:c_0006"
+  },
+  {
+    "candidate_id": "c_0007",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0008",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0011",
+    "reason": "duplicate_of:c_0010"
+  },
+  {
+    "candidate_id": "c_0012",
+    "reason": "duplicate_of:c_0013"
+  },
+  {
+    "candidate_id": "c_0014",
+    "reason": "duplicate_of:c_0015"
+  },
+  {
+    "candidate_id": "c_0016",
+    "reason": "no_information"
+  },
+  {
+    "candidate_id": "c_0017",
+    "reason": "duplicate_of:c_0019"
+  },
+  {
+    "candidate_id": "c_0018",
+    "reason": "duplicate_of:c_0019"
+  },
+  {
+    "candidate_id": "c_0021",
+    "reason": "duplicate_of:c_0020"
+  },
+  {
+    "candidate_id": "c_0022",
+    "reason": "duplicate_of:c_0020"
+  },
+  {
+    "candidate_id": "c_0023",
+    "reason": "duplicate_of:c_0020"
+  },
+  {
+    "candidate_id": "c_0024",
+    "reason": "duplicate_of:c_0025"
+  },
+  {
+    "candidate_id": "c_0026",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0028",
+    "reason": "duplicate_of:c_0025"
+  },
+  {
+    "candidate_id": "c_0029",
+    "reason": "duplicate_of:c_0025"
+  },
+  {
+    "candidate_id": "c_0030",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0032",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0033",
+    "reason": "build_stage"
+  },
+  {
+    "candidate_id": "c_0034",
+    "reason": "duplicate_of:c_0035"
+  },
+  {
+    "candidate_id": "c_0036",
+    "reason": "duplicate_of:c_0038"
+  },
+  {
+    "candidate_id": "c_0040",
+    "reason": "duplicate_of:c_0039"
+  },
+  {
+    "candidate_id": "c_0041",
+    "reason": "duplicate_of:c_0042"
+  },
+  {
+    "candidate_id": "c_0043",
+    "reason": "duplicate_of:c_0009"
+  },
+  {
+    "candidate_id": "c_0045",
+    "reason": "duplicate_of:c_0035"
+  },
+  {
+    "candidate_id": "c_0048",
+    "reason": "duplicate_of:c_0047"
+  },
+  {
+    "candidate_id": "c_0049",
+    "reason": "duplicate_of:c_0047"
+  }
+]

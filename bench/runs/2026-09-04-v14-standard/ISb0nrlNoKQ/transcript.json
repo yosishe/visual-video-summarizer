@@ -1,0 +1,1435 @@
+{
+  "source": "captions",
+  "video": {
+    "id": "ISb0nrlNoKQ",
+    "title": "Why Specialized Agents are Superior (How I Built an OpenClaw Superteam)",
+    "uploader": "Riley Brown",
+    "url": "https://www.youtube.com/watch?v=ISb0nrlNoKQ",
+    "duration": 1096.0,
+    "is_url": true
+  },
+  "segments": [
+    {
+      "seg_id": "seg_0000",
+      "start": 1.51,
+      "end": 3.04,
+      "text": "So, I spent the last 2 weeks building hundreds of different AI agent"
+    },
+    {
+      "seg_id": "seg_0001",
+      "start": 3.04,
+      "end": 7.6,
+      "text": "workflows, mostly using Open Claw. But, I also use Manas Claw code and even"
+    },
+    {
+      "seg_id": "seg_0002",
+      "start": 7.6,
+      "end": 11.64,
+      "text": "Perplexity computer, which just came out. And my biggest realization through"
+    },
+    {
+      "seg_id": "seg_0003",
+      "start": 11.64,
+      "end": 17.24,
+      "text": "this process, companies are going to have very narrow AI agents that operate"
+    },
+    {
+      "seg_id": "seg_0004",
+      "start": 17.24,
+      "end": 23.12,
+      "text": "in a team. And my current plan is to build 15 high-quality AI agents that run"
+    },
+    {
+      "seg_id": "seg_0005",
+      "start": 23.12,
+      "end": 29.08,
+      "text": "our entire growth division here at vibecheck.dev. And so, I want to take"
+    },
+    {
+      "seg_id": "seg_0006",
+      "start": 29.08,
+      "end": 33.76,
+      "text": "some time in this video to explain why I believe that narrow agents are the"
+    },
+    {
+      "seg_id": "seg_0007",
+      "start": 33.76,
+      "end": 38.8,
+      "text": "future. And we'll also kind of talk about why I'll be using Open Claw for"
+    },
+    {
+      "seg_id": "seg_0008",
+      "start": 38.8,
+      "end": 42.72,
+      "text": "this project. And so, let's just dive into the video. Over the past 2 weeks,"
+    },
+    {
+      "seg_id": "seg_0009",
+      "start": 42.72,
+      "end": 48.2,
+      "text": "we tested many different agents. And the main four that we tested were Open Claw,"
+    },
+    {
+      "seg_id": "seg_0010",
+      "start": 48.2,
+      "end": 54.28,
+      "text": "we tested Manas, we tested Claw code, and we tested Perplexity computer. And"
+    },
+    {
+      "seg_id": "seg_0011",
+      "start": 54.28,
+      "end": 58.4,
+      "text": "so, Perplexity computer is actually really interesting. You see here, you"
+    },
+    {
+      "seg_id": "seg_0012",
+      "start": 58.4,
+      "end": 63.52,
+      "text": "can actually switch from search to computer. And the way Perplexity"
+    },
+    {
+      "seg_id": "seg_0013",
+      "start": 63.52,
+      "end": 69.16,
+      "text": "computer works, I can say, \"Please make an app.\" This right here is a single"
+    },
+    {
+      "seg_id": "seg_0014",
+      "start": 69.16,
+      "end": 74.64,
+      "text": "task I can give an AI agent, and just like ChatGPT, it will start to work."
+    },
+    {
+      "seg_id": "seg_0015",
+      "start": 74.64,
+      "end": 80.12,
+      "text": "Except, this AI agent will get a sandbox, which is just a computer that's"
+    },
+    {
+      "seg_id": "seg_0016",
+      "start": 80.12,
+      "end": 84.8,
+      "text": "running in the cloud, and it can actually create files. You can see here"
+    },
+    {
+      "seg_id": "seg_0017",
+      "start": 84.8,
+      "end": 89.52,
+      "text": "that whatever it creates can open up in this side panel right here. So, it's"
+    },
+    {
+      "seg_id": "seg_0018",
+      "start": 89.52,
+      "end": 95.32,
+      "text": "like ChatGPT with a computer, which is exactly like Manas. And Manas has been"
+    },
+    {
+      "seg_id": "seg_0019",
+      "start": 95.32,
+      "end": 99.12,
+      "text": "around a lot longer than Perplexity computer, and it operates the same way."
+    },
+    {
+      "seg_id": "seg_0020",
+      "start": 99.12,
+      "end": 104.8,
+      "text": "Manas was the first kind of general agent tool that was released that had"
+    },
+    {
+      "seg_id": "seg_0021",
+      "start": 104.8,
+      "end": 108.6,
+      "text": "every single task that you put in has access to a computer. And as you can see"
+    },
+    {
+      "seg_id": "seg_0022",
+      "start": 108.6,
+      "end": 113.36,
+      "text": "here, you can see view Manas's computer. And so, we can view this over here. And"
+    },
+    {
+      "seg_id": "seg_0023",
+      "start": 113.36,
+      "end": 118.68,
+      "text": "so, you can see that this AI agent comes with a computer, it can create files, it"
+    },
+    {
+      "seg_id": "seg_0024",
+      "start": 118.68,
+      "end": 122.64,
+      "text": "can edit files, and it can do many different things that you would do on a"
+    },
+    {
+      "seg_id": "seg_0025",
+      "start": 122.64,
+      "end": 126.88,
+      "text": "computer. And so, that's how Manas and Perplexity computer work. You enter a"
+    },
+    {
+      "seg_id": "seg_0026",
+      "start": 126.88,
+      "end": 131.92,
+      "text": "task, it spins up a computer, and depending on how you prompt that task,"
+    },
+    {
+      "seg_id": "seg_0027",
+      "start": 131.92,
+      "end": 134.56,
+      "text": "different things will happen on that computer. It can create different"
+    },
+    {
+      "seg_id": "seg_0028",
+      "start": 134.56,
+      "end": 138.72,
+      "text": "things, it can do a whole host of things. And so, if you run five tasks,"
+    },
+    {
+      "seg_id": "seg_0029",
+      "start": 138.72,
+      "end": 143.16,
+      "text": "each one comes with its own little computer. And so, this can be seen of"
+    },
+    {
+      "seg_id": "seg_0030",
+      "start": 143.16,
+      "end": 149.8,
+      "text": "more as like a command center. Right? This is a command center for agents"
+    },
+    {
+      "seg_id": "seg_0031",
+      "start": 149.8,
+      "end": 153.56,
+      "text": "that have access to a computer."
+    },
+    {
+      "seg_id": "seg_0032",
+      "start": 153.56,
+      "end": 159.4,
+      "text": "And this is cool for certain things, but it's actually not what we want. I don't"
+    },
+    {
+      "seg_id": "seg_0033",
+      "start": 159.4,
+      "end": 164.44,
+      "text": "believe this is going to be the most useful form of AI agents. I think the"
+    },
+    {
+      "seg_id": "seg_0034",
+      "start": 164.44,
+      "end": 169.64,
+      "text": "most useful type of AI agent will be something exactly like Openclaw."
+    },
+    {
+      "seg_id": "seg_0035",
+      "start": 169.64,
+      "end": 175.36,
+      "text": "Openclaw is an AI agent that runs on one computer. And you can see that uh Mac"
+    },
+    {
+      "seg_id": "seg_0036",
+      "start": 175.36,
+      "end": 179.36,
+      "text": "Minis are literally sold out right now. It's really hard to get a Mac Mini or a"
+    },
+    {
+      "seg_id": "seg_0037",
+      "start": 179.36,
+      "end": 184.88,
+      "text": "Mac Studio because so many people are running an AI agent, Openclaw, on these"
+    },
+    {
+      "seg_id": "seg_0038",
+      "start": 184.88,
+      "end": 189.8,
+      "text": "computers. And so, basically, what Openclaw did is they basically put an AI"
+    },
+    {
+      "seg_id": "seg_0039",
+      "start": 189.8,
+      "end": 195.4,
+      "text": "agent on a computer, and then they gave it really good memory, they gave it"
+    },
+    {
+      "seg_id": "seg_0040",
+      "start": 195.4,
+      "end": 199.8,
+      "text": "really structured skills that you could very easily add, and then they also"
+    },
+    {
+      "seg_id": "seg_0041",
+      "start": 199.8,
+      "end": 206.32,
+      "text": "added a gateway. And this gateway allowed you to chat with Openclaw from"
+    },
+    {
+      "seg_id": "seg_0042",
+      "start": 206.32,
+      "end": 210.72,
+      "text": "different applications. You could do it on Telegram, you could do it on"
+    },
+    {
+      "seg_id": "seg_0043",
+      "start": 210.72,
+      "end": 216.64,
+      "text": "WhatsApp, you could message it on Discord, on Slack. And this is why"
+    },
+    {
+      "seg_id": "seg_0044",
+      "start": 216.64,
+      "end": 222.24,
+      "text": "Openclaw went really viral. It gave an AI agent a computer, and then made it"
+    },
+    {
+      "seg_id": "seg_0045",
+      "start": 222.24,
+      "end": 226.72,
+      "text": "accessible in all of the tools that you already communicate with other people."
+    },
+    {
+      "seg_id": "seg_0046",
+      "start": 226.72,
+      "end": 233.44,
+      "text": "And so, the first Openclaw AI agent that I created had many skills. So, I"
+    },
+    {
+      "seg_id": "seg_0047",
+      "start": 233.44,
+      "end": 238.48,
+      "text": "and so this is an overview of the most useful skills that I gave my first AI"
+    },
+    {
+      "seg_id": "seg_0048",
+      "start": 238.48,
+      "end": 244.08,
+      "text": "agent. My favorite skill was this social media transcript analyzer using an API"
+    },
+    {
+      "seg_id": "seg_0049",
+      "start": 244.08,
+      "end": 247.76,
+      "text": "called Super data. If you guys want to look it up and use it, it allows you to"
+    },
+    {
+      "seg_id": "seg_0050",
+      "start": 247.76,
+      "end": 253.88,
+      "text": "turn any YouTube link, Twitter link, Instagram link, or"
+    },
+    {
+      "seg_id": "seg_0051",
+      "start": 253.88,
+      "end": 259.04,
+      "text": "TikTok link into a transcript so you could very easily analyze social media."
+    },
+    {
+      "seg_id": "seg_0052",
+      "start": 259.04,
+      "end": 263.84,
+      "text": "I added this. And then I added the ability for it to control my notion. And"
+    },
+    {
+      "seg_id": "seg_0053",
+      "start": 263.84,
+      "end": 270.4,
+      "text": "then I added the ability to control all of my Google workspace. So, my calendar,"
+    },
+    {
+      "seg_id": "seg_0054",
+      "start": 270.4,
+      "end": 275.16,
+      "text": "my email, Google Docs, Google Sheets, etc. And then I gave it access to our"
+    },
+    {
+      "seg_id": "seg_0055",
+      "start": 275.16,
+      "end": 280.2,
+      "text": "linear so I could take a look and see where are we at with the product, what's"
+    },
+    {
+      "seg_id": "seg_0056",
+      "start": 280.2,
+      "end": 284.56,
+      "text": "launching soon, things like that. I gave it access to Figma. It could literally"
+    },
+    {
+      "seg_id": "seg_0057",
+      "start": 284.56,
+      "end": 289.4,
+      "text": "control Figma on my computer. It could generate any type of media using FAL. It"
+    },
+    {
+      "seg_id": "seg_0058",
+      "start": 289.4,
+      "end": 293.6,
+      "text": "could even edit videos, which was my previous video. And what I realized over"
+    },
+    {
+      "seg_id": "seg_0059",
+      "start": 293.6,
+      "end": 299.16,
+      "text": "time is that the more skills that I added, right? As the amount of skills"
+    },
+    {
+      "seg_id": "seg_0060",
+      "start": 299.16,
+      "end": 303.84,
+      "text": "increased, the dependability of the AI agent"
+    },
+    {
+      "seg_id": "seg_0061",
+      "start": 303.84,
+      "end": 307.4,
+      "text": "decreased. And so that's when I realized, okay, well, you can't really"
+    },
+    {
+      "seg_id": "seg_0062",
+      "start": 307.4,
+      "end": 311.52,
+      "text": "add unlimited skills. It stops being super useful. It doesn't use the skills"
+    },
+    {
+      "seg_id": "seg_0063",
+      "start": 311.52,
+      "end": 316.12,
+      "text": "at the right time. The context gets super clouded and it doesn't use the"
+    },
+    {
+      "seg_id": "seg_0064",
+      "start": 316.12,
+      "end": 321.24,
+      "text": "right integrations and the personalities ended up getting jumbled. And so that's"
+    },
+    {
+      "seg_id": "seg_0065",
+      "start": 321.24,
+      "end": 327.76,
+      "text": "the conclusion that I came to, right? We need to create a team of AI agents that"
+    },
+    {
+      "seg_id": "seg_0066",
+      "start": 327.76,
+      "end": 334.4,
+      "text": "have, I would say, seven to 10 skills each. Instead of building out AI agents"
+    },
+    {
+      "seg_id": "seg_0067",
+      "start": 334.4,
+      "end": 340.04,
+      "text": "that have 30 skills. This is the sweet spot. As you go above this, the AI agent"
+    },
+    {
+      "seg_id": "seg_0068",
+      "start": 340.04,
+      "end": 343.8,
+      "text": "stops performing super well. And so that's one of the main reasons why I"
+    },
+    {
+      "seg_id": "seg_0069",
+      "start": 343.8,
+      "end": 347.88,
+      "text": "think Manis has a lot of potential. It's just not my tool of choice because when"
+    },
+    {
+      "seg_id": "seg_0070",
+      "start": 347.88,
+      "end": 352.16,
+      "text": "you hit use skills, you can go to the manage skills and you can kind of see"
+    },
+    {
+      "seg_id": "seg_0071",
+      "start": 352.16,
+      "end": 356.12,
+      "text": "all of their official skills. And so, they have all of these different types"
+    },
+    {
+      "seg_id": "seg_0072",
+      "start": 356.12,
+      "end": 360.36,
+      "text": "of skills that you can add, but you're not adding it to a specific agent."
+    },
+    {
+      "seg_id": "seg_0073",
+      "start": 360.36,
+      "end": 365.32,
+      "text": "Rather, you're adding it you're adding it to your command center, which means"
+    },
+    {
+      "seg_id": "seg_0074",
+      "start": 365.32,
+      "end": 369.24,
+      "text": "everything is proactive. You have to go to your command center and then ask it"
+    },
+    {
+      "seg_id": "seg_0075",
+      "start": 369.24,
+      "end": 375.6,
+      "text": "to do it. People simply want an employee that gets things done. And if you think"
+    },
+    {
+      "seg_id": "seg_0076",
+      "start": 375.6,
+      "end": 379.44,
+      "text": "about a really good employee, you think like the employee will actually just"
+    },
+    {
+      "seg_id": "seg_0077",
+      "start": 379.44,
+      "end": 386.56,
+      "text": "like do things that surprise you. A good employee will make suggestions that are"
+    },
+    {
+      "seg_id": "seg_0078",
+      "start": 386.56,
+      "end": 391.2,
+      "text": "useful. And I believe that in order to do these three things, like get things"
+    },
+    {
+      "seg_id": "seg_0079",
+      "start": 391.2,
+      "end": 395.2,
+      "text": "done, do things that surprise you, and make suggestions that are useful, you"
+    },
+    {
+      "seg_id": "seg_0080",
+      "start": 395.2,
+      "end": 401.56,
+      "text": "need to have specific goals, or you need to give AI agents"
+    },
+    {
+      "seg_id": "seg_0081",
+      "start": 401.56,
+      "end": 406.12,
+      "text": "intent. And I actually got this from on Twitter, Emmett Shear. He was the"
+    },
+    {
+      "seg_id": "seg_0082",
+      "start": 406.12,
+      "end": 410.28,
+      "text": "interim CEO of OpenAI when Sam Altman almost got fired, but he tweeted"
+    },
+    {
+      "seg_id": "seg_0083",
+      "start": 410.28,
+      "end": 413.8,
+      "text": "Prompts are so late 2025. We are giving"
+    },
+    {
+      "seg_id": "seg_0084",
+      "start": 413.8,
+      "end": 418.68,
+      "text": "models intents now.\" And I think I I would say like we are"
+    },
+    {
+      "seg_id": "seg_0085",
+      "start": 418.68,
+      "end": 424.68,
+      "text": "giving AI agents with computers intents. And the definition of intent is"
+    },
+    {
+      "seg_id": "seg_0086",
+      "start": 424.68,
+      "end": 429.88,
+      "text": "intention or purpose. Right? We are giving these agents purpose. And I"
+    },
+    {
+      "seg_id": "seg_0087",
+      "start": 429.88,
+      "end": 433.76,
+      "text": "believe that if you're going to go through this paradigm, it's really hard"
+    },
+    {
+      "seg_id": "seg_0088",
+      "start": 433.76,
+      "end": 437.4,
+      "text": "to give these agents purpose because they're so general. They have so many"
+    },
+    {
+      "seg_id": "seg_0089",
+      "start": 437.4,
+      "end": 441.84,
+      "text": "different skills. It's super proactive. Uh and so, that's why I don't really"
+    },
+    {
+      "seg_id": "seg_0090",
+      "start": 441.84,
+      "end": 446.88,
+      "text": "like Perplexity computer and Manas. And so, that's why I want to create a team"
+    },
+    {
+      "seg_id": "seg_0091",
+      "start": 446.88,
+      "end": 452.12,
+      "text": "of narrow open claw agents with very specific goals and skills."
+    },
+    {
+      "seg_id": "seg_0092",
+      "start": 452.12,
+      "end": 456.08,
+      "text": "And I'll explain a little bit more uh about why I want to do this. And so,"
+    },
+    {
+      "seg_id": "seg_0093",
+      "start": 456.08,
+      "end": 460.32,
+      "text": "when we were testing these AI agents, and I have a bunch of these AI agents"
+    },
+    {
+      "seg_id": "seg_0094",
+      "start": 460.32,
+      "end": 465.16,
+      "text": "running, this is my journal bot. And uh I have these agents running in Telegram"
+    },
+    {
+      "seg_id": "seg_0095",
+      "start": 465.16,
+      "end": 470.16,
+      "text": "right now. And after testing them for 2 weeks, I realized that this is the way"
+    },
+    {
+      "seg_id": "seg_0096",
+      "start": 470.16,
+      "end": 474.68,
+      "text": "this whole space is going. A focused agent with a specific personality, with"
+    },
+    {
+      "seg_id": "seg_0097",
+      "start": 474.68,
+      "end": 480.76,
+      "text": "specific tasks, and a specific heartbeat. And what I realized is that"
+    },
+    {
+      "seg_id": "seg_0098",
+      "start": 480.76,
+      "end": 483.92,
+      "text": "all of these things are better when they're focused, right? When they're"
+    },
+    {
+      "seg_id": "seg_0099",
+      "start": 483.92,
+      "end": 488.4,
+      "text": "when you have a team of AI agents or a team of agents running on a computer"
+    },
+    {
+      "seg_id": "seg_0100",
+      "start": 488.4,
+      "end": 493.6,
+      "text": "that are confined right? To a more narrow focus, everything performs"
+    },
+    {
+      "seg_id": "seg_0101",
+      "start": 493.6,
+      "end": 499.12,
+      "text": "better, which allows you to focus your skills and integrations on what will be"
+    },
+    {
+      "seg_id": "seg_0102",
+      "start": 499.12,
+      "end": 504.04,
+      "text": "useful to reach a specific goal. Let me give you an example. So, my favorite"
+    },
+    {
+      "seg_id": "seg_0103",
+      "start": 504.04,
+      "end": 509.16,
+      "text": "agent that I'm using right now that I message in Telegram is this content bot,"
+    },
+    {
+      "seg_id": "seg_0104",
+      "start": 509.16,
+      "end": 515.4,
+      "text": "which is specific for creating YouTube videos. This is my YouTube agent. So,"
+    },
+    {
+      "seg_id": "seg_0105",
+      "start": 515.4,
+      "end": 521.6,
+      "text": "this focused agent is my YouTube AI agent. And the only thing that this"
+    },
+    {
+      "seg_id": "seg_0106",
+      "start": 521.6,
+      "end": 528.56,
+      "text": "agent is focused on is creating YouTube videos. And it has three goals in its"
+    },
+    {
+      "seg_id": "seg_0107",
+      "start": 528.56,
+      "end": 534.56,
+      "text": "files. It knows exactly what goals it's optimizing for, which are subs, views,"
+    },
+    {
+      "seg_id": "seg_0108",
+      "start": 534.56,
+      "end": 539.04,
+      "text": "and conversions. And I'm not to say that everything that I do on YouTube will is"
+    },
+    {
+      "seg_id": "seg_0109",
+      "start": 539.04,
+      "end": 543.48,
+      "text": "optimized for these three things, but whenever I ask it to create a script,"
+    },
+    {
+      "seg_id": "seg_0110",
+      "start": 543.48,
+      "end": 547.48,
+      "text": "for example, it knows that I want to increase the amount of subs, increase"
+    },
+    {
+      "seg_id": "seg_0111",
+      "start": 547.48,
+      "end": 552.68,
+      "text": "the views, and increase conversions. So, the main reason really narrow goals are"
+    },
+    {
+      "seg_id": "seg_0112",
+      "start": 552.68,
+      "end": 559.0,
+      "text": "super useful is that it allows you to create hyper-specific skills that can be"
+    },
+    {
+      "seg_id": "seg_0113",
+      "start": 559.0,
+      "end": 563.88,
+      "text": "verified whether you should add them. If your skill does not have anything to do"
+    },
+    {
+      "seg_id": "seg_0114",
+      "start": 563.88,
+      "end": 568.12,
+      "text": "with your with your goals of your AI agents, you shouldn't add them. So, it"
+    },
+    {
+      "seg_id": "seg_0115",
+      "start": 568.12,
+      "end": 571.88,
+      "text": "makes it super easy to add skills. And for example, the main skill that I use"
+    },
+    {
+      "seg_id": "seg_0116",
+      "start": 571.88,
+      "end": 576.0,
+      "text": "for this YouTube AI agent is YouTube research. And then this allows me to"
+    },
+    {
+      "seg_id": "seg_0117",
+      "start": 576.0,
+      "end": 580.88,
+      "text": "think about, \"Okay, what integrations are useful for this YouTube research"
+    },
+    {
+      "seg_id": "seg_0118",
+      "start": 580.88,
+      "end": 585.84,
+      "text": "skill?\" And so, I use two for this. I use the SERP API skill integration, and"
+    },
+    {
+      "seg_id": "seg_0119",
+      "start": 585.84,
+      "end": 590.56,
+      "text": "I also use the Super Data API. This one allows you to scrape transcripts. This"
+    },
+    {
+      "seg_id": "seg_0120",
+      "start": 590.56,
+      "end": 594.8,
+      "text": "one allows you to like search through YouTube. It's really useful. Skill"
+    },
+    {
+      "seg_id": "seg_0121",
+      "start": 594.8,
+      "end": 599.88,
+      "text": "number two is thumbnail generator, right? I generate thumbnails, and I even"
+    },
+    {
+      "seg_id": "seg_0122",
+      "start": 599.88,
+      "end": 605.16,
+      "text": "have my AI agent every single morning scrape my competitors' thumbnails, and"
+    },
+    {
+      "seg_id": "seg_0123",
+      "start": 605.16,
+      "end": 609.68,
+      "text": "then it comes up with ideas and kind of modifications of their videos with my"
+    },
+    {
+      "seg_id": "seg_0124",
+      "start": 609.68,
+      "end": 615.04,
+      "text": "face. And so, for this, we need access to Nano Banana. And for this skill"
+    },
+    {
+      "seg_id": "seg_0125",
+      "start": 615.04,
+      "end": 620.56,
+      "text": "specifically, it it has some relevant context that it needs, which is photos"
+    },
+    {
+      "seg_id": "seg_0126",
+      "start": 620.56,
+      "end": 625.76,
+      "text": "of Riley, right? It needs my photos in order to create an image of me. So,"
+    },
+    {
+      "seg_id": "seg_0127",
+      "start": 625.76,
+      "end": 630.52,
+      "text": "that's just some useful context that we need to give it. And number three is it"
+    },
+    {
+      "seg_id": "seg_0128",
+      "start": 630.52,
+      "end": 635.72,
+      "text": "needs to be able to control my Notion, which is where I keep"
+    },
+    {
+      "seg_id": "seg_0129",
+      "start": 635.72,
+      "end": 640.07,
+      "text": "all of my scripts for my YouTube videos. And"
+    },
+    {
+      "seg_id": "seg_0130",
+      "start": 640.07,
+      "end": 641.64,
+      "text": "And for this, we actually just need the"
+    },
+    {
+      "seg_id": "seg_0131",
+      "start": 641.64,
+      "end": 646.32,
+      "text": "Notion integration. And so, you can see here that it's kind of this direct path,"
+    },
+    {
+      "seg_id": "seg_0132",
+      "start": 646.32,
+      "end": 651.88,
+      "text": "right? Your YouTube agent is in charge of optimizing for YouTube subs. It wants"
+    },
+    {
+      "seg_id": "seg_0133",
+      "start": 651.88,
+      "end": 656.0,
+      "text": "to increase the amount of views you get, and it increases the amount of"
+    },
+    {
+      "seg_id": "seg_0134",
+      "start": 656.0,
+      "end": 660.36,
+      "text": "conversions you get from your video. That is what my agent is optimizing for."
+    },
+    {
+      "seg_id": "seg_0135",
+      "start": 660.36,
+      "end": 664.32,
+      "text": "And now, when I go to my agent and say, \"What skills do you need?\" it knows"
+    },
+    {
+      "seg_id": "seg_0136",
+      "start": 664.32,
+      "end": 669.8,
+      "text": "exactly where we're going, right? This is a path. And if you've spent any time"
+    },
+    {
+      "seg_id": "seg_0137",
+      "start": 669.8,
+      "end": 674.52,
+      "text": "hiring people, the most annoying people to hire are people with vague skills."
+    },
+    {
+      "seg_id": "seg_0138",
+      "start": 674.52,
+      "end": 678.16,
+      "text": "They don't have specific goals. They're good at talking, but they're they're not"
+    },
+    {
+      "seg_id": "seg_0139",
+      "start": 678.16,
+      "end": 681.4,
+      "text": "good at driving towards a specific goal. They're good at distracting from the"
+    },
+    {
+      "seg_id": "seg_0140",
+      "start": 681.4,
+      "end": 685.12,
+      "text": "goal. The best employees to hire are people who are like, \"Yep, I'm really"
+    },
+    {
+      "seg_id": "seg_0141",
+      "start": 685.12,
+      "end": 689.96,
+      "text": "good at certain things, and I can help your company reach these goals, which"
+    },
+    {
+      "seg_id": "seg_0142",
+      "start": 689.96,
+      "end": 695.24,
+      "text": "will ultimately help your company.\" It's very simple. And this YouTube agent is"
+    },
+    {
+      "seg_id": "seg_0143",
+      "start": 695.24,
+      "end": 701.72,
+      "text": "just one of the agents that I use. And so, the question now becomes, why narrow"
+    },
+    {
+      "seg_id": "seg_0144",
+      "start": 701.72,
+      "end": 707.08,
+      "text": "agents? The first reason why is when we find a super useful agent, it's very"
+    },
+    {
+      "seg_id": "seg_0145",
+      "start": 707.08,
+      "end": 711.68,
+      "text": "easy to duplicate, right? You can remix it for something else. It could be"
+    },
+    {
+      "seg_id": "seg_0146",
+      "start": 711.68,
+      "end": 715.8,
+      "text": "relatively simple to turn a YouTube agent into a TikTok agent, right? We"
+    },
+    {
+      "seg_id": "seg_0147",
+      "start": 715.8,
+      "end": 719.48,
+      "text": "could create a TikTok agent that's only focused on TikTok. We could create one"
+    },
+    {
+      "seg_id": "seg_0148",
+      "start": 719.48,
+      "end": 723.64,
+      "text": "that's only focused on Substack, for example. And when you create these"
+    },
+    {
+      "seg_id": "seg_0149",
+      "start": 723.64,
+      "end": 726.95,
+      "text": "smaller agents, it's easier to duplicate. Uh"
+    },
+    {
+      "seg_id": "seg_0150",
+      "start": 726.95,
+      "end": 728.24,
+      "text": "duplicate. Uh you know, when you try and create a"
+    },
+    {
+      "seg_id": "seg_0151",
+      "start": 728.24,
+      "end": 734.08,
+      "text": "massive agent that has like 50 skills, it's just hard to extract just the the"
+    },
+    {
+      "seg_id": "seg_0152",
+      "start": 734.08,
+      "end": 738.84,
+      "text": "portion uh that you want to duplicate out of it, right? And so, I can very"
+    },
+    {
+      "seg_id": "seg_0153",
+      "start": 738.84,
+      "end": 745.6,
+      "text": "easily duplicate my my single um narrow-focus agents. Additionally, um"
+    },
+    {
+      "seg_id": "seg_0154",
+      "start": 745.6,
+      "end": 751.12,
+      "text": "this makes it super easy to share with your team. So, for example, today I"
+    },
+    {
+      "seg_id": "seg_0155",
+      "start": 751.12,
+      "end": 756.92,
+      "text": "built a journal agent. My journal agent is it lives in Telegram, and this agent"
+    },
+    {
+      "seg_id": "seg_0156",
+      "start": 756.92,
+      "end": 760.84,
+      "text": "is a little bit more hands-on. And so, basically, what it does is it reaches"
+    },
+    {
+      "seg_id": "seg_0157",
+      "start": 760.84,
+      "end": 765.04,
+      "text": "out to me every 30 minutes. Sometimes it doesn't reach out if nothing needs to be"
+    },
+    {
+      "seg_id": "seg_0158",
+      "start": 765.04,
+      "end": 768.92,
+      "text": "done, and it analyzes everything that I do, every meeting, every video that I"
+    },
+    {
+      "seg_id": "seg_0159",
+      "start": 768.92,
+      "end": 773.12,
+      "text": "make, everything. And if it wants more context, it'll ask me. Every single day"
+    },
+    {
+      "seg_id": "seg_0160",
+      "start": 773.12,
+      "end": 777.88,
+      "text": "it'll write multiple journal entries, logging everything that's useful"
+    },
+    {
+      "seg_id": "seg_0161",
+      "start": 777.88,
+      "end": 782.04,
+      "text": "um and everything that it needs to know about me. Just so I can create this like"
+    },
+    {
+      "seg_id": "seg_0162",
+      "start": 782.04,
+      "end": 785.8,
+      "text": "running log of all of the important information that's important to business"
+    },
+    {
+      "seg_id": "seg_0163",
+      "start": 785.8,
+      "end": 790.36,
+      "text": "and content. And the purpose of this agent is that it informs all of the"
+    },
+    {
+      "seg_id": "seg_0164",
+      "start": 790.36,
+      "end": 794.68,
+      "text": "other agents, right? So, this journal agent has access to Notion. Every single"
+    },
+    {
+      "seg_id": "seg_0165",
+      "start": 794.68,
+      "end": 799.28,
+      "text": "agent that we have has access to Notion, and all of these other agents are aware"
+    },
+    {
+      "seg_id": "seg_0166",
+      "start": 799.28,
+      "end": 804.64,
+      "text": "of the journal that the journal agent creates. So, my email newsletter every"
+    },
+    {
+      "seg_id": "seg_0167",
+      "start": 804.64,
+      "end": 809.4,
+      "text": "day is just going to read my journal agent's journal and it's going to come"
+    },
+    {
+      "seg_id": "seg_0168",
+      "start": 809.4,
+      "end": 812.96,
+      "text": "up with ideas for email newsletters. So, in my journal agent, it'll know when"
+    },
+    {
+      "seg_id": "seg_0169",
+      "start": 812.96,
+      "end": 817.6,
+      "text": "there's product updates and then my email newsletter agent will be like will"
+    },
+    {
+      "seg_id": "seg_0170",
+      "start": 817.6,
+      "end": 821.56,
+      "text": "just draft up an email newsletter that needs to go out to our email list, which"
+    },
+    {
+      "seg_id": "seg_0171",
+      "start": 821.56,
+      "end": 827.24,
+      "text": "is 300,000 people and in this email newsletter agent, it has very specific"
+    },
+    {
+      "seg_id": "seg_0172",
+      "start": 827.24,
+      "end": 831.4,
+      "text": "goals, right? This newsletter agent has very specific goals, which is optimize"
+    },
+    {
+      "seg_id": "seg_0173",
+      "start": 831.4,
+      "end": 835.52,
+      "text": "the amount of conversions from our email newsletter, right? And and to maximize"
+    },
+    {
+      "seg_id": "seg_0174",
+      "start": 835.52,
+      "end": 839.96,
+      "text": "click-through rate, to open rate, things like that."
+    },
+    {
+      "seg_id": "seg_0175",
+      "start": 839.96,
+      "end": 844.2,
+      "text": "And it doesn't have to be clouded by any of the journal agent's goals. It just"
+    },
+    {
+      "seg_id": "seg_0176",
+      "start": 844.2,
+      "end": 847.96,
+      "text": "has access to the journal that the journal agent creates. And so anyway,"
+    },
+    {
+      "seg_id": "seg_0177",
+      "start": 847.96,
+      "end": 852.48,
+      "text": "this is a really useful agent that I created and I want to help Ange, my"
+    },
+    {
+      "seg_id": "seg_0178",
+      "start": 852.48,
+      "end": 856.64,
+      "text": "co-founder, create more content. And so now, because I made a really narrow"
+    },
+    {
+      "seg_id": "seg_0179",
+      "start": 856.64,
+      "end": 862.04,
+      "text": "journal agent, I actually just shared with him my entire Open Claw agent and"
+    },
+    {
+      "seg_id": "seg_0180",
+      "start": 862.04,
+      "end": 866.52,
+      "text": "he was able to duplicate it in about 5 minutes. So, it was really shareable."
+    },
+    {
+      "seg_id": "seg_0181",
+      "start": 866.52,
+      "end": 869.68,
+      "text": "So, when you create a really narrow agent that's super useful, it's very"
+    },
+    {
+      "seg_id": "seg_0182",
+      "start": 869.68,
+      "end": 873.8,
+      "text": "easy to duplicate it and share it with other people. And it also makes it just"
+    },
+    {
+      "seg_id": "seg_0183",
+      "start": 873.8,
+      "end": 879.28,
+      "text": "more understandable, right? This Open Claw agent runs on a computer. In the"
+    },
+    {
+      "seg_id": "seg_0184",
+      "start": 879.28,
+      "end": 883.44,
+      "text": "computer, it has access to files, right? They like this computer, every time you"
+    },
+    {
+      "seg_id": "seg_0185",
+      "start": 883.44,
+      "end": 887.88,
+      "text": "use Open Claw, you're basically editing files, right? All of these skills are"
+    },
+    {
+      "seg_id": "seg_0186",
+      "start": 887.88,
+      "end": 893.64,
+      "text": "just markdown files stored in the Open Claw folder. If your focused AI agent"
+    },
+    {
+      "seg_id": "seg_0187",
+      "start": 893.64,
+      "end": 897.84,
+      "text": "only has a few skills and and a handful of integrations, it's a lot easier to"
+    },
+    {
+      "seg_id": "seg_0188",
+      "start": 897.84,
+      "end": 901.52,
+      "text": "understand when you send them to other people. And then finally, right? This"
+    },
+    {
+      "seg_id": "seg_0189",
+      "start": 901.52,
+      "end": 906.72,
+      "text": "one's pretty intuitive, right? If you have a narrow set of of goals, right?"
+    },
+    {
+      "seg_id": "seg_0190",
+      "start": 906.72,
+      "end": 910.72,
+      "text": "Goals, right? You want to hit specific KPIs. In the case of the newsletter, it"
+    },
+    {
+      "seg_id": "seg_0191",
+      "start": 910.72,
+      "end": 915.48,
+      "text": "would be like open rate, subscriptions, right? You want people to subscribe and"
+    },
+    {
+      "seg_id": "seg_0192",
+      "start": 915.48,
+      "end": 918.2,
+      "text": "ultimately like click-through rate. And like if you were just had like a"
+    },
+    {
+      "seg_id": "seg_0193",
+      "start": 918.2,
+      "end": 922.24,
+      "text": "newsletter business, it would be like, you know, you could have revenue. When"
+    },
+    {
+      "seg_id": "seg_0194",
+      "start": 922.24,
+      "end": 927.12,
+      "text": "you have very narrow goals, it's very reviewable. You can look at that agent"
+    },
+    {
+      "seg_id": "seg_0195",
+      "start": 927.12,
+      "end": 930.36,
+      "text": "and be like, \"Yep, you did a good job.\" Or, \"No, you did a bad job.\" You know"
+    },
+    {
+      "seg_id": "seg_0196",
+      "start": 930.36,
+      "end": 935.44,
+      "text": "exactly where it needs to change. You It's It's It's pass fail. When your AI"
+    },
+    {
+      "seg_id": "seg_0197",
+      "start": 935.44,
+      "end": 939.6,
+      "text": "agents are pass fail, it's a lot easier to just cut them, right? The A lot of AI"
+    },
+    {
+      "seg_id": "seg_0198",
+      "start": 939.6,
+      "end": 942.92,
+      "text": "agents that you create over the next few years are not going to be worthwhile."
+    },
+    {
+      "seg_id": "seg_0199",
+      "start": 942.92,
+      "end": 946.0,
+      "text": "And the more narrow they are, uh the easier it is to say, \"Yep, you"
+    },
+    {
+      "seg_id": "seg_0200",
+      "start": 946.0,
+      "end": 949.32,
+      "text": "did good.\" Or, \"No, you did bad, so get rid of it.\" And then the final two"
+    },
+    {
+      "seg_id": "seg_0201",
+      "start": 949.32,
+      "end": 954.4,
+      "text": "reasons you want a narrow focus is you can create easier loops, which allows"
+    },
+    {
+      "seg_id": "seg_0202",
+      "start": 954.4,
+      "end": 959.16,
+      "text": "them to be more autonomous. I have multiple narrow agents that are very"
+    },
+    {
+      "seg_id": "seg_0203",
+      "start": 959.16,
+      "end": 963.32,
+      "text": "simple loops, right? It only has a set of three tasks that it does every single"
+    },
+    {
+      "seg_id": "seg_0204",
+      "start": 963.32,
+      "end": 968.28,
+      "text": "day. It knows what it's optimizing for, and it can just go in those simple loops"
+    },
+    {
+      "seg_id": "seg_0205",
+      "start": 968.28,
+      "end": 973.12,
+      "text": "over and over and over again because tasks are just are called cron jobs,"
+    },
+    {
+      "seg_id": "seg_0206",
+      "start": 973.12,
+      "end": 976.8,
+      "text": "which are triggered at specific times during the day. And the more narrow your"
+    },
+    {
+      "seg_id": "seg_0207",
+      "start": 976.8,
+      "end": 980.12,
+      "text": "agent, the easier it is to get in a predictable loop, and you can just let"
+    },
+    {
+      "seg_id": "seg_0208",
+      "start": 980.12,
+      "end": 984.48,
+      "text": "it run. If you have a super mega agent that's super massive, it's harder to do"
+    },
+    {
+      "seg_id": "seg_0209",
+      "start": 984.48,
+      "end": 988.68,
+      "text": "this. So, I think you understand my objective here. I want to create very"
+    },
+    {
+      "seg_id": "seg_0210",
+      "start": 988.68,
+      "end": 993.72,
+      "text": "narrow AI agents with very specific goals, and I want them to operate in a"
+    },
+    {
+      "seg_id": "seg_0211",
+      "start": 993.72,
+      "end": 998.28,
+      "text": "team, right? This could be my team. It's hard to say exactly which agents I'll be"
+    },
+    {
+      "seg_id": "seg_0212",
+      "start": 998.28,
+      "end": 1002.32,
+      "text": "adding, right? As I do more workflows, I'll notice where we need to create a"
+    },
+    {
+      "seg_id": "seg_0213",
+      "start": 1002.32,
+      "end": 1006.8,
+      "text": "new agent. But the one thing that I think that Perplexity and Manas got"
+    },
+    {
+      "seg_id": "seg_0214",
+      "start": 1006.8,
+      "end": 1011.72,
+      "text": "right is they're actually using a computer in the cloud. They spin a"
+    },
+    {
+      "seg_id": "seg_0215",
+      "start": 1011.72,
+      "end": 1016.12,
+      "text": "computer per task, right? When you type in a task, they spin up a computer, and"
+    },
+    {
+      "seg_id": "seg_0216",
+      "start": 1016.12,
+      "end": 1019.44,
+      "text": "that agent can use the computer. I actually don't think that's going to be"
+    },
+    {
+      "seg_id": "seg_0217",
+      "start": 1019.44,
+      "end": 1023.6,
+      "text": "the paradigm. I think it's going to be Open Claw running in a computer in the"
+    },
+    {
+      "seg_id": "seg_0218",
+      "start": 1023.6,
+      "end": 1027.64,
+      "text": "cloud. And so, it's up to us as a company to figure out, \"How do we"
+    },
+    {
+      "seg_id": "seg_0219",
+      "start": 1027.64,
+      "end": 1031.8,
+      "text": "efficiently run these in the cloud?\" And 2 years from now when each one of them"
+    },
+    {
+      "seg_id": "seg_0220",
+      "start": 1031.8,
+      "end": 1036.6,
+      "text": "has, you know, 20 agents, that's 200 AI agents. How do we efficiently run all of"
+    },
+    {
+      "seg_id": "seg_0221",
+      "start": 1036.6,
+      "end": 1041.16,
+      "text": "these AI in the cloud? Also, how do we share these AI agents with other people"
+    },
+    {
+      "seg_id": "seg_0222",
+      "start": 1041.16,
+      "end": 1044.32,
+      "text": "on the team? That's one thing that we really need to figure out. And then, how"
+    },
+    {
+      "seg_id": "seg_0223",
+      "start": 1044.32,
+      "end": 1048.6,
+      "text": "do we get these AI agents to be able to communicate one another, or at least"
+    },
+    {
+      "seg_id": "seg_0224",
+      "start": 1048.6,
+      "end": 1054.16,
+      "text": "share memory? And in future videos, I'll be talking about how to do this. How to"
+    },
+    {
+      "seg_id": "seg_0225",
+      "start": 1054.16,
+      "end": 1058.52,
+      "text": "get your AI agents to actually share memory, so that like as one AI agent"
+    },
+    {
+      "seg_id": "seg_0226",
+      "start": 1058.52,
+      "end": 1061.6,
+      "text": "does something, I know that all the files are actually can contained to that"
+    },
+    {
+      "seg_id": "seg_0227",
+      "start": 1061.6,
+      "end": 1065.32,
+      "text": "AI agent. But, there's actually ways that you can actually communicate useful"
+    },
+    {
+      "seg_id": "seg_0228",
+      "start": 1065.32,
+      "end": 1069.72,
+      "text": "information to your other AI agents. Very similar to how you operate in a"
+    },
+    {
+      "seg_id": "seg_0229",
+      "start": 1069.72,
+      "end": 1072.84,
+      "text": "team, right? The engineering team needs to communicate to me, the marketing"
+    },
+    {
+      "seg_id": "seg_0230",
+      "start": 1072.84,
+      "end": 1076.92,
+      "text": "team, on how to actually market the product. And there's actually ways that"
+    },
+    {
+      "seg_id": "seg_0231",
+      "start": 1076.92,
+      "end": 1080.2,
+      "text": "we can get AI agents to do this. So, that's the next few questions I'm going"
+    },
+    {
+      "seg_id": "seg_0232",
+      "start": 1080.2,
+      "end": 1083.64,
+      "text": "to be answering. Uh, but that's kind of what I wanted to share in this video."
+    },
+    {
+      "seg_id": "seg_0233",
+      "start": 1083.64,
+      "end": 1088.36,
+      "text": "Narrow agents that run in the cloud, I believe are going to win. I think that's"
+    },
+    {
+      "seg_id": "seg_0234",
+      "start": 1088.36,
+      "end": 1091.56,
+      "text": "what people are going to find the most use from, and that's what I'll be"
+    },
+    {
+      "seg_id": "seg_0235",
+      "start": 1091.56,
+      "end": 1094.88,
+      "text": "talking about over the next few months to run our company. I'll see you here"
+    },
+    {
+      "seg_id": "seg_0236",
+      "start": 1094.88,
+      "end": 1097.72,
+      "text": "for the next video."
+    }
+  ]
+}

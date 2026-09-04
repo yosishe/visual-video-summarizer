@@ -160,8 +160,16 @@ def _empty_signature() -> dict:
     }
 
 
-def visual_signature(path: str | Path) -> dict:
-    """Return a compact luma+edge signature and quality metrics."""
+MASK_FILL = 128  # masked overlay pixels become flat mid-gray in every signature
+
+
+def visual_signature(path: str | Path, mask: bytes | None = None) -> dict:
+    """Return a compact luma+edge signature and quality metrics.
+
+    `mask` (1 byte per signature pixel, 1 = ignore) blanks persistent overlays
+    such as a webcam picture-in-picture before the statistics are taken, so a
+    presenter moving in the corner does not make two frames of the same slide
+    look different. The frame on disk is untouched."""
     result = subprocess.run(
         [
             "ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(path),
@@ -173,14 +181,21 @@ def visual_signature(path: str | Path) -> dict:
     expected = SIGNATURE_WIDTH * SIGNATURE_HEIGHT
     if result.returncode != 0 or len(pixels) != expected:
         return _empty_signature()
-    return signature_from_pixels(pixels)
+    return signature_from_pixels(pixels, mask)
 
 
-def signature_from_pixels(pixels: bytes) -> dict:
+def apply_mask(pixels: bytes, mask: bytes | None) -> bytes:
+    if not mask or len(mask) != len(pixels):
+        return pixels
+    return bytes(MASK_FILL if m else p for p, m in zip(pixels, mask))
+
+
+def signature_from_pixels(pixels: bytes, mask: bytes | None = None) -> dict:
     """Build the signature dict from one decoded 64×36 gray frame."""
     expected = SIGNATURE_WIDTH * SIGNATURE_HEIGHT
     if len(pixels) != expected:
         return _empty_signature()
+    pixels = apply_mask(pixels, mask)
     values = list(pixels)
     mean = sum(values) / expected
     variance = sum((value - mean) ** 2 for value in values) / expected
@@ -258,6 +273,7 @@ def public_quality(
     *,
     faces: dict | str | None = None,
     text_chars: int | None = None,
+    ocr_text: str | None = None,
 ) -> dict:
     quality = {
         "mean_luma": signature.get("mean", 0.0),
@@ -270,6 +286,8 @@ def public_quality(
         quality["faces"] = faces
     if text_chars is not None:
         quality["text_chars"] = int(text_chars)
+    if ocr_text:
+        quality["ocr_text"] = ocr_text
     return quality
 
 
@@ -306,7 +324,7 @@ def parse_metadata_series(stderr: str, key: str) -> list[tuple[float, float]]:
 
 
 def blur_signature_series(
-    path: str | Path, media_start: float, duration: float
+    path: str | Path, media_start: float, duration: float, mask: bytes | None = None
 ) -> list[dict]:
     """One ffmpeg pass over [media_start, media_start+duration]: per frame, the
     blurdetect edge-width (stderr) and the 64×36 gray signature (stdout).
@@ -339,7 +357,7 @@ def blur_signature_series(
         series.append({
             "t": blur[index][0],
             "blur": blur[index][1],
-            "signature": signature_from_pixels(chunk),
+            "signature": signature_from_pixels(chunk, mask),
         })
     return series
 
@@ -437,11 +455,16 @@ def detect_faces(path: str | Path) -> dict | None:
 
 
 def ocr_text_density(path: str | Path, lang: str = "eng+heb") -> int | None:
-    """Count alphanumeric characters ffmpeg's `ocr` filter (tesseract) reads.
+    """Count alphanumeric characters ffmpeg's `ocr` filter (tesseract) reads —
+    a ranking signal for "how complete is this slide". None when unavailable."""
+    result = ocr_text(path, lang)
+    return None if result is None else result[0]
 
-    A ranking signal for "how complete is this slide" — never a text source.
-    Returns None when the filter or its language data is unavailable.
-    """
+
+def ocr_text(path: str | Path, lang: str = "eng+heb") -> tuple[int, str] | None:
+    """(alphanumeric count, raw text) from ffmpeg's `ocr` filter. The text is
+    kept only as *caption provenance* (what UI strings are on the frame) and
+    is never used to rewrite the transcript. None when unavailable."""
     if not OCR_LANG_RE.fullmatch(lang):
         raise ValueError(f"bad OCR language spec: {lang!r}")
     result = subprocess.run(
@@ -464,4 +487,5 @@ def ocr_text_density(path: str | Path, lang: str = "eng+heb") -> int | None:
     stop = text.find("[Parsed_")
     if stop >= 0:
         text = text[:stop]
-    return len(OCR_CHAR_RE.findall(text))
+    cleaned = " ".join(text.split())
+    return len(OCR_CHAR_RE.findall(text)), cleaned[:300]

@@ -1,0 +1,3047 @@
+[
+  {
+    "t": 64.431,
+    "requested_t": 64.398,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_perplexity_switch"
+    ],
+    "kept_by_t": 61.995
+  },
+  {
+    "t": 65.165,
+    "requested_t": 65.146,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_perplexity_switch"
+    ],
+    "kept_by_t": 61.995
+  },
+  {
+    "t": 70.771,
+    "requested_t": 70.75,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 83.016
+  },
+  {
+    "t": 80.914,
+    "requested_t": 80.91,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_side_panel"
+    ],
+    "kept_by_t": 83.016
+  },
+  {
+    "t": 90.357,
+    "requested_t": 90.324,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 83.016
+  },
+  {
+    "t": 84.351,
+    "requested_t": 84.318,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_side_panel"
+    ],
+    "kept_by_t": 85.085
+  },
+  {
+    "t": 87.154,
+    "requested_t": 87.15,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_side_panel"
+    ],
+    "kept_by_t": 85.085
+  },
+  {
+    "t": 89.256,
+    "requested_t": 89.23,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_side_panel"
+    ],
+    "kept_by_t": 85.085
+  },
+  {
+    "t": 94.227,
+    "requested_t": 94.227,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 98.532
+  },
+  {
+    "t": 103.937,
+    "requested_t": 103.904,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 106.039
+  },
+  {
+    "t": 112.512,
+    "requested_t": 112.512,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_manus_computer"
+    ],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 114.982,
+    "requested_t": 114.966,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_manus_computer"
+    ],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 117.951,
+    "requested_t": 117.942,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_manus_computer"
+    ],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 357.557,
+    "requested_t": 357.557,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 431.331,
+    "requested_t": 431.298,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 442.709,
+    "requested_t": 442.676,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 1006.005,
+    "requested_t": 1006.005,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 1008.741,
+    "requested_t": 1008.741,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 1013.479,
+    "requested_t": 1013.479,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 112.012
+  },
+  {
+    "t": 138.538,
+    "requested_t": 138.538,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": 138.171
+  },
+  {
+    "t": 163.897,
+    "requested_t": 163.864,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": 177.511
+  },
+  {
+    "t": 171.038,
+    "requested_t": 171.014,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_mac_minis"
+    ],
+    "kept_by_t": 177.511
+  },
+  {
+    "t": 172.272,
+    "requested_t": 172.25,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_mac_minis"
+    ],
+    "kept_by_t": 177.511
+  },
+  {
+    "t": 174.274,
+    "requested_t": 174.262,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_mac_minis"
+    ],
+    "kept_by_t": 177.511
+  },
+  {
+    "t": 180.781,
+    "requested_t": 180.758,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_mac_minis"
+    ],
+    "kept_by_t": 177.511
+  },
+  {
+    "t": 184.017,
+    "requested_t": 184.006,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_mac_minis"
+    ],
+    "kept_by_t": 177.511
+  },
+  {
+    "t": 191.391,
+    "requested_t": 191.362,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_openclaw_shape"
+    ],
+    "kept_by_t": 195.629
+  },
+  {
+    "t": 200.367,
+    "requested_t": 200.338,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_openclaw_shape"
+    ],
+    "kept_by_t": 195.629
+  },
+  {
+    "t": 260.994,
+    "requested_t": 260.994,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": 261.428
+  },
+  {
+    "t": 265.632,
+    "requested_t": 265.632,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": 273.073
+  },
+  {
+    "t": 267.0,
+    "requested_t": 267.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": 273.073
+  },
+  {
+    "t": 297.464,
+    "requested_t": 297.445,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_dependability_chart"
+    ],
+    "kept_by_t": 302.936
+  },
+  {
+    "t": 334.868,
+    "requested_t": 334.85,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": 330.664
+  },
+  {
+    "t": 339.806,
+    "requested_t": 339.773,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": 340.54
+  },
+  {
+    "t": 362.829,
+    "requested_t": 362.796,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": 340.54
+  },
+  {
+    "t": 352.285,
+    "requested_t": 352.26,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_manus_skills"
+    ],
+    "kept_by_t": 352.519
+  },
+  {
+    "t": 352.886,
+    "requested_t": 352.86,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_manus_skills"
+    ],
+    "kept_by_t": 352.519
+  },
+  {
+    "t": 353.987,
+    "requested_t": 353.96,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_manus_skills"
+    ],
+    "kept_by_t": 352.519
+  },
+  {
+    "t": 353.386,
+    "requested_t": 353.36,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_manus_skills"
+    ],
+    "kept_by_t": 354.588
+  },
+  {
+    "t": 354.187,
+    "requested_t": 354.187,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_manus_skills"
+    ],
+    "kept_by_t": 354.588
+  },
+  {
+    "t": 389.222,
+    "requested_t": 389.189,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": 389.756
+  },
+  {
+    "t": 410.51,
+    "requested_t": 410.5,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [
+      "ch06_shear_tweet"
+    ],
+    "kept_by_t": 410.143
+  },
+  {
+    "t": 414.014,
+    "requested_t": 413.994,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [
+      "ch06_shear_tweet"
+    ],
+    "kept_by_t": 410.143
+  },
+  {
+    "t": 419.185,
+    "requested_t": 419.18,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [
+      "ch06_shear_tweet"
+    ],
+    "kept_by_t": 410.143
+  },
+  {
+    "t": 429.996,
+    "requested_t": 429.996,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": 443.71
+  },
+  {
+    "t": 440.373,
+    "requested_t": 440.34,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": 1005.204
+  },
+  {
+    "t": 1007.506,
+    "requested_t": 1007.506,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 1005.204
+  },
+  {
+    "t": 1010.943,
+    "requested_t": 1010.943,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 1005.204
+  },
+  {
+    "t": 456.556,
+    "requested_t": 456.523,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_journal_bot_telegram"
+    ],
+    "kept_by_t": 457.357
+  },
+  {
+    "t": 460.026,
+    "requested_t": 459.993,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_journal_bot_telegram"
+    ],
+    "kept_by_t": 460.36
+  },
+  {
+    "t": 460.86,
+    "requested_t": 460.86,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_journal_bot_telegram"
+    ],
+    "kept_by_t": 463.396
+  },
+  {
+    "t": 465.031,
+    "requested_t": 465.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_journal_bot_telegram"
+    ],
+    "kept_by_t": 463.396
+  },
+  {
+    "t": 466.399,
+    "requested_t": 466.386,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_journal_bot_telegram"
+    ],
+    "kept_by_t": 463.396
+  },
+  {
+    "t": 469.402,
+    "requested_t": 469.402,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_journal_bot_telegram"
+    ],
+    "kept_by_t": 463.396
+  },
+  {
+    "t": 473.406,
+    "requested_t": 473.39,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_focused_agent_shape"
+    ],
+    "kept_by_t": 475.475
+  },
+  {
+    "t": 478.044,
+    "requested_t": 478.03,
+    "reason": "dedup",
+    "reasons": [
+      "coverage",
+      "target"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_focused_agent_shape"
+    ],
+    "kept_by_t": 475.475
+  },
+  {
+    "t": 484.851,
+    "requested_t": 484.818,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": 481.281
+  },
+  {
+    "t": 509.509,
+    "requested_t": 509.505,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_content_bot"
+    ],
+    "kept_by_t": 513.179
+  },
+  {
+    "t": 520.52,
+    "requested_t": 520.515,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_content_bot"
+    ],
+    "kept_by_t": 516.85
+  },
+  {
+    "t": 530.897,
+    "requested_t": 530.897,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": 532.899
+  },
+  {
+    "t": 542.008,
+    "requested_t": 541.975,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": 540.306
+  },
+  {
+    "t": 544.01,
+    "requested_t": 544.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage",
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": 548.248
+  },
+  {
+    "t": 550.116,
+    "requested_t": 550.116,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": 559.526
+  },
+  {
+    "t": 645.578,
+    "requested_t": 645.545,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_direct_path"
+    ],
+    "kept_by_t": 651.017
+  },
+  {
+    "t": 647.313,
+    "requested_t": 647.306,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_direct_path"
+    ],
+    "kept_by_t": 651.017
+  },
+  {
+    "t": 651.751,
+    "requested_t": 651.751,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_direct_path"
+    ],
+    "kept_by_t": 655.221
+  },
+  {
+    "t": 660.393,
+    "requested_t": 660.36,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_direct_path"
+    ],
+    "kept_by_t": 660.86
+  },
+  {
+    "t": 719.152,
+    "requested_t": 719.122,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": 715.381
+  },
+  {
+    "t": 723.856,
+    "requested_t": 723.856,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": 724.157
+  },
+  {
+    "t": 750.683,
+    "requested_t": 750.677,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_agent"
+    ],
+    "kept_by_t": 753.82
+  },
+  {
+    "t": 771.504,
+    "requested_t": 771.5,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [],
+    "kept_by_t": 760.059
+  },
+  {
+    "t": 792.959,
+    "requested_t": 792.93,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_informs"
+    ],
+    "kept_by_t": 797.63
+  },
+  {
+    "t": 797.03,
+    "requested_t": 797.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_informs"
+    ],
+    "kept_by_t": 797.63
+  },
+  {
+    "t": 857.423,
+    "requested_t": 857.39,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": 854.954
+  },
+  {
+    "t": 882.882,
+    "requested_t": 882.882,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": 883.649
+  },
+  {
+    "t": 884.45,
+    "requested_t": 884.417,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": 884.884
+  },
+  {
+    "t": 887.019,
+    "requested_t": 887.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": 886.719
+  },
+  {
+    "t": 889.789,
+    "requested_t": 889.782,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": 886.719
+  },
+  {
+    "t": 959.725,
+    "requested_t": 959.725,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": 961.227
+  },
+  {
+    "t": 966.432,
+    "requested_t": 966.43,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": 961.227
+  },
+  {
+    "t": 973.639,
+    "requested_t": 973.62,
+    "reason": "dedup",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": 961.227
+  },
+  {
+    "t": 1003.102,
+    "requested_t": 1003.102,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": 1004.003
+  },
+  {
+    "t": 1024.223,
+    "requested_t": 1024.223,
+    "reason": "dedup",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 1004.003
+  },
+  {
+    "t": 1050.016,
+    "requested_t": 1050.0,
+    "reason": "dedup",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 1049.115
+  },
+  {
+    "t": 1095.528,
+    "requested_t": 1095.5,
+    "reason": "dedup",
+    "reasons": [
+      "final"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": 1049.115
+  },
+  {
+    "t": 54.187,
+    "requested_t": 54.187,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_perplexity_switch"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 55.622,
+    "requested_t": 55.618,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_perplexity_switch"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 108.008,
+    "requested_t": 107.975,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [
+      "ch02_manus_computer"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 123.39,
+    "requested_t": 123.357,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 136.87,
+    "requested_t": 136.837,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 138.171,
+    "requested_t": 138.171,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 142.242,
+    "requested_t": 142.242,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch02",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 201.301,
+    "requested_t": 201.301,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [
+      "ch03_openclaw_shape"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 208.108,
+    "requested_t": 208.075,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 215.882,
+    "requested_t": 215.849,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 218.051,
+    "requested_t": 218.051,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 218.685,
+    "requested_t": 218.685,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 219.119,
+    "requested_t": 219.086,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 226.726,
+    "requested_t": 226.726,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch03",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 233.366,
+    "requested_t": 233.366,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 235.635,
+    "requested_t": 235.635,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 236.77,
+    "requested_t": 236.737,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 237.437,
+    "requested_t": 237.437,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 239.606,
+    "requested_t": 239.606,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 240.14,
+    "requested_t": 240.107,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 247.013,
+    "requested_t": 247.0,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 247.981,
+    "requested_t": 247.981,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 248.448,
+    "requested_t": 248.448,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 256.823,
+    "requested_t": 256.823,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 258.024,
+    "requested_t": 258.024,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 258.925,
+    "requested_t": 258.892,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 263.563,
+    "requested_t": 263.53,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 264.097,
+    "requested_t": 264.097,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 264.764,
+    "requested_t": 264.764,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 265.265,
+    "requested_t": 265.232,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 273.74,
+    "requested_t": 273.74,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 278.278,
+    "requested_t": 278.278,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 279.012,
+    "requested_t": 278.979,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 279.412,
+    "requested_t": 279.412,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 279.913,
+    "requested_t": 279.88,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 282.115,
+    "requested_t": 282.115,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 282.482,
+    "requested_t": 282.482,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 285.852,
+    "requested_t": 285.852,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 286.286,
+    "requested_t": 286.253,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 286.653,
+    "requested_t": 286.62,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 288.855,
+    "requested_t": 288.855,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 289.923,
+    "requested_t": 289.9,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_skills_overview"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 292.392,
+    "requested_t": 292.392,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 293.026,
+    "requested_t": 292.993,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 293.426,
+    "requested_t": 293.426,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_dependability_chart"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 293.86,
+    "requested_t": 293.86,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_dependability_chart"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 294.227,
+    "requested_t": 294.227,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_dependability_chart"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 295.028,
+    "requested_t": 294.995,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_dependability_chart"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 296.329,
+    "requested_t": 296.329,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch04",
+    "target_ids": [
+      "ch04_dependability_chart"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 321.321,
+    "requested_t": 321.321,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 321.688,
+    "requested_t": 321.688,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 322.522,
+    "requested_t": 322.5,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 322.789,
+    "requested_t": 322.789,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 326.326,
+    "requested_t": 326.293,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 337.537,
+    "requested_t": 337.504,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 338.004,
+    "requested_t": 338.0,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 338.605,
+    "requested_t": 338.572,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 339.339,
+    "requested_t": 339.306,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [
+      "ch05_sweet_spot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 342.008,
+    "requested_t": 341.975,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 345.745,
+    "requested_t": 345.745,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 350.183,
+    "requested_t": 350.15,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 363.396,
+    "requested_t": 363.396,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 363.763,
+    "requested_t": 363.763,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch05",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 376.209,
+    "requested_t": 376.176,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 388.588,
+    "requested_t": 388.555,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 389.756,
+    "requested_t": 389.75,
+    "reason": "cap",
+    "reasons": [
+      "coverage",
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 422.088,
+    "requested_t": 422.055,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 422.522,
+    "requested_t": 422.522,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 422.956,
+    "requested_t": 422.923,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 427.16,
+    "requested_t": 427.127,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 427.527,
+    "requested_t": 427.494,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 428.161,
+    "requested_t": 428.128,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 428.528,
+    "requested_t": 428.495,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 428.895,
+    "requested_t": 428.895,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 429.629,
+    "requested_t": 429.596,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 444.377,
+    "requested_t": 444.377,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch06",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 453.92,
+    "requested_t": 453.92,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 454.454,
+    "requested_t": 454.421,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 455.555,
+    "requested_t": 455.522,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 479.746,
+    "requested_t": 479.713,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [
+      "ch07_focused_agent_shape"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 484.217,
+    "requested_t": 484.184,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 485.318,
+    "requested_t": 485.285,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 494.06,
+    "requested_t": 494.06,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 501.868,
+    "requested_t": 501.868,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch07",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 506.239,
+    "requested_t": 506.206,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_content_bot"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 523.456,
+    "requested_t": 523.456,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 524.891,
+    "requested_t": 524.858,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 542.842,
+    "requested_t": 542.809,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 543.376,
+    "requested_t": 543.343,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 559.526,
+    "requested_t": 559.5,
+    "reason": "cap",
+    "reasons": [
+      "scene",
+      "target"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_goals_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 584.017,
+    "requested_t": 584.0,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 614.714,
+    "requested_t": 614.681,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 615.515,
+    "requested_t": 615.482,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 626.626,
+    "requested_t": 626.626,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 628.928,
+    "requested_t": 628.895,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 644.31,
+    "requested_t": 644.31,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_direct_path"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 644.944,
+    "requested_t": 644.911,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_direct_path"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 659.592,
+    "requested_t": 659.592,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch08",
+    "target_ids": [
+      "ch08_direct_path"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 668.768,
+    "requested_t": 668.735,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 669.135,
+    "requested_t": 669.135,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 669.769,
+    "requested_t": 669.769,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 671.971,
+    "requested_t": 671.938,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 684.517,
+    "requested_t": 684.5,
+    "reason": "cap",
+    "reasons": [
+      "coverage"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 692.959,
+    "requested_t": 692.926,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 702.735,
+    "requested_t": 702.735,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 704.604,
+    "requested_t": 704.571,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 705.004,
+    "requested_t": 705.0,
+    "reason": "cap",
+    "reasons": [
+      "coverage",
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 705.605,
+    "requested_t": 705.572,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 707.707,
+    "requested_t": 707.674,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 708.274,
+    "requested_t": 708.241,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 709.809,
+    "requested_t": 709.809,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 710.343,
+    "requested_t": 710.31,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 710.81,
+    "requested_t": 710.81,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 722.855,
+    "requested_t": 722.855,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 723.356,
+    "requested_t": 723.323,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch09",
+    "target_ids": [
+      "ch09_remix"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 747.58,
+    "requested_t": 747.559,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_agent"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 748.314,
+    "requested_t": 748.281,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_agent"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 755.488,
+    "requested_t": 755.488,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_agent"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 787.553,
+    "requested_t": 787.553,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_informs"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 788.087,
+    "requested_t": 788.087,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_informs"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 800.099,
+    "requested_t": 800.099,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [
+      "ch10_journal_informs"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 839.405,
+    "requested_t": 839.372,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 840.506,
+    "requested_t": 840.473,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 841.374,
+    "requested_t": 841.341,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch10",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 850.216,
+    "requested_t": 850.216,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 850.616,
+    "requested_t": 850.616,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 851.217,
+    "requested_t": 851.217,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 856.856,
+    "requested_t": 856.823,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 863.229,
+    "requested_t": 863.196,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 863.796,
+    "requested_t": 863.796,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 873.906,
+    "requested_t": 873.906,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 874.407,
+    "requested_t": 874.374,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 875.141,
+    "requested_t": 875.108,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 877.877,
+    "requested_t": 877.844,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 880.079,
+    "requested_t": 880.046,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 884.884,
+    "requested_t": 884.884,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 892.458,
+    "requested_t": 892.425,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 892.859,
+    "requested_t": 892.854,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_markdown_skills"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 897.096,
+    "requested_t": 897.063,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 897.997,
+    "requested_t": 897.964,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 899.899,
+    "requested_t": 899.899,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 901.367,
+    "requested_t": 901.334,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 902.201,
+    "requested_t": 902.168,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 903.803,
+    "requested_t": 903.77,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 905.738,
+    "requested_t": 905.738,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 923.122,
+    "requested_t": 923.089,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 925.424,
+    "requested_t": 925.424,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 926.025,
+    "requested_t": 926.0,
+    "reason": "cap",
+    "reasons": [
+      "coverage",
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 935.668,
+    "requested_t": 935.635,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 936.235,
+    "requested_t": 936.235,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 948.147,
+    "requested_t": 948.114,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 954.854,
+    "requested_t": 954.821,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 955.321,
+    "requested_t": 955.321,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 955.955,
+    "requested_t": 955.955,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 958.524,
+    "requested_t": 958.491,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [
+      "ch11_loops"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 982.181,
+    "requested_t": 982.148,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 983.482,
+    "requested_t": 983.482,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 984.884,
+    "requested_t": 984.851,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 992.191,
+    "requested_t": 992.158,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 993.626,
+    "requested_t": 993.593,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch11",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 1005.204,
+    "requested_t": 1005.171,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 1024.757,
+    "requested_t": 1024.724,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 1025.324,
+    "requested_t": 1025.324,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 1026.225,
+    "requested_t": 1026.192,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [],
+    "kept_by_t": null
+  },
+  {
+    "t": 1034.0,
+    "requested_t": 1033.978,
+    "reason": "cap",
+    "reasons": [
+      "target"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [
+      "ch12_open_questions"
+    ],
+    "kept_by_t": null
+  },
+  {
+    "t": 1043.175,
+    "requested_t": 1043.175,
+    "reason": "cap",
+    "reasons": [
+      "scene"
+    ],
+    "chapter_id": "ch12",
+    "target_ids": [
+      "ch12_open_questions"
+    ],
+    "kept_by_t": null
+  }
+]

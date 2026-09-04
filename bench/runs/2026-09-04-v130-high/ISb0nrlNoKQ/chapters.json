@@ -1,0 +1,92 @@
+[
+  {"chapter_id": "ch01", "title": "The thesis: narrow agents are the future", "start": 0.0, "end": 43.0,
+   "needs_frames": false},
+  {"chapter_id": "ch02", "title": "The general agents tested: Perplexity Computer and Manus", "start": 43.0, "end": 154.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch02_perplexity_switch", "kind": "state", "seg_ids": ["seg_0011", "seg_0012", "seg_0013"],
+      "why": "dangling reference: 'you see here, you can switch from search to computer'"},
+     {"target_id": "ch02_side_panel", "kind": "state", "seg_ids": ["seg_0016", "seg_0017"],
+      "why": "dangling reference: 'whatever it creates can open up in this side panel right here'"},
+     {"target_id": "ch02_manus_computer", "kind": "state", "seg_ids": ["seg_0021", "seg_0022", "seg_0023"],
+      "why": "dangling reference: 'as you can see here, view Manus's computer'"}
+   ]},
+  {"chapter_id": "ch03", "title": "Why OpenClaw's shape wins: one computer, memory, skills, gateway", "start": 154.0, "end": 227.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch03_mac_minis", "kind": "state", "seg_ids": ["seg_0035", "seg_0036", "seg_0037"],
+      "why": "conclusion without its data: 'Mac Minis are literally sold out right now'"},
+     {"target_id": "ch03_openclaw_shape", "kind": "diagram", "seg_ids": ["seg_0038", "seg_0039", "seg_0040", "seg_0041"],
+      "why": "the memory / skills / gateway shape is drawn while listed"}
+   ]},
+  {"chapter_id": "ch04", "title": "Skill sprawl: more skills, less dependability", "start": 227.0, "end": 307.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch04_skills_overview", "kind": "diagram", "seg_ids": ["seg_0047", "seg_0048", "seg_0052", "seg_0053", "seg_0056", "seg_0057"],
+      "why": "'this is an overview of the most useful skills' — the list is built up while narrated"},
+     {"target_id": "ch04_dependability_chart", "kind": "diagram", "seg_ids": ["seg_0059", "seg_0060", "seg_0061"],
+      "why": "conclusion without its data: skills up, dependability down"}
+   ]},
+  {"chapter_id": "ch05", "title": "The 7-10 skill sweet spot, and the command-center problem", "start": 307.0, "end": 369.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch05_sweet_spot", "kind": "diagram", "seg_ids": ["seg_0065", "seg_0066", "seg_0067"],
+      "why": "conclusion without its data: 'seven to 10 skills each — this is the sweet spot'"},
+     {"target_id": "ch05_manus_skills", "kind": "action_result", "seg_ids": ["seg_0070", "seg_0071"], "action_seg_id": "seg_0070",
+      "why": "unspoken operation: 'hit use skills, go to manage skills' — the official skills list appears"}
+   ]},
+  {"chapter_id": "ch06", "title": "From prompts to intent", "start": 369.0, "end": 452.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch06_shear_tweet", "kind": "slide", "seg_ids": ["seg_0081", "seg_0082", "seg_0083", "seg_0084"],
+      "why": "dangling reference: 'he tweeted' — the quoted tweet is on screen"}
+   ]},
+  {"chapter_id": "ch07", "title": "What a focused agent looks like in practice", "start": 452.0, "end": 504.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch07_journal_bot_telegram", "kind": "state", "seg_ids": ["seg_0093", "seg_0094", "seg_0095"],
+      "why": "dangling reference: 'this is my journal bot… running in Telegram right now'"},
+     {"target_id": "ch07_focused_agent_shape", "kind": "diagram", "seg_ids": ["seg_0096", "seg_0097"],
+      "why": "personality / tasks / heartbeat listed while drawn"}
+   ]},
+  {"chapter_id": "ch08", "title": "Anatomy of the YouTube agent: goals to skills to integrations", "start": 504.0, "end": 664.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch08_content_bot", "kind": "state", "seg_ids": ["seg_0103", "seg_0104", "seg_0105"],
+      "why": "dangling reference: 'this content bot… this is my YouTube agent'"},
+     {"target_id": "ch08_goals_skills", "kind": "diagram", "seg_ids": ["seg_0106", "seg_0107", "seg_0111", "seg_0112"],
+      "why": "three goals and the skills they justify, drawn while narrated"},
+     {"target_id": "ch08_direct_path", "kind": "diagram", "seg_ids": ["seg_0131", "seg_0132", "seg_0133", "seg_0134"],
+      "why": "'you can see here that it's kind of this direct path' — the completed goal→skill→integration tree"}
+   ]},
+  {"chapter_id": "ch09", "title": "Narrow agents are easy to duplicate and remix", "start": 664.0, "end": 746.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch09_remix", "kind": "diagram", "seg_ids": ["seg_0145", "seg_0146", "seg_0147", "seg_0148"],
+      "why": "visual comparison: YouTube agent remixed into TikTok / Substack agents"}
+   ]},
+  {"chapter_id": "ch10", "title": "The journal agent: shareable, and memory for the whole team", "start": 746.0, "end": 848.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch10_journal_agent", "kind": "state", "seg_ids": ["seg_0154", "seg_0155", "seg_0156"],
+      "why": "dangling reference: 'today I built a journal agent… it lives in Telegram'"},
+     {"target_id": "ch10_journal_informs", "kind": "diagram", "seg_ids": ["seg_0163", "seg_0164", "seg_0165", "seg_0166", "seg_0167"],
+      "why": "the journal feeding the other agents is drawn while explained"}
+   ]},
+  {"chapter_id": "ch11", "title": "Understandable, reviewable, and easy to loop", "start": 848.0, "end": 1004.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch11_markdown_skills", "kind": "state", "seg_ids": ["seg_0184", "seg_0185", "seg_0186"],
+      "why": "conclusion without its data: 'all of these skills are just markdown files stored in the Open Claw folder'"},
+     {"target_id": "ch11_loops", "kind": "diagram", "seg_ids": ["seg_0201", "seg_0202", "seg_0203", "seg_0204", "seg_0205"],
+      "why": "the three-task daily loop / cron jobs, drawn while explained"}
+   ]},
+  {"chapter_id": "ch12", "title": "The agent team, the cloud, and the open questions", "start": 1004.0, "end": 1096.0,
+   "needs_frames": true,
+   "visual_targets": [
+     {"target_id": "ch12_team", "kind": "diagram", "seg_ids": ["seg_0209", "seg_0210", "seg_0211"],
+      "why": "dangling reference: 'this could be my team'"},
+     {"target_id": "ch12_open_questions", "kind": "slide", "seg_ids": ["seg_0219", "seg_0220", "seg_0221", "seg_0222", "seg_0223"],
+      "why": "the three open questions listed on screen while enumerated"}
+   ]}
+]
