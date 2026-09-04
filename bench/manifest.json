@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "notes": "Benchmark corpus for /summarize-video. Only ids and annotations are committed; media is fetched by the runner. Categories follow the vNext audit (2026-09-04): talking_head, presentation, coding, screen_demo, whiteboard, documentary, mixed. `langs` is passed to transcript.py --langs (YouTube keys Hebrew as `iw`).",
+  "videos": [
+    {
+      "id": "ISb0nrlNoKQ",
+      "url": "https://www.youtube.com/watch?v=ISb0nrlNoKQ",
+      "title": "Why Specialized Agents are Superior (How I Built an OpenClaw Superteam)",
+      "category": "mixed",
+      "subtypes": ["talking_head", "whiteboard", "screen_demo", "code"],
+      "duration": 1096,
+      "language": "en",
+      "langs": "en.*",
+      "webcam_overlay": true,
+      "notes": "Release-run video; whiteboard + browser + terminal with a bottom-left webcam. Annotated first."
+    },
+    {
+      "id": "BUTjcAjfMgY",
+      "url": "https://www.youtube.com/watch?v=BUTjcAjfMgY",
+      "title": "ML Foundations for AI Engineers (in 34 Minutes)",
+      "category": "presentation",
+      "subtypes": ["slides", "presenter"],
+      "duration": 2090,
+      "language": "en",
+      "langs": "en.*",
+      "webcam_overlay": null,
+      "notes": "Slides-driven lecture, 15 creator chapters; the >20 min sections path."
+    },
+    {
+      "id": "f8_uF_IDV50",
+      "url": "https://www.youtube.com/watch?v=f8_uF_IDV50",
+      "title": "Learn Visual Studio Code in 15 minutes: 2026 Official Beginner Tutorial",
+      "category": "screen_demo",
+      "subtypes": ["software_demo", "code"],
+      "duration": 928,
+      "language": "en",
+      "langs": "en.*",
+      "webcam_overlay": null,
+      "notes": "Manual en-US captions; 10 creator chapters; UI state changes are the content."
+    },
+    {
+      "id": "qrvK_KuIeJk",
+      "url": "https://www.youtube.com/watch?v=qrvK_KuIeJk",
+      "title": "\"Godfather of AI\" Geoffrey Hinton: The 60 Minutes Interview",
+      "category": "documentary",
+      "subtypes": ["interview", "b_roll", "talking_head"],
+      "duration": 792,
+      "language": "en",
+      "langs": "en.*",
+      "webcam_overlay": false,
+      "notes": "Rapid cuts and B-roll; expected budget 0-3 frames. sb0 here is 159x90 every 5 s (do not hard-code storyboard sizes)."
+    },
+    {
+      "id": "aircAruvnKk",
+      "url": "https://www.youtube.com/watch?v=aircAruvnKk",
+      "title": "But what is a neural network? | Deep learning chapter 1",
+      "category": "presentation",
+      "subtypes": ["animation", "diagram"],
+      "duration": 1120,
+      "language": "en",
+      "langs": "en.*",
+      "webcam_overlay": false,
+      "notes": "Animated explainer: progressive diagram builds without slide flips; 12 creator chapters."
+    },
+    {
+      "id": "7L9VP1E5CU4",
+      "url": "https://www.youtube.com/watch?v=7L9VP1E5CU4",
+      "title": "להבין גיט וגיטהאב ולהתחיל לעבוד — ב-20 דקות",
+      "category": "coding",
+      "subtypes": ["screen_demo", "slides", "hebrew"],
+      "duration": 1227,
+      "language": "he",
+      "langs": "iw.*,he.*",
+      "webcam_overlay": null,
+      "notes": "Hebrew-language tutorial; captions are auto (`iw` and `iw-orig`), no manual track; 13 creator chapters."
+    }
+  ]
+}

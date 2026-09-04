@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — 1.4.0 (step 1: benchmark + loss attribution)
+
+- **`bench/`** — corpus manifest (6 videos: mixed screencast, slides lecture, VS Code demo, 60 Minutes interview, 3Blue1Brown animation, Hebrew Git tutorial), `storyboard.py` (annotation sheets from YouTube's storyboard track, zero download), `run.py` (deterministic stages per profile, import of existing runs), `score.py` (Important Visual Recall, pool recall, precision, redundancy, frame efficiency, alignment accuracy, image tokens by ⌈w/28⌉×⌈h/28⌉, uniform/random baselines and PoR, missed-visual attribution, summary checklist + Hebrew hygiene counts). Baseline recorded for the 1.3.0 release run on `ISb0nrlNoKQ`: standard IVR 64 % / high 86 % against a draft annotation of 22 essential visuals.
+- **`dropped.json`** — `candidates.py` now records every discarded raw frame with its reason (`blank` / `dedup` / `cap`) and the keeper's time, so a missed visual is attributed to the stage that lost it.
+- **`--profile-override`** — JSON merged over the tier's `PROFILES` entry (known keys only); `candidates.json` carries `profile_override` and `profile_sha256` so ablation runs group by effective profile.
+
 ## 1.3.0 — 2026-09-04
 
 Two tiers, measured slide terminals, a sharpness gate that keeps the pixel-verification guarantee, PDF export, and three hygiene fixes — after a survey of the neighbouring projects (dsh-bilibili, PlanOpticon, keyframe-blogger, Video-Analyzer).

@@ -671,6 +671,31 @@ def make_point(
     }
 
 
+def parse_profile_override(raw: str | None, profile: dict) -> dict:
+    """`--profile-override` JSON: only keys the tier already has, so an ablation
+    cannot silently invent a knob the engine never reads."""
+    if not raw:
+        return {}
+    try:
+        override = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"--profile-override is not valid JSON: {exc}")
+    if not isinstance(override, dict):
+        raise SystemExit("--profile-override must be a JSON object")
+    unknown = sorted(set(override) - set(profile))
+    if unknown:
+        raise SystemExit(f"--profile-override: unknown profile keys {unknown}; known: {sorted(profile)}")
+    for key, value in override.items():
+        if isinstance(value, list):
+            override[key] = tuple(value)
+    return override
+
+
+def profile_digest(profile: dict) -> str:
+    canonical = json.dumps(profile, sort_keys=True, separators=(",", ":"), default=list)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def resolve_profile(tier: str | None, mode: str | None) -> tuple[str, dict]:
     """`--tier standard|high` is the user-facing switch; `--mode light|advanced`
     stays as an alias. Both given and disagreeing is an error, not a guess."""
@@ -793,7 +818,22 @@ def point_grab(
     }
 
 
-def drop_frame(frame: dict) -> None:
+DROP_LOG: list[dict] = []
+
+
+def drop_frame(frame: dict, reason: str = "unspecified", kept_by: dict | None = None) -> None:
+    """Delete a raw frame and remember why. `dropped.json` (written by main)
+    is the benchmark's loss-attribution input: a missed essential visual is
+    then classified as blank / dedup / cap dropped rather than "not in pool"."""
+    DROP_LOG.append({
+        "t": frame.get("actual_t"),
+        "requested_t": frame.get("requested_t"),
+        "reason": reason,
+        "reasons": sorted(frame.get("reasons", ())),
+        "chapter_id": frame.get("chapter_id"),
+        "target_ids": sorted(frame.get("target_ids", ())),
+        "kept_by_t": kept_by.get("actual_t") if kept_by else None,
+    })
     try:
         Path(frame["path"]).unlink()
     except OSError:
@@ -866,7 +906,7 @@ def deduplicate_frames(frames: list[dict], *, cluster_hook=None) -> tuple[list[d
             for field in ("reasons", "target_ids", "target_kinds", "seg_ids"):
                 representative[field] |= member[field]
             representative["target_anchors"].update(member["target_anchors"])
-            drop_frame(member)
+            drop_frame(member, "dedup", representative)
             dropped += 1
         kept.append(representative)
     return sorted(kept, key=lambda item: item["actual_t"]), dropped
@@ -899,7 +939,7 @@ def _recover_blank(
             recovered["reasons"].add("recovered")
             recovered.pop("chapters", None)
             return recovered
-        drop_frame(recovered)
+        drop_frame(recovered, "blank")
     return None
 
 
@@ -960,7 +1000,7 @@ def select_with_budget(
     selected_paths = {frame["path"] for frame in selected}
     for frame in frames:
         if frame["path"] not in selected_paths:
-            drop_frame(frame)
+            drop_frame(frame, "cap")
     return sorted(selected, key=lambda item: item["actual_t"]), len(frames) - len(selected), trimmed
 
 
@@ -1142,6 +1182,10 @@ def main() -> int:
     parser.add_argument("--max-candidates", type=int, default=None,
                         help="Hard ceiling on the pool (reserved target frames included).")
     parser.add_argument("--min-per-chapter", type=int, default=None)
+    parser.add_argument("--profile-override", default=None,
+                        help="JSON object merged over the tier's PROFILES entry (benchmark ablations, "
+                             "e.g. '{\"scene_threshold\": 0.10}'). Keys must exist in the profile; the "
+                             "effective profile and its sha256 are recorded in candidates.json.")
     parser.add_argument("--no-dedup", action="store_true")
     parser.add_argument("--strips", action="store_true",
                         help="Also render 256px temporal strips per target for a cheaper first "
@@ -1155,6 +1199,9 @@ def main() -> int:
         raise SystemExit("Candidate resolution is capped at 512px; use grab.py for deliverable quality")
     tier, profile = resolve_profile(args.tier, args.mode)
     mode_alias = TIER_TO_MODE[tier]
+    profile_override = parse_profile_override(args.profile_override, profile)
+    profile = {**profile, **profile_override}
+    DROP_LOG.clear()
 
     work = Path(args.work).expanduser().resolve()
     if not work.exists():
@@ -1284,7 +1331,7 @@ def main() -> int:
         frame["quality"] = public_quality(signature)
         if signature["blank"]:
             recovered = _recover_blank(frame, parts, raw_dir, args.resolution, sequence, chapters)
-            drop_frame(frame)
+            drop_frame(frame, "blank")
             if recovered:
                 frames.append(recovered)
             continue
@@ -1346,6 +1393,7 @@ def main() -> int:
             "part_mapping_confidence": frame.get("part_mapping_confidence", "unknown"),
         })
     shutil.rmtree(raw_dir, ignore_errors=True)
+    (work / "dropped.json").write_text(json.dumps(DROP_LOG, indent=2) + "\n", encoding="utf-8")
     strips = generate_strips(work, chapters, records) if (args.strips and chapters) else []
     coverage = coverage_report(chapters, records)
     cost = cost_estimate(
@@ -1365,6 +1413,8 @@ def main() -> int:
         "tier": tier,
         "mode": mode_alias,
         "profile": profile,
+        "profile_override": profile_override,
+        "profile_sha256": profile_digest(profile),
         "parts": parts,
         "counts": {
             "scene": len(scene_points), "raw": raw_count,

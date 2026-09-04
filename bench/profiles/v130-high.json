@@ -1,0 +1,6 @@
+{
+  "name": "v130-high",
+  "description": "Engine as released in 1.3.0, --tier high. Baseline.",
+  "tier": "high",
+  "override": {}
+}

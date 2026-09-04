@@ -1,0 +1,1773 @@
+{
+  "schema_version": 2,
+  "engine_version": "1.3.0",
+  "tier": "high",
+  "video": {
+    "id": "ISb0nrlNoKQ",
+    "title": "Why Specialized Agents are Superior (How I Built an OpenClaw Superteam)",
+    "uploader": "Riley Brown",
+    "url": "https://www.youtube.com/watch?v=ISb0nrlNoKQ",
+    "duration": 1096.0,
+    "is_url": true
+  },
+  "overview": "After two weeks of building agent workflows across OpenClaw, Manus, Claude Code and Perplexity Computer, the presenter argues that the winning form of AI agent is not one general assistant with a cloud computer but a team of narrow agents, each holding 7-10 skills and two or three explicit goals - because dependability falls as skills accumulate, and because narrow agents are duplicable, sharable, understandable, reviewable and easy to loop.",
+  "chapters": [
+    {
+      "chapter_id": "ch01",
+      "title": "The thesis: narrow agents are the future",
+      "blocks": [
+        {
+          "text": "The video opens with a claim earned from volume rather than theory: two weeks spent building hundreds of agent workflows, mostly in OpenClaw but also across Manus, Claude Code and the newly released Perplexity Computer. The conclusion drawn from that sprint is that companies will not run one omnicompetent assistant - they will run very narrow AI agents that operate as a team.",
+          "seg_ids": [
+            "seg_0000",
+            "seg_0001",
+            "seg_0002",
+            "seg_0003"
+          ]
+        },
+        {
+          "text": "The commitment is concrete rather than speculative: the plan is to build 15 high-quality agents that run the entire growth division at vibecheck.dev. The rest of the video sets out why narrow agents win, and why OpenClaw is the chosen substrate for that team.",
+          "seg_ids": [
+            "seg_0004",
+            "seg_0005",
+            "seg_0006",
+            "seg_0007",
+            "seg_0008"
+          ]
+        }
+      ],
+      "key_points": [
+        "Two weeks, hundreds of workflows, four tools tested",
+        "Thesis: narrow agents operating as a team, not one general agent",
+        "Concrete plan: 15 agents running an entire growth division"
+      ],
+      "start": 0.0,
+      "end": 43.0,
+      "coverage_status": "not-required"
+    },
+    {
+      "chapter_id": "ch02",
+      "title": "The general agents tested: Perplexity Computer and Manus",
+      "blocks": [
+        {
+          "text": "Four tools were tested: OpenClaw, Manus, Claude Code and Perplexity Computer. Perplexity Computer is a mode switch inside Perplexity - you move from Search to Computer, hand the agent a single task like 'please make an app', and it starts working the way ChatGPT would.",
+          "seg_ids": [
+            "seg_0009",
+            "seg_0010",
+            "seg_0011",
+            "seg_0012",
+            "seg_0013",
+            "seg_0014"
+          ]
+        },
+        {
+          "text": "The difference from a chatbot is that the task gets a sandbox - a computer running in the cloud - so the agent can actually create files, and whatever it creates opens in a side panel. The presenter's summary is blunt: it is ChatGPT with a computer, which is exactly what Manus already was.",
+          "seg_ids": [
+            "seg_0015",
+            "seg_0016",
+            "seg_0017",
+            "seg_0018"
+          ]
+        },
+        {
+          "text": "Manus predates Perplexity Computer and works identically. It was the first general agent tool where every task you submit gets access to a computer, and the interface exposes this directly through a 'view Manus's computer' panel where you can watch it create and edit files.",
+          "seg_ids": [
+            "seg_0019",
+            "seg_0020",
+            "seg_0021",
+            "seg_0022",
+            "seg_0023",
+            "seg_0024"
+          ]
+        },
+        {
+          "text": "The shared architecture is therefore one computer per task: five tasks means five little computers, and what those computers do depends entirely on how you phrased the prompt. The presenter's name for this pattern is a command center for agents that have access to a computer - and that framing is what he goes on to reject.",
+          "seg_ids": [
+            "seg_0025",
+            "seg_0026",
+            "seg_0027",
+            "seg_0028",
+            "seg_0029",
+            "seg_0030",
+            "seg_0031"
+          ]
+        }
+      ],
+      "key_points": [
+        "Perplexity Computer and Manus share one architecture: a fresh cloud computer per task",
+        "Both are 'ChatGPT with a computer' - a command center, not an employee"
+      ],
+      "start": 43.0,
+      "end": 154.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch03",
+      "title": "Why OpenClaw's shape wins: one computer, memory, skills, gateway",
+      "blocks": [
+        {
+          "text": "The command-center pattern is called useful for certain things but not the most useful form of AI agent. The alternative the presenter backs is OpenClaw: an agent that runs on one computer rather than spinning a new one per task. As evidence of how much demand this has created, he points out that Mac Minis and Mac Studios are effectively sold out because so many people are running OpenClaw on them.",
+          "seg_ids": [
+            "seg_0032",
+            "seg_0033",
+            "seg_0034",
+            "seg_0035",
+            "seg_0036",
+            "seg_0037"
+          ]
+        },
+        {
+          "text": "What OpenClaw added on top of 'an agent on a computer' is three things: good memory, structured skills that are easy to add, and a gateway. The gateway is the piece that made it go viral - it lets you talk to the agent from Telegram, WhatsApp, Discord or Slack, which means the agent lives inside the tools you already use to talk to people rather than in a separate console you have to remember to visit.",
+          "seg_ids": [
+            "seg_0038",
+            "seg_0039",
+            "seg_0040",
+            "seg_0041",
+            "seg_0042",
+            "seg_0043",
+            "seg_0044",
+            "seg_0045"
+          ]
+        }
+      ],
+      "key_points": [
+        "OpenClaw = one persistent computer, not one per task",
+        "Memory + structured skills + a messaging gateway",
+        "The gateway is why it spread: the agent reaches you where you already are"
+      ],
+      "start": 154.0,
+      "end": 227.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch04",
+      "title": "Skill sprawl: more skills, less dependability",
+      "blocks": [
+        {
+          "text": "The first OpenClaw agent the presenter built was given everything. The skill map covers a social media transcript analyzer built on the Supadata API (which turns any YouTube, Twitter, Instagram or TikTok link into a transcript), Notion control, the whole Google Workspace - calendar, email, Docs, Sheets - plus Linear for product status, Figma control on his own machine, media generation through FAL, and even video editing.",
+          "seg_ids": [
+            "seg_0046",
+            "seg_0047",
+            "seg_0048",
+            "seg_0049",
+            "seg_0050",
+            "seg_0051",
+            "seg_0052",
+            "seg_0053",
+            "seg_0054",
+            "seg_0055",
+            "seg_0056",
+            "seg_0057",
+            "seg_0058"
+          ]
+        },
+        {
+          "text": "The failure was not dramatic; it was gradual. As the number of skills increased, the dependability of the agent decreased. The specific symptoms are worth naming because they are the diagnostic signs of an over-scoped agent: it stops invoking skills at the right time, the context becomes clouded, it reaches for the wrong integrations, and the personalities get jumbled together.",
+          "seg_ids": [
+            "seg_0059",
+            "seg_0060",
+            "seg_0061",
+            "seg_0062",
+            "seg_0063",
+            "seg_0064"
+          ]
+        }
+      ],
+      "key_points": [
+        "Skills up, dependability down - the video's central relationship",
+        "Symptoms: wrong skill at the wrong time, clouded context, wrong integrations, jumbled personality"
+      ],
+      "start": 227.0,
+      "end": 307.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch05",
+      "title": "The 7-10 skill sweet spot, and the command-center problem",
+      "blocks": [
+        {
+          "text": "The conclusion is a number rather than a principle: build a team of agents holding roughly seven to ten skills each, instead of single agents carrying thirty. That is the stated sweet spot; above it, performance degrades.",
+          "seg_ids": [
+            "seg_0065",
+            "seg_0066",
+            "seg_0067",
+            "seg_0068"
+          ]
+        },
+        {
+          "text": "This is also the precise reason Manus is judged to have potential but is not the tool of choice. Its skill catalogue is genuinely good, but when you open Manage Skills you are not attaching a skill to a specific agent - you are attaching it to your command center. Everything therefore stays proactive in the wrong direction: you must go to the command center and ask for work to happen.",
+          "seg_ids": [
+            "seg_0069",
+            "seg_0070",
+            "seg_0071",
+            "seg_0072",
+            "seg_0073",
+            "seg_0074"
+          ]
+        }
+      ],
+      "key_points": [
+        "The rule: 7-10 skills per agent, not 30",
+        "Manus attaches skills to the command center, not to an agent - so nothing acts on its own"
+      ],
+      "start": 307.0,
+      "end": 369.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch06",
+      "title": "From prompts to intent",
+      "blocks": [
+        {
+          "text": "The standard the presenter holds agents to is an employee standard. People want something that gets things done, that occasionally does things that surprise you, and that makes useful suggestions. Doing all three requires specific goals - or, in the vocabulary he adopts, intent.",
+          "seg_ids": [
+            "seg_0075",
+            "seg_0076",
+            "seg_0077",
+            "seg_0078",
+            "seg_0079",
+            "seg_0080"
+          ]
+        },
+        {
+          "text": "The term is borrowed from a post by Emmett Shear - briefly interim CEO during the OpenAI leadership crisis - reading, in the presenter's rendering, that prompts are so late 2025 and we are giving models intents now. He extends it: we are giving AI agents with computers intents, and intent simply means intention or purpose.",
+          "seg_ids": [
+            "seg_0081",
+            "seg_0082",
+            "seg_0083",
+            "seg_0084",
+            "seg_0085",
+            "seg_0086"
+          ]
+        },
+        {
+          "text": "The argument closes the loop with the previous chapter. Purpose is hard to give a general agent precisely because it is general - too many skills, too broad a surface, too proactive in the wrong sense. That is the stated reason for rejecting Perplexity Computer and Manus, and for building a team of narrow OpenClaw agents with specific goals and specific skills instead.",
+          "seg_ids": [
+            "seg_0087",
+            "seg_0088",
+            "seg_0089",
+            "seg_0090",
+            "seg_0091"
+          ]
+        }
+      ],
+      "key_points": [
+        "The bar is an employee: gets things done, surprises you, suggests usefully",
+        "Intent = intention or purpose; a general agent cannot hold one"
+      ],
+      "start": 369.0,
+      "end": 452.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch07",
+      "title": "What a focused agent looks like in practice",
+      "blocks": [
+        {
+          "text": "These agents are already running. Several live in Telegram, including a journal bot, and after two weeks of testing them the presenter says the direction of the whole space is clear.",
+          "seg_ids": [
+            "seg_0092",
+            "seg_0093",
+            "seg_0094",
+            "seg_0095"
+          ]
+        },
+        {
+          "text": "The unit he settles on has three defining properties: a specific personality, specific tasks, and a specific heartbeat - the cadence on which it wakes up and acts. All three work better when they are confined to a narrow focus, and the practical payoff is that narrowness tells you which skills and integrations are worth adding at all, because they only need to serve one goal.",
+          "seg_ids": [
+            "seg_0096",
+            "seg_0097",
+            "seg_0098",
+            "seg_0099",
+            "seg_0100",
+            "seg_0101",
+            "seg_0102"
+          ]
+        }
+      ],
+      "key_points": [
+        "A focused agent = personality + tasks + heartbeat",
+        "Narrow scope is what makes the skill/integration question answerable"
+      ],
+      "start": 452.0,
+      "end": 504.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch08",
+      "title": "Anatomy of the YouTube agent: goals to skills to integrations",
+      "blocks": [
+        {
+          "text": "The worked example is the presenter's favourite agent: a content bot he messages in Telegram whose only job is creating YouTube videos. Its files contain three goals it knows it is optimizing for - subscribers, views and conversions. He is careful not to overclaim: not everything he does on YouTube is optimized for those three, but whenever he asks the agent for a script, that is the objective function it works against.",
+          "seg_ids": [
+            "seg_0103",
+            "seg_0104",
+            "seg_0105",
+            "seg_0106",
+            "seg_0107",
+            "seg_0108",
+            "seg_0109",
+            "seg_0110"
+          ]
+        },
+        {
+          "text": "The reason narrow goals matter operationally is that they turn skill selection into a test rather than a preference. A candidate skill either serves the agent's goals or it does not, and if it does not, you do not add it. Skill one is YouTube research, and the goal test immediately answers the next question - which integrations does that skill need? Two: the SERP API for searching YouTube, and the Supadata API for scraping transcripts.",
+          "seg_ids": [
+            "seg_0111",
+            "seg_0112",
+            "seg_0113",
+            "seg_0114",
+            "seg_0115",
+            "seg_0116",
+            "seg_0117",
+            "seg_0118",
+            "seg_0119",
+            "seg_0120"
+          ]
+        },
+        {
+          "text": "Skill two is a thumbnail generator. Every morning the agent scrapes competitors' thumbnails and proposes modified versions with the presenter's own face on them, which requires the Nano Banana integration plus a piece of standing context - a set of photos of Riley - so the model can render him. Skill three is Notion control, where all his scripts live, and it needs nothing more than the Notion integration.",
+          "seg_ids": [
+            "seg_0121",
+            "seg_0122",
+            "seg_0123",
+            "seg_0124",
+            "seg_0125",
+            "seg_0126",
+            "seg_0127",
+            "seg_0128",
+            "seg_0129",
+            "seg_0130"
+          ]
+        },
+        {
+          "text": "The result is a single direct path: the agent exists to raise subscribers, views and conversions; three skills serve those goals; four integrations serve those skills. Asking the agent what it needs now has a determinate answer. The analogy offered is hiring - the most frustrating hires are people with vague skills and no specific goals, good at talking and good at distracting from the target; the best are people who state what they are good at and how it moves the company's numbers.",
+          "seg_ids": [
+            "seg_0131",
+            "seg_0132",
+            "seg_0133",
+            "seg_0134",
+            "seg_0135",
+            "seg_0136",
+            "seg_0137",
+            "seg_0138",
+            "seg_0139",
+            "seg_0140",
+            "seg_0141",
+            "seg_0142"
+          ]
+        }
+      ],
+      "key_points": [
+        "Goals: subs, views, conversions - written into the agent's files",
+        "Skills: YouTube research, thumbnail generator, Notion control",
+        "Integrations: SERP API, Supadata, Nano Banana, Notion (+ photos of Riley as context)",
+        "A skill that does not serve a goal does not get added"
+      ],
+      "start": 504.0,
+      "end": 664.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch09",
+      "title": "Narrow agents are easy to duplicate and remix",
+      "blocks": [
+        {
+          "text": "The first reason to prefer narrow agents is reuse. Once you find one that works, it is cheap to duplicate and remix: a YouTube agent becomes a TikTok agent, or a Substack agent, with comparatively small edits. The contrast is a fifty-skill mega-agent, where extracting just the portion you wanted to reuse is genuinely hard.",
+          "seg_ids": [
+            "seg_0143",
+            "seg_0144",
+            "seg_0145",
+            "seg_0146",
+            "seg_0147",
+            "seg_0148",
+            "seg_0149",
+            "seg_0150",
+            "seg_0151",
+            "seg_0152",
+            "seg_0153"
+          ]
+        }
+      ],
+      "key_points": [
+        "A working narrow agent is a template; a mega-agent is not"
+      ],
+      "start": 664.0,
+      "end": 746.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch10",
+      "title": "The journal agent: shareable, and memory for the whole team",
+      "blocks": [
+        {
+          "text": "The second reason is shareability, illustrated by a journal agent built the same day. It lives in Telegram and is deliberately hands-on: it reaches out roughly every 30 minutes - staying quiet when there is nothing to do - and analyses everything the presenter does, every meeting and every video, asking for more context when it needs it. Several times a day it writes journal entries, building a running log of what matters to the business and to content.",
+          "seg_ids": [
+            "seg_0154",
+            "seg_0155",
+            "seg_0156",
+            "seg_0157",
+            "seg_0158",
+            "seg_0159",
+            "seg_0160",
+            "seg_0161",
+            "seg_0162"
+          ]
+        },
+        {
+          "text": "Its real purpose is to inform the other agents. Every agent in the team has Notion access and is aware of the journal, so the email newsletter agent simply reads the journal each day and drafts newsletters from it - if the journal records a product update, a draft for the 300,000-person list follows. Crucially the newsletter agent keeps its own goals - conversions, click-through rate, open rate - and is never clouded by the journal agent's goals. It shares the journal, not the objective.",
+          "seg_ids": [
+            "seg_0163",
+            "seg_0164",
+            "seg_0165",
+            "seg_0166",
+            "seg_0167",
+            "seg_0168",
+            "seg_0169",
+            "seg_0170",
+            "seg_0171",
+            "seg_0172",
+            "seg_0173",
+            "seg_0174",
+            "seg_0175",
+            "seg_0176"
+          ]
+        },
+        {
+          "text": "Shareability then shows up as a measured result rather than a claim: because the journal agent was narrow, the presenter handed his entire OpenClaw agent to his co-founder Ange, who reproduced it in about five minutes.",
+          "seg_ids": [
+            "seg_0177",
+            "seg_0178",
+            "seg_0179",
+            "seg_0180"
+          ]
+        }
+      ],
+      "key_points": [
+        "Journal agent: 30-minute heartbeat, writes a running log of the business",
+        "Shared memory, separate goals - other agents read the journal without inheriting its objectives",
+        "A co-founder duplicated the whole agent in about five minutes"
+      ],
+      "start": 746.0,
+      "end": 848.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch11",
+      "title": "Understandable, reviewable, and easy to loop",
+      "blocks": [
+        {
+          "text": "Reason three is comprehensibility. An OpenClaw agent is a computer with files - every time you use it you are effectively editing files, and its skills are just markdown documents in the OpenClaw folder. An agent with a few skills and a handful of integrations is therefore something another person can actually read and understand when you send it to them.",
+          "seg_ids": [
+            "seg_0181",
+            "seg_0182",
+            "seg_0183",
+            "seg_0184",
+            "seg_0185",
+            "seg_0186",
+            "seg_0187",
+            "seg_0188"
+          ]
+        },
+        {
+          "text": "Reason four is evaluability, and it is the sharpest argument in the video. Narrow goals are concrete KPIs - for a newsletter: open rate, subscriptions, click-through rate, and in a newsletter business, revenue. Narrow goals make an agent reviewable: you can look at it and say it did a good job or it did not, and you know exactly what needs to change. Judgement collapses to pass/fail. That matters because most agents built over the next few years will not be worth keeping, and pass/fail is what makes cutting them easy.",
+          "seg_ids": [
+            "seg_0189",
+            "seg_0190",
+            "seg_0191",
+            "seg_0192",
+            "seg_0193",
+            "seg_0194",
+            "seg_0195",
+            "seg_0196",
+            "seg_0197",
+            "seg_0198",
+            "seg_0199",
+            "seg_0200"
+          ]
+        },
+        {
+          "text": "Reasons five and six travel together: simpler loops and greater autonomy. Several of the presenter's narrow agents run three fixed tasks a day against a known objective, triggered by cron jobs at set times, and simply repeat. The narrower the agent, the more predictable the loop, and the more safely it can be left running - something a sprawling mega-agent cannot offer.",
+          "seg_ids": [
+            "seg_0201",
+            "seg_0202",
+            "seg_0203",
+            "seg_0204",
+            "seg_0205",
+            "seg_0206",
+            "seg_0207",
+            "seg_0208"
+          ]
+        }
+      ],
+      "key_points": [
+        "Skills are markdown files in a folder - readable by whoever you send them to",
+        "Narrow goals make review pass/fail, which makes pruning easy",
+        "Cron-triggered loops of two or three tasks are what make an agent autonomous"
+      ],
+      "start": 848.0,
+      "end": 1004.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch12",
+      "title": "The agent team, the cloud, and the open questions",
+      "blocks": [
+        {
+          "text": "The objective is restated plainly: very narrow agents with very specific goals, operating as a team. The exact roster is left open - the presenter expects to notice where a new agent is needed as more workflows accumulate rather than designing the org chart up front.",
+          "seg_ids": [
+            "seg_0209",
+            "seg_0210",
+            "seg_0211",
+            "seg_0212"
+          ]
+        },
+        {
+          "text": "One concession is made to the tools he rejected: Perplexity and Manus are right that the computer belongs in the cloud. His disagreement is only about granularity - not a computer per task, but OpenClaw itself running on a computer in the cloud. That turns into an engineering problem for his company: if twenty people each run twenty agents, that is hundreds of agents to host efficiently, and it is not obvious yet how to do it.",
+          "seg_ids": [
+            "seg_0213",
+            "seg_0214",
+            "seg_0215",
+            "seg_0216",
+            "seg_0217",
+            "seg_0218",
+            "seg_0219",
+            "seg_0220"
+          ]
+        },
+        {
+          "text": "Three questions are named as the subject of future videos: how to run these agents efficiently in the cloud, how to share them across a team, and how to get them to communicate or at least share memory. The last one is where the design tension lives - each agent's files are properly contained to that agent, so the interesting work is finding safe channels to pass useful information between them, the way an engineering team communicates to marketing. The closing claim is the opening one: narrow agents running in the cloud are what will win.",
+          "seg_ids": [
+            "seg_0221",
+            "seg_0222",
+            "seg_0223",
+            "seg_0224",
+            "seg_0225",
+            "seg_0226",
+            "seg_0227",
+            "seg_0228",
+            "seg_0229",
+            "seg_0230",
+            "seg_0231",
+            "seg_0232",
+            "seg_0233",
+            "seg_0234",
+            "seg_0235",
+            "seg_0236"
+          ]
+        }
+      ],
+      "key_points": [
+        "Agreement with Manus/Perplexity: the computer belongs in the cloud - but per agent, not per task",
+        "Open problems: efficient cloud hosting, team sharing, inter-agent memory"
+      ],
+      "start": 1004.0,
+      "end": 1096.0,
+      "coverage_status": "covered"
+    }
+  ],
+  "frames": [
+    {
+      "candidate_id": "c_0001",
+      "name": "ch02_perplexity_computer",
+      "chapter_id": "ch02",
+      "requested_t": 61.97,
+      "actual_t": 61.995,
+      "triaged_t": 61.995,
+      "refinement": {
+        "t": 61.995,
+        "applied": false,
+        "blur_before": 4.1528,
+        "blur_after": 4.1528,
+        "delta_s": 0.0,
+        "eligible": 70,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "role": "evidence",
+      "caption": "Perplexity Computer after switching from Search: a task list where each entry ran on its own cloud sandbox.",
+      "alt": "Perplexity Computer task list with completed tasks",
+      "anchor_seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.021,
+        "contrast": 62.045,
+        "sharpness": 9.287,
+        "blank": false,
+        "fingerprint": "264c8a14d29721d1274ffb46641f7d1c1309da8b00c8bba468e4041b41eb0be4",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch02_perplexity_computer-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "9344ba5875cfc7892c23757b9d94fad96dbe8be099ef89f638fbbec008463191"
+        },
+        "thumb": {
+          "file": "ch02_perplexity_computer-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "ec1b8c0933d8276bd70fb0f7a130fcd83f0b8f97d9c11de95610cdbd3702dd42"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0008",
+      "name": "ch02_manus_computer",
+      "chapter_id": "ch02",
+      "requested_t": 111.99,
+      "actual_t": 112.012,
+      "triaged_t": 112.012,
+      "refinement": {
+        "t": 112.012,
+        "applied": false,
+        "blur_before": 5.138,
+        "blur_after": 5.138,
+        "delta_s": -0.0,
+        "eligible": 22,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "role": "evidence",
+      "caption": "Manus with 'View Manus's computer' opened: the agent's own machine editing a styling guide, the same shape as Perplexity Computer.",
+      "alt": "Manus chat beside its computer panel showing a generated guide",
+      "anchor_seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 210.961,
+        "contrast": 65.253,
+        "sharpness": 11.416,
+        "blank": false,
+        "fingerprint": "baa4fa23e16f39f79a78f79c6bbaa9ab73512ad58f4ace2db711b5b157390019",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch02_manus_computer-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "6e1437d9ec969ffd8aa811cfc543408beebcd9be9ed88e0033bf8613d130744c"
+        },
+        "thumb": {
+          "file": "ch02_manus_computer-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "7aa69597f97a3bcb04a386661f1b3c61d49d46480db1a12a5fe24273a941c210"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0012",
+      "name": "ch03_openclaw_shape",
+      "chapter_id": "ch03",
+      "requested_t": 206.82,
+      "actual_t": 206.84,
+      "triaged_t": 206.84,
+      "refinement": {
+        "t": 206.84,
+        "applied": false,
+        "blur_before": 5.5822,
+        "blur_after": 5.5822,
+        "delta_s": -0.0,
+        "eligible": 75,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "target_ids": [
+        "ch03_openclaw_shape"
+      ],
+      "role": "evidence",
+      "caption": "The OpenClaw shape as drawn: an agent on one computer with memory, skills and a gateway that loops back from chat apps.",
+      "alt": "Whiteboard: Openclaw and Claude Code boxes over a Computer box labelled memory, skills, gateway",
+      "anchor_seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.473,
+        "contrast": 68.6,
+        "sharpness": 11.101,
+        "blank": false,
+        "fingerprint": "c4a80f970ca3b8f6d5b457276d04bd5ea747e97178bdcb1177cc3c642eb65eb3",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch03_openclaw_shape-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "61f9e1ab4dc32ce50771f15ab80eeb00b2d0a6fd3860c6472ed943a96ba8cd49"
+        },
+        "thumb": {
+          "file": "ch03_openclaw_shape-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "c6cba4b38397d413e8424b913bb1327fe451b648f593f77abdc108215164e846"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0015",
+      "name": "ch04_skills_overview",
+      "chapter_id": "ch04",
+      "requested_t": 261.42,
+      "actual_t": 261.428,
+      "triaged_t": 261.428,
+      "refinement": {
+        "t": 261.428,
+        "applied": false,
+        "blur_before": 4.5853,
+        "blur_after": 4.5853,
+        "delta_s": -0.0,
+        "eligible": 59,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "role": "evidence",
+      "caption": "The first agent's skill map \u2014 infrastructure, research, workspace, design, publishing, video analysis and media clusters, Supadata highlighted.",
+      "alt": "Zoomed-out mind map of roughly thirty skills grouped into clusters",
+      "anchor_seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.138,
+        "contrast": 64.201,
+        "sharpness": 11.57,
+        "blank": false,
+        "fingerprint": "f370b1b13a8705a4dc33b963fc909509da8c16b65404ee4c50c3b2205495e173",
+        "faces": "unavailable",
+        "text_chars": 343
+      },
+      "assets": {
+        "full": {
+          "file": "ch04_skills_overview-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "771cf5d02c34669ac52d4caa796d75dfb689dcdebb1dd7423a785a3af48ce334"
+        },
+        "thumb": {
+          "file": "ch04_skills_overview-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "4ac961a617876860d8e1125a279a84ce9a8e1144e941fa3767e7e40965f70ab9"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0020",
+      "name": "ch04_skills_vs_dependability",
+      "chapter_id": "ch04",
+      "requested_t": 306.749,
+      "actual_t": 306.773,
+      "triaged_t": 306.773,
+      "refinement": {
+        "t": 306.773,
+        "applied": false,
+        "blur_before": 5.61,
+        "blur_after": 5.61,
+        "delta_s": 0.0,
+        "eligible": 29,
+        "total": 45
+      },
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "role": "evidence",
+      "caption": "Skills, integrations, personality and memory pull in opposite directions to tasks, heartbeat and webhook \u2014 the board behind 'more skills, less dependability'.",
+      "alt": "Whiteboard listing Skills, Integrations, Personality, Memory with up and down arrows beside Tasks, Heartbeat, Webhook",
+      "anchor_seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.784,
+        "contrast": 66.209,
+        "sharpness": 11.234,
+        "blank": false,
+        "fingerprint": "d1e14973b404123e27a7bb570662d2df3c5e5e16e7882f7bb0da8bf1253b2445",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch04_skills_vs_dependability-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "b538290639b6fb672e59a33bb9f87ede6d6c9b8cb0ef849d2e52d1d56a3da307"
+        },
+        "thumb": {
+          "file": "ch04_skills_vs_dependability-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "c834a6d063f4c72e4d0cff5e39e57419124cbdc39f4ca34e00bc4e2431360cd7"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0023",
+      "name": "ch05_seven_to_ten",
+      "chapter_id": "ch05",
+      "requested_t": 340.54,
+      "actual_t": 340.54,
+      "triaged_t": 340.54,
+      "refinement": {
+        "t": 340.54,
+        "applied": false,
+        "blur_before": 4.7532,
+        "blur_after": 4.7532,
+        "delta_s": 0.0,
+        "eligible": 65,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "role": "evidence",
+      "caption": "'7-10 skills' written in red under the map: the sweet spot before an agent stops performing.",
+      "alt": "Skill map with the annotation 7-10 skills in red",
+      "anchor_seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.951,
+        "contrast": 64.735,
+        "sharpness": 11.546,
+        "blank": false,
+        "fingerprint": "1b57544c0deaddadedc9ace616e2b32085aaaafa522586c2638200618770f8a3",
+        "faces": "unavailable",
+        "text_chars": 363
+      },
+      "assets": {
+        "full": {
+          "file": "ch05_seven_to_ten-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "54aca40b0a455b3ab2e266722cbe54ccc3b72db5ad41a671abb6a67386bacae7"
+        },
+        "thumb": {
+          "file": "ch05_seven_to_ten-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "516ea001817808d0ab24ec09f11f2e27b990db3f040f199031a4f22978adece3"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0025",
+      "name": "ch05_manus_official_library",
+      "chapter_id": "ch05",
+      "requested_t": 354.56,
+      "actual_t": 354.588,
+      "triaged_t": 354.588,
+      "refinement": {
+        "t": 354.588,
+        "applied": false,
+        "blur_before": 6.2124,
+        "blur_after": 6.2124,
+        "delta_s": -0.0,
+        "eligible": 33,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "target_ids": [
+        "ch05_manus_skills"
+      ],
+      "role": "evidence",
+      "caption": "Manus's Official library after clicking Use skills: skills are added to the command center, not to a specific agent.",
+      "alt": "Manus settings dialog listing official skills such as skill creator and web analysis",
+      "anchor_seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 136.457,
+        "contrast": 66.102,
+        "sharpness": 10.115,
+        "blank": false,
+        "fingerprint": "763294c6f068667f1f7c648fd5edb3693ef1603fde116df9c2056562c5064306",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch05_manus_official_library-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "1059a47d7a8faf38826861e3a90fa49fc730027ea6b9c08d6f7e86394b4142ed"
+        },
+        "thumb": {
+          "file": "ch05_manus_official_library-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "ff4dc8b7e95954fe8b866112ef03efdcc4fdb37468fdfa8c39eaaeeb5496731a"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0029",
+      "name": "ch06_shear_tweet",
+      "chapter_id": "ch06",
+      "requested_t": 410.12,
+      "actual_t": 410.143,
+      "triaged_t": 410.143,
+      "refinement": {
+        "t": 410.143,
+        "applied": false,
+        "blur_before": 5.5667,
+        "blur_after": 5.5667,
+        "delta_s": 0.0,
+        "eligible": 71,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "role": "evidence",
+      "caption": "Emmett Shear's post: 'Prompts are so late 2025. We're giving models intents now.'",
+      "alt": "Screenshot of a post by Emmett Shear about giving models intents",
+      "anchor_seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "selection_reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 212.334,
+        "contrast": 66.511,
+        "sharpness": 15.551,
+        "blank": false,
+        "fingerprint": "9dd7649f1d571579bc0ed0e2eebb5d6484861b5b882b2a95047e34120cde135f",
+        "faces": "unavailable",
+        "text_chars": 348
+      },
+      "assets": {
+        "full": {
+          "file": "ch06_shear_tweet-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "b789ae538a0afa18ca06d626d59fc018781dcad54da0687debe7ed6892c1e384"
+        },
+        "thumb": {
+          "file": "ch06_shear_tweet-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "65ff3a4febb89da35756d0714f05b5467bbba666d5d1001bf8146cb06ae8a1e2"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0033",
+      "name": "ch07_journal_bot_telegram",
+      "chapter_id": "ch07",
+      "requested_t": 460.354,
+      "actual_t": 460.36,
+      "triaged_t": 460.36,
+      "refinement": {
+        "t": 460.36,
+        "applied": false,
+        "blur_before": 6.775,
+        "blur_after": 6.775,
+        "delta_s": -0.0,
+        "eligible": 26,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "role": "evidence",
+      "caption": "The journal bot in Telegram, reporting an updated launch doc and asking what angle the next video should take.",
+      "alt": "Telegram chat with the journal bot listing seven planned videos",
+      "anchor_seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 169.918,
+        "contrast": 93.463,
+        "sharpness": 16.377,
+        "blank": false,
+        "fingerprint": "04254ef316e836b34dbf2a5317e36640c3224d310de9d9a0221fb4facad8fad7",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch07_journal_bot_telegram-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "a5181a42a304f72ffa85d449d1a48496da64aac1a2b45190ed0519f750cc6dfe"
+        },
+        "thumb": {
+          "file": "ch07_journal_bot_telegram-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "2870ebc426554cc43519db8edb8dd7b12b920237659bafd6abac748762dc55b2"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0037",
+      "name": "ch07_focused_agent",
+      "chapter_id": "ch07",
+      "requested_t": 481.26,
+      "actual_t": 481.281,
+      "triaged_t": 481.281,
+      "refinement": {
+        "t": 481.281,
+        "applied": false,
+        "blur_before": 5.2585,
+        "blur_after": 5.2585,
+        "delta_s": -0.0,
+        "eligible": 81,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097"
+      ],
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "role": "evidence",
+      "caption": "A focused agent: personality, tasks and heartbeat on the left, two or three narrow goals on the right, skills and integrations chosen to serve them.",
+      "alt": "Diagram: Focused Agent with Personality, Tasks, Heartbeat pointing to Goal 1-3, skills and integrations below",
+      "anchor_seg_ids": [
+        "seg_0096",
+        "seg_0097"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.697,
+        "contrast": 65.798,
+        "sharpness": 10.9,
+        "blank": false,
+        "fingerprint": "8282c24704b357a9c61650340784e21f757cee71bd0184941a9e20d564ff92de",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch07_focused_agent-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "d579d7cfb9dc2a6ba3d8eb1afba66493c30f95fde8fd14a3f29c05b3c96d7036"
+        },
+        "thumb": {
+          "file": "ch07_focused_agent-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "30b27fe048f9bdb6d13d91a7d5d71a7bbabe19a1969a17d5e8dbaadd8f5a3bd1"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0042",
+      "name": "ch08_youtube_agent_goals",
+      "chapter_id": "ch08",
+      "requested_t": 532.87,
+      "actual_t": 532.899,
+      "triaged_t": 532.899,
+      "refinement": {
+        "t": 532.899,
+        "applied": false,
+        "blur_before": 5.0772,
+        "blur_after": 5.0772,
+        "delta_s": 0.0,
+        "eligible": 89,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "role": "evidence",
+      "caption": "The YouTube agent's three goals \u2014 subs, views, conversions \u2014 replace the placeholder goals on the same diagram.",
+      "alt": "Diagram: YouTube AI Agent pointing to Subs, Views, Conversions",
+      "anchor_seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.569,
+        "contrast": 65.438,
+        "sharpness": 11.921,
+        "blank": false,
+        "fingerprint": "6b7ba3e7a410262f6fabd4ce1cf22d390056276f40f945e4d024b700560e5d58",
+        "faces": "unavailable",
+        "text_chars": 376
+      },
+      "assets": {
+        "full": {
+          "file": "ch08_youtube_agent_goals-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "5b2e4eef31575a8727ed61c7eb4a6db524a5eb2a801c2de38972c82edf508b32"
+        },
+        "thumb": {
+          "file": "ch08_youtube_agent_goals-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "be68e86101bbf26f68b23cb16dcf02c935d52a4c0d5c7b6eeea83a7746c39bd9"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0044",
+      "name": "ch08_skills_and_integrations",
+      "chapter_id": "ch08",
+      "requested_t": 548.23,
+      "actual_t": 548.248,
+      "triaged_t": 548.248,
+      "refinement": {
+        "t": 548.248,
+        "applied": false,
+        "blur_before": 5.015,
+        "blur_after": 5.015,
+        "delta_s": -0.0,
+        "eligible": 90,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "role": "evidence",
+      "caption": "Zoomed in: YouTube Research and Thumbnail Generator skills backed by Serp API, Supadata and Nano Banana integrations.",
+      "alt": "Close-up of skills box and integration chips Serp API, Supadata, Nano Banana",
+      "anchor_seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "selection_reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.138,
+        "contrast": 65.298,
+        "sharpness": 12.246,
+        "blank": false,
+        "fingerprint": "b1a6b1843484c75e0c3defdd07bbe29ef101601657f58ae55cc898f6a3f66f21",
+        "faces": "unavailable",
+        "text_chars": 389
+      },
+      "assets": {
+        "full": {
+          "file": "ch08_skills_and_integrations-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "06746a48d22c85af4fca5992f1748fa63de075c96426c1afdeaf80bce70ce5a4"
+        },
+        "thumb": {
+          "file": "ch08_skills_and_integrations-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "7009ff95cd309cbc87ce867d1487f048ba084a5c40044ed422d6e50bd11ac8fb"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0048",
+      "name": "ch08_direct_path",
+      "chapter_id": "ch08",
+      "requested_t": 660.86,
+      "actual_t": 660.86,
+      "triaged_t": 660.86,
+      "refinement": {
+        "t": 660.86,
+        "applied": false,
+        "blur_before": 5.0697,
+        "blur_after": 5.0697,
+        "delta_s": 0.0,
+        "eligible": 61,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "role": "evidence",
+      "caption": "The completed direct path: goals, three skills including 'Control my Notion', four integrations and the 'Photos of Riley' context.",
+      "alt": "Completed YouTube agent diagram with Notion skill and Photos of Riley context",
+      "anchor_seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.721,
+        "contrast": 65.336,
+        "sharpness": 13.538,
+        "blank": false,
+        "fingerprint": "4e7cdb7e28c0f75ab69b77ebaa9b2169a98bb0e671cae485c01d4141a068d027",
+        "faces": "unavailable",
+        "text_chars": 409
+      },
+      "assets": {
+        "full": {
+          "file": "ch08_direct_path-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "145c6f69c5ecdfddf6df1ea0bbabbe1eb37f463641b1186a849593c17aa48847"
+        },
+        "thumb": {
+          "file": "ch08_direct_path-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "9d826ec064ee18fe3becb842f3e744bc90224ddd25eab4f1145e80865d4de180"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0052",
+      "name": "ch09_remixable_clusters",
+      "chapter_id": "ch09",
+      "requested_t": 724.14,
+      "actual_t": 724.157,
+      "triaged_t": 724.157,
+      "refinement": {
+        "t": 724.157,
+        "applied": false,
+        "blur_before": 5.1103,
+        "blur_after": 5.1103,
+        "delta_s": -0.0,
+        "eligible": 22,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "role": "evidence",
+      "caption": "'Narrow Focus \u2014 Duplicable (Remixable) \u2014 Sharable' beside the three agent clusters a YouTube agent can be remixed into.",
+      "alt": "Whiteboard with the words Narrow Focus, Duplicable, Sharable next to agent cluster boxes",
+      "anchor_seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.243,
+        "contrast": 65.127,
+        "sharpness": 10.136,
+        "blank": false,
+        "fingerprint": "8da54521931c9f3286a7f8b8f8b56cd74bf400ca0de4b12e1bdc1f40b4ea9b3a",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "assets": {
+        "full": {
+          "file": "ch09_remixable_clusters-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "285c1d453cf243702ad6e58e81b06d2a9d89b9454d58b8940b648f4a11eec839"
+        },
+        "thumb": {
+          "file": "ch09_remixable_clusters-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "b595327c6e9bf348e49b6f8912f71ecfc1cfbc7e97a7dfc8314618a4bb7918ea"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0055",
+      "name": "ch10_journal_agent",
+      "chapter_id": "ch10",
+      "requested_t": 756.913,
+      "actual_t": 756.923,
+      "triaged_t": 756.923,
+      "refinement": {
+        "t": 756.923,
+        "applied": false,
+        "blur_before": 6.9007,
+        "blur_after": 6.9007,
+        "delta_s": -0.0,
+        "eligible": 28,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "role": "evidence",
+      "caption": "The journal agent in Telegram: launch-doc updates, seven videos in progress, and a question back to the author.",
+      "alt": "Telegram conversation with the journal agent",
+      "anchor_seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 172.229,
+        "contrast": 92.462,
+        "sharpness": 16.538,
+        "blank": false,
+        "fingerprint": "1f197f6121a7e241219ef3958112edf370cfba518a59d081dea31d5e7f5f4e2d",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch10_journal_agent-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "401822c8bb43534f6fcd5cebe29241aa96770bedfb60d85cfe2807101ad14821"
+        },
+        "thumb": {
+          "file": "ch10_journal_agent-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "1322bd39b38605a74010af0bef6f9ebfa403407f2baa335dbeac9d7436a75b0b"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0059",
+      "name": "ch10_journal_informs_newsletter",
+      "chapter_id": "ch10",
+      "requested_t": 809.9,
+      "actual_t": 809.909,
+      "triaged_t": 809.909,
+      "refinement": {
+        "t": 809.909,
+        "applied": false,
+        "blur_before": 5.0798,
+        "blur_after": 5.0798,
+        "delta_s": 0.0,
+        "eligible": 90,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "role": "evidence",
+      "caption": "Journal Agent and Email Newsletter Agent highlighted in the cluster map \u2014 the journal feeds every other agent.",
+      "alt": "Agent cluster map with Journal Agent and Email Newsletter Agent highlighted",
+      "anchor_seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.863,
+        "contrast": 63.996,
+        "sharpness": 12.805,
+        "blank": false,
+        "fingerprint": "1c8b391f9acec33e9ebfa5d883cef8136694ef6cd597aaf47d70b48912a4fef7",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch10_journal_informs_newsletter-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "54697054f25fffc7de8b3c644a6699c0054be9e40aa3ca95864544e6d07ea5a3"
+        },
+        "thumb": {
+          "file": "ch10_journal_informs_newsletter-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "60a92a8762a331af3429ac0a4c35d246be4ba45ef96e2cc888eb08c72756efb8"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0065",
+      "name": "ch11_narrow_focus_reviewable",
+      "chapter_id": "ch11",
+      "requested_t": 903.77,
+      "actual_t": 903.803,
+      "triaged_t": 903.803,
+      "refinement": {
+        "t": 903.803,
+        "applied": false,
+        "blur_before": 4.9628,
+        "blur_after": 4.9628,
+        "delta_s": -0.0,
+        "eligible": 1,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0189"
+      ],
+      "target_ids": [],
+      "role": "evidence",
+      "caption": "The list at the 'reviewable' step: Duplicable, Sharable, Understandable, Reviewable.",
+      "alt": "Whiteboard list under Narrow Focus with four items",
+      "anchor_seg_ids": [
+        "seg_0189"
+      ],
+      "selection_reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 220.104,
+        "contrast": 65.429,
+        "sharpness": 11.164,
+        "blank": false,
+        "fingerprint": "44c5fd9ce7b524197ef91f7fe38952c80d2513c3fc2bb965175408b696038a61",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch11_narrow_focus_reviewable-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "ff2ae498141549c978df9fbb6491b1b35084bd503965f82dde0315ea4c3b0e56"
+        },
+        "thumb": {
+          "file": "ch11_narrow_focus_reviewable-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "dd9af8ac839f117e5e8803913e1ad474dcf9a27426ff17ccca65aa433785ac4d"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0069",
+      "name": "ch11_narrow_focus_complete",
+      "chapter_id": "ch11",
+      "requested_t": 961.22,
+      "actual_t": 961.227,
+      "triaged_t": 961.227,
+      "refinement": {
+        "t": 961.227,
+        "applied": false,
+        "blur_before": 5.0549,
+        "blur_after": 5.0549,
+        "delta_s": -0.0,
+        "eligible": 90,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "role": "evidence",
+      "caption": "The list complete: Easier loops and More autonomous added \u2014 the last two reasons for a narrow focus.",
+      "alt": "Whiteboard list under Narrow Focus with six items beside the agent clusters",
+      "anchor_seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.573,
+        "contrast": 65.585,
+        "sharpness": 10.673,
+        "blank": false,
+        "fingerprint": "1e0a55ccb87e56986261426c249e1aabaacc4fc790053396c67eb3aeffba8356",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "assets": {
+        "full": {
+          "file": "ch11_narrow_focus_complete-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "819c223fd9ef3c34600cdf14c3d520656f81f8be0d038fd48707bdeca4351156"
+        },
+        "thumb": {
+          "file": "ch11_narrow_focus_complete-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "beb77926934b1049be6ebbe92a38a3a6e81a17263f98edb9ef05e69c4f3a5cb8"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0071",
+      "name": "ch12_agent_team",
+      "chapter_id": "ch12",
+      "requested_t": 1004.0,
+      "actual_t": 1004.003,
+      "triaged_t": 1004.003,
+      "refinement": {
+        "t": 1004.003,
+        "applied": false,
+        "blur_before": 5.0393,
+        "blur_after": 5.0393,
+        "delta_s": 0.0,
+        "eligible": 22,
+        "total": 46
+      },
+      "seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211"
+      ],
+      "target_ids": [
+        "ch12_team"
+      ],
+      "role": "illustration",
+      "caption": "The full board at the close: the six reasons and the three agent clusters that could become the team.",
+      "alt": "Whiteboard with the Narrow Focus list and agent cluster diagram",
+      "anchor_seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.651,
+        "contrast": 65.273,
+        "sharpness": 11.027,
+        "blank": false,
+        "fingerprint": "cac3a98046a284565bf2ee486939b0dd203d1f880279fe536b1b0545f796c62c",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch12_agent_team-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "14ba49a0c44d5168c578a7370b2453c0cafd338c1b3b0c760ba6d5685387d94e"
+        },
+        "thumb": {
+          "file": "ch12_agent_team-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "24f70e4e0e4e298112a52e9308c3fd30c1368faa981949d40efd78f0ac3c8a31"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0074",
+      "name": "ch12_open_questions",
+      "chapter_id": "ch12",
+      "requested_t": 1042.762,
+      "actual_t": 1042.775,
+      "triaged_t": 1042.775,
+      "refinement": {
+        "t": 1042.775,
+        "applied": false,
+        "blur_before": 5.3319,
+        "blur_after": 5.3319,
+        "delta_s": 0.0,
+        "eligible": 56,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "role": "evidence",
+      "caption": "The three open questions: running agents efficiently in the cloud, sharing them with the team, and letting them communicate.",
+      "alt": "Whiteboard with three questions about running, sharing and connecting agents",
+      "anchor_seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.78,
+        "contrast": 66.216,
+        "sharpness": 11.271,
+        "blank": false,
+        "fingerprint": "5fe16ee6e9fb436aa5612a86eeadc4a55f41eb642d463be20588e884fad5882e",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch12_open_questions-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "ce604a4110318281046027bc9178d27c59a69615c3f283e01a427b4fbf2a3ad6"
+        },
+        "thumb": {
+          "file": "ch12_open_questions-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "99405a999177b180b6ba8d707264558dcf61b308d743b89a84f48f9a2dc8505d"
+        }
+      }
+    }
+  ]
+}

@@ -205,6 +205,7 @@ class PipelineIntegrationTests(unittest.TestCase):
             sys.executable, SCRIPTS / "candidates.py", self.video,
             "--work", work, "--transcript", work / "transcript.json",
             "--chapters", work / "chapters.json", "--tier", "standard", "--max-candidates", "4",
+            "--profile-override", '{"coverage_min": 1}',
         )
         self.assertEqual(run.returncode, 0, run.stderr)
         payload = json.loads((work / "candidates.json").read_text(encoding="utf-8"))
@@ -212,6 +213,17 @@ class PipelineIntegrationTests(unittest.TestCase):
         self.assertEqual(payload["mode"], "light")
         self.assertLessEqual(payload["counts"]["final"], 4)  # a hard ceiling now
         self.assertEqual(payload["cost"]["cpu"]["refine"], "none")
+        self.assertEqual(payload["profile_override"], {"coverage_min": 1})
+        self.assertEqual(len(payload["profile_sha256"]), 64)
+        dropped = json.loads((work / "dropped.json").read_text(encoding="utf-8"))
+        reasons = [row["reason"] for row in dropped]
+        self.assertTrue(set(reasons) <= {"blank", "dedup", "cap"}, reasons)
+        # dedup and cap drops map one-to-one onto the counts; blank rows also
+        # include the recovery retries, so they are only bounded below.
+        self.assertEqual(reasons.count("dedup"), payload["counts"]["dedup_dropped"])
+        self.assertEqual(reasons.count("cap"), payload["counts"]["cap_dropped"])
+        self.assertGreaterEqual(reasons.count("blank"), 0)
+        self.assertTrue(all(row["kept_by_t"] is not None for row in dropped if row["reason"] == "dedup"))
         for candidate in payload["candidates"]:
             self.assertNotIn("text_chars", candidate["quality"])
             self.assertEqual((candidate["width"], candidate["height"]), (512, 288))

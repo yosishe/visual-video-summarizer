@@ -1,0 +1,273 @@
+[
+ {
+  "candidate_id": "c_0001",
+  "name": "ch02_perplexity_computer",
+  "chapter_id": "ch02",
+  "role": "evidence",
+  "caption": "Perplexity Computer after switching from Search: a task list where each entry ran on its own cloud sandbox.",
+  "alt": "Perplexity Computer task list with completed tasks",
+  "anchor_seg_ids": [
+   "seg_0011",
+   "seg_0012",
+   "seg_0013"
+  ]
+ },
+ {
+  "candidate_id": "c_0008",
+  "name": "ch02_manus_computer",
+  "chapter_id": "ch02",
+  "role": "evidence",
+  "caption": "Manus with 'View Manus's computer' opened: the agent's own machine editing a styling guide, the same shape as Perplexity Computer.",
+  "alt": "Manus chat beside its computer panel showing a generated guide",
+  "anchor_seg_ids": [
+   "seg_0021",
+   "seg_0022",
+   "seg_0023"
+  ]
+ },
+ {
+  "candidate_id": "c_0012",
+  "name": "ch03_openclaw_shape",
+  "chapter_id": "ch03",
+  "role": "evidence",
+  "caption": "The OpenClaw shape as drawn: an agent on one computer with memory, skills and a gateway that loops back from chat apps.",
+  "alt": "Whiteboard: Openclaw and Claude Code boxes over a Computer box labelled memory, skills, gateway",
+  "anchor_seg_ids": [
+   "seg_0038",
+   "seg_0039",
+   "seg_0040",
+   "seg_0041"
+  ]
+ },
+ {
+  "candidate_id": "c_0015",
+  "name": "ch04_skills_overview",
+  "chapter_id": "ch04",
+  "role": "evidence",
+  "caption": "The first agent's skill map \u2014 infrastructure, research, workspace, design, publishing, video analysis and media clusters, Supadata highlighted.",
+  "alt": "Zoomed-out mind map of roughly thirty skills grouped into clusters",
+  "anchor_seg_ids": [
+   "seg_0047",
+   "seg_0048",
+   "seg_0052",
+   "seg_0053",
+   "seg_0056",
+   "seg_0057"
+  ]
+ },
+ {
+  "candidate_id": "c_0020",
+  "name": "ch04_skills_vs_dependability",
+  "chapter_id": "ch04",
+  "role": "evidence",
+  "caption": "Skills, integrations, personality and memory pull in opposite directions to tasks, heartbeat and webhook \u2014 the board behind 'more skills, less dependability'.",
+  "alt": "Whiteboard listing Skills, Integrations, Personality, Memory with up and down arrows beside Tasks, Heartbeat, Webhook",
+  "anchor_seg_ids": [
+   "seg_0059",
+   "seg_0060",
+   "seg_0061"
+  ]
+ },
+ {
+  "candidate_id": "c_0023",
+  "name": "ch05_seven_to_ten",
+  "chapter_id": "ch05",
+  "role": "evidence",
+  "caption": "'7-10 skills' written in red under the map: the sweet spot before an agent stops performing.",
+  "alt": "Skill map with the annotation 7-10 skills in red",
+  "anchor_seg_ids": [
+   "seg_0065",
+   "seg_0066",
+   "seg_0067"
+  ]
+ },
+ {
+  "candidate_id": "c_0025",
+  "name": "ch05_manus_official_library",
+  "chapter_id": "ch05",
+  "role": "evidence",
+  "caption": "Manus's Official library after clicking Use skills: skills are added to the command center, not to a specific agent.",
+  "alt": "Manus settings dialog listing official skills such as skill creator and web analysis",
+  "anchor_seg_ids": [
+   "seg_0070",
+   "seg_0071"
+  ]
+ },
+ {
+  "candidate_id": "c_0029",
+  "name": "ch06_shear_tweet",
+  "chapter_id": "ch06",
+  "role": "evidence",
+  "caption": "Emmett Shear's post: 'Prompts are so late 2025. We're giving models intents now.'",
+  "alt": "Screenshot of a post by Emmett Shear about giving models intents",
+  "anchor_seg_ids": [
+   "seg_0081",
+   "seg_0082",
+   "seg_0083",
+   "seg_0084"
+  ]
+ },
+ {
+  "candidate_id": "c_0033",
+  "name": "ch07_journal_bot_telegram",
+  "chapter_id": "ch07",
+  "role": "evidence",
+  "caption": "The journal bot in Telegram, reporting an updated launch doc and asking what angle the next video should take.",
+  "alt": "Telegram chat with the journal bot listing seven planned videos",
+  "anchor_seg_ids": [
+   "seg_0093",
+   "seg_0094",
+   "seg_0095"
+  ]
+ },
+ {
+  "candidate_id": "c_0037",
+  "name": "ch07_focused_agent",
+  "chapter_id": "ch07",
+  "role": "evidence",
+  "caption": "A focused agent: personality, tasks and heartbeat on the left, two or three narrow goals on the right, skills and integrations chosen to serve them.",
+  "alt": "Diagram: Focused Agent with Personality, Tasks, Heartbeat pointing to Goal 1-3, skills and integrations below",
+  "anchor_seg_ids": [
+   "seg_0096",
+   "seg_0097"
+  ]
+ },
+ {
+  "candidate_id": "c_0042",
+  "name": "ch08_youtube_agent_goals",
+  "chapter_id": "ch08",
+  "role": "evidence",
+  "caption": "The YouTube agent's three goals \u2014 subs, views, conversions \u2014 replace the placeholder goals on the same diagram.",
+  "alt": "Diagram: YouTube AI Agent pointing to Subs, Views, Conversions",
+  "anchor_seg_ids": [
+   "seg_0106",
+   "seg_0107",
+   "seg_0111",
+   "seg_0112"
+  ]
+ },
+ {
+  "candidate_id": "c_0044",
+  "name": "ch08_skills_and_integrations",
+  "chapter_id": "ch08",
+  "role": "evidence",
+  "caption": "Zoomed in: YouTube Research and Thumbnail Generator skills backed by Serp API, Supadata and Nano Banana integrations.",
+  "alt": "Close-up of skills box and integration chips Serp API, Supadata, Nano Banana",
+  "anchor_seg_ids": [
+   "seg_0106",
+   "seg_0107",
+   "seg_0111",
+   "seg_0112"
+  ]
+ },
+ {
+  "candidate_id": "c_0048",
+  "name": "ch08_direct_path",
+  "chapter_id": "ch08",
+  "role": "evidence",
+  "caption": "The completed direct path: goals, three skills including 'Control my Notion', four integrations and the 'Photos of Riley' context.",
+  "alt": "Completed YouTube agent diagram with Notion skill and Photos of Riley context",
+  "anchor_seg_ids": [
+   "seg_0131",
+   "seg_0132",
+   "seg_0133",
+   "seg_0134"
+  ]
+ },
+ {
+  "candidate_id": "c_0052",
+  "name": "ch09_remixable_clusters",
+  "chapter_id": "ch09",
+  "role": "evidence",
+  "caption": "'Narrow Focus \u2014 Duplicable (Remixable) \u2014 Sharable' beside the three agent clusters a YouTube agent can be remixed into.",
+  "alt": "Whiteboard with the words Narrow Focus, Duplicable, Sharable next to agent cluster boxes",
+  "anchor_seg_ids": [
+   "seg_0145",
+   "seg_0146",
+   "seg_0147",
+   "seg_0148"
+  ]
+ },
+ {
+  "candidate_id": "c_0055",
+  "name": "ch10_journal_agent",
+  "chapter_id": "ch10",
+  "role": "evidence",
+  "caption": "The journal agent in Telegram: launch-doc updates, seven videos in progress, and a question back to the author.",
+  "alt": "Telegram conversation with the journal agent",
+  "anchor_seg_ids": [
+   "seg_0154",
+   "seg_0155",
+   "seg_0156"
+  ]
+ },
+ {
+  "candidate_id": "c_0059",
+  "name": "ch10_journal_informs_newsletter",
+  "chapter_id": "ch10",
+  "role": "evidence",
+  "caption": "Journal Agent and Email Newsletter Agent highlighted in the cluster map \u2014 the journal feeds every other agent.",
+  "alt": "Agent cluster map with Journal Agent and Email Newsletter Agent highlighted",
+  "anchor_seg_ids": [
+   "seg_0163",
+   "seg_0164",
+   "seg_0165",
+   "seg_0166",
+   "seg_0167"
+  ]
+ },
+ {
+  "candidate_id": "c_0065",
+  "name": "ch11_narrow_focus_reviewable",
+  "chapter_id": "ch11",
+  "role": "evidence",
+  "caption": "The list at the 'reviewable' step: Duplicable, Sharable, Understandable, Reviewable.",
+  "alt": "Whiteboard list under Narrow Focus with four items",
+  "anchor_seg_ids": [
+   "seg_0189"
+  ]
+ },
+ {
+  "candidate_id": "c_0069",
+  "name": "ch11_narrow_focus_complete",
+  "chapter_id": "ch11",
+  "role": "evidence",
+  "caption": "The list complete: Easier loops and More autonomous added \u2014 the last two reasons for a narrow focus.",
+  "alt": "Whiteboard list under Narrow Focus with six items beside the agent clusters",
+  "anchor_seg_ids": [
+   "seg_0201",
+   "seg_0202",
+   "seg_0203",
+   "seg_0204",
+   "seg_0205"
+  ]
+ },
+ {
+  "candidate_id": "c_0071",
+  "name": "ch12_agent_team",
+  "chapter_id": "ch12",
+  "role": "illustration",
+  "caption": "The full board at the close: the six reasons and the three agent clusters that could become the team.",
+  "alt": "Whiteboard with the Narrow Focus list and agent cluster diagram",
+  "anchor_seg_ids": [
+   "seg_0209",
+   "seg_0210",
+   "seg_0211"
+  ]
+ },
+ {
+  "candidate_id": "c_0074",
+  "name": "ch12_open_questions",
+  "chapter_id": "ch12",
+  "role": "evidence",
+  "caption": "The three open questions: running agents efficiently in the cloud, sharing them with the team, and letting them communicate.",
+  "alt": "Whiteboard with three questions about running, sharing and connecting agents",
+  "anchor_seg_ids": [
+   "seg_0219",
+   "seg_0220",
+   "seg_0221",
+   "seg_0222",
+   "seg_0223"
+  ]
+ }
+]

@@ -1,0 +1,501 @@
+{
+  "video_id": "ISb0nrlNoKQ",
+  "title": "Why Specialized Agents are Superior (How I Built an OpenClaw Superteam)",
+  "duration": 1096,
+  "annotator": "claude (from bench/sheets storyboard tiles; NEEDS REVIEW by yos)",
+  "date": "2026-09-04",
+  "status": "draft",
+  "source": "storyboard:sb0 (9.87 s tiles) + release-run chapters.json targets for spoken_seg_ids",
+  "states": [
+    {
+      "state_id": "s01",
+      "start": 0,
+      "end": 48,
+      "class": "irrelevant",
+      "kind": "talking_head",
+      "label": "Intro, presenter to camera",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s02",
+      "start": 48,
+      "end": 58,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s03",
+      "start": 58,
+      "end": 100,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Perplexity Computer UI (Search→Computer mode, task running)",
+      "spoken_seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013",
+        "seg_0016",
+        "seg_0017"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s04",
+      "start": 100,
+      "end": 118,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Manus computer view ('View Manus's computer')",
+      "spoken_seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s05",
+      "start": 118,
+      "end": 127,
+      "class": "acceptable",
+      "kind": "screen_demo",
+      "label": "Notion/task document page (result of the agent task)",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s06",
+      "start": 127,
+      "end": 163,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: 'Enter Task → Computer' ×4 + 'Command Center for Agents that have access to a computer'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "note": "final state ~2:38"
+    },
+    {
+      "state_id": "s07",
+      "start": 163,
+      "end": 190,
+      "class": "acceptable",
+      "kind": "whiteboard",
+      "label": "Board: OpenClaw / Claude Code → Computer (early build)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s08"
+    },
+    {
+      "state_id": "s08",
+      "start": 190,
+      "end": 232,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: OpenClaw shape — Computer with memory/skills/gateway + telegram/whatsapp/discord/slack + Skills/Integrations/Personality/Memory vs Tasks/Heartbeat/Webhook",
+      "spoken_seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "duplicates_of": null,
+      "note": "final build ~3:47"
+    },
+    {
+      "state_id": "s09",
+      "start": 232,
+      "end": 300,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: skills overview — many colored skill cards (supadata, etc.)",
+      "spoken_seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "duplicates_of": null,
+      "note": "most complete ~4:27–4:46"
+    },
+    {
+      "state_id": "s10",
+      "start": 300,
+      "end": 330,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: Skills/Integrations/Personality/Memory with arrows vs Tasks/Heartbeat/Webhook (dependability)",
+      "spoken_seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s11",
+      "start": 330,
+      "end": 345,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: '7-10 skills' written on the skills overview",
+      "spoken_seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s12",
+      "start": 345,
+      "end": 363,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Manus 'Manage skills' list UI",
+      "spoken_seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s13",
+      "start": 363,
+      "end": 405,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: Employee — 'That gets things done / Do things that surprise you / Make suggestions that are useful' + 'Specific Goals, Intent'",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "note": "final ~6:35"
+    },
+    {
+      "state_id": "s14",
+      "start": 405,
+      "end": 430,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Tweet: Emmett Shear 'Prompts are so late 2025. We're giving models intents now.'",
+      "spoken_seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s15",
+      "start": 430,
+      "end": 452,
+      "class": "acceptable",
+      "kind": "whiteboard",
+      "label": "Reprise: OpenClaw shape + Employee text on one board",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s08"
+    },
+    {
+      "state_id": "s16",
+      "start": 452,
+      "end": 474,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Telegram journal-bot conversation (dark app window over the board)",
+      "spoken_seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s17",
+      "start": 474,
+      "end": 504,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: Focused Agent → Goal 1/2/3 with skill 1-3, Personality/Tasks/Heartbeat",
+      "spoken_seg_ids": [
+        "seg_0096",
+        "seg_0097"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s18",
+      "start": 504,
+      "end": 514,
+      "class": "acceptable",
+      "kind": "screenshot",
+      "label": "Telegram window again (reprise)",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s16"
+    },
+    {
+      "state_id": "s19",
+      "start": 514,
+      "end": 560,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: YouTube AI Agent → Subs/Views/Conversions (goals)",
+      "spoken_seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105",
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s20",
+      "start": 560,
+      "end": 610,
+      "class": "acceptable",
+      "kind": "whiteboard",
+      "label": "Board: YouTube agent skills being added (YouTube Research, Thumbnail Generator, skill 3) — build stages",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s21"
+    },
+    {
+      "state_id": "s21",
+      "start": 610,
+      "end": 690,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: YouTube AI Agent complete — skills YouTube Research / Thumbnail Generator / Control my Notion → 'Skills useful to the goals' → Subs/Views/Conversions",
+      "spoken_seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "duplicates_of": null,
+      "note": "complete ~10:32 onward"
+    },
+    {
+      "state_id": "s22",
+      "start": 690,
+      "end": 750,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: 'Narrow Focus / Duplicable (Remixable) / Sharable' + agent-team org chart (studios)",
+      "spoken_seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "duplicates_of": null,
+      "note": "chart most complete ~12:11–12:21"
+    },
+    {
+      "state_id": "s23",
+      "start": 750,
+      "end": 778,
+      "class": "essential",
+      "kind": "screenshot",
+      "label": "Telegram journal agent conversation over the team board",
+      "spoken_seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s24",
+      "start": 778,
+      "end": 860,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: team org chart — Growth & Strategy Studio / Marketing & Distribution / Content Creation studios, agents highlighted",
+      "spoken_seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "duplicates_of": null,
+      "note": "zoomed-in chart 13:10–14:19"
+    },
+    {
+      "state_id": "s25",
+      "start": 860,
+      "end": 885,
+      "class": "acceptable",
+      "kind": "whiteboard",
+      "label": "Reprise: OpenClaw shape + Employee list",
+      "spoken_seg_ids": [],
+      "duplicates_of": "s08"
+    },
+    {
+      "state_id": "s26",
+      "start": 885,
+      "end": 930,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: Focused Agent → Open rate/Subscribe/CTR→Revenue (email agent example) + 'Narrow Focus…Reviewable' list",
+      "spoken_seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s27",
+      "start": 930,
+      "end": 990,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: final list 'Narrow Focus / Duplicable / Sharable / Understandable / Reviewable / Faster loops / More autonomous' with the team chart",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "note": "final list ~16:18–16:27"
+    },
+    {
+      "state_id": "s28",
+      "start": 990,
+      "end": 1012,
+      "class": "essential",
+      "kind": "screen_demo",
+      "label": "Markdown skill document open in the browser",
+      "spoken_seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s29",
+      "start": 1012,
+      "end": 1062,
+      "class": "essential",
+      "kind": "whiteboard",
+      "label": "Board: open questions — 'How to most efficiently run these in the cloud / share these agents with the team / get these agents to communicate with one another'",
+      "spoken_seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "duplicates_of": null
+    },
+    {
+      "state_id": "s30",
+      "start": 1062,
+      "end": 1096,
+      "class": "irrelevant",
+      "kind": "blank",
+      "label": "Empty browser page / outro",
+      "spoken_seg_ids": [],
+      "duplicates_of": null
+    }
+  ],
+  "summary_checklist": [
+    {
+      "claim_id": "k01",
+      "claim": "Four agent products were tested: OpenClaw, Manus, Claude Code, Perplexity Computer",
+      "must_tokens": [
+        "OpenClaw",
+        "Manus",
+        "Claude Code",
+        "Perplexity"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "weight": 2
+    },
+    {
+      "claim_id": "k02",
+      "claim": "An OpenClaw agent = computer + memory + skills + gateway (telegram/whatsapp/discord/slack)",
+      "must_tokens": [
+        "memory",
+        "skills",
+        "gateway"
+      ],
+      "seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "weight": 2
+    },
+    {
+      "claim_id": "k03",
+      "claim": "Sweet spot is 7–10 skills per agent",
+      "must_tokens": [
+        "7",
+        "10"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "weight": 2
+    },
+    {
+      "claim_id": "k04",
+      "claim": "Emmett Shear: prompts are late 2025, models get intents now",
+      "must_tokens": [
+        "Shear"
+      ],
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "weight": 1
+    },
+    {
+      "claim_id": "k05",
+      "claim": "Narrow agents: focused goals, duplicable/remixable, sharable, understandable, reviewable",
+      "must_tokens": [
+        "Narrow",
+        "Sharable"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "weight": 2
+    },
+    {
+      "claim_id": "k06",
+      "claim": "Open questions: running agents in the cloud, sharing with the team, agent-to-agent communication",
+      "must_tokens": [
+        "cloud",
+        "team"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "weight": 1
+    }
+  ]
+}

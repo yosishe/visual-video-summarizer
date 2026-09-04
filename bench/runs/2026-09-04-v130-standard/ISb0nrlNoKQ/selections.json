@@ -1,0 +1,181 @@
+[
+ {
+  "candidate_id": "c_0003",
+  "name": "ch02_perplexity_computer",
+  "chapter_id": "ch02",
+  "role": "evidence",
+  "caption": "Perplexity Computer running a single task: the agent's cloud sandbox has produced a document that opens in the right-hand side panel.",
+  "alt": "Perplexity Computer interface with a task list on the left and a generated PDF preview open in a side panel",
+  "anchor_seg_ids": [
+   "seg_0016",
+   "seg_0017"
+  ]
+ },
+ {
+  "candidate_id": "c_0006",
+  "name": "ch02_manus_computer",
+  "chapter_id": "ch02",
+  "role": "evidence",
+  "caption": "Manus works the same way: 'Manus's Computer' opens on the right and shows the agent editing a file inside its own per-task machine.",
+  "alt": "Manus interface with the agent's computer panel open on the right showing a markdown document being written",
+  "anchor_seg_ids": [
+   "seg_0021",
+   "seg_0022",
+   "seg_0023"
+  ]
+ },
+ {
+  "candidate_id": "c_0013",
+  "name": "ch04_skills_vs_dependability",
+  "chapter_id": "ch04",
+  "role": "evidence",
+  "caption": "The core claim, drawn: as skills, integrations, personality and memory go up (blue arrow), dependability goes down (red arrow).",
+  "alt": "Whiteboard listing Skills, Integrations, Personality, Memory with a blue up arrow and a red down arrow beside them, and Tasks, Heartbeat, Webhook alongside",
+  "anchor_seg_ids": [
+   "seg_0059",
+   "seg_0060",
+   "seg_0061"
+  ]
+ },
+ {
+  "candidate_id": "c_0015",
+  "name": "ch05_seven_to_ten_skills",
+  "chapter_id": "ch05",
+  "role": "evidence",
+  "caption": "The rule the presenter lands on, written in red across the sprawling skill map: 7-10 skills per agent.",
+  "alt": "The skill map with 7-10 skills written in large red handwriting across the bottom",
+  "anchor_seg_ids": [
+   "seg_0065",
+   "seg_0066",
+   "seg_0067"
+  ]
+ },
+ {
+  "candidate_id": "c_0017",
+  "name": "ch05_manus_skill_catalogue",
+  "chapter_id": "ch05",
+  "role": "evidence",
+  "caption": "Manus's skill catalogue. Skills are added to the command center rather than to a specific agent, which is the design the presenter objects to.",
+  "alt": "Manus settings modal titled Skills showing a grid of official skills and an Add custom Skills button",
+  "anchor_seg_ids": [
+   "seg_0070",
+   "seg_0071"
+  ]
+ },
+ {
+  "candidate_id": "c_0021",
+  "name": "ch06_intent_tweet",
+  "chapter_id": "ch06",
+  "role": "evidence",
+  "caption": "The framing the presenter borrows: Emmett Shear's post about giving models intents, pinned above the dictionary definition of intent - intention or purpose.",
+  "alt": "Screenshot of a post by Emmett Shear about giving models intents, above a dictionary entry defining in-tent as intention or purpose",
+  "anchor_seg_ids": [
+   "seg_0085"
+  ]
+ },
+ {
+  "candidate_id": "c_0024",
+  "name": "ch07_telegram_agents",
+  "chapter_id": "ch07",
+  "role": "evidence",
+  "caption": "The agents are not hypothetical: a focused agent's skills board sits behind a live Telegram thread where the presenter talks to one of them.",
+  "alt": "Whiteboard showing a Focused Agent box with Personality, Tasks and Heartbeat cards, overlaid by a Telegram chat window",
+  "anchor_seg_ids": [
+   "seg_0093",
+   "seg_0094",
+   "seg_0095"
+  ]
+ },
+ {
+  "candidate_id": "c_0026",
+  "name": "ch07_focused_agent_model",
+  "chapter_id": "ch07",
+  "role": "illustration",
+  "caption": "The model in one picture: a focused agent with a personality, tasks and a heartbeat points at three narrow, related goals, and only the skills useful to those goals get added.",
+  "alt": "Diagram of a Focused Agent with Personality, Tasks, Heartbeat cards, an arrow to a green box of Goal 1, Goal 2, Goal 3 labelled Narrow Related Goals, and a skills box feeding integrations",
+  "anchor_seg_ids": [
+   "seg_0096",
+   "seg_0097"
+  ]
+ },
+ {
+  "candidate_id": "c_0034",
+  "name": "ch08_youtube_agent_full_map",
+  "chapter_id": "ch08",
+  "role": "evidence",
+  "caption": "The finished path. Goals - subs, views, conversions - justify three skills (YouTube research, thumbnail generator, control my Notion), which in turn justify exactly four integrations: Serp API, Supadata, Nano Banana and Notion, plus photos of Riley as context.",
+  "alt": "Completed diagram linking the YouTube AI Agent to goals Subs, Views, Conversions, to three named skills, and to integrations Serp API, Supadata, Nano Banana and Notion",
+  "anchor_seg_ids": [
+   "seg_0131",
+   "seg_0132",
+   "seg_0133",
+   "seg_0134"
+  ]
+ },
+ {
+  "candidate_id": "c_0036",
+  "name": "ch09_narrow_focus_duplicable",
+  "chapter_id": "ch09",
+  "role": "illustration",
+  "caption": "Reason one for narrow focus: a useful agent is duplicable and remixable - a YouTube agent becomes a TikTok or Substack agent with small edits.",
+  "alt": "Whiteboard heading Narrow Focus with the first bullet Duplicable (Remixable) written beneath it, beside a diagram of agent clusters",
+  "anchor_seg_ids": [
+   "seg_0145",
+   "seg_0146",
+   "seg_0147",
+   "seg_0148"
+  ]
+ },
+ {
+  "candidate_id": "c_0039",
+  "name": "ch10_sharable_journal_agent",
+  "chapter_id": "ch10",
+  "role": "evidence",
+  "caption": "Reason two: sharable. The journal agent lives in Telegram, checks in roughly every 30 minutes, and was handed to a co-founder who reproduced it in about five minutes.",
+  "alt": "Whiteboard list reading Narrow Focus, Duplicable (Remixable), Sharable, with a Telegram chat window open beside it",
+  "anchor_seg_ids": [
+   "seg_0154",
+   "seg_0155",
+   "seg_0156"
+  ]
+ },
+ {
+  "candidate_id": "c_0042",
+  "name": "ch10_agent_team_clusters",
+  "chapter_id": "ch10",
+  "role": "evidence",
+  "caption": "The team the journal feeds. The journal agent and the email newsletter agent sit in different clusters and keep their own goals; only the journal itself crosses between them.",
+  "alt": "Diagram of agent clusters showing a Marketing and Distribution row with Email Newsletter Agent and a Content Creation row with YouTube Agent and Journal Agent highlighted",
+  "anchor_seg_ids": [
+   "seg_0174"
+  ]
+ },
+ {
+  "candidate_id": "c_0046",
+  "name": "ch12_six_reasons_and_team",
+  "chapter_id": "ch12",
+  "role": "evidence",
+  "caption": "The complete argument on one board: narrow focus makes agents duplicable, sharable, understandable, reviewable, easier to loop and more autonomous - and the right-hand diagram is the team those agents would form.",
+  "alt": "Whiteboard listing Narrow Focus with six benefits beside a diagram of three clusters of named agents",
+  "anchor_seg_ids": [
+   "seg_0209",
+   "seg_0210",
+   "seg_0211"
+  ]
+ },
+ {
+  "candidate_id": "c_0047",
+  "name": "ch12_open_questions",
+  "chapter_id": "ch12",
+  "role": "evidence",
+  "caption": "The three unanswered questions the presenter says future videos will tackle: running agents efficiently in the cloud, sharing them with a team, and letting them communicate with one another.",
+  "alt": "Whiteboard with three handwritten blue questions about running agents in the cloud, sharing them with the team, and getting them to communicate with one another",
+  "anchor_seg_ids": [
+   "seg_0219",
+   "seg_0220",
+   "seg_0221",
+   "seg_0222",
+   "seg_0223"
+  ]
+ }
+]

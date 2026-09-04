@@ -1,0 +1,390 @@
+{
+  "video_id": "f8_uF_IDV50",
+  "title": "Learn Visual Studio Code in 15 minutes: 2026 Official Beginner Tutorial",
+  "duration": 928,
+  "source": "storyboard:sb0",
+  "annotator": null,
+  "status": "draft",
+  "storyboard": {
+    "interval_s": 9.872,
+    "tiles": 95
+  },
+  "youtube_chapters": [
+    {
+      "start": 0,
+      "end": 28,
+      "title": "Intro"
+    },
+    {
+      "start": 28,
+      "end": 218,
+      "title": "Demo - Explore the UI"
+    },
+    {
+      "start": 218,
+      "end": 478,
+      "title": "Create a new file"
+    },
+    {
+      "start": 478,
+      "end": 623,
+      "title": "Using Chat"
+    },
+    {
+      "start": 623,
+      "end": 705,
+      "title": "Source control"
+    },
+    {
+      "start": 705,
+      "end": 792,
+      "title": "Install MCP server"
+    },
+    {
+      "start": 792,
+      "end": 858,
+      "title": "Create issues"
+    },
+    {
+      "start": 858,
+      "end": 896,
+      "title": "View current and previous sessions"
+    },
+    {
+      "start": 896,
+      "end": 925,
+      "title": "In summary"
+    },
+    {
+      "start": 925,
+      "end": 928,
+      "title": "Wrap"
+    }
+  ],
+  "states": [
+    {
+      "state_id": "s00",
+      "start": 0.0,
+      "end": 9.872,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        0
+      ]
+    },
+    {
+      "state_id": "s01",
+      "start": 9.872,
+      "end": 19.744,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        1
+      ]
+    },
+    {
+      "state_id": "s02",
+      "start": 19.745,
+      "end": 464.0,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46
+      ]
+    },
+    {
+      "state_id": "s03",
+      "start": 464.0,
+      "end": 473.872,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        47
+      ]
+    },
+    {
+      "state_id": "s04",
+      "start": 473.872,
+      "end": 562.723,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56
+      ]
+    },
+    {
+      "state_id": "s05",
+      "start": 562.723,
+      "end": 572.595,
+      "class": "unreviewed",
+      "kind": "code_or_terminal",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        57
+      ]
+    },
+    {
+      "state_id": "s06",
+      "start": 572.596,
+      "end": 592.34,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        58,
+        59
+      ]
+    },
+    {
+      "state_id": "s07",
+      "start": 592.34,
+      "end": 691.063,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69
+      ]
+    },
+    {
+      "state_id": "s08",
+      "start": 691.064,
+      "end": 710.808,
+      "class": "unreviewed",
+      "kind": "dynamic_ui",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        70,
+        71
+      ]
+    },
+    {
+      "state_id": "s09",
+      "start": 710.809,
+      "end": 799.659,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ]
+    },
+    {
+      "state_id": "s10",
+      "start": 799.66,
+      "end": 809.532,
+      "class": "unreviewed",
+      "kind": "code_or_terminal",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        81
+      ]
+    },
+    {
+      "state_id": "s11",
+      "start": 809.532,
+      "end": 839.149,
+      "class": "unreviewed",
+      "kind": "code_or_terminal",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        82,
+        83,
+        84
+      ]
+    },
+    {
+      "state_id": "s12",
+      "start": 839.149,
+      "end": 849.021,
+      "class": "unreviewed",
+      "kind": "slide_or_canvas",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        85
+      ]
+    },
+    {
+      "state_id": "s13",
+      "start": 849.021,
+      "end": 888.51,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        86,
+        87,
+        88,
+        89
+      ]
+    },
+    {
+      "state_id": "s14",
+      "start": 888.511,
+      "end": 898.383,
+      "class": "unreviewed",
+      "kind": "unknown",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        90
+      ]
+    },
+    {
+      "state_id": "s15",
+      "start": 898.383,
+      "end": 908.255,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        91
+      ]
+    },
+    {
+      "state_id": "s16",
+      "start": 908.255,
+      "end": 918.127,
+      "class": "unreviewed",
+      "kind": "unknown",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        92
+      ]
+    },
+    {
+      "state_id": "s17",
+      "start": 918.128,
+      "end": 928.0,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        93
+      ]
+    },
+    {
+      "state_id": "s18",
+      "start": 928.0,
+      "end": 937.872,
+      "class": "unreviewed",
+      "kind": "talking_head_or_dark",
+      "label": "",
+      "spoken_seg_ids": [],
+      "duplicates_of": null,
+      "tiles": [
+        94
+      ]
+    }
+  ],
+  "summary_checklist": []
+}
