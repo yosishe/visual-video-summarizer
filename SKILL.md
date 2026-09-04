@@ -81,7 +81,7 @@ python3 "$SKILL_DIR/scripts/candidates.py" "<source>" --work "<work>" \
   --transcript "<work>/transcript.json" --chapters "<work>/chapters.json" --tier standard   # or --tier high
 ```
 
-What it does: downloads the video once (≤720p; for videos over 20 minutes only the padded ranges of chapters that need frames, with exact cuts) → **scene detection across every `needs_frames` chapter** (so a slide flip nobody predicted still reaches the pool) → a terminal probe per `slide`/`diagram` target (where does the build-up end?) → dense samples around each target (`action_result` at +0.2/+0.8/+1.6s after the action) → chapter-coverage midpoints → every frame is extracted by seeking to its own timestamp with the decoded `actual_t` recorded and drift-checked → blank/black filter with recovery for target frames → duplicate clustering scoped to chapter + target, keeping the sharpest complete representative → cap (standard 48, high 64), targets and chapter coverage never evicted unless `--max-candidates` forces a hard ceiling → `<work>/candidates/` + `candidates.json` with per-chapter and per-target coverage and a `cost` block.
+What it does: downloads the video once (≤720p; for videos over 20 minutes only the padded ranges of chapters that need frames, with exact cuts) → **scene detection across every `needs_frames` chapter** (so a slide flip nobody predicted still reaches the pool) → a terminal probe per `slide`/`diagram` target (where does the build-up end?) → dense samples around each target (`action_result` at +0.2/+0.8/+1.6s after the action) → chapter-coverage midpoints → every frame is extracted by seeking to its own timestamp with the decoded `actual_t` recorded and drift-checked → blank/black filter with recovery for target frames → **overlay mask**: a persistent picture-in-picture (webcam) or bar is detected once per video from one-second frame pairs and blanked in every signature, so the presenter moving in the corner never makes two frames of the same slide look different (written frames are untouched) → **family dedup across the whole video**: the same picture reached by a target and by a scene cut, or shown again chapters later, is one family; one representative survives per chapter that needs it (target/coverage), revisits are dropped and listed on the keeper → cap (standard 48, high 64), targets and chapter coverage never evicted unless `--max-candidates` forces a hard ceiling → `<work>/candidates/` + `candidates.json` with per-chapter and per-target coverage and a `cost` block.
 
 The report includes a **per-chapter coverage table**. A `needs_frames` chapter showing 1 candidate is a static stretch: if its point is visual, add a target inside its window and re-run. `unresolved` is a failure, not a warning.
 
@@ -91,6 +91,8 @@ The report includes a **per-chapter coverage table**. A `needs_frames` chapter s
 | samples per target | 2–3 | 5–6, 3 alternatives kept |
 | pool cap / unplanned floor | 48 / 12 | 64 / 16 |
 | grab-time refinement | off | sharpest near-duplicate within ±1.5 s (`blurdetect`) |
+| overlay (webcam/bar) mask | on (`pip_mask`) | on |
+| dedup scope | whole video, family-based (`dedup_scope: family`) | same |
 | face demotion | off | on when `cv2` is importable, else reported `unavailable` |
 | OCR text density (ranking only) | off | on (ffmpeg `ocr` filter; tesseract) |
 | image tokens, 16:9 source | ≤ 48 × ~197 ≈ 9.5k | ≤ 64 × ~197 ≈ 12.6k |

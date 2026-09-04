@@ -70,12 +70,14 @@ def run_dir_for(args) -> Path:
     return path
 
 
-def run_cmd(cmd: list[str], *, cwd: Path | None = None) -> tuple[int, float, str]:
+def run_cmd(cmd: list[str], *, cwd: Path | None = None, report: Path | None = None) -> tuple[int, float, str]:
     started = time.monotonic()
     proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
     wall = time.monotonic() - started
     if proc.returncode != 0:
         print(proc.stderr[-2000:], file=sys.stderr)
+    if report is not None:
+        report.write_text(proc.stdout, encoding="utf-8")
     return proc.returncode, wall, proc.stderr
 
 
@@ -129,7 +131,7 @@ def cmd_candidates(args) -> int:
         if profile.get("override"):
             cmd += ["--profile-override", json.dumps(profile["override"])]
         cmd += args.extra
-        rc, wall, stderr = run_cmd(cmd)
+        rc, wall, stderr = run_cmd(cmd, report=dest / "candidates-report.md")
         (dest / "candidates-stderr.txt").write_text(stderr, encoding="utf-8")
         copy_artifacts(work, dest)
         update_cost(dest, candidates_wall_s=round(wall, 1), candidates_rc=rc, profile=args.profile)

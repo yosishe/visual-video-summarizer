@@ -4,10 +4,11 @@
     "duration": 1096.0,
     "essential_states": 22,
     "candidates": 50,
-    "pool_recall": 0.9090909090909091,
+    "pool_recall": 0.8636363636363636,
     "pool_missed": [
       "s06",
-      "s13"
+      "s13",
+      "s28"
     ],
     "image_tokens": 10450,
     "cpu_seconds": 26.0,
@@ -38,19 +39,19 @@
     },
     "image_tokens_per_min": 572.0802919708029,
     "selected": 14,
-    "important_visual_recall": 0.6363636363636364,
+    "important_visual_recall": 0.5909090909090909,
     "precision": 1.0,
-    "redundancy_rate": 0.0,
+    "redundancy_rate": 0.07142857142857142,
     "frame_efficiency": 1.0,
     "alignment_accuracy": 0.7857142857142857,
     "alignment_evaluated_frames": 14,
     "baselines": {
       "uniform_time": 0.6363636363636364,
-      "uniform_pool": 0.5454545454545454,
-      "random_mean": 0.43636363636363634,
-      "random_sd": 0.054545454545454536
+      "uniform_pool": 0.5909090909090909,
+      "random_mean": 0.4454545454545455,
+      "random_sd": 0.05300865358950273
     },
-    "por": 1.4583333333333335,
+    "por": 1.3265306122448979,
     "missed": [
       {
         "state_id": "s02",
@@ -91,6 +92,11 @@
         "state_id": "s27",
         "label": "Board: final list 'Narrow Focus / Duplicable / Sharable / Understandable / Reviewable / Faster loops / More autonomous' with the team chart",
         "reason": "triage_rejected"
+      },
+      {
+        "state_id": "s28",
+        "label": "Markdown skill document open in the browser",
+        "reason": "not_in_pool"
       }
     ],
     "selected_rows": [
@@ -249,9 +255,9 @@
         "candidate_id": "c_0046",
         "t": 1004.003,
         "chapter_id": "ch12",
-        "state_id": "s28",
+        "state_id": "s29",
         "class": "essential",
-        "group": "s28",
+        "group": "s29",
         "anchor_seg_ids": [
           "seg_0209",
           "seg_0210",

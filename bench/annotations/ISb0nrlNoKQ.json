@@ -10,22 +10,24 @@
     {
       "state_id": "s01",
       "start": 0,
-      "end": 48,
+      "end": 42,
       "class": "irrelevant",
       "kind": "talking_head",
       "label": "Intro, presenter to camera",
       "spoken_seg_ids": [],
-      "duplicates_of": null
+      "duplicates_of": null,
+      "note": "interval corrected from candidate frames (tiles are 9.9 s apart)"
     },
     {
       "state_id": "s02",
-      "start": 48,
+      "start": 42,
       "end": 58,
       "class": "essential",
       "kind": "whiteboard",
       "label": "Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent'",
       "spoken_seg_ids": [],
-      "duplicates_of": null
+      "duplicates_of": null,
+      "note": "interval corrected from candidate frames (tiles are 9.9 s apart)"
     },
     {
       "state_id": "s03",
@@ -367,7 +369,7 @@
     {
       "state_id": "s28",
       "start": 990,
-      "end": 1012,
+      "end": 1003,
       "class": "essential",
       "kind": "screen_demo",
       "label": "Markdown skill document open in the browser",
@@ -376,11 +378,12 @@
         "seg_0185",
         "seg_0186"
       ],
-      "duplicates_of": null
+      "duplicates_of": null,
+      "note": "interval corrected from candidate frames (tiles are 9.9 s apart)"
     },
     {
       "state_id": "s29",
-      "start": 1012,
+      "start": 1003,
       "end": 1062,
       "class": "essential",
       "kind": "whiteboard",
@@ -392,7 +395,8 @@
         "seg_0222",
         "seg_0223"
       ],
-      "duplicates_of": null
+      "duplicates_of": null,
+      "note": "interval corrected from candidate frames (tiles are 9.9 s apart)"
     },
     {
       "state_id": "s30",
@@ -497,5 +501,6 @@
       ],
       "weight": 1
     }
-  ]
+  ],
+  "revision": "2026-09-04b: s02/s29 starts moved earlier after inspecting extracted frames"
 }

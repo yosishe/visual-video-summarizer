@@ -1,0 +1,3333 @@
+{
+  "schema_version": 2,
+  "engine_version": "1.3.0",
+  "tier": "high",
+  "mode": "advanced",
+  "profile": {
+    "cap": 64,
+    "per_target": 3,
+    "unplanned_floor": 16,
+    "scene": "adaptive",
+    "scene_threshold": null,
+    "scene_floor": 0.04,
+    "action_offsets": [
+      0.1,
+      0.35,
+      0.7,
+      1.2,
+      1.8,
+      2.4
+    ],
+    "state_offsets": [],
+    "state_fractions": [
+      0.1,
+      0.3,
+      0.5,
+      0.7,
+      0.9
+    ],
+    "slide_fractions": [
+      0.3,
+      0.7
+    ],
+    "coverage_min": 2,
+    "cue_offsets": [
+      0.2,
+      0.5,
+      1.0,
+      1.5,
+      2.0
+    ],
+    "refine": "sharpness",
+    "faces": "auto",
+    "ocr": "on",
+    "resolution": 512,
+    "pip_mask": "on",
+    "dedup_scope": "family"
+  },
+  "profile_override": {},
+  "profile_sha256": "58a67af21152ac56259e060e3d80fd926f9cfb437701dcc2292272f0225774e2",
+  "overlays": [
+    {
+      "kind": "webcam",
+      "bbox": [
+        0.0,
+        0.6889,
+        0.15,
+        1.0
+      ],
+      "motion_fraction": 0.318,
+      "pairs": 400
+    }
+  ],
+  "mask_fraction": 0.0521,
+  "parts": [
+    {
+      "path": "/private/tmp/claude-501/-Users-26yos-untitled-folder-3/1ee23d1c-0dd9-452a-baa2-6cce75cdd1be/scratchpad/e2e/download/video_24ff4f03d8.mp4",
+      "source_start": 0.0,
+      "offset": 0.0,
+      "media_start": 0.0,
+      "duration": 1095.921,
+      "frame_duration": 0.03336666666666667,
+      "mapping_confidence": "exact"
+    }
+  ],
+  "counts": {
+    "scene": 217,
+    "raw": 327,
+    "blank_or_seek_dropped": 0,
+    "recovered": 0,
+    "dedup_dropped": 85,
+    "cap_dropped": 166,
+    "reserved_trimmed": 0,
+    "cap": 64,
+    "cap_effective": 76,
+    "reserved": 60,
+    "final": 76
+  },
+  "coverage": {
+    "chapters": [
+      {
+        "chapter_id": "ch01",
+        "status": "not-required",
+        "candidate_ids": []
+      },
+      {
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000",
+          "c_0001",
+          "c_0002",
+          "c_0003",
+          "c_0004",
+          "c_0005",
+          "c_0006",
+          "c_0007",
+          "c_0008"
+        ]
+      },
+      {
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0009",
+          "c_0010",
+          "c_0011",
+          "c_0012",
+          "c_0013"
+        ]
+      },
+      {
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0014",
+          "c_0015",
+          "c_0016",
+          "c_0017",
+          "c_0018",
+          "c_0019"
+        ]
+      },
+      {
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0020",
+          "c_0021",
+          "c_0022",
+          "c_0023",
+          "c_0024",
+          "c_0025"
+        ]
+      },
+      {
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0026",
+          "c_0027",
+          "c_0028",
+          "c_0029",
+          "c_0030",
+          "c_0031"
+        ]
+      },
+      {
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0032",
+          "c_0033",
+          "c_0034",
+          "c_0035",
+          "c_0036",
+          "c_0037",
+          "c_0038"
+        ]
+      },
+      {
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0039",
+          "c_0040",
+          "c_0041",
+          "c_0042",
+          "c_0043",
+          "c_0044",
+          "c_0045",
+          "c_0046",
+          "c_0047",
+          "c_0048"
+        ]
+      },
+      {
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0049",
+          "c_0050",
+          "c_0051",
+          "c_0052",
+          "c_0053"
+        ]
+      },
+      {
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0054",
+          "c_0055",
+          "c_0056",
+          "c_0057",
+          "c_0058",
+          "c_0059"
+        ]
+      },
+      {
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0060",
+          "c_0061",
+          "c_0062",
+          "c_0063",
+          "c_0064",
+          "c_0065",
+          "c_0066",
+          "c_0067",
+          "c_0068",
+          "c_0069",
+          "c_0070"
+        ]
+      },
+      {
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0071",
+          "c_0072",
+          "c_0073",
+          "c_0074",
+          "c_0075"
+        ]
+      }
+    ],
+    "targets": [
+      {
+        "target_id": "ch02_perplexity_switch",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0000",
+          "c_0001",
+          "c_0002"
+        ]
+      },
+      {
+        "target_id": "ch02_side_panel",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0003",
+          "c_0004"
+        ]
+      },
+      {
+        "target_id": "ch02_manus_computer",
+        "chapter_id": "ch02",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0006",
+          "c_0007",
+          "c_0008"
+        ]
+      },
+      {
+        "target_id": "ch03_mac_minis",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0009"
+        ]
+      },
+      {
+        "target_id": "ch03_openclaw_shape",
+        "chapter_id": "ch03",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0010",
+          "c_0011",
+          "c_0012"
+        ]
+      },
+      {
+        "target_id": "ch04_skills_overview",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0014",
+          "c_0015",
+          "c_0016"
+        ]
+      },
+      {
+        "target_id": "ch04_dependability_chart",
+        "chapter_id": "ch04",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0017",
+          "c_0018",
+          "c_0019"
+        ]
+      },
+      {
+        "target_id": "ch05_sweet_spot",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0021",
+          "c_0022",
+          "c_0023"
+        ]
+      },
+      {
+        "target_id": "ch05_manus_skills",
+        "chapter_id": "ch05",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0024",
+          "c_0025"
+        ]
+      },
+      {
+        "target_id": "ch06_shear_tweet",
+        "chapter_id": "ch06",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0027",
+          "c_0028",
+          "c_0029"
+        ]
+      },
+      {
+        "target_id": "ch07_journal_bot_telegram",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0032",
+          "c_0033",
+          "c_0034"
+        ]
+      },
+      {
+        "target_id": "ch07_focused_agent_shape",
+        "chapter_id": "ch07",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0035",
+          "c_0036",
+          "c_0037"
+        ]
+      },
+      {
+        "target_id": "ch08_content_bot",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0039",
+          "c_0040",
+          "c_0041"
+        ]
+      },
+      {
+        "target_id": "ch08_goals_skills",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0042",
+          "c_0043",
+          "c_0044"
+        ]
+      },
+      {
+        "target_id": "ch08_direct_path",
+        "chapter_id": "ch08",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0046",
+          "c_0047",
+          "c_0048"
+        ]
+      },
+      {
+        "target_id": "ch09_remix",
+        "chapter_id": "ch09",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0050",
+          "c_0051",
+          "c_0052"
+        ]
+      },
+      {
+        "target_id": "ch10_journal_agent",
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0054",
+          "c_0055",
+          "c_0056"
+        ]
+      },
+      {
+        "target_id": "ch10_journal_informs",
+        "chapter_id": "ch10",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0057",
+          "c_0058",
+          "c_0059"
+        ]
+      },
+      {
+        "target_id": "ch11_markdown_skills",
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0062",
+          "c_0063",
+          "c_0064"
+        ]
+      },
+      {
+        "target_id": "ch11_loops",
+        "chapter_id": "ch11",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0067",
+          "c_0068",
+          "c_0069"
+        ]
+      },
+      {
+        "target_id": "ch12_team",
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0071"
+        ]
+      },
+      {
+        "target_id": "ch12_open_questions",
+        "chapter_id": "ch12",
+        "status": "covered",
+        "candidate_ids": [
+          "c_0073",
+          "c_0074",
+          "c_0075"
+        ]
+      }
+    ]
+  },
+  "terminal_probes": [
+    {
+      "target_id": "ch03_openclaw_shape",
+      "terminal_t": 206.82,
+      "run_start": 184.63,
+      "stop": 207.07,
+      "flipped": false,
+      "build_steps": 7,
+      "events": 7,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch04_skills_overview",
+      "terminal_t": 289.9,
+      "run_start": 256.823,
+      "stop": 290.15,
+      "flipped": false,
+      "build_steps": 76,
+      "events": 119,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch04_dependability_chart",
+      "terminal_t": 306.749,
+      "run_start": 293.35,
+      "stop": 306.999,
+      "flipped": false,
+      "build_steps": 28,
+      "events": 28,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch05_sweet_spot",
+      "terminal_t": 340.54,
+      "run_start": 320.99,
+      "stop": 340.79,
+      "flipped": false,
+      "build_steps": 58,
+      "events": 58,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch06_shear_tweet",
+      "terminal_t": 419.18,
+      "run_start": 401.31,
+      "stop": 419.43,
+      "flipped": false,
+      "build_steps": 2,
+      "events": 2,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch07_focused_agent_shape",
+      "terminal_t": 481.26,
+      "run_start": 471.237,
+      "stop": 481.51,
+      "flipped": false,
+      "build_steps": 6,
+      "events": 7,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch08_goals_skills",
+      "terminal_t": 559.5,
+      "run_start": 521.35,
+      "stop": 559.75,
+      "flipped": false,
+      "build_steps": 23,
+      "events": 23,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch08_direct_path",
+      "terminal_t": 660.86,
+      "run_start": 641.39,
+      "stop": 661.11,
+      "flipped": false,
+      "build_steps": 15,
+      "events": 15,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch09_remix",
+      "terminal_t": 724.14,
+      "run_start": 706.83,
+      "stop": 724.39,
+      "flipped": false,
+      "build_steps": 46,
+      "events": 46,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch10_journal_informs",
+      "terminal_t": 809.9,
+      "run_start": 787.553,
+      "stop": 810.15,
+      "flipped": false,
+      "build_steps": 14,
+      "events": 15,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch11_loops",
+      "terminal_t": 973.62,
+      "run_start": 949.07,
+      "stop": 973.87,
+      "flipped": false,
+      "build_steps": 30,
+      "events": 30,
+      "step_tau": 0.015
+    },
+    {
+      "target_id": "ch12_open_questions",
+      "terminal_t": 1049.1,
+      "run_start": 1027.39,
+      "stop": 1049.35,
+      "flipped": false,
+      "build_steps": 8,
+      "events": 8,
+      "step_tau": 0.015
+    }
+  ],
+  "cost": {
+    "tier": "high",
+    "candidates": 76,
+    "image_tokens_estimate": 14972,
+    "image_tokens_per_candidate": 197,
+    "token_formula": "w*h/750 per image (Anthropic estimate); one batched Read",
+    "frame_dimensions": {
+      "512x288": 76
+    },
+    "cpu": {
+      "scene_pass": "adaptive",
+      "scene_seconds": 1053.0,
+      "terminal_probes": 12,
+      "seeks": 327,
+      "ocr_frames": 56,
+      "faces": "unavailable",
+      "refine": "sharpness",
+      "refine_max_decodes": 20,
+      "pip_mask": "on",
+      "overlays": 1,
+      "overlay_seconds": 8.78,
+      "dedup_scope": "family"
+    },
+    "other_tier": {
+      "tier": "standard",
+      "cap": 48,
+      "max_image_tokens": 9456
+    }
+  },
+  "triage": {
+    "instructions": "Read temporal strips first; open individual 512px candidates only when selected or uncertain.",
+    "strips": [],
+    "pixel_area": 0,
+    "projected_individual_reads": 76,
+    "projected_total_pixel_area": 11206656,
+    "baseline_60x512_pixel_area": 8847360,
+    "strip_to_baseline_ratio": 0.0,
+    "projected_to_baseline_ratio": 1.2667
+  },
+  "candidates": [
+    {
+      "candidate_id": "c_0000",
+      "frame_id": "c_0000",
+      "requested_t": 58.794,
+      "actual_t": 58.825,
+      "t": 58.825,
+      "timestamp_error": 0.0314,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0000_t0058.825_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 224.458,
+        "contrast": 57.471,
+        "sharpness": 5.754,
+        "blank": false,
+        "fingerprint": "bbfe641a5be3105f454898bf8f54c48cb1e03f2b3e72da788a3bfefc54c62804",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0001",
+      "frame_id": "c_0001",
+      "requested_t": 61.97,
+      "actual_t": 61.995,
+      "t": 61.995,
+      "timestamp_error": 0.0253,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0001_t0061.995_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 222.415,
+        "contrast": 56.603,
+        "sharpness": 8.121,
+        "blank": false,
+        "fingerprint": "05bf28b6e31553d506f501be341ddb35ef23a88b0853d8739c59e63c970bdba0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_001",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0002",
+      "frame_id": "c_0002",
+      "requested_t": 68.322,
+      "actual_t": 68.335,
+      "t": 68.335,
+      "timestamp_error": 0.0129,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0002_t0068.335_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.439,
+        "contrast": 62.122,
+        "sharpness": 8.03,
+        "blank": false,
+        "fingerprint": "04bf95f8aa066b5bd287064ab200a0ddcf98651ecf652abff4c990e5ad0d4e28",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0003",
+      "frame_id": "c_0003",
+      "requested_t": 82.99,
+      "actual_t": 83.016,
+      "t": 83.016,
+      "timestamp_error": 0.0263,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0003_t0083.016_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_side_panel"
+      ],
+      "seg_ids": [
+        "seg_0014",
+        "seg_0016",
+        "seg_0017",
+        "seg_0018"
+      ],
+      "reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.756,
+        "contrast": 61.801,
+        "sharpness": 8.262,
+        "blank": false,
+        "fingerprint": "6b5e56d93f258df2d8c6a1f03b45353cc8ac6bcf9764e71a7c26c239babf8861",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_002",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0004",
+      "frame_id": "c_0004",
+      "requested_t": 85.07,
+      "actual_t": 85.085,
+      "t": 85.085,
+      "timestamp_error": 0.015,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0004_t0085.085_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_side_panel"
+      ],
+      "seg_ids": [
+        "seg_0016",
+        "seg_0017"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.246,
+        "contrast": 61.602,
+        "sharpness": 8.667,
+        "blank": false,
+        "fingerprint": "de8aef5bd2ac77d801575df7e0573369412923e6c880c5c41566a1a5f03fd61b",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_003",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0005",
+      "frame_id": "c_0005",
+      "requested_t": 98.5,
+      "actual_t": 98.532,
+      "t": 98.532,
+      "timestamp_error": 0.0318,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0005_t0098.532_coverage.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0018",
+        "seg_0019"
+      ],
+      "reasons": [
+        "coverage",
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 215.512,
+        "contrast": 61.512,
+        "sharpness": 8.693,
+        "blank": false,
+        "fingerprint": "647fcb8c04dc8b2964b5a5b314c8f5454c8ce5df4fd4df15b4b4c1ef427337a6",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_004",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0006",
+      "frame_id": "c_0006",
+      "requested_t": 106.038,
+      "actual_t": 106.039,
+      "t": 106.039,
+      "timestamp_error": 0.0013,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0006_t0106.039_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "seg_ids": [
+        "seg_0020",
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 161.908,
+        "contrast": 76.053,
+        "sharpness": 10.202,
+        "blank": false,
+        "fingerprint": "8863a4fe3e2742e3f261479c5d6066b06a63808e0cc18740e4001e013f428b61",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_005",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0007",
+      "frame_id": "c_0007",
+      "requested_t": 109.014,
+      "actual_t": 109.042,
+      "t": 109.042,
+      "timestamp_error": 0.0283,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0007_t0109.042_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 237.543,
+        "contrast": 30.385,
+        "sharpness": 4.382,
+        "blank": false,
+        "fingerprint": "3acacd53db6ed0c68579856ef390643f9a8e2cf449b2657f6784efd81fbf0d8a",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0008",
+      "frame_id": "c_0008",
+      "requested_t": 111.99,
+      "actual_t": 112.012,
+      "t": 112.012,
+      "timestamp_error": 0.0219,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0008_t0112.012_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch02",
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 212.67,
+        "contrast": 60.346,
+        "sharpness": 10.339,
+        "blank": false,
+        "fingerprint": "1adaaae98e9a44546a3d77e80f90223f0abcb4141ed3e3c36cb23890f7feb93c",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_006",
+      "family_revisits": [
+        357.557,
+        431.331,
+        442.709,
+        1006.005,
+        1008.741,
+        1013.479
+      ]
+    },
+    {
+      "candidate_id": "c_0009",
+      "frame_id": "c_0009",
+      "requested_t": 177.51,
+      "actual_t": 177.511,
+      "t": 177.511,
+      "timestamp_error": 0.0007,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0009_t0177.511_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_mac_minis"
+      ],
+      "seg_ids": [
+        "seg_0033",
+        "seg_0035",
+        "seg_0036",
+        "seg_0037"
+      ],
+      "reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 222.065,
+        "contrast": 64.625,
+        "sharpness": 8.161,
+        "blank": false,
+        "fingerprint": "846dd377c4e81f6b16f1e29415f8629f2d7a38d9c4c601d631639f2725f81387",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_008",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0010",
+      "frame_id": "c_0010",
+      "requested_t": 190.5,
+      "actual_t": 190.524,
+      "t": 190.524,
+      "timestamp_error": 0.0237,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0010_t0190.524_coverage.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_openclaw_shape"
+      ],
+      "seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "reasons": [
+        "coverage"
+      ],
+      "quality": {
+        "mean_luma": 221.326,
+        "contrast": 64.127,
+        "sharpness": 8.677,
+        "blank": false,
+        "fingerprint": "0675b9ef58099679cb489512d3973bc603eca0746690714ea74afadd4f63f694",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0011",
+      "frame_id": "c_0011",
+      "requested_t": 195.6,
+      "actual_t": 195.629,
+      "t": 195.629,
+      "timestamp_error": 0.0288,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0011_t0195.629_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_openclaw_shape"
+      ],
+      "seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.701,
+        "contrast": 63.932,
+        "sharpness": 9.298,
+        "blank": false,
+        "fingerprint": "831feb737a4ae8566df7b6ed0b9ed3661e675d2b1b7276129cb9b971753b58f1",
+        "faces": "unavailable",
+        "text_chars": 382
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_009",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0012",
+      "frame_id": "c_0012",
+      "requested_t": 206.82,
+      "actual_t": 206.84,
+      "t": 206.84,
+      "timestamp_error": 0.02,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0012_t0206.840_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [
+        "ch03_openclaw_shape"
+      ],
+      "seg_ids": [
+        "seg_0038",
+        "seg_0039",
+        "seg_0040",
+        "seg_0041"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.889,
+        "contrast": 63.785,
+        "sharpness": 10.029,
+        "blank": false,
+        "fingerprint": "a89416a6a200e319b45cdcf4e0cb313d69da3396475f69a0a085f925e52b0cab",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0013",
+      "frame_id": "c_0013",
+      "requested_t": 217.651,
+      "actual_t": 217.684,
+      "t": 217.684,
+      "timestamp_error": 0.0331,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0013_t0217.684_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch03",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0044"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 215.781,
+        "contrast": 63.255,
+        "sharpness": 13.179,
+        "blank": false,
+        "fingerprint": "d4e064d17ac38ec81893c83038cffc3f5e941aa24df05cafbaacb2c923d8b1ba",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.094228,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0014",
+      "frame_id": "c_0014",
+      "requested_t": 250.278,
+      "actual_t": 250.283,
+      "t": 250.283,
+      "timestamp_error": 0.0054,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0014_t0250.283_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 212.987,
+        "contrast": 62.237,
+        "sharpness": 13.643,
+        "blank": false,
+        "fingerprint": "357a394db197740ca4c1fcc28b8259f2a880bb03ad64418a92570106f7cb7412",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0015",
+      "frame_id": "c_0015",
+      "requested_t": 261.42,
+      "actual_t": 261.428,
+      "t": 261.428,
+      "timestamp_error": 0.0078,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0015_t0261.428_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.709,
+        "contrast": 62.579,
+        "sharpness": 10.115,
+        "blank": false,
+        "fingerprint": "b21c6e1543b43589a8d5569623f64d9d6cc892eadf6ba9e97e9b15d871da639b",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_010",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0016",
+      "frame_id": "c_0016",
+      "requested_t": 273.062,
+      "actual_t": 273.073,
+      "t": 273.073,
+      "timestamp_error": 0.0108,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0016_t0273.073_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.638,
+        "contrast": 62.601,
+        "sharpness": 10.01,
+        "blank": false,
+        "fingerprint": "59c4ce81b7e7075f286c23e9ade42df770f36d040fe8d2824d3f7c6aafcdf023",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_011",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0017",
+      "frame_id": "c_0017",
+      "requested_t": 300.5,
+      "actual_t": 300.5,
+      "t": 300.5,
+      "timestamp_error": 0.0002,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0017_t0300.500_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.356,
+        "contrast": 64.505,
+        "sharpness": 9.747,
+        "blank": false,
+        "fingerprint": "6dc73bff4f4092b5f0e90636bc42e67c27e0e7907bce6a29d277152637b5e9b0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0018",
+      "frame_id": "c_0018",
+      "requested_t": 302.904,
+      "actual_t": 302.936,
+      "t": 302.936,
+      "timestamp_error": 0.032,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0018_t0302.936_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.394,
+        "contrast": 64.611,
+        "sharpness": 9.734,
+        "blank": false,
+        "fingerprint": "aa7939d974b550b06ccdf08551110a263ca9d0ed9af4343e17165dd9adfed232",
+        "faces": "unavailable",
+        "text_chars": 411
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_012",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0019",
+      "frame_id": "c_0019",
+      "requested_t": 306.749,
+      "actual_t": 306.773,
+      "t": 306.773,
+      "timestamp_error": 0.0241,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0019_t0306.773_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch04",
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.395,
+        "contrast": 64.623,
+        "sharpness": 9.708,
+        "blank": false,
+        "fingerprint": "967fac7d95e60f09578c7e86d984f23f8d9296c67ebfe669042d971958255bcc",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0020",
+      "frame_id": "c_0020",
+      "requested_t": 320.654,
+      "actual_t": 320.687,
+      "t": 320.687,
+      "timestamp_error": 0.033,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0020_t0320.687_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0064"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 216.391,
+        "contrast": 62.768,
+        "sharpness": 10.097,
+        "blank": false,
+        "fingerprint": "db21f2f68fba9f8a1563587eb336da111c82cc5e65df09220d0d4baacde03f5e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.097428,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0021",
+      "frame_id": "c_0021",
+      "requested_t": 326.93,
+      "actual_t": 326.96,
+      "t": 326.96,
+      "timestamp_error": 0.03,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0021_t0326.960_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.074,
+        "contrast": 62.997,
+        "sharpness": 9.75,
+        "blank": false,
+        "fingerprint": "e899c78b1100fa14626504f2c5ee748bb9617761cba711fee0608b948fe64c88",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.076702,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0022",
+      "frame_id": "c_0022",
+      "requested_t": 330.64,
+      "actual_t": 330.664,
+      "t": 330.664,
+      "timestamp_error": 0.0237,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0022_t0330.664_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.803,
+        "contrast": 62.898,
+        "sharpness": 9.965,
+        "blank": false,
+        "fingerprint": "ba446344e1918d8c2a9f557b986790b5f913b3dc9d4af6de0c8eb41ec0b9d42d",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_013",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0023",
+      "frame_id": "c_0023",
+      "requested_t": 340.54,
+      "actual_t": 340.54,
+      "t": 340.54,
+      "timestamp_error": 0.0002,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0023_t0340.540_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067",
+        "seg_0073"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.543,
+        "contrast": 62.945,
+        "sharpness": 10.153,
+        "blank": false,
+        "fingerprint": "4f0d71f44cfe8bc4aa94d7bc97c369da48c3ebc11a809011e7c6befcfd00ae0a",
+        "faces": "unavailable",
+        "text_chars": 364
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_014",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0024",
+      "frame_id": "c_0024",
+      "requested_t": 352.51,
+      "actual_t": 352.519,
+      "t": 352.519,
+      "timestamp_error": 0.0088,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0024_t0352.519_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_manus_skills"
+      ],
+      "seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 137.966,
+        "contrast": 64.363,
+        "sharpness": 8.927,
+        "blank": false,
+        "fingerprint": "ef080cd114fc6699515a3ab5969d52b42308288ff3710265254437adb30dd4a4",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_015",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0025",
+      "frame_id": "c_0025",
+      "requested_t": 354.56,
+      "actual_t": 354.588,
+      "t": 354.588,
+      "timestamp_error": 0.0276,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0025_t0354.588_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch05",
+      "target_ids": [
+        "ch05_manus_skills"
+      ],
+      "seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 138.541,
+        "contrast": 64.402,
+        "sharpness": 9.041,
+        "blank": false,
+        "fingerprint": "2b82217203e5a6f0922acb7ca919ad3c7d15fa28651833e162e3169033e1a800",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_016",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0026",
+      "frame_id": "c_0026",
+      "requested_t": 369.936,
+      "actual_t": 369.936,
+      "t": 369.936,
+      "timestamp_error": 0.0002,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0026_t0369.936_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0075"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 220.432,
+        "contrast": 63.918,
+        "sharpness": 9.918,
+        "blank": false,
+        "fingerprint": "e267ecb7691d08ee612f10897d9894efb978611a8a579a37b7d2c4c813f0ca0e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.060206,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0027",
+      "frame_id": "c_0027",
+      "requested_t": 402.435,
+      "actual_t": 402.435,
+      "t": 402.435,
+      "timestamp_error": 0.0004,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0027_t0402.435_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 212.163,
+        "contrast": 64.835,
+        "sharpness": 13.44,
+        "blank": false,
+        "fingerprint": "8ce7695abfce65e8f5401d02b44231e827df1118e9268e95062aed29aae4c637",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.145625,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0028",
+      "frame_id": "c_0028",
+      "requested_t": 406.746,
+      "actual_t": 406.773,
+      "t": 406.773,
+      "timestamp_error": 0.027,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0028_t0406.773_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 211.212,
+        "contrast": 64.272,
+        "sharpness": 14.331,
+        "blank": false,
+        "fingerprint": "9d5b46270a439ffc9a1481a45bd5be7da5faaed8ccac24157abfa1e4e8088633",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0029",
+      "frame_id": "c_0029",
+      "requested_t": 410.12,
+      "actual_t": 410.143,
+      "t": 410.143,
+      "timestamp_error": 0.0231,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0029_t0410.143_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 211.868,
+        "contrast": 64.702,
+        "sharpness": 14.172,
+        "blank": false,
+        "fingerprint": "8c63fb594fb349f277e23804e23de26658ec324f8d47042e5aafab82ad4502bd",
+        "faces": "unavailable",
+        "text_chars": 348
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_018",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0030",
+      "frame_id": "c_0030",
+      "requested_t": 426.459,
+      "actual_t": 426.459,
+      "t": 426.459,
+      "timestamp_error": 0.0004,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0030_t0426.459_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0086"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 211.206,
+        "contrast": 66.658,
+        "sharpness": 15.965,
+        "blank": false,
+        "fingerprint": "cb5d2c65e20c69a7136d0b8de6f72f3f7418aa565242db265b4a48b3bb20a6fb",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.136064,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0031",
+      "frame_id": "c_0031",
+      "requested_t": 443.677,
+      "actual_t": 443.71,
+      "t": 443.71,
+      "timestamp_error": 0.0329,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0031_t0443.710_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch06",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0087",
+        "seg_0090"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 212.939,
+        "contrast": 64.244,
+        "sharpness": 13.192,
+        "blank": false,
+        "fingerprint": "8598a1c7c191d5dc126a7838cdb0f7e331e9f5284a561c1219ed4ead6ead242b",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.183954,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_019",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0032",
+      "frame_id": "c_0032",
+      "requested_t": 457.338,
+      "actual_t": 457.357,
+      "t": 457.357,
+      "timestamp_error": 0.0189,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0032_t0457.357_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.377,
+        "contrast": 64.01,
+        "sharpness": 9.545,
+        "blank": false,
+        "fingerprint": "727c4055b9a0910040c6b502b5c3047075a7195f559aeb603372be2bb1f09eba",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_021",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0033",
+      "frame_id": "c_0033",
+      "requested_t": 460.354,
+      "actual_t": 460.36,
+      "t": 460.36,
+      "timestamp_error": 0.0059,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0033_t0460.360_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 169.447,
+        "contrast": 92.014,
+        "sharpness": 15.01,
+        "blank": false,
+        "fingerprint": "6ff0185bfded92f22d41326bdf6f37bbfc0dcd5409b3c60e8a0090dfe3bcb35a",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_022",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0034",
+      "frame_id": "c_0034",
+      "requested_t": 463.37,
+      "actual_t": 463.396,
+      "t": 463.396,
+      "timestamp_error": 0.0263,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0034_t0463.396_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 168.881,
+        "contrast": 92.32,
+        "sharpness": 14.413,
+        "blank": false,
+        "fingerprint": "6081c1bbe35e1aebc79e50e5c8680c54cc61e8168ae3b671c5c6f0f2db9fd27a",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_023",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0035",
+      "frame_id": "c_0035",
+      "requested_t": 471.237,
+      "actual_t": 471.237,
+      "t": 471.237,
+      "timestamp_error": 0.0004,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0035_t0471.237_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 219.72,
+        "contrast": 64.23,
+        "sharpness": 9.21,
+        "blank": false,
+        "fingerprint": "9660849df4617793ebc796991861fd972daccd18571f8470f2e913c045cc14d0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.44342,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0036",
+      "frame_id": "c_0036",
+      "requested_t": 475.46,
+      "actual_t": 475.475,
+      "t": 475.475,
+      "timestamp_error": 0.015,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0036_t0475.475_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.207,
+        "contrast": 64.008,
+        "sharpness": 9.629,
+        "blank": false,
+        "fingerprint": "321138a1722e913abd297f46944f323d58a492bacc84e2d69fc3e421e3af6a14",
+        "faces": "unavailable",
+        "text_chars": 355
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_024",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0037",
+      "frame_id": "c_0037",
+      "requested_t": 481.26,
+      "actual_t": 481.281,
+      "t": 481.281,
+      "timestamp_error": 0.0208,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0037_t0481.281_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097",
+        "seg_0099"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.247,
+        "contrast": 64.039,
+        "sharpness": 9.476,
+        "blank": false,
+        "fingerprint": "4b586e3ffeeb8327f9542a0cb2fa3d5df799dac98d0a3fb5dad45ab0924c3011",
+        "faces": "unavailable",
+        "text_chars": 371
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_025",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0038",
+      "frame_id": "c_0038",
+      "requested_t": 492.292,
+      "actual_t": 492.325,
+      "t": 492.325,
+      "timestamp_error": 0.0332,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0038_t0492.325_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch07",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0100"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 219.346,
+        "contrast": 64.074,
+        "sharpness": 9.776,
+        "blank": false,
+        "fingerprint": "3f3fbc0e4d58ed5d3e108f9c8ec1dab43f9b9ac5741b7a739312be9b0882c5a4",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0465,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0039",
+      "frame_id": "c_0039",
+      "requested_t": 505.835,
+      "actual_t": 505.839,
+      "t": 505.839,
+      "timestamp_error": 0.0037,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0039_t0505.839_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_content_bot"
+      ],
+      "seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.138,
+        "contrast": 67.196,
+        "sharpness": 11.897,
+        "blank": false,
+        "fingerprint": "2858658599bd2a2a143f0544fab0ad6ceb131944b2a08b713a1e2d6d100d5113",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0040",
+      "frame_id": "c_0040",
+      "requested_t": 513.175,
+      "actual_t": 513.179,
+      "t": 513.179,
+      "timestamp_error": 0.0043,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0040_t0513.179_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_content_bot"
+      ],
+      "seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 167.769,
+        "contrast": 92.361,
+        "sharpness": 15.034,
+        "blank": false,
+        "fingerprint": "5bfe0559c41ccba0616168bec64442355499135bee529393f83ad1cddc6e1cce",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.442431,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_026",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0041",
+      "frame_id": "c_0041",
+      "requested_t": 516.845,
+      "actual_t": 516.85,
+      "t": 516.85,
+      "timestamp_error": 0.0047,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0041_t0516.850_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_content_bot"
+      ],
+      "seg_ids": [
+        "seg_0103",
+        "seg_0104",
+        "seg_0105"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.485,
+        "contrast": 63.619,
+        "sharpness": 10.734,
+        "blank": false,
+        "fingerprint": "8509cb4b74a31174b588c0a822167b91afbb2a748b0574f415e550bb7a223841",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_027",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0042",
+      "frame_id": "c_0042",
+      "requested_t": 532.87,
+      "actual_t": 532.899,
+      "t": 532.899,
+      "timestamp_error": 0.029,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0042_t0532.899_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.024,
+        "contrast": 63.695,
+        "sharpness": 10.586,
+        "blank": false,
+        "fingerprint": "50271a4d0188a0c711b28e8eaa18c194dd2af801bb2b8bf6ed7f8d6bbdcae45d",
+        "faces": "unavailable",
+        "text_chars": 375
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_028",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0043",
+      "frame_id": "c_0043",
+      "requested_t": 540.3,
+      "actual_t": 540.306,
+      "t": 540.306,
+      "timestamp_error": 0.0064,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0043_t0540.306_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.158,
+        "contrast": 63.598,
+        "sharpness": 10.911,
+        "blank": false,
+        "fingerprint": "c53444857f72ad10adf699c466725cfaa9b1ae75ef46c4494bc37a2738665c7b",
+        "faces": "unavailable",
+        "text_chars": 385
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_029",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0044",
+      "frame_id": "c_0044",
+      "requested_t": 548.23,
+      "actual_t": 548.248,
+      "t": 548.248,
+      "timestamp_error": 0.0177,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0044_t0548.248_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.664,
+        "contrast": 63.473,
+        "sharpness": 10.809,
+        "blank": false,
+        "fingerprint": "f92d319541d7eb40b4865068d0d66a2a21a1bd906f1caa3957177e4acaafd01a",
+        "faces": "unavailable",
+        "text_chars": 389
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_030",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0045",
+      "frame_id": "c_0045",
+      "requested_t": 628.495,
+      "actual_t": 628.528,
+      "t": 628.528,
+      "timestamp_error": 0.0329,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0045_t0628.528_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0127"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 209.793,
+        "contrast": 63.092,
+        "sharpness": 14.214,
+        "blank": false,
+        "fingerprint": "5a67b17481b4f2e8fcead2ffb520c5a16a181a1ecf7b94a409926aa8a144a791",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.161627,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0046",
+      "frame_id": "c_0046",
+      "requested_t": 651.0,
+      "actual_t": 651.017,
+      "t": 651.017,
+      "timestamp_error": 0.017,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0046_t0651.017_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 214.157,
+        "contrast": 63.19,
+        "sharpness": 12.337,
+        "blank": false,
+        "fingerprint": "b18ea2fdb5cda7d99f225d6512e23cbe51c9918d5e283d21caa6fd4ef290cd91",
+        "faces": "unavailable",
+        "text_chars": 435
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_032",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0047",
+      "frame_id": "c_0047",
+      "requested_t": 655.194,
+      "actual_t": 655.221,
+      "t": 655.221,
+      "timestamp_error": 0.0272,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0047_t0655.221_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 214.197,
+        "contrast": 63.217,
+        "sharpness": 12.238,
+        "blank": false,
+        "fingerprint": "d17c3c5a2f9799167b815b7f942eab5175b6e437354591d218ef7db556a2f4f3",
+        "faces": "unavailable",
+        "text_chars": 404
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_033",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0048",
+      "frame_id": "c_0048",
+      "requested_t": 660.86,
+      "actual_t": 660.86,
+      "t": 660.86,
+      "timestamp_error": 0.0002,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0048_t0660.860_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch08",
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.249,
+        "contrast": 63.458,
+        "sharpness": 12.11,
+        "blank": false,
+        "fingerprint": "71a45f416633b7c33c10e3cb1c2c6ca1c80b57b2d08ce348378d3397910382bc",
+        "faces": "unavailable",
+        "text_chars": 410
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_034",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0049",
+      "frame_id": "c_0049",
+      "requested_t": 672.639,
+      "actual_t": 672.672,
+      "t": 672.672,
+      "timestamp_error": 0.033,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0049_t0672.672_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0137"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 215.716,
+        "contrast": 63.467,
+        "sharpness": 11.345,
+        "blank": false,
+        "fingerprint": "916bb4cb697c64da1b3b5262fda112210dffb430e71c1e1ce0b34c3274bf5c45",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.079644,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0050",
+      "frame_id": "c_0050",
+      "requested_t": 712.098,
+      "actual_t": 712.111,
+      "t": 712.111,
+      "timestamp_error": 0.0134,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0050_t0712.111_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.376,
+        "contrast": 63.44,
+        "sharpness": 8.857,
+        "blank": false,
+        "fingerprint": "b215fac20a1240c73f2900550b9fc095dfdfa3347639ac4899eebc18e0d13e15",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0051",
+      "frame_id": "c_0051",
+      "requested_t": 715.36,
+      "actual_t": 715.381,
+      "t": 715.381,
+      "timestamp_error": 0.0213,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0051_t0715.381_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.211,
+        "contrast": 63.59,
+        "sharpness": 9.124,
+        "blank": false,
+        "fingerprint": "cd605d3a3fa3f3df0323132850102b9ab7ce8b81e841124d7bb1a82b99a074c4",
+        "faces": "unavailable",
+        "text_chars": 353
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_035",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0052",
+      "frame_id": "c_0052",
+      "requested_t": 724.14,
+      "actual_t": 724.157,
+      "t": 724.157,
+      "timestamp_error": 0.0168,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0052_t0724.157_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.725,
+        "contrast": 63.47,
+        "sharpness": 8.709,
+        "blank": false,
+        "fingerprint": "846100422d1d58435637678376e26f688b8117d17ced3a264cc67de7faf80e97",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_036",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0053",
+      "frame_id": "c_0053",
+      "requested_t": 725.124,
+      "actual_t": 725.124,
+      "t": 725.124,
+      "timestamp_error": 0.0004,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0053_t0725.124_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch09",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0149"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 217.164,
+        "contrast": 63.04,
+        "sharpness": 9.24,
+        "blank": false,
+        "fingerprint": "20ee72e068b84a568feb14c8237ff18a13f5b7428d498f15aba33c15b2fa8519",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.050704,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0054",
+      "frame_id": "c_0054",
+      "requested_t": 753.795,
+      "actual_t": 753.82,
+      "t": 753.82,
+      "timestamp_error": 0.0247,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0054_t0753.820_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.033,
+        "contrast": 63.497,
+        "sharpness": 9.085,
+        "blank": false,
+        "fingerprint": "79879a0f1d7ea9e9a5b03ccb0d3bb47474ba62683f3d0c93d6f1ce10d6a0ac67",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_037",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0055",
+      "frame_id": "c_0055",
+      "requested_t": 756.913,
+      "actual_t": 756.923,
+      "t": 756.923,
+      "timestamp_error": 0.0098,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0055_t0756.923_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 171.673,
+        "contrast": 91.066,
+        "sharpness": 15.132,
+        "blank": false,
+        "fingerprint": "e42e68a45cdaa9eae17bb38c4dcff2386957ca443df983b00e6c013dad0a476f",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.055595,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0056",
+      "frame_id": "c_0056",
+      "requested_t": 760.031,
+      "actual_t": 760.059,
+      "t": 760.059,
+      "timestamp_error": 0.0283,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0056_t0760.059_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156",
+        "seg_0159"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 168.507,
+        "contrast": 91.798,
+        "sharpness": 14.018,
+        "blank": false,
+        "fingerprint": "b4b9f5ea83af86d830b9dbf8f8372c0b88426f16285ad1d76976a924939529d3",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_038",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0057",
+      "frame_id": "c_0057",
+      "requested_t": 797.6,
+      "actual_t": 797.63,
+      "t": 797.63,
+      "timestamp_error": 0.0302,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0057_t0797.630_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.954,
+        "contrast": 62.718,
+        "sharpness": 10.342,
+        "blank": false,
+        "fingerprint": "597ebd928ee10d54beb87013cae27dc7f306d9ea75491f1c32d254439cd8506b",
+        "faces": "unavailable",
+        "text_chars": 373
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_039",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0058",
+      "frame_id": "c_0058",
+      "requested_t": 802.77,
+      "actual_t": 802.802,
+      "t": 802.802,
+      "timestamp_error": 0.032,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0058_t0802.802_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 213.036,
+        "contrast": 61.51,
+        "sharpness": 14.002,
+        "blank": false,
+        "fingerprint": "56cfc6f83073142d34d648481e417a687afdf28aafbdf3ea3a2da416f29a96ac",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.13693,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0059",
+      "frame_id": "c_0059",
+      "requested_t": 809.9,
+      "actual_t": 809.909,
+      "t": 809.909,
+      "timestamp_error": 0.0091,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0059_t0809.909_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch10",
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.589,
+        "contrast": 62.461,
+        "sharpness": 11.3,
+        "blank": false,
+        "fingerprint": "ff597ca1b3b7e5a01f1fce8bd192d83fe9b572c1faaa4cabbe15e350997a3e96",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0060",
+      "frame_id": "c_0060",
+      "requested_t": 854.954,
+      "actual_t": 854.954,
+      "t": 854.954,
+      "timestamp_error": 0.0001,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0060_t0854.954_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0178",
+        "seg_0179"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 216.118,
+        "contrast": 62.416,
+        "sharpness": 11.141,
+        "blank": false,
+        "fingerprint": "5e1d72d481dccde05f0030e2120d2b5b1a6be71404f57e1ca9a9a411bd6177c0",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.081021,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_040",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0061",
+      "frame_id": "c_0061",
+      "requested_t": 875.808,
+      "actual_t": 875.808,
+      "t": 875.808,
+      "timestamp_error": 0.0003,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0061_t0875.808_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0183"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 220.211,
+        "contrast": 63.767,
+        "sharpness": 8.549,
+        "blank": false,
+        "fingerprint": "6a3767c9e0752974f82949813aaf86d6aac8d40d6835e0c162e2e4e21fc0e263",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.06449,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0062",
+      "frame_id": "c_0062",
+      "requested_t": 880.566,
+      "actual_t": 880.58,
+      "t": 880.58,
+      "timestamp_error": 0.0137,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0062_t0880.580_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_markdown_skills"
+      ],
+      "seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.383,
+        "contrast": 63.622,
+        "sharpness": 10.5,
+        "blank": false,
+        "fingerprint": "1241bbca27ccd03688ac04925c0f439326499b8813955f821ed18db9dac24b59",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0063",
+      "frame_id": "c_0063",
+      "requested_t": 883.638,
+      "actual_t": 883.649,
+      "t": 883.649,
+      "timestamp_error": 0.0114,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0063_t0883.649_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_markdown_skills"
+      ],
+      "seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.447,
+        "contrast": 63.6,
+        "sharpness": 10.477,
+        "blank": false,
+        "fingerprint": "97b2c9d69fd2031eff988d8134bbb500ddc6a9e03ba4b2680df711d1445cb87e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_041",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0064",
+      "frame_id": "c_0064",
+      "requested_t": 886.71,
+      "actual_t": 886.719,
+      "t": 886.719,
+      "timestamp_error": 0.0092,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0064_t0886.719_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_markdown_skills"
+      ],
+      "seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.31,
+        "contrast": 63.84,
+        "sharpness": 10.643,
+        "blank": false,
+        "fingerprint": "a1fa7834204efda0c8c1472772eb0aff139be05474a34ad51303ff8f357d2c1e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_043",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0065",
+      "frame_id": "c_0065",
+      "requested_t": 902.568,
+      "actual_t": 902.568,
+      "t": 902.568,
+      "timestamp_error": 0.0003,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0065_t0902.568_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0189"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 219.214,
+        "contrast": 63.878,
+        "sharpness": 9.762,
+        "blank": false,
+        "fingerprint": "ef60408439e88d6640bc895461d62e30c325b50dcf573ca1cb7c57ef665f0623",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.065989,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0066",
+      "frame_id": "c_0066",
+      "requested_t": 926.526,
+      "actual_t": 926.559,
+      "t": 926.559,
+      "timestamp_error": 0.033,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0066_t0926.559_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0194"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 220.045,
+        "contrast": 64.238,
+        "sharpness": 9.328,
+        "blank": false,
+        "fingerprint": "e6e1c3a58c5c70a7c8eb43025b3c90f5aa687f43c859f146371715fc79d8ff74",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.040753,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0067",
+      "frame_id": "c_0067",
+      "requested_t": 956.51,
+      "actual_t": 956.522,
+      "t": 956.522,
+      "timestamp_error": 0.0122,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0067_t0956.522_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.99,
+        "contrast": 63.773,
+        "sharpness": 10.337,
+        "blank": false,
+        "fingerprint": "6e336ee7c78c8da09c0b6d1e41d8b0d38a9c0adce8a2a52bf33ba3a8f97b7f22",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0068",
+      "frame_id": "c_0068",
+      "requested_t": 959.225,
+      "actual_t": 959.258,
+      "t": 959.258,
+      "timestamp_error": 0.0333,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0068_t0959.258_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 219.882,
+        "contrast": 64.113,
+        "sharpness": 9.2,
+        "blank": false,
+        "fingerprint": "46f064379f79ff949e7091b04b79c32f5e3d764bd93b621a96eafb6217eb1f7e",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.042349,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0069",
+      "frame_id": "c_0069",
+      "requested_t": 961.22,
+      "actual_t": 961.227,
+      "t": 961.227,
+      "timestamp_error": 0.0069,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0069_t0961.227_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.933,
+        "contrast": 64.126,
+        "sharpness": 9.231,
+        "blank": false,
+        "fingerprint": "298ea31acebf52dcf15a31b480539bb6a2b32ff359743afdae7f6e949af1db5f",
+        "faces": "unavailable",
+        "text_chars": 343
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_044",
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0070",
+      "frame_id": "c_0070",
+      "requested_t": 990.323,
+      "actual_t": 990.356,
+      "t": 990.356,
+      "timestamp_error": 0.033,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0070_t0990.356_scene.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch11",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0210"
+      ],
+      "reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 220.777,
+        "contrast": 64.091,
+        "sharpness": 9.268,
+        "blank": false,
+        "fingerprint": "f4fb1ffe80268b441bce0c73a54dbcc956e4801da67292004e9b80405e800dfe",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.053789,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0071",
+      "frame_id": "c_0071",
+      "requested_t": 1004.0,
+      "actual_t": 1004.003,
+      "t": 1004.003,
+      "timestamp_error": 0.003,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0071_t1004.003_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_team"
+      ],
+      "seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211",
+        "seg_0218"
+      ],
+      "reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.179,
+        "contrast": 63.467,
+        "sharpness": 9.496,
+        "blank": false,
+        "fingerprint": "c15de7059c783af55806fb97afe1241bd8f80415148f165044e551fe570a9fd8",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_045",
+      "family_revisits": [
+        1003.102
+      ]
+    },
+    {
+      "candidate_id": "c_0072",
+      "frame_id": "c_0072",
+      "requested_t": 1027.0,
+      "actual_t": 1027.026,
+      "t": 1027.026,
+      "timestamp_error": 0.026,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0072_t1027.026_coverage.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [],
+      "seg_ids": [
+        "seg_0218"
+      ],
+      "reasons": [
+        "coverage"
+      ],
+      "quality": {
+        "mean_luma": 222.371,
+        "contrast": 64.459,
+        "sharpness": 8.531,
+        "blank": false,
+        "fingerprint": "49946c1cda675e65d05ead1c8498e84acfa8f8761c2f480eb04db15ec75c61ca",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0073",
+      "frame_id": "c_0073",
+      "requested_t": 1038.12,
+      "actual_t": 1038.137,
+      "t": 1038.137,
+      "timestamp_error": 0.0171,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0073_t1038.137_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.32,
+        "contrast": 64.398,
+        "sharpness": 9.959,
+        "blank": false,
+        "fingerprint": "684a2a64c1200a63f09b3b1aa0cd9da9ce88163e93b36e2db73299f81b766ff8",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0074",
+      "frame_id": "c_0074",
+      "requested_t": 1042.762,
+      "actual_t": 1042.775,
+      "t": 1042.775,
+      "timestamp_error": 0.0131,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0074_t1042.775_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223"
+      ],
+      "reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.345,
+        "contrast": 64.375,
+        "sharpness": 9.847,
+        "blank": false,
+        "fingerprint": "5ab0f6de40efa19ab336e68e9d8d763e3e02607eccdd35b00c149881c1e14f0b",
+        "faces": "unavailable"
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": null,
+      "family_revisits": []
+    },
+    {
+      "candidate_id": "c_0075",
+      "frame_id": "c_0075",
+      "requested_t": 1049.1,
+      "actual_t": 1049.115,
+      "t": 1049.115,
+      "timestamp_error": 0.0147,
+      "path": "/Users/26yos/.claude/skills/summarize-video/bench/runs/2026-09-04-v14-high/ISb0nrlNoKQ/work/candidates/c_0075_t1049.115_target.jpg",
+      "width": 512,
+      "height": 288,
+      "chapter_id": "ch12",
+      "target_ids": [
+        "ch12_open_questions"
+      ],
+      "seg_ids": [
+        "seg_0219",
+        "seg_0220",
+        "seg_0221",
+        "seg_0222",
+        "seg_0223",
+        "seg_0224",
+        "seg_0236"
+      ],
+      "reasons": [
+        "coverage",
+        "final",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 222.17,
+        "contrast": 64.538,
+        "sharpness": 9.23,
+        "blank": false,
+        "fingerprint": "096843622803919a3ef661f7aebccf81e822b8802b41152e28190ae7b137f137",
+        "faces": "unavailable",
+        "text_chars": 345
+      },
+      "scene_score": 0.0,
+      "part_mapping_confidence": "exact",
+      "family_id": "f_046",
+      "family_revisits": []
+    }
+  ]
+}

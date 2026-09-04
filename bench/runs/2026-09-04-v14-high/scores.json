@@ -4,14 +4,13 @@
     "duration": 1096.0,
     "essential_states": 22,
     "candidates": 76,
-    "pool_recall": 0.8636363636363636,
+    "pool_recall": 0.9090909090909091,
     "pool_missed": [
       "s02",
-      "s06",
-      "s28"
+      "s06"
     ],
     "image_tokens": 15884,
-    "cpu_seconds": 69.0,
+    "cpu_seconds": 81.5,
     "engine_cost": {
       "tier": "high",
       "candidates": 76,
@@ -26,10 +25,14 @@
         "scene_seconds": 1053.0,
         "terminal_probes": 12,
         "seeks": 327,
-        "ocr_frames": 45,
+        "ocr_frames": 56,
         "faces": "unavailable",
         "refine": "sharpness",
-        "refine_max_decodes": 20
+        "refine_max_decodes": 20,
+        "pip_mask": "on",
+        "overlays": 1,
+        "overlay_seconds": 8.78,
+        "dedup_scope": "family"
       },
       "other_tier": {
         "tier": "standard",
@@ -39,39 +42,34 @@
     },
     "image_tokens_per_min": 869.5620437956205,
     "selected": 20,
-    "important_visual_recall": 0.8181818181818182,
+    "important_visual_recall": 0.8636363636363636,
     "precision": 1.0,
-    "redundancy_rate": 0.1,
+    "redundancy_rate": 0.05,
     "frame_efficiency": 1.0,
-    "alignment_accuracy": 0.8947368421052632,
-    "alignment_evaluated_frames": 19,
+    "alignment_accuracy": 0.8333333333333334,
+    "alignment_evaluated_frames": 18,
     "baselines": {
       "uniform_time": 0.6363636363636364,
       "uniform_pool": 0.7272727272727273,
       "random_mean": 0.5272727272727272,
       "random_sd": 0.06803013430498075
     },
-    "por": 1.5517241379310347,
+    "por": 1.6379310344827587,
     "missed": [
       {
         "state_id": "s02",
         "label": "Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent'",
-        "reason": "not_in_pool"
+        "reason": "cap_dropped"
       },
       {
         "state_id": "s06",
         "label": "Board: 'Enter Task → Computer' ×4 + 'Command Center for Agents that have access to a computer'",
-        "reason": "not_in_pool"
-      },
-      {
-        "state_id": "s13",
-        "label": "Board: Employee — 'That gets things done / Do things that surprise you / Make suggestions that are useful' + 'Specific Goals, Intent'",
-        "reason": "triage_rejected"
+        "reason": "dedup_dropped"
       },
       {
         "state_id": "s28",
         "label": "Markdown skill document open in the browser",
-        "reason": "not_in_pool"
+        "reason": "triage_rejected"
       }
     ],
     "selected_rows": [
@@ -102,17 +100,14 @@
         ]
       },
       {
-        "candidate_id": "c_0012",
-        "t": 206.84,
+        "candidate_id": "c_0013",
+        "t": 217.684,
         "chapter_id": "ch03",
         "state_id": "s08",
         "class": "essential",
         "group": "s08",
         "anchor_seg_ids": [
-          "seg_0038",
-          "seg_0039",
-          "seg_0040",
-          "seg_0041"
+          "seg_0044"
         ]
       },
       {
@@ -132,7 +127,7 @@
         ]
       },
       {
-        "candidate_id": "c_0020",
+        "candidate_id": "c_0019",
         "t": 306.773,
         "chapter_id": "ch04",
         "state_id": "s10",
@@ -154,7 +149,8 @@
         "anchor_seg_ids": [
           "seg_0065",
           "seg_0066",
-          "seg_0067"
+          "seg_0067",
+          "seg_0073"
         ]
       },
       {
@@ -167,6 +163,17 @@
         "anchor_seg_ids": [
           "seg_0070",
           "seg_0071"
+        ]
+      },
+      {
+        "candidate_id": "c_0026",
+        "t": 369.936,
+        "chapter_id": "ch06",
+        "state_id": "s13",
+        "class": "essential",
+        "group": "s13",
+        "anchor_seg_ids": [
+          "seg_0075"
         ]
       },
       {
@@ -184,8 +191,8 @@
         ]
       },
       {
-        "candidate_id": "c_0033",
-        "t": 460.36,
+        "candidate_id": "c_0034",
+        "t": 463.396,
         "chapter_id": "ch07",
         "state_id": "s16",
         "class": "essential",
@@ -205,21 +212,8 @@
         "group": "s17",
         "anchor_seg_ids": [
           "seg_0096",
-          "seg_0097"
-        ]
-      },
-      {
-        "candidate_id": "c_0042",
-        "t": 532.899,
-        "chapter_id": "ch08",
-        "state_id": "s19",
-        "class": "essential",
-        "group": "s19",
-        "anchor_seg_ids": [
-          "seg_0106",
-          "seg_0107",
-          "seg_0111",
-          "seg_0112"
+          "seg_0097",
+          "seg_0099"
         ]
       },
       {
@@ -251,6 +245,20 @@
         ]
       },
       {
+        "candidate_id": "c_0051",
+        "t": 715.381,
+        "chapter_id": "ch09",
+        "state_id": "s22",
+        "class": "essential",
+        "group": "s22",
+        "anchor_seg_ids": [
+          "seg_0145",
+          "seg_0146",
+          "seg_0147",
+          "seg_0148"
+        ]
+      },
+      {
         "candidate_id": "c_0052",
         "t": 724.157,
         "chapter_id": "ch09",
@@ -265,8 +273,8 @@
         ]
       },
       {
-        "candidate_id": "c_0055",
-        "t": 756.923,
+        "candidate_id": "c_0056",
+        "t": 760.059,
         "chapter_id": "ch10",
         "state_id": "s23",
         "class": "essential",
@@ -274,7 +282,8 @@
         "anchor_seg_ids": [
           "seg_0154",
           "seg_0155",
-          "seg_0156"
+          "seg_0156",
+          "seg_0159"
         ]
       },
       {
@@ -293,14 +302,16 @@
         ]
       },
       {
-        "candidate_id": "c_0065",
-        "t": 903.803,
+        "candidate_id": "c_0064",
+        "t": 886.719,
         "chapter_id": "ch11",
         "state_id": "s26",
         "class": "essential",
         "group": "s26",
         "anchor_seg_ids": [
-          "seg_0189"
+          "seg_0184",
+          "seg_0185",
+          "seg_0186"
         ]
       },
       {
@@ -328,61 +339,11 @@
         "anchor_seg_ids": [
           "seg_0209",
           "seg_0210",
-          "seg_0211"
-        ]
-      },
-      {
-        "candidate_id": "c_0074",
-        "t": 1042.775,
-        "chapter_id": "ch12",
-        "state_id": "s29",
-        "class": "essential",
-        "group": "s29",
-        "anchor_seg_ids": [
-          "seg_0219",
-          "seg_0220",
-          "seg_0221",
-          "seg_0222",
-          "seg_0223"
+          "seg_0211",
+          "seg_0218"
         ]
       }
     ],
-    "summary": {
-      "coverage": 0.6,
-      "claims": [
-        {
-          "claim_id": "k01",
-          "present": true
-        },
-        {
-          "claim_id": "k02",
-          "present": true
-        },
-        {
-          "claim_id": "k03",
-          "present": false
-        },
-        {
-          "claim_id": "k04",
-          "present": true
-        },
-        {
-          "claim_id": "k05",
-          "present": false
-        },
-        {
-          "claim_id": "k06",
-          "present": true
-        }
-      ],
-      "lang": "en",
-      "words": 2010,
-      "hebrew_ratio": 0.0,
-      "niqqud": 0,
-      "bidi_controls": 0,
-      "blocks_leading_latin": 31,
-      "dashes": 0
-    },
     "annotation_status": "draft"
   }
 ]

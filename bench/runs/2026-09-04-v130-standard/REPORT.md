@@ -2,7 +2,7 @@
 
 | video | ess. | pool | pool recall | sel. | IVR | precision | redund. | eff. | align | uniform(t) | uniform(pool) | random | PoR | img tokens/min |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ISb0nrlNoKQ | 22 | 50 | 91% | 14 | 64% | 100% | 0% | 100% | 79% | 64% | 55% | 44% | 1.46 | 572 |
+| ISb0nrlNoKQ | 22 | 50 | 86% | 14 | 59% | 100% | 7% | 100% | 79% | 64% | 59% | 45% | 1.33 | 572 |
 
 ## ISb0nrlNoKQ — missed essential visuals
 - `s02` Board: 'Agents we tested' (OpenClaw, Manus, Claude Code, Perplexity) + 'The most useful agent' → **triage_rejected**
@@ -13,6 +13,7 @@
 - `s19` Board: YouTube AI Agent → Subs/Views/Conversions (goals) → **triage_rejected**
 - `s26` Board: Focused Agent → Open rate/Subscribe/CTR→Revenue (email agent example) + 'Narrow Focus…Reviewable' list → **triage_rejected**
 - `s27` Board: final list 'Narrow Focus / Duplicable / Sharable / Understandable / Reviewable / Faster loops / More autonomous' with the team chart → **triage_rejected**
+- `s28` Markdown skill document open in the browser → **not_in_pool**
 
 ## ISb0nrlNoKQ — summary (en, 2010 words)
 - coverage: 60%; hebrew ratio: 0%; niqqud: 0; bidi controls: 0; blocks opening with Latin: 31; dashes: 0

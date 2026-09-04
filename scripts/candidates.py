@@ -40,6 +40,8 @@ from frame_utils import (  # noqa: E402
     segment_ids_for_time,
     visual_signature,
 )
+from layout import detect_static_overlays, mask_fraction, overlay_mask  # noqa: E402
+import time  # noqa: E402
 
 ENGINE_VERSION = "1.3.0"
 
@@ -60,6 +62,7 @@ PROFILES: dict[str, dict] = {
         "slide_fractions": (),  # slide/diagram = anchor + measured terminal
         "coverage_min": 1, "cue_offsets": (0.5, 1.5),
         "refine": "none", "faces": "off", "ocr": "off", "resolution": 512,
+        "pip_mask": "on", "dedup_scope": "family",
     },
     "high": {
         "cap": 64, "per_target": 3, "unplanned_floor": 16,
@@ -69,6 +72,7 @@ PROFILES: dict[str, dict] = {
         "slide_fractions": (0.30, 0.70),  # + anchor + measured terminal
         "coverage_min": 2, "cue_offsets": (0.2, 0.5, 1.0, 1.5, 2.0),
         "refine": "sharpness", "faces": "auto", "ocr": "on", "resolution": 512,
+        "pip_mask": "on", "dedup_scope": "family",
     },
 }
 MODE_ALIASES = {"light": "standard", "advanced": "high"}
@@ -875,17 +879,37 @@ def _same_dedup_scope(first: dict, second: dict) -> bool:
     return bool(first_targets & second_targets) or (not first_targets and not second_targets)
 
 
-def deduplicate_frames(frames: list[dict], *, cluster_hook=None) -> tuple[list[dict], int]:
-    """Cluster near-duplicates (same chapter + target scope) and keep the best
-    member of each. `cluster_hook(cluster)` runs on multi-member clusters
-    before the representative is chosen — the place for signals that only
-    matter when there is a choice to make (OCR text density in `high`)."""
+def _merge_into(representative: dict, member: dict) -> None:
+    for field in ("reasons", "target_ids", "target_kinds", "seg_ids"):
+        representative[field] |= member[field]
+    representative["target_anchors"].update(member["target_anchors"])
+
+
+def deduplicate_frames(
+    frames: list[dict], *, cluster_hook=None, scope: str = "family"
+) -> tuple[list[dict], int]:
+    """Cluster near-duplicates and keep the best member of each cluster.
+
+    `scope="family"` (default) compares every frame with every other frame of
+    the video — a slide reached by a target and by a scene cut, or shown again
+    three chapters later, lands in one *family*. Inside a family one
+    representative survives per chapter that holds a protected frame (target,
+    coverage, cue, pin), so chapter coverage and per-chapter frame ownership
+    are untouched; unprotected members in other chapters are dropped as
+    revisits and listed on the keepers as `family_revisits`.
+
+    `scope="chapter"` is the pre-1.4 behaviour (same chapter and shared target,
+    or both target-less), kept for ablation.
+
+    `cluster_hook(cluster)` runs on multi-member clusters before the
+    representative is chosen — the place for signals that only matter when
+    there is a choice to make (OCR text density in `high`)."""
     clusters: list[list[dict]] = []
     for frame in sorted(frames, key=lambda item: item["actual_t"]):
         cluster = next(
             (
                 row for row in clusters
-                if _same_dedup_scope(row[0], frame)
+                if (scope == "family" or _same_dedup_scope(row[0], frame))
                 and any(is_near_duplicate(member["_signature"], frame["_signature"]) for member in row)
             ),
             None,
@@ -896,19 +920,46 @@ def deduplicate_frames(frames: list[dict], *, cluster_hook=None) -> tuple[list[d
             cluster.append(frame)
     kept: list[dict] = []
     dropped = 0
+    family_number = 0
     for cluster in clusters:
         if cluster_hook is not None and len(cluster) > 1:
             cluster_hook(cluster)
-        representative = max(cluster, key=_frame_score)
+        family_id = None
+        if len(cluster) > 1:
+            family_number += 1
+            family_id = f"f_{family_number:03d}"
+        if scope != "family":
+            keepers = {None: max(cluster, key=_frame_score)}
+        else:
+            protected_chapters = {
+                member.get("chapter_id") for member in cluster if member["reasons"] & PROTECTED
+            }
+            if protected_chapters:
+                keepers = {
+                    chapter: max((m for m in cluster if m.get("chapter_id") == chapter), key=_frame_score)
+                    for chapter in protected_chapters
+                }
+            else:
+                best = max(cluster, key=_frame_score)
+                keepers = {best.get("chapter_id"): best}
+        keeper_ids = {id(k) for k in keepers.values()}
+        primary = max(keepers.values(), key=_frame_score)
+        for keeper in keepers.values():
+            keeper["family_id"] = family_id
+            keeper.setdefault("family_revisits", [])
         for member in cluster:
-            if member is representative:
+            if id(member) in keeper_ids:
                 continue
-            for field in ("reasons", "target_ids", "target_kinds", "seg_ids"):
-                representative[field] |= member[field]
-            representative["target_anchors"].update(member["target_anchors"])
-            drop_frame(member, "dedup", representative)
+            keeper = keepers.get(member.get("chapter_id")) if scope == "family" else primary
+            if keeper is None:
+                # a revisit in a chapter that keeps nothing: remember where, drop the frame
+                primary["family_revisits"].append(round(float(member["actual_t"]), 3))
+                drop_frame(member, "dedup", primary)
+            else:
+                _merge_into(keeper, member)
+                drop_frame(member, "dedup", keeper)
             dropped += 1
-        kept.append(representative)
+        kept.extend(keepers.values())
     return sorted(kept, key=lambda item: item["actual_t"]), dropped
 
 
@@ -919,6 +970,7 @@ def _recover_blank(
     resolution: int,
     sequence: int,
     chapters: list[dict],
+    mask: bytes | None = None,
 ) -> dict | None:
     if not (frame["reasons"] & PROTECTED):
         return None
@@ -932,7 +984,7 @@ def _recover_blank(
         recovered = point_grab(parts, point, raw_dir, resolution, f"{sequence:04d}_r{retry}")
         if not recovered:
             continue
-        signature = visual_signature(recovered["path"])
+        signature = visual_signature(recovered["path"], mask)
         recovered["_signature"] = signature
         recovered["quality"] = public_quality(signature)
         if not signature["blank"]:
@@ -1024,6 +1076,8 @@ def cost_estimate(
     faces_status: str,
     ocr_frames: int,
     refine_selections: int = 20,
+    overlays: int = 0,
+    overlay_seconds: float = 0.0,
 ) -> dict:
     """An honest cost line: image tokens use each candidate's real dimensions
     (w×h/750, the Anthropic estimate — other providers differ), CPU passes are
@@ -1055,6 +1109,10 @@ def cost_estimate(
             "faces": faces_status,
             "refine": profile["refine"],
             "refine_max_decodes": refine_selections if profile["refine"] != "none" else 0,
+            "pip_mask": profile["pip_mask"],
+            "overlays": overlays,
+            "overlay_seconds": overlay_seconds,
+            "dedup_scope": profile["dedup_scope"],
         },
         "other_tier": {
             "tier": other_tier,
@@ -1226,6 +1284,20 @@ def main() -> int:
     parts = resolve_parts(args.source, work, sections, exact_sections=bool(sections))
     total_end = duration or max(float(part["source_start"]) + float(part["duration"]) for part in parts)
 
+    # Persistent overlays (webcam PiP, tab/subtitle bars) are masked in every
+    # signature so dedup and the re-grab gate compare the content, not the
+    # presenter. Sections of one video share a layout: one mask for all parts.
+    overlays: list[dict] = []
+    overlay_seconds = 0.0
+    if profile["pip_mask"] == "on":
+        started = time.monotonic()
+        for part in parts:
+            for overlay in detect_static_overlays(part):
+                if not any(overlay["bbox"] == known["bbox"] for known in overlays):
+                    overlays.append(overlay)
+        overlay_seconds = round(time.monotonic() - started, 2)
+    mask = overlay_mask(overlays)
+
     raw_dir = work / "raw"
     candidate_dir = work / "candidates"
     for directory in (raw_dir, candidate_dir):
@@ -1326,11 +1398,11 @@ def main() -> int:
         if not frame:
             continue
         frame.pop("chapters", None)
-        signature = visual_signature(frame["path"])
+        signature = visual_signature(frame["path"], mask)
         frame["_signature"] = signature
         frame["quality"] = public_quality(signature)
         if signature["blank"]:
-            recovered = _recover_blank(frame, parts, raw_dir, args.resolution, sequence, chapters)
+            recovered = _recover_blank(frame, parts, raw_dir, args.resolution, sequence, chapters, mask)
             drop_frame(frame, "blank")
             if recovered:
                 frames.append(recovered)
@@ -1349,7 +1421,9 @@ def main() -> int:
 
     dedup_dropped = 0
     if not args.no_dedup:
-        frames, dedup_dropped = deduplicate_frames(frames, cluster_hook=_ocr_cluster)
+        frames, dedup_dropped = deduplicate_frames(
+            frames, cluster_hook=_ocr_cluster, scope=profile["dedup_scope"]
+        )
     ocr_frames = ocr_state["frames"]
     ocr_status = ocr_state["status"]
     hard_cap = args.max_candidates is not None
@@ -1391,6 +1465,8 @@ def main() -> int:
             "quality": frame["quality"],
             "scene_score": round(float(frame.get("scene_score", 0.0)), 6),
             "part_mapping_confidence": frame.get("part_mapping_confidence", "unknown"),
+            "family_id": frame.get("family_id"),
+            "family_revisits": sorted(frame.get("family_revisits", [])),
         })
     shutil.rmtree(raw_dir, ignore_errors=True)
     (work / "dropped.json").write_text(json.dumps(DROP_LOG, indent=2) + "\n", encoding="utf-8")
@@ -1400,6 +1476,7 @@ def main() -> int:
         records, tier, profile,
         scene_seconds=scene_seconds, terminal_probes=len(terminal_probes), seeks=seeks,
         faces_status=faces_status, ocr_frames=ocr_frames,
+        overlays=len(overlays), overlay_seconds=overlay_seconds,
     )
     strip_pixels = sum(strip["pixel_area"] for strip in strips)
     baseline_pixels = 60 * 512 * 288
@@ -1415,6 +1492,8 @@ def main() -> int:
         "profile": profile,
         "profile_override": profile_override,
         "profile_sha256": profile_digest(profile),
+        "overlays": overlays,
+        "mask_fraction": round(mask_fraction(mask), 4),
         "parts": parts,
         "counts": {
             "scene": len(scene_points), "raw": raw_count,
@@ -1451,7 +1530,19 @@ def main() -> int:
             f" lifted to {budget['cap_effective']}: {budget['reserved']} reserved target/coverage frames "
             f"+ {profile['unplanned_floor']} unplanned slots"
         )
-    print(f"- **Candidates:** {len(records)} ({cap_note}; raw {raw_count}; dedup {dedup_dropped}; cap {cap_dropped})")
+    print(f"- **Candidates:** {len(records)} ({cap_note}; raw {raw_count}; dedup {dedup_dropped} [{profile['dedup_scope']} scope]; cap {cap_dropped})")
+    if profile["pip_mask"] != "on":
+        print("- **Overlay mask:** off (profile)")
+    elif overlays:
+        boxes = "; ".join(
+            f"{o['kind']} at x={o['bbox'][0]:.2f} y={o['bbox'][1]:.2f} w={o['bbox'][2] - o['bbox'][0]:.2f} "
+            f"h={o['bbox'][3] - o['bbox'][1]:.2f} (moves in {o['motion_fraction']:.0%} of pairs)"
+            for o in overlays
+        )
+        print(f"- **Overlay mask:** {boxes} — {mask_fraction(mask):.1%} of every signature ignored for "
+              f"dedup and the re-grab gate; written frames are untouched ({overlay_seconds:.1f}s)")
+    else:
+        print(f"- **Overlay mask:** none detected — no persistent picture-in-picture or bar ({overlay_seconds:.1f}s)")
     dims = ", ".join(f"{n}×{size}" for size, n in cost["frame_dimensions"].items()) or "-"
     print(
         f"- **Image tokens (estimate):** ≈{cost['image_tokens_estimate']:,} for one batched Read "
@@ -1528,6 +1619,12 @@ def main() -> int:
                 extras += " (people frame)"
         if quality.get("text_chars") is not None:
             extras += f", text={quality['text_chars']}"
+        if record.get("family_id"):
+            extras += f", family={record['family_id']}"
+            if record.get("family_revisits"):
+                extras += " (same picture also at " + ", ".join(
+                    format_time(t) for t in record["family_revisits"][:4]
+                ) + ")"
         print(
             f"- `{record['path']}` ({record['candidate_id']}, "
             f"actual_t={record['actual_t']:.3f} [{format_time(record['actual_t'])}], "

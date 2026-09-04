@@ -73,13 +73,22 @@ Every missed essential visual is attributed to `not_in_pool`, `blank_dropped`,
 `dedup_dropped`, `cap_dropped` (from `dropped.json`, engine ≥ 1.4) or
 `triage_rejected` — that list is the input to the next engine iteration.
 
-## Baseline (1.3.0 release run, ISb0nrlNoKQ, draft annotation)
+## Results so far (ISb0nrlNoKQ, draft annotation of 22 essential visuals)
 
-| profile | pool | pool recall | selected | IVR | redund. | align | uniform(pool) | random | PoR | tokens/min |
-|---|---|---|---|---|---|---|---|---|---|---|
-| v130-standard | 50 | 91% | 14 | 64% | 0% | 79% | 55% | 44% | 1.46 | 572 |
-| v130-high | 76 | 91% | 20 | 86% | 5% | 89% | 77% | 53% | 1.64 | 870 |
+| profile | pool | pool recall | selected | IVR | precision | redund. | align | uniform(pool) | random | PoR | tokens/min | CPU |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| v130-standard | 50 | 86% | 14 | 59% | 100% | 7% | 79% | 59% | 45% | 1.33 | 572 | 26 s |
+| v130-high | 76 | 86% | 20 | 82% | 100% | 10% | 89% | 73% | 53% | 1.55 | 870 | 69 s |
+| v14-standard (overlay mask + family dedup) | 50 | 86% | 20 | 86% | 100% | 10% | 88% | 82% | 53% | 1.64 | 572 | 39 s |
+| v14-high | 76 | 91% | 20 | 86% | 100% | 5% | 83% | 73% | 53% | 1.64 | 870 | 82 s |
 
-Two essential boards are absent from both pools (`s06` "Enter Task → Computer",
-`s13` "Employee" list): unplanned whiteboard states between targets, exactly the
-recall gap the visual-state engine (v1.5) is meant to close.
+Residual near-duplicate pairs inside the pool (masked predicate): 4 → 0
+(standard), 4 → 1 (high); distinct pictures 47 → 50 / 72 → 75.
+
+Still missed by every profile: `s06` "Enter Task → Computer" (2:07–2:43) and
+`s13` "Employee" list (6:03–6:45) in standard, `s02`/`s06` in high — unplanned
+whiteboard states between targets that scene detection never sampled
+(`not_in_pool`, or `cap_dropped`/`dedup_dropped` in high). That is the recall
+gap the visual-state engine (v1.5) is meant to close. The v1.3.0 selections
+were made by the release-run session; the v1.4 selections by this session under
+the same Step 4 rubric — triage variance is part of what the numbers contain.

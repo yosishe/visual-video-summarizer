@@ -1,0 +1,6 @@
+{
+  "name": "v14-high",
+  "description": "1.4 step 2: PiP overlay mask + family-scoped dedup, --tier high.",
+  "tier": "high",
+  "override": {}
+}

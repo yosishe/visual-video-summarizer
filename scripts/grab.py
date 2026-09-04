@@ -25,6 +25,7 @@ from frame_utils import (  # noqa: E402
     probe_media,
     visual_signature,
 )
+from layout import overlay_mask  # noqa: E402
 
 MAX_READ_DIMENSION = 1998
 CROP_RE = re.compile(r"^\d+:\d+:\d+:\d+$")
@@ -154,6 +155,7 @@ def _refine_selection(
     candidate_signature: dict,
     triaged_t: float,
     chapter_window: tuple[float, float] | None,
+    mask: bytes | None = None,
 ) -> dict:
     """Sharpness refinement, zero tokens: one blurdetect+signature pass over
     ±1.5 s (clamped inside the chapter and the media), then the sharpest frame
@@ -170,7 +172,7 @@ def _refine_selection(
         hi = min(hi, chapter_window[1] - REFINE_CHAPTER_MARGIN)
     if hi - lo < 0.1:
         return {"t": triaged_t, "applied": False, "reason": "window-too-small"}
-    series = blur_signature_series(part["path"], _media_timestamp(part, lo), hi - lo)
+    series = blur_signature_series(part["path"], _media_timestamp(part, lo), hi - lo, mask)
     for row in series:
         row["t"] = _absolute_timestamp(part, row["t"])
     return choose_refined_frame(candidate_signature, series, triaged_t)
@@ -200,6 +202,10 @@ def main() -> int:
     if len(selections) > 20:
         raise SystemExit("HTML frame budget exceeded: selections.json contains more than 20 frames")
     parts = resolve_parts(None, work)
+    # The same overlay mask the candidates were deduplicated with: the gate
+    # asks "is this the same picture?", and the presenter in the corner is not
+    # part of the picture.
+    mask = overlay_mask(candidate_payload.get("overlays") or [])
     refine = args.refine or str(candidate_payload.get("profile", {}).get("refine") or "none")
     chapter_windows = _load_chapters(work) if refine != "none" else {}
     if refine != "none" and not chapter_windows:
@@ -228,8 +234,8 @@ def main() -> int:
                 source_frame = temp_dir / f"{name}-source.jpg"
                 # 1. The frame the model triaged, re-decoded and verified.
                 actual = _extract_source(parts, timestamp, source_frame, args.full_width)
-                candidate_signature = visual_signature(candidate["path"])
-                source_signature = visual_signature(source_frame)
+                candidate_signature = visual_signature(candidate["path"], mask)
+                source_signature = visual_signature(source_frame, mask)
                 if not is_near_duplicate(candidate_signature, source_signature):
                     delta = compare_signatures(candidate_signature, source_signature)
                     raise RuntimeError(
@@ -242,14 +248,14 @@ def main() -> int:
                 refinement: dict | None = None
                 if refine == "sharpness":
                     chapter_window = chapter_windows.get(str(candidate.get("chapter_id")))
-                    refinement = _refine_selection(parts, candidate_signature, timestamp, chapter_window)
+                    refinement = _refine_selection(parts, candidate_signature, timestamp, chapter_window, mask)
                     if refinement.get("applied"):
                         refined_frame = temp_dir / f"{name}-refined.jpg"
                         try:
                             refined_actual = _extract_source(
                                 parts, float(refinement["t"]), refined_frame, args.full_width
                             )
-                            refined_signature = visual_signature(refined_frame)
+                            refined_signature = visual_signature(refined_frame, mask)
                             inside_chapter = chapter_window is None or (
                                 chapter_window[0] <= refined_actual < chapter_window[1]
                             )
@@ -273,7 +279,7 @@ def main() -> int:
                 thumb_path = out_dir / f"{name}-thumb.jpg"
                 _render_asset(source_frame, full_path, args.full_width, crop)
                 _render_asset(source_frame, thumb_path, args.thumb_width, crop)
-                full_signature = visual_signature(full_path)
+                full_signature = visual_signature(full_path, mask)
                 full_signatures.append((selection, full_signature))
                 full_meta = probe_media(full_path)
                 thumb_meta = probe_media(thumb_path)

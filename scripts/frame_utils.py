@@ -160,8 +160,16 @@ def _empty_signature() -> dict:
     }
 
 
-def visual_signature(path: str | Path) -> dict:
-    """Return a compact luma+edge signature and quality metrics."""
+MASK_FILL = 128  # masked overlay pixels become flat mid-gray in every signature
+
+
+def visual_signature(path: str | Path, mask: bytes | None = None) -> dict:
+    """Return a compact luma+edge signature and quality metrics.
+
+    `mask` (1 byte per signature pixel, 1 = ignore) blanks persistent overlays
+    such as a webcam picture-in-picture before the statistics are taken, so a
+    presenter moving in the corner does not make two frames of the same slide
+    look different. The frame on disk is untouched."""
     result = subprocess.run(
         [
             "ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(path),
@@ -173,14 +181,21 @@ def visual_signature(path: str | Path) -> dict:
     expected = SIGNATURE_WIDTH * SIGNATURE_HEIGHT
     if result.returncode != 0 or len(pixels) != expected:
         return _empty_signature()
-    return signature_from_pixels(pixels)
+    return signature_from_pixels(pixels, mask)
 
 
-def signature_from_pixels(pixels: bytes) -> dict:
+def apply_mask(pixels: bytes, mask: bytes | None) -> bytes:
+    if not mask or len(mask) != len(pixels):
+        return pixels
+    return bytes(MASK_FILL if m else p for p, m in zip(pixels, mask))
+
+
+def signature_from_pixels(pixels: bytes, mask: bytes | None = None) -> dict:
     """Build the signature dict from one decoded 64×36 gray frame."""
     expected = SIGNATURE_WIDTH * SIGNATURE_HEIGHT
     if len(pixels) != expected:
         return _empty_signature()
+    pixels = apply_mask(pixels, mask)
     values = list(pixels)
     mean = sum(values) / expected
     variance = sum((value - mean) ** 2 for value in values) / expected
@@ -306,7 +321,7 @@ def parse_metadata_series(stderr: str, key: str) -> list[tuple[float, float]]:
 
 
 def blur_signature_series(
-    path: str | Path, media_start: float, duration: float
+    path: str | Path, media_start: float, duration: float, mask: bytes | None = None
 ) -> list[dict]:
     """One ffmpeg pass over [media_start, media_start+duration]: per frame, the
     blurdetect edge-width (stderr) and the 64×36 gray signature (stdout).
@@ -339,7 +354,7 @@ def blur_signature_series(
         series.append({
             "t": blur[index][0],
             "blur": blur[index][1],
-            "signature": signature_from_pixels(chunk),
+            "signature": signature_from_pixels(chunk, mask),
         })
     return series
 

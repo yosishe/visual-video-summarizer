@@ -57,7 +57,7 @@ class ProfileOverrideTests(unittest.TestCase):
         self.assertEqual(override["scene_threshold"], 0.1)
         self.assertEqual(override["action_offsets"], (0.5, 1.0))
         with self.assertRaises(SystemExit):
-            candidates.parse_profile_override('{"pip_mask": "on"}', profile)
+            candidates.parse_profile_override('{"no_such_knob": "on"}', profile)
         with self.assertRaises(SystemExit):
             candidates.parse_profile_override('[1, 2]', profile)
         self.assertEqual(candidates.parse_profile_override(None, profile), {})
