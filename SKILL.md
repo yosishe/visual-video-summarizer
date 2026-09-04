@@ -1,8 +1,8 @@
 ---
 name: summarize-video
-version: "1.3.0"
-description: Turn a video (YouTube URL or local file) into a detailed English HTML summary (optionally PDF) - transcript-driven chapters with timestamp-aligned, pixel-verified frames (slides, screens, demos) embedded next to the text they illustrate. Use when the user asks to summarize a video, wants a visual summary or HTML digest of a talk/lecture/screencast/demo, or types /summarize-video <url-or-path> [--tier high] [--pdf].
-argument-hint: "<video-url-or-path> [--tier high] [--pdf] [notes / focus]"
+version: "1.4.0"
+description: Turn a video (YouTube URL or local file) into a detailed illustrated HTML summary in Hebrew (RTL, default) or English (optionally PDF) - transcript-driven chapters with timestamp-aligned, pixel-verified frames (slides, screens, demos) embedded next to the text they illustrate, each with a caption that says why it is there. Use when the user asks to summarize a video, wants a visual summary or HTML digest of a talk/lecture/screencast/demo, or types /summarize-video <url-or-path> [--tier high] [--lang en] [--pdf].
+argument-hint: "<video-url-or-path> [--tier high] [--lang he|en] [--pdf] [notes / focus]"
 user-invocable: true
 allowed-tools: Bash, Read, Write, AskUserQuestion
 license: MIT
@@ -10,7 +10,7 @@ homepage: https://github.com/yosishe/visual-video-summarizer
 repository: https://github.com/yosishe/visual-video-summarizer
 author: yosishe
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   homepage: https://github.com/yosishe/visual-video-summarizer
   repository: https://github.com/yosishe/visual-video-summarizer
   author: yosishe
@@ -22,7 +22,7 @@ Pipeline: **transcript → chapters + visual targets → candidates (512px) → 
 
 The ordering is the point: every text decision happens before an image token is spent; frame placement is derived from decoded timestamps and transcript segment IDs, never typed by hand; the only image spend is one batched Read of the candidates; the selected frames are re-decoded at 1280px and verified against what you saw, without re-reading them.
 
-**Tiers.** `--tier standard` (default) or `--tier high`, chosen by the user as an argument — never ask. Parse the arguments: a `--tier high` token means every `candidates.py` call below adds `--tier high` (grab.py picks the tier up from `candidates.json`); a `--pdf` token means the final `render.py` call adds `--pdf`. Everything else is the source and free-text focus notes. `high` buys accuracy with CPU and a larger triage: adaptive scene scoring, denser sampling, 3 alternatives per target, a 64-frame pool, blurdetect sharpness refinement at grab time (still pixel-verified), face demotion when OpenCV is importable, and OCR text density as a ranking signal for slide completeness. Both tiers print an honest cost line.
+**Tiers and language.** `--tier standard` (default) or `--tier high`, and `--lang he` (default) or `--lang en`, chosen by the user as arguments — never ask. Parse the arguments: a `--tier high` token means every `candidates.py` call below adds `--tier high` (grab.py picks the tier up from `candidates.json`); `--lang en` means the summary, captions and page are English (otherwise Hebrew, right-to-left, written directly from the transcript — never a translation of an English draft); a `--pdf` token means the final `render.py` call adds `--pdf`. Everything else is the source and free-text focus notes. When `--lang` is absent, `SUMMARY_LANG` in `~/.config/summarize-video/.env` decides, then the user's standing language preference (Hebrew for this user), then `en`; write `summary.json` with the matching `lang` field so the renderer and the audit agree with you. `high` buys accuracy with CPU and a larger triage: adaptive scene scoring, denser sampling, 3 alternatives per target, a 64-frame pool, blurdetect sharpness refinement at grab time (still pixel-verified), face demotion when OpenCV is importable, and OCR text density as a ranking signal for slide completeness. Both tiers print an honest cost line.
 
 Frame-engine internals (scene detection, pts stamps, thumbnail dedup) are adapted from `bradautomates/claude-video` (MIT); the sharpness gate and "content gap" targeting follow `CZX2244/dsh-bilibili`; face demotion follows `ConflictHQ/PlanOpticon`. Whisper keys live in `~/.config/summarize-video/.env` (the `/watch` skill's `~/.config/watch/.env` is read as a legacy fallback).
 
@@ -43,9 +43,11 @@ Prereqs: `ffmpeg`, `ffprobe`, `yt-dlp` (`brew install ffmpeg yt-dlp`). A Whisper
 python3 "$SKILL_DIR/scripts/transcript.py" "<source>" --work "<work>"
 ```
 
-Options: `--langs "en.*"` (default) · `--whisper groq|openai` · `--no-whisper`. Omit `--work` to get a fresh temp dir; the report prints it — use it for every later step.
+Options: `--langs "<yt-dlp pattern>"` (only to force a specific track) · `--wanted he,en` · `--language xx` (Whisper hint) · `--whisper groq|openai` · `--no-whisper`. Omit `--work` to get a fresh temp dir; the report prints it — use it for every later step.
 
-The report prints the transcript as `seg_NNNN [MM:SS-MM:SS] text`. Those `seg_id`s are the join keys for everything that follows. If no transcript is available, tell the user and offer a frames-only summary.
+The caption track is chosen by provenance, not by name: a manual track in the video's own language, then a manual track in Hebrew/English, then the original-language auto-captions (`xx-orig`), then untranslated auto-captions. YouTube's machine-translated tracks are never used — the Hebrew comes from you. (YouTube keys Hebrew as `iw`; the report says `he`.) The report also lists the creator's chapters when the video has them — a prior for Step 2, not a substitute for it.
+
+The report prints the transcript as `seg_NNNN [MM:SS-MM:SS] text`. Those `seg_id`s are the join keys for everything that follows. Exit 6 = no usable captions and no Whisper key: tell the user which key to add (or which `--langs` track to force) — there is no frames-only path; every later step is anchored to segment ids.
 
 ## Step 2 — Chapters and visual targets (you, text only — no images yet)
 
@@ -95,7 +97,7 @@ The report includes a **per-chapter coverage table**. A `needs_frames` chapter s
 | dedup scope | whole video, family-based (`dedup_scope: family`) | same |
 | face demotion | off | on when `cv2` is importable, else reported `unavailable` |
 | OCR text density (ranking only) | off | on (ffmpeg `ocr` filter; tesseract) |
-| image tokens, 16:9 source | ≤ 48 × ~197 ≈ 9.5k | ≤ 64 × ~197 ≈ 12.6k |
+| image tokens, 16:9 source | 48 × 209 ≈ 10k nominal (measured 10.5k with the reserved-frame lift) | 64 × 209 ≈ 13.4k nominal (measured 15.9k) |
 
 Measured on the 18-minute screencast used for every release (12 chapters, 24 targets, Apple Silicon): `standard` 50 candidates in 26 s ≈ 9.9k image tokens; `high` 76 candidates in 69 s ≈ 15k image tokens (OCR on 45 cluster frames), grab 29 s, PDF 3 s. Sharpness refinement moved 0/20 frames there — a crisp screen recording has nothing sharper to offer; the gate earns its keep on camera-recorded slides, whiteboards and transitions. The reserved-frame lift means many targets raise the pool above the nominal cap; the report says by how much.
 
@@ -112,17 +114,24 @@ The report's **cost line** states the tier, the image-token estimate from the ca
 - **Novelty test — one frame per board/scene:** when several candidates show the same whiteboard, slide, or screen at different build stages, select ONLY the most complete one (last of the run) — never one per stage, unless the transcript discusses an intermediate stage at length as its own point (then that stage earns its own frame). This applies across chapters too.
 - **Quota:** 1–3 per chapter, at most 20 total. A chapter can end with zero. A long chapter with several distinct points deserves its 2–3 frames; do not starve it to hit a low number.
 - Assign `role`: `evidence` (proves a number/claim/action) or `illustration` (represents the chapter). Roles shape the caption.
+- The report marks candidates that are the same picture (`family=f_003`, "same picture also at 07:14"): pick at most one per family unless two chapters each need it.
 
-Write `<work>/selections.json` **by `candidate_id`** — never by timestamp (the ID resolves to the full-precision decoded time; copying a displayed time is how a rounded-down scene cut once embedded the wrong shot):
+Write `<work>/selections.json` **by `candidate_id`** — never by timestamp (the ID resolves to the full-precision decoded time; copying a displayed time is how a rounded-down scene cut once embedded the wrong shot). The caption is an object that says what is shown and **why the picture is here**; `novelty` makes the novelty test auditable:
 
 ```json
 [{"candidate_id": "c_0017", "name": "ch03_export_result", "chapter_id": "ch03",
-  "role": "evidence",
-  "caption": "The completed export dialog appears after the presenter confirms the action.",
-  "alt": "Completed export dialog with the selected output settings",
+  "role": "evidence", "novelty": "new_state",
+  "caption": {"shows": "דיאלוג הייצוא שהושלם, עם ההגדרות `PDF` ו-`A4` שנבחרו.",
+              "why": "התוצאה של הפעולה שהמרצה מתאר; מוכיחה שהייצוא הצליח.",
+              "look_at": "השורה `Export complete` בתחתית."},
+  "alt": "דיאלוג ייצוא שהושלם עם הגדרות הפלט שנבחרו",
   "anchor_seg_ids": ["seg_0084", "seg_0085"],
   "crop": "w:h:x:y (optional - only to blow up a small UI region)"}]
 ```
+
+- `caption.shows`: what is in the picture, one sentence. On-screen UI strings, menu names, commands and numbers go in `backticks`, in English exactly as they appear (the renderer isolates them LTR). `caption.why`: why the picture is here and not just text — "proves the number", "the final state of the board", "the result of the described action". `caption.look_at` (optional): the small detail a reader would miss. `alt` ≤ 125 characters, visual content only, no "image of". In a Hebrew document all three open in Hebrew.
+- `novelty`: `new_state` (default), `build_stage` (an intermediate stage kept on purpose — `why` must say what it adds), `reprise` (a picture shown again because a later chapter needs it).
+- Optionally write `<work>/triage-rejections.json` — `[{"candidate_id": "c_0004", "reason": "people_frame|duplicate_of:c_0002|no_information|wrong_chapter|build_stage"}]` — you already looked; it costs nothing and it is what makes a missed visual explainable later.
 
 `anchor_seg_ids` are the transcript segments the frame illustrates; the renderer places the figure right after the prose block that cites them.
 
@@ -141,22 +150,47 @@ Exit 2 = an extraction failure or unsafe name/crop (fix it); exit 3 = two select
 
 ## Step 6 — Write the summary, then render
 
-Write `<work>/summary.json` — the prose, with provenance. Every block cites the segments it synthesizes; a frame is inserted after the first block whose `seg_ids` overlap its `anchor_seg_ids`:
+Write `<work>/summary.json` — the prose, with provenance. Every block cites the segments it synthesizes; a frame is inserted after the first block whose `seg_ids` overlap its `anchor_seg_ids`. Author it **chapters first, overview and key points last** (they are a synthesis of the blocks you already wrote, not a first impression):
 
 ```json
-{"overview": "One-sentence claim of the whole video.",
- "chapters": [{"chapter_id": "ch03", "title": "Export workflow",
-   "blocks": [{"text": "Detailed synthesis of what is said…", "seg_ids": ["seg_0084", "seg_0085"]}],
-   "key_points": ["optional bullet"]}]}
+{"schema_version": 3, "lang": "he", "source_language": "en",
+ "overview": "הטענה של הסרטון במשפט אחד או שניים.",
+ "glossary": {"agent": "סוכן", "skill": "skill", "workflow": "זרימת עבודה"},
+ "chapters": [{"chapter_id": "ch03", "title": "זרימת הייצוא",
+   "blocks": [
+     {"block_id": "ch03_b01", "kind": "prose", "text": "סינתזה מפורטת של מה שנאמר…", "seg_ids": ["seg_0084", "seg_0085"]},
+     {"block_id": "ch03_b02", "kind": "code", "lang": "bash", "text": "npm run build", "seg_ids": ["seg_0086"]},
+     {"block_id": "ch03_b03", "kind": "quote", "text": "Prompts are so late 2025.", "seg_ids": ["seg_0087"]}],
+   "key_points": ["עובדה או מסקנה שאפשר לצטט"]}]}
 ```
 
-Write **detailed** English prose: synthesize, don't paste the transcript; quote only the lines that matter. Then render — never hand-write the HTML:
+`kind` is `prose` (default), `code` (rendered LTR in a `<pre>`), or `quote` (a verbatim line of the speaker, in the source language). Inside prose, `backticks` are the **only** markup: identifiers, commands, file names, UI strings, numbers with units and formulas go in backticks and the renderer isolates them left-to-right — never emit HTML, never bidi control characters.
+
+Then run the audit and fix every `error` (a number, identifier or URL the cited segments do not contain; wrong segment order; niqqud; bidi controls; a non-Hebrew block in a Hebrew document). `review` lines are judgement calls (a name that is in the transcript but not in this block's segments; a negation the block dropped) — decide each one:
+
+```bash
+python3 "$SKILL_DIR/scripts/audit_summary.py" --work "<work>" --summary "<work>/summary.json" --selections "<work>/selections.json"
+```
+
+### כללי הסיכום בעברית (חלים כאשר `lang` הוא `he`)
+
+**מבנה:** `overview` = משפט אחד או שניים שאומרים מה הסרטון **טוען**, לא על מה הוא "מדבר"; פותחים בעברית. כותרת פרק עד 8 מילים, שם או טענה, לא "הקדמה". בלוק = פסקה של 60 עד 140 מילים שמסכמת רעיון אחד; 2 עד 5 בלוקים לפרק; בלוק שמצטט יותר מ-25 מקטעים דחוס מדי. `key_points` = 2 עד 4 לפרק, כל אחת עובדה או מסקנה שאפשר לצטט, לא כותרת מחדש.
+
+**חובה לשמור:** כל מספר, יחידה, אחוז, טווח וזמן שהדובר אומר, בספרות ("7 עד 10 skills", "כ-300 אלף", "כל 30 דקות"); שמות כלים, מוצרים, חברות, ממשקי API, פקודות, קבצים וכתובות בלטינית כפי שהם — ב-`backticks` כשהם מזהה טכני, בלי backticks כשהם שם מוצר בשטף המשפט; הדוגמאות שהדובר משתמש בהן כדי להוכיח טענה ושרשראות הנימוק ("כי", "ולכן", "אלא אם") — סיכום שמביא מסקנה בלי הסיבה שלה נכשל; הסתייגויות, שלילה ואי-ודאות במשמעותן המדויקת; הגדרות במילות הדובר (ציטוט קצר ב-`kind: "quote"` כשהניסוח עצמו חשוב).
+
+**משמיטים:** ברכות, קריאה למנוי, ספונסרים, "כמו שאתם רואים", חזרות, דיבור על הסרטון עצמו, מילות מילוי; תיאור של מה שקורה על המסך כשיש לזה תמונה בסיכום — הכיתוב עושה את העבודה.
+
+**סגנון:** עברית תקנית בלי ניקוד. משפט עד 25 מילים, רעיון אחד למשפט. בלי מקפים ארוכים — פסיק, נקודתיים או משפט חדש; טווחי מספרים "7 עד 10". מונח שיש לו עברית מקובלת בתעשייה נכתב בעברית (סוכן, שרת, זרימת עבודה, תמליל, פריסה); מונח שהעברית שלו אינה מקובלת נשאר באנגלית (skill, prompt, endpoint, token). לא מתעתקים שמות מוצרים (Notion, לא "נושן"). מונח שחוזר נכתב באותה צורה בכל הסיכום ונרשם ב-`glossary`. תחיליות לפני מילה לטינית עם מקף: ב-Notion, ה-API, ל-GitHub. בלי פנייה בגוף שני; הדובר מכונה בשמו או "הדובר"; ניסוח בלתי-אישי ("ניתן", "מומלץ", "הסרטון מציע"). כל משפט פותח בעברית, לא במונח לועזי — אם המונח הוא הנושא, מקדימים מילה: "הכלי OpenClaw…". לא מתרגמים את התמליל: מסכמים אותו — פחות מילים מהמקור, יותר מבנה. סרטון שמקורו בעברית מסוכם באותם כללים (בלי תרגום, אבל גם בלי הדבקה).
+
+For `--lang en` write detailed English prose under the same structure: synthesize, don't paste the transcript; quote only the lines that matter. Then render — never hand-write the HTML:
 
 ```bash
 python3 "$SKILL_DIR/scripts/render.py" --work "<work>" --summary "<work>/summary.json" \
   --selections "<work>/selections.json" --assets-dir "summary-<video-id>/assets" \
-  --out-dir "summary-<video-id>"            # add --pdf when the user asked for a PDF
+  --out-dir "summary-<video-id>"            # add --pdf when the user asked for a PDF; --lang en for English
 ```
+
+The renderer runs the audit again and refuses (exit 5) while errors remain. Hebrew documents come out right-to-left with a subset of the Heebo typeface embedded (the file renders the same offline), English terms, code, timestamps and ranges isolated left-to-right, and the video title in its own direction.
 
 The renderer validates chapter ownership, segment provenance, budgets, coverage, duplicates and assets, then writes `manifest.json` (the source of truth), a designed `index.html` (TOC, claim box, chapter sections with timestamp links to YouTube, side-by-side figures), and — automatically — **`summary-<video-id>.html`: one self-contained file with every image embedded**. That single file is the deliverable the user opens and shares; no server is ever needed to view it. The directory stays as the editable source — change a caption or a frame, re-run render.
 
@@ -170,7 +204,7 @@ The renderer validates chapter ownership, segment provenance, budgets, coverage,
 
 ## Token notes
 
-- Candidates: one batched Read of ≤48 (`standard`) or ≤64 (`high`) frames at 512px. Estimate: w×h/750 per image ≈ 197 tokens for a 16:9 candidate (512×288), so ≈ 9.5k / 12.6k at the caps; 4:3 sources cost ~33% more. The report prints the exact figure for the run. Transcript: a few thousand tokens.
+- Candidates: one batched Read of the pool (48 / 64 nominal; reserved target frames may lift it — the report says by how much) at 512px. Cost per image is `⌈w/28⌉ × ⌈h/28⌉` visual tokens (Claude vision docs): 209 for a 16:9 candidate (512×288), 262 for 4:3, 627 for a vertical Short. The report prints the exact figure for the run. Transcript: a few thousand tokens.
 - Never Read the `-full.jpg` outputs. Candidate resolution is capped at 512px; legibility in the *deliverable* comes from the 1280px re-grab (or a `crop`).
 
 ## Security & Permissions
@@ -196,7 +230,8 @@ Review the bundled scripts before first use — they are dependency-free Python 
 
 - **YouTube HTTP 403 / "PO Token" warnings**: yt-dlp is outdated — `brew upgrade yt-dlp` (or the platform equivalent) and retry once.
 - **Download fails** (login/region-locked): report yt-dlp's stderr plainly; don't retry in a loop and don't use cookies without explicit authorization.
-- **No transcript** (no captions, no Whisper key): offer a frames-only summary — chapterize by visual content, or ask for a key.
+- **transcript.py exit 6** (no usable captions, no Whisper key): tell the user which key to add to `~/.config/summarize-video/.env`, or which `--langs` track to force; there is no frames-only path.
+- **render.py exit 5** (audit errors): open `<work>/audit.json`, fix the summary or captions (numbers and identifiers must come from the cited segments), re-run render.
 - **A required chapter/target is `unresolved`**: correct its segments or window, or re-run in `--tier high`; do not render around it.
 - **Section download rejected** (exact cut failed): re-run without `--sections` for a full download.
 - **grab.py exit 2/3**: fix the named extraction mismatch, unsafe name/crop, or duplicate selection.

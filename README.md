@@ -1,6 +1,6 @@
 # visual-video-summarizer
 
-**A Claude Code skill that turns a video into a page worth reading.** Give `/summarize-video` a YouTube URL or a local file and it produces a detailed English HTML summary: chapters synthesized from the transcript, with ~15–20 carefully chosen, pixel-verified frames (slides, screens, demos) embedded next to the exact sentences they illustrate — each caption linking back to that second of the video.
+**A Claude Code skill that turns a video into a page worth reading.** Give `/summarize-video` a YouTube URL or a local file and it produces a detailed illustrated HTML summary — **in Hebrew (right-to-left) by default, or English with `--lang en`**: chapters synthesized from the transcript, with ~15–20 carefully chosen, pixel-verified frames (slides, screens, demos) embedded next to the exact sentences they illustrate — each caption saying what the picture shows and why it is there, and linking back to that second of the video.
 
 Built for talks, lectures, screencasts, and product demos. Transcript + frames, stitched by time. Not a frame dump.
 
@@ -16,7 +16,16 @@ Then, in any Claude Code session:
 ```
 /summarize-video https://www.youtube.com/watch?v=VIDEO_ID
 /summarize-video https://www.youtube.com/watch?v=VIDEO_ID --tier high --pdf
+/summarize-video https://www.youtube.com/watch?v=VIDEO_ID --lang en
 ```
+
+## Hebrew, done properly
+
+The Hebrew summary is written directly from the transcript by the model (never machine-translated, never a translation of an English draft), under a written rubric: keep every number, tool name, example and reasoning chain; drop greetings, sponsors and filler; Hebrew for terms the industry uses in Hebrew, English for the rest (`skill`, `prompt`), product names untransliterated; every sentence opens in Hebrew. Before anything is rendered, `scripts/audit_summary.py` checks the summary against the transcript: every number, `backtick` identifier and URL must appear in the segments the block cites; segments must be in order and inside their chapter; no niqqud, no bidi control characters. Names that auto-captions misspell ("Open Claw") are matched fuzzily and reported for review rather than failed.
+
+The page itself follows the W3C bidi guidance: `dir="rtl"` on `<html>`, logical CSS, timestamps, ranges, code and English terms isolated left-to-right, the video title in its own direction, and a subset of the Heebo typeface (SIL OFL) embedded so the single file renders identically offline. `--pdf` prints it with Chrome headless (or WeasyPrint) — both implement the Unicode bidi algorithm for HTML text.
+
+YouTube caption tracks are chosen by provenance (manual original → manual Hebrew/English → original-language auto-captions → untranslated auto-captions); YouTube's machine-translated tracks are never used as a source. A Hebrew-language video is summarized in Hebrew without translation, under the same rubric.
 
 The deliverable is **one self-contained file** — `summary-<video-id>.html`, with every image embedded as a data URI: open it with a double click, mail it, drop it in a chat. No server involved. `--pdf` adds `summary-<video-id>.pdf` (printed by Chrome headless or WeasyPrint). Alongside it, `summary-<video-id>/` holds the editable source: `index.html`, an `assets/` folder (1280px frames + thumbnails), and `manifest.json` recording every frame's decoded timestamp, chapter, transcript segments, role, quality and asset hashes — change a caption or a frame and re-run `render.py` to regenerate both.
 
@@ -26,7 +35,8 @@ The deliverable is **one self-contained file** — `summary-<video-id>.html`, wi
 |---|---|---|
 | scene pass | fixed threshold | adaptive (median + 8·MAD) |
 | samples per target | 2–3 | 5–6, 3 alternatives kept |
-| candidate pool | ≤ 48 (≈ 9.5k image tokens) | ≤ 64 (≈ 12.6k) |
+| candidate pool | 48 nominal (≈ 10k image tokens; measured 10.5k) | 64 nominal (≈ 13.4k; measured 15.9k) |
+| overlay mask + family dedup | on | on |
 | grab-time refinement | — | sharpest frame within ±1.5 s that is still the triaged picture (`blurdetect`), re-verified |
 | face demotion | — | when `opencv-python-headless` is installed (optional) |
 | OCR text density | — | ffmpeg `ocr` filter as a slide-completeness ranking signal (never a text source) |
@@ -57,7 +67,7 @@ Key design decisions:
 
 ## Token economics
 
-For an 18-minute talk: transcript ≈ a few thousand tokens, one batched read of ≤48 (`standard`) or ≤64 (`high`) candidate frames at 512px ≈ 9.5k–12.6k image tokens (w×h/750 each; 4:3 sources ~33% more) — and that's it. The 1280px deliverable frames are never read by the model. Total model cost is dominated by a single, bounded triage pass regardless of video length; the report prints the exact estimate for the run.
+For an 18-minute talk: transcript ≈ a few thousand tokens, one batched read of the candidate pool (48 / 64 nominal) at 512px ≈ 10k–16k image tokens (`⌈w/28⌉×⌈h/28⌉` = 209 per 16:9 frame; 4:3 sources ~25% more) — and that's it. The 1280px deliverable frames are never read by the model. Total model cost is dominated by a single, bounded triage pass regardless of video length; the report prints the exact estimate for the run.
 
 ## Requirements
 

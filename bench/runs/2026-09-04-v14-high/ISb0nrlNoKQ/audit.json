@@ -1,0 +1,94 @@
+{
+  "errors": [],
+  "reviews": [
+    {
+      "check": "negation",
+      "where": "ch04/2",
+      "message": "cited segments negate something; the block does not"
+    },
+    {
+      "check": "negation",
+      "where": "ch11/3",
+      "message": "cited segments negate something; the block does not"
+    },
+    {
+      "check": "caption",
+      "where": "c_0019",
+      "message": "'Skills / Integrations / Personality / Memory' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0019",
+      "message": "'Tasks / Heartbeat / Webhook' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0025",
+      "message": "'Official library' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0026",
+      "message": "'memory / skills / gateway' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0029",
+      "message": "'Prompts are so late 2025. We're giving models intents now.' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0037",
+      "message": "'Goal 1/2/3' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0037",
+      "message": "'Personality / Tasks / Heartbeat' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0044",
+      "message": "'Subs / Views / Conversions' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0051",
+      "message": "'Growth & Strategy' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0051",
+      "message": "'Content Creation' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0051",
+      "message": "'Marketing & Distribution' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0052",
+      "message": "'Duplicable (Remixable)' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0064",
+      "message": "'Open rate / Subscribe / Revenue' is not in the frame's segments, OCR text or metadata"
+    },
+    {
+      "check": "caption",
+      "where": "c_0071",
+      "message": "'How to most efficiently run these in the cloud / share these agents with the team / get these AI agents to communicate' is not in the frame's segments, OCR text or metadata"
+    }
+  ],
+  "warnings": [],
+  "stats": {
+    "lang": "he",
+    "words": 1076,
+    "cited_segments": 237,
+    "segments": 237,
+    "coverage": 1.0,
+    "hebrew_ratio": 0.846
+  }
+}

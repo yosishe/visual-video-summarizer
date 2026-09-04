@@ -5,8 +5,11 @@
     "chapter_id": "ch02",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Perplexity Computer task list",
-    "alt": "Perplexity Computer task list",
+    "caption": {
+      "shows": "רשימת המשימות ב-Perplexity Computer אחרי המעבר ממצב `Search` למצב `Computer`.",
+      "why": "זה המסך שמדגים 'משימה אחת, מחשב אחד' שהדובר מתאר."
+    },
+    "alt": "רשימת המשימות ב-Perplexity Computer אחרי המעבר ממצב Search למצב Computer.",
     "anchor_seg_ids": [
       "seg_0011",
       "seg_0012",
@@ -19,8 +22,11 @@
     "chapter_id": "ch02",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Manus's computer view beside the task",
-    "alt": "Manus's computer view beside the task",
+    "caption": {
+      "shows": "המחשב של Manus (`View Manus's computer`) לצד מסמך המשימה.",
+      "why": "הראיה לכך שכל משימה ב-Manus מקבלת מחשב משלה."
+    },
+    "alt": "המחשב של Manus (View Manus's computer) לצד מסמך המשימה.",
     "anchor_seg_ids": [
       "seg_0021",
       "seg_0022",
@@ -33,8 +39,11 @@
     "chapter_id": "ch03",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "OpenClaw shape: Computer with memory, skills, gateway and messaging apps",
-    "alt": "OpenClaw shape: Computer with memory, skills, gateway and messaging apps",
+    "caption": {
+      "shows": "הלוח: OpenClaw ו-Claude Code מעל `Computer`, עם `memory`, `skills`, `gateway` וחץ מ-telegram, whatsapp, discord, slack.",
+      "why": "המצב השלם של התרשים שמגדיר את צורת OpenClaw; ההמשך נשען עליו."
+    },
+    "alt": "הלוח: OpenClaw ו-Claude Code מעל Computer, עם memory, skills, gateway וחץ מ-telegram, whatsapp, discord, slack.",
     "anchor_seg_ids": [
       "seg_0044"
     ]
@@ -45,8 +54,11 @@
     "chapter_id": "ch04",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Skills overview board",
-    "alt": "Skills overview board",
+    "caption": {
+      "shows": "לוח ה-skills של הסוכן הראשון: כרטיסים לפי אשכולות, עם `supadata`.",
+      "why": "ממחיש כמה skills נערמו לפני שהאמינות ירדה."
+    },
+    "alt": "לוח ה-skills של הסוכן הראשון: כרטיסים לפי אשכולות, עם supadata.",
     "anchor_seg_ids": [
       "seg_0047",
       "seg_0048",
@@ -62,8 +74,11 @@
     "chapter_id": "ch04",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Skills/Integrations/Personality/Memory vs Tasks/Heartbeat/Webhook",
-    "alt": "Skills/Integrations/Personality/Memory vs Tasks/Heartbeat/Webhook",
+    "caption": {
+      "shows": "`Skills / Integrations / Personality / Memory` עם חצים מול `Tasks / Heartbeat / Webhook`.",
+      "why": "התרשים שמסביר מה מתערבב כשיש יותר מדי skills."
+    },
+    "alt": "Skills / Integrations / Personality / Memory עם חצים מול Tasks / Heartbeat / Webhook.",
     "anchor_seg_ids": [
       "seg_0059",
       "seg_0060",
@@ -76,8 +91,11 @@
     "chapter_id": "ch05",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "'7-10 skills' on the board",
-    "alt": "'7-10 skills' on the board",
+    "caption": {
+      "shows": "הכיתוב `7-10 skills` באדום על לוח ה-skills.",
+      "why": "מוכיח את המספר: נקודת המתיקות שהדובר קובע."
+    },
+    "alt": "הכיתוב 7-10 skills באדום על לוח ה-skills.",
     "anchor_seg_ids": [
       "seg_0065",
       "seg_0066",
@@ -91,8 +109,11 @@
     "chapter_id": "ch05",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Manus official skill library",
-    "alt": "Manus official skill library",
+    "caption": {
+      "shows": "ספריית ה-skills הרשמית של Manus (`Official library`).",
+      "why": "המסך שמראה למה ב-Manus ה-skill נוסף למרכז הפיקוד ולא לסוכן."
+    },
+    "alt": "ספריית ה-skills הרשמית של Manus (Official library).",
     "anchor_seg_ids": [
       "seg_0070",
       "seg_0071"
@@ -104,8 +125,11 @@
     "chapter_id": "ch06",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Employee list: gets things done, surprises you, useful suggestions",
-    "alt": "Employee list: gets things done, surprises you, useful suggestions",
+    "caption": {
+      "shows": "הלוח: OpenClaw עם `memory / skills / gateway` ומתחתיו רשימת `Employee`: מבצע, מפתיע, מציע.",
+      "why": "שלוש התכונות של עובד טוב, שמהן נגזרת הדרישה לכוונה."
+    },
+    "alt": "הלוח: OpenClaw עם memory / skills / gateway ומתחתיו רשימת Employee: מבצע, מפתיע, מציע.",
     "anchor_seg_ids": [
       "seg_0075"
     ]
@@ -116,8 +140,11 @@
     "chapter_id": "ch06",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Emmett Shear's tweet",
-    "alt": "Emmett Shear's tweet",
+    "caption": {
+      "shows": "הציוץ של Emmett Shear: `Prompts are so late 2025. We're giving models intents now.`",
+      "why": "המקור למושג הכוונה שהסרטון בנוי עליו."
+    },
+    "alt": "הציוץ של Emmett Shear: Prompts are so late 2025. We're giving models intents now.",
     "anchor_seg_ids": [
       "seg_0081",
       "seg_0082",
@@ -131,8 +158,11 @@
     "chapter_id": "ch07",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Telegram journal bot",
-    "alt": "Telegram journal bot",
+    "caption": {
+      "shows": "שיחת בוט היומן ב-Telegram מעל הלוח.",
+      "why": "סוכן ממוקד בפעולה, בכלי ההודעות שבו הדובר משתמש."
+    },
+    "alt": "שיחת בוט היומן ב-Telegram מעל הלוח.",
     "anchor_seg_ids": [
       "seg_0093",
       "seg_0094",
@@ -145,8 +175,11 @@
     "chapter_id": "ch07",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Focused Agent to Goal 1/2/3",
-    "alt": "Focused Agent to Goal 1/2/3",
+    "caption": {
+      "shows": "הלוח: `Focused Agent` עם `Personality / Tasks / Heartbeat`, חץ ל-`Goal 1/2/3`, ו-`skill 1-3` שמשרתים את המטרות.",
+      "why": "המבנה הגנרי של סוכן ממוקד לפני הדוגמה הקונקרטית."
+    },
+    "alt": "הלוח: Focused Agent עם Personality / Tasks / Heartbeat, חץ ל-Goal 1/2/3, ו-skill 1-3 שמשרתים את המטרות.",
     "anchor_seg_ids": [
       "seg_0096",
       "seg_0097",
@@ -159,8 +192,11 @@
     "chapter_id": "ch08",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "YouTube AI Agent to Subs/Views/Conversions",
-    "alt": "YouTube AI Agent to Subs/Views/Conversions",
+    "caption": {
+      "shows": "הלוח: `YouTube AI Agent` עם חץ ל-`Subs / Views / Conversions`.",
+      "why": "שלוש המטרות של סוכן ה-YouTube, כפי שנכתבו בלוח."
+    },
+    "alt": "הלוח: YouTube AI Agent עם חץ ל-Subs / Views / Conversions.",
     "anchor_seg_ids": [
       "seg_0106",
       "seg_0107",
@@ -174,8 +210,11 @@
     "chapter_id": "ch08",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "YouTube agent skills incl. Control my Notion",
-    "alt": "YouTube agent skills incl. Control my Notion",
+    "caption": {
+      "shows": "הלוח המלא: `YouTube Research`, `Thumbnail Generator`, `Control my Notion` ומתחתם האינטגרציות `Serp API`, `Supadata`, `Nano Banana`, `Notion`.",
+      "why": "המצב הסופי של הבנייה: המטרות, ה-skills והאינטגרציות בנתיב אחד."
+    },
+    "alt": "הלוח המלא: YouTube Research, Thumbnail Generator, Control my Notion ומתחתם האינטגרציות Serp API, Supadata, Nano Banana, Notion.",
     "anchor_seg_ids": [
       "seg_0131",
       "seg_0132",
@@ -189,8 +228,11 @@
     "chapter_id": "ch09",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Agent team chart by cluster",
-    "alt": "Agent team chart by cluster",
+    "caption": {
+      "shows": "תרשים צוות הסוכנים: `Growth & Strategy`, `Marketing & Distribution`, `Content Creation`, עם סוכן YouTube מודגש.",
+      "why": "הצוות שאליו הדובר מכוון, כדוגמה לשכפול ולרמיקס."
+    },
+    "alt": "תרשים צוות הסוכנים: Growth & Strategy, Marketing & Distribution, Content Creation, עם סוכן YouTube מודגש.",
     "anchor_seg_ids": [
       "seg_0145",
       "seg_0146",
@@ -204,8 +246,11 @@
     "chapter_id": "ch09",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Narrow Focus / Duplicable / Sharable with the chart",
-    "alt": "Narrow Focus / Duplicable / Sharable with the chart",
+    "caption": {
+      "shows": "הלוח: `Narrow Focus`, `Duplicable (Remixable)`, `Sharable` לצד תרשים הצוות.",
+      "why": "שלוש הסיבות הראשונות לסוכנים צרים, כפי שנכתבו בזמן אמת."
+    },
+    "alt": "הלוח: Narrow Focus, Duplicable (Remixable), Sharable לצד תרשים הצוות.",
     "anchor_seg_ids": [
       "seg_0145",
       "seg_0146",
@@ -219,8 +264,11 @@
     "chapter_id": "ch10",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Telegram journal agent",
-    "alt": "Telegram journal agent",
+    "caption": {
+      "shows": "שיחת סוכן היומן ב-Telegram: עדכון מסמך ההשקה ורשימת סרטונים.",
+      "why": "הדוגמה החיה לסוכן היומן שפונה כל 30 דקות."
+    },
+    "alt": "שיחת סוכן היומן ב-Telegram: עדכון מסמך ההשקה ורשימת סרטונים.",
     "anchor_seg_ids": [
       "seg_0154",
       "seg_0155",
@@ -234,8 +282,11 @@
     "chapter_id": "ch10",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Team chart with Email Newsletter and Journal agents highlighted",
-    "alt": "Team chart with Email Newsletter and Journal agents highlighted",
+    "caption": {
+      "shows": "תרשים הצוות עם `Email Newsletter Agent` ו-`Journal Agent` מודגשים.",
+      "why": "ממחיש איך היומן מזין את סוכן הניוזלטר."
+    },
+    "alt": "תרשים הצוות עם Email Newsletter Agent ו-Journal Agent מודגשים.",
     "anchor_seg_ids": [
       "seg_0163",
       "seg_0164",
@@ -250,8 +301,11 @@
     "chapter_id": "ch11",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Focused Agent to Open rate / Subscribe / Revenue",
-    "alt": "Focused Agent to Open rate / Subscribe / Revenue",
+    "caption": {
+      "shows": "הלוח: `Focused Agent` עם חץ ל-`Open rate / Subscribe / Revenue`.",
+      "why": "ה-KPI של סוכן הניוזלטר, הדוגמה לביקורת עבר-נכשל."
+    },
+    "alt": "הלוח: Focused Agent עם חץ ל-Open rate / Subscribe / Revenue.",
     "anchor_seg_ids": [
       "seg_0184",
       "seg_0185",
@@ -264,8 +318,11 @@
     "chapter_id": "ch11",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Full Narrow Focus list",
-    "alt": "Full Narrow Focus list",
+    "caption": {
+      "shows": "הרשימה המלאה: `Narrow Focus`, `Duplicable`, `Sharable`, `Understandable`, `Reviewable`, `Easier loops`, `More autonomous`.",
+      "why": "המצב הסופי של הרשימה שהסרטון בונה לאורך כל הפרקים."
+    },
+    "alt": "הרשימה המלאה: Narrow Focus, Duplicable, Sharable, Understandable, Reviewable, Easier loops, More autonomous.",
     "anchor_seg_ids": [
       "seg_0201",
       "seg_0202",
@@ -280,8 +337,11 @@
     "chapter_id": "ch12",
     "role": "evidence",
     "novelty": "new_state",
-    "caption": "Open questions board",
-    "alt": "Open questions board",
+    "caption": {
+      "shows": "הלוח: `How to most efficiently run these in the cloud / share these agents with the team / get these AI agents to communicate`.",
+      "why": "שלוש השאלות הפתוחות שהסרטון מסתיים בהן."
+    },
+    "alt": "הלוח: How to most efficiently run these in the cloud / share these agents with the team / get these AI agents to communicate.",
     "anchor_seg_ids": [
       "seg_0209",
       "seg_0210",

@@ -2,13 +2,19 @@
 """Transcript acquisition for /summarize-video.
 
 Order of preference (cheapest first):
-1. Native captions via `yt-dlp --skip-download` (no video download at all).
+1. Native captions via `yt-dlp --skip-download` (no video download at all),
+   choosing the track by *provenance*, not by filename: a manual track in the
+   video's own language, then a manual track in a wanted language, then the
+   original-language ASR track (`<lang>-orig`), then any untranslated ASR
+   track. Machine-translated tracks (their URL carries `tlang=`) are never
+   used — the summary's language is produced by the model, not by YouTube MT.
+   YouTube keys Hebrew as `iw`; it is reported as `he`.
 2. Whisper API fallback (Groq preferred, OpenAI fallback) on audio-only
-   download / local file audio. Keys are shared with the /watch skill's
-   config at ~/.config/watch/.env.
+   download / local file audio, with the source language passed when known.
 
 Emits stable segment records {seg_id, start, end, text} so frames can
-reference exact transcript spans, plus a readable transcript.txt.
+reference exact transcript spans, plus a readable transcript.txt, the
+transcript `language` and a `source_detail` record.
 
 VTT parsing/dedup and download patterns adapted from
 bradautomates/claude-video (MIT).
@@ -28,12 +34,15 @@ from urllib.parse import urlparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from whisper import load_api_key, transcribe_video  # noqa: E402
+from whisper import DETECTED_LANGUAGE, load_api_key, transcribe_video  # noqa: E402
 
 TS_RE = re.compile(
     r"(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2})[.,](\d{3})"
 )
 TAG_RE = re.compile(r"<[^>]+>")
+EXIT_NO_TRANSCRIPT = 6
+DEFAULT_WANTED = ("he", "en")
+LEGACY_LANG_CODES = {"iw": "he", "ji": "yi", "in": "id"}
 
 
 def is_url(source: str) -> bool:
@@ -82,7 +91,8 @@ def parse_vtt(path: str) -> list[dict]:
     return _dedupe(segments)
 
 
-WORD_RE = re.compile(r"[\w']+")
+# Geresh/gershayim (׳ ״) are word-internal in Hebrew: צ׳אט, ת״א.
+WORD_RE = re.compile(r"[\w'׳״]+")
 
 
 def _strip_overlap(prev_text: str, text: str, min_words: int = 3) -> str:
@@ -129,15 +139,68 @@ def _dedupe(segments: list[dict]) -> list[dict]:
     return out
 
 
-def _pick_subtitle(out_dir: Path) -> Path | None:
-    candidates = sorted(out_dir.glob("video*.vtt"))
-    if not candidates:
+# --- caption track selection ------------------------------------------------
+
+def normalize_lang(code: str | None) -> str | None:
+    """BCP-47-ish base language: `en-US` → `en`, YouTube's legacy `iw` → `he`."""
+    if not code:
         return None
-    preferred = [
-        c for c in candidates
-        if any(marker in c.name for marker in (".en.", ".en-US.", ".en-GB.", ".en-orig."))
-    ]
-    return preferred[0] if preferred else candidates[0]
+    base = str(code).split("-")[0].lower()
+    return LEGACY_LANG_CODES.get(base, base)
+
+
+def _is_translated(entries: list[dict]) -> bool:
+    return any("tlang=" in str(entry.get("url") or "") for entry in entries or [])
+
+
+def rank_caption_tracks(info: dict, wanted: tuple[str, ...] = DEFAULT_WANTED) -> list[dict]:
+    """Order the video's caption tracks by trustworthiness.
+
+    0 manual, original language · 1 manual, a wanted language (a human
+    translation) · 2 ASR original (`xx-orig`, or `xx` == original language)
+    · 3 ASR in a wanted language, untranslated · 4 any other manual · 5 any
+    other untranslated ASR. Translated tracks (`tlang=`) are dropped.
+    """
+    orig = normalize_lang(info.get("language"))
+    wanted_norm = [normalize_lang(w) for w in wanted]
+    rows: list[dict] = []
+    for kind, table in (("manual", info.get("subtitles") or {}), ("auto", info.get("automatic_captions") or {})):
+        for key, entries in table.items():
+            if not isinstance(entries, list) or _is_translated(entries):
+                continue
+            key = str(key)
+            is_orig_suffix = key.endswith("-orig")
+            base = normalize_lang(key[:-5] if is_orig_suffix else key)
+            if kind == "manual":
+                if orig and base == orig:
+                    score = 0
+                elif base in wanted_norm:
+                    score = 1
+                else:
+                    score = 4
+            else:
+                if is_orig_suffix or (orig and base == orig):
+                    score = 2
+                elif base in wanted_norm:
+                    score = 3
+                else:
+                    score = 5
+            wanted_rank = wanted_norm.index(base) if base in wanted_norm else len(wanted_norm)
+            rows.append({
+                "key": key, "kind": kind, "language": base, "original": bool(is_orig_suffix or (orig and base == orig)),
+                "translated": False, "score": score, "_rank": (score, wanted_rank, 0 if is_orig_suffix else 1, key),
+            })
+    rows.sort(key=lambda row: row["_rank"])
+    for row in rows:
+        row.pop("_rank", None)
+    return rows
+
+
+def _run_ytdlp(args: list[str]) -> int:
+    if shutil.which("yt-dlp") is None:
+        raise SystemExit("yt-dlp is not installed. Install with: brew install yt-dlp")
+    proc = subprocess.run(["yt-dlp", *args], stdout=sys.stderr, stderr=sys.stderr)
+    return proc.returncode
 
 
 def _read_info(info_path: Path, url: str) -> dict:
@@ -151,54 +214,66 @@ def _read_info(info_path: Path, url: str) -> dict:
                 "uploader": raw.get("uploader") or raw.get("channel"),
                 "duration": raw.get("duration"),
                 "url": raw.get("webpage_url") or url,
+                "language": raw.get("language"),
+                "chapters": raw.get("chapters") or [],
+                "_raw": raw,
             }
         except Exception as exc:
             print(f"[vsum] info.json parse failed: {exc}", file=sys.stderr)
     return info
 
 
-def fetch_captions(url: str, out_dir: Path, langs: str) -> dict:
-    """Fetch metadata + best VTT captions WITHOUT downloading the video."""
-    if shutil.which("yt-dlp") is None:
-        raise SystemExit("yt-dlp is not installed. Install with: brew install yt-dlp")
+def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str, ...] = DEFAULT_WANTED) -> dict:
+    """Fetch metadata, choose a caption track by provenance, fetch that track
+    only. `langs` (a yt-dlp --sub-langs pattern) bypasses the ranking."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        "yt-dlp",
-        "--skip-download",
-        "--write-info-json",
-        "--write-subs",
-        "--write-auto-subs",
-        "--sub-langs", langs,
-        "--sub-format", "vtt",
-        "--convert-subs", "vtt",
-        "--no-playlist",
-        "--ignore-errors",
-        "-o", str(out_dir / "video.%(ext)s"),
-        "--",
-        url,
-    ]
-    subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
-    subtitle = _pick_subtitle(out_dir)
+    base_args = ["--skip-download", "--no-playlist", "-o", str(out_dir / "video.%(ext)s")]
+    rc = _run_ytdlp(base_args + ["--write-info-json", "--", url])
+    info_path = out_dir / "video.info.json"
+    if rc != 0 and not info_path.exists():
+        raise SystemExit(f"yt-dlp could not fetch metadata for {url} (exit {rc}); see the messages above")
+    info = _read_info(info_path, url)
+    raw = info.pop("_raw", {}) if isinstance(info.get("_raw"), dict) else {}
+    tracks = rank_caption_tracks(raw, wanted) if raw else []
+
+    chosen: dict | None = None
+    subtitle: Path | None = None
+    if langs:
+        rc = _run_ytdlp(base_args + ["--write-subs", "--write-auto-subs", "--sub-langs", langs,
+                                     "--sub-format", "vtt", "--convert-subs", "vtt", "--ignore-errors", "--", url])
+        candidates = sorted(out_dir.glob("video*.vtt"))
+        subtitle = candidates[0] if candidates else None
+        if subtitle:
+            key = subtitle.name[len("video."):-len(".vtt")]
+            chosen = next((t for t in tracks if t["key"] == key), {"key": key, "kind": "unknown",
+                                                                     "language": normalize_lang(key), "original": None})
+    elif tracks:
+        chosen = tracks[0]
+        rc = _run_ytdlp(base_args + ["--write-subs", "--write-auto-subs", "--sub-langs", chosen["key"],
+                                     "--sub-format", "vtt", "--convert-subs", "vtt", "--ignore-errors", "--", url])
+        expected = out_dir / f"video.{chosen['key']}.vtt"
+        if expected.exists():
+            subtitle = expected
+        else:
+            candidates = sorted(out_dir.glob("video*.vtt"))
+            subtitle = candidates[0] if candidates else None
     return {
         "subtitle_path": str(subtitle) if subtitle else None,
-        "info": _read_info(out_dir / "video.info.json", url),
+        "info": info,
+        "track": chosen,
+        "tracks_considered": len(tracks),
+        "rejected_translated": sum(
+            1 for table in (raw.get("subtitles") or {}, raw.get("automatic_captions") or {})
+            for entries in table.values() if isinstance(entries, list) and _is_translated(entries)
+        ) if raw else 0,
     }
 
 
 def download_audio(url: str, out_dir: Path) -> Path:
     """Audio-only download for the Whisper fallback."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        "yt-dlp",
-        "-N", "8",
-        "-f", "ba/bestaudio",
-        "--no-playlist",
-        "--ignore-errors",
-        "-o", str(out_dir / "audio_src.%(ext)s"),
-        "--",
-        url,
-    ]
-    subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
+    _run_ytdlp(["-N", "8", "-f", "ba/bestaudio", "--no-playlist", "--ignore-errors",
+                "-o", str(out_dir / "audio_src.%(ext)s"), "--", url])
     for candidate in sorted(out_dir.glob("audio_src.*")):
         if candidate.suffix.lower() not in (".json", ".vtt"):
             return candidate
@@ -230,7 +305,12 @@ def main() -> int:
     )
     ap.add_argument("source", help="Video URL or local file path")
     ap.add_argument("--work", default=None, help="Working directory (default: new tmp dir)")
-    ap.add_argument("--langs", default="en.*", help="yt-dlp --sub-langs pattern (default en.*)")
+    ap.add_argument("--langs", default=None,
+                    help="yt-dlp --sub-langs pattern (bypasses provenance ranking; default: rank tracks, "
+                         "prefer manual original, then he/en; never machine-translated)")
+    ap.add_argument("--wanted", default=",".join(DEFAULT_WANTED),
+                    help="Comma-separated languages acceptable besides the original (default he,en)")
+    ap.add_argument("--language", default=None, help="Source language hint for Whisper (ISO 639-1)")
     ap.add_argument("--no-whisper", action="store_true", help="Disable Whisper fallback")
     ap.add_argument("--whisper", choices=["groq", "openai"], default=None,
                     help="Force a Whisper backend")
@@ -244,17 +324,33 @@ def main() -> int:
 
     segments: list[dict] = []
     source_kind: str | None = None
+    source_detail: dict = {}
+    language: str | None = None
     info: dict = {}
     url_source = is_url(args.source)
+    wanted = tuple(w.strip() for w in args.wanted.split(",") if w.strip()) or DEFAULT_WANTED
 
     if url_source:
         print("[vsum] fetching metadata/captions via yt-dlp (no video download)…", file=sys.stderr)
-        fetched = fetch_captions(args.source, dl_dir, args.langs)
+        fetched = fetch_captions(args.source, dl_dir, args.langs, wanted)
         info = fetched["info"]
+        track = fetched.get("track")
         if fetched["subtitle_path"]:
             try:
                 segments = parse_vtt(fetched["subtitle_path"])
                 source_kind = "captions"
+                language = (track or {}).get("language") or normalize_lang(info.get("language"))
+                source_detail = {
+                    "kind": "captions", "track": (track or {}).get("key"),
+                    "manual": (track or {}).get("kind") == "manual",
+                    "original": (track or {}).get("original"), "translated": False,
+                    "youtube_language": info.get("language"),
+                    "tracks_considered": fetched["tracks_considered"],
+                    "rejected_translated": fetched["rejected_translated"],
+                }
+                print(f"[vsum] captions: {source_detail['track']} ({'manual' if source_detail['manual'] else 'auto'}"
+                      f"{', original' if source_detail['original'] else ''}); "
+                      f"{fetched['rejected_translated']} machine-translated tracks ignored", file=sys.stderr)
             except Exception as exc:
                 print(f"[vsum] subtitle parse failed: {exc}", file=sys.stderr)
         duration = float(info.get("duration") or 0)
@@ -273,10 +369,14 @@ def main() -> int:
         backend, api_key = load_api_key(args.whisper)
         if backend and api_key:
             media = download_audio(args.source, dl_dir) if url_source else Path(args.source).expanduser().resolve()
+            hint = args.language or normalize_lang(info.get("language"))
             try:
                 segments, used = transcribe_video(
-                    str(media), work / "audio.mp3", backend=backend, api_key=api_key)
+                    str(media), work / "audio.mp3", backend=backend, api_key=api_key, language=hint)
                 source_kind = f"whisper ({used})"
+                language = normalize_lang(DETECTED_LANGUAGE["value"]) or hint
+                source_detail = {"kind": "whisper", "backend": used, "language_hint": hint,
+                                 "detected": DETECTED_LANGUAGE["value"], "translated": False}
             except SystemExit as exc:
                 print(f"[vsum] whisper fallback failed: {exc}", file=sys.stderr)
         else:
@@ -298,6 +398,8 @@ def main() -> int:
 
     payload = {
         "source": source_kind,
+        "source_detail": source_detail,
+        "language": language,
         "video": {
             "id": info.get("id") or "video",
             "title": info.get("title"),
@@ -305,6 +407,8 @@ def main() -> int:
             "url": info.get("url") or args.source,
             "duration": duration,
             "is_url": url_source,
+            "language": info.get("language"),
+            "chapters": info.get("chapters") or [],
         },
         "segments": records,
     }
@@ -326,6 +430,14 @@ def main() -> int:
         print(f"- **Title:** {info['title']}")
     print(f"- **Duration:** {format_time(duration)} ({duration:.1f}s)")
     print(f"- **Video id:** {payload['video']['id']}")
+    if language:
+        print(f"- **Language:** {language}" + (f" (track `{source_detail.get('track')}`, "
+                                              f"{'manual' if source_detail.get('manual') else 'auto'})"
+                                              if source_detail.get("track") else ""))
+    if info.get("chapters"):
+        print(f"- **Creator chapters:** {len(info['chapters'])} — " + "; ".join(
+            f"{format_time(float(c.get('start_time') or 0))} {c.get('title')}" for c in info["chapters"][:12]
+        ) + (" …" if len(info["chapters"]) > 12 else ""))
     if records:
         print(f"- **Segments:** {len(records)} (via {source_kind})")
         print(f"- **Files:** `{work / 'transcript.json'}`, `{work / 'transcript.txt'}`")
@@ -335,9 +447,10 @@ def main() -> int:
         print("```")
         print("\n".join(txt_lines))
         print("```")
-    else:
-        print("- **Transcript:** none available — chapterize from visuals only, or fix Whisper setup")
-    return 0
+        return 0
+    print("- **Transcript:** none available — no usable captions and no Whisper key. "
+          "Add GROQ_API_KEY / OPENAI_API_KEY to ~/.config/summarize-video/.env, or pass --langs for a specific track.")
+    return EXIT_NO_TRANSCRIPT
 
 
 if __name__ == "__main__":

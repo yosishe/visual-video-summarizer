@@ -242,6 +242,8 @@ def score_video(video_dir: Path, annotation: dict, seeds: int) -> dict:
 
 def score_summary(summary: dict, annotation: dict) -> dict:
     blocks = [(b.get("text", ""), set(b.get("seg_ids", []))) for ch in summary.get("chapters", []) for b in ch.get("blocks", [])]
+    prose_blocks = [(b.get("text", ""), set(b.get("seg_ids", []))) for ch in summary.get("chapters", [])
+                    for b in ch.get("blocks", []) if (b.get("kind") or "prose") == "prose"]
     checklist = annotation.get("summary_checklist") or []
     got = 0.0
     total = 0.0
@@ -252,15 +254,20 @@ def score_summary(summary: dict, annotation: dict) -> dict:
         cited = {s for s in claim.get("seg_ids", [])}
         texts = [t for t, segs in blocks if not cited or (segs & cited)] or [t for t, _ in blocks]
         haystack = " ".join(texts)
+        # each entry is a token or a list of alternatives (language variants: ["memory", "זיכרון"])
         tokens = claim.get("must_tokens") or []
-        present = all(tok.casefold() in haystack.casefold() for tok in tokens) if tokens else None
+        folded = haystack.casefold()
+        present = all(
+            any(alt.casefold() in folded for alt in (tok if isinstance(tok, list) else [tok]))
+            for tok in tokens
+        ) if tokens else None
         if present:
             got += weight
         details.append({"claim_id": claim.get("claim_id"), "present": present})
     all_text = " ".join(t for t, _ in blocks) + " " + str(summary.get("overview", ""))
     hebrew = len(HEBREW_RE.findall(all_text))
     latin = len(LATIN_RE.findall(all_text))
-    leading_latin = sum(1 for t, _ in blocks if t.strip() and LATIN_RE.match(t.strip()[0]))
+    leading_latin = sum(1 for t, _ in prose_blocks if t.strip() and LATIN_RE.match(t.strip()[0]))
     return {
         "coverage": (got / total) if total else None,
         "claims": details,

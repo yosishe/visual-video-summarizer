@@ -1,0 +1,1952 @@
+{
+  "schema_version": 3,
+  "engine_version": "1.4.0",
+  "tier": "high",
+  "lang": "he",
+  "direction": "rtl",
+  "source_language": null,
+  "translation_mode": "translated",
+  "video": {
+    "id": "ISb0nrlNoKQ",
+    "title": "Why Specialized Agents are Superior (How I Built an OpenClaw Superteam)",
+    "uploader": "Riley Brown",
+    "url": "https://www.youtube.com/watch?v=ISb0nrlNoKQ",
+    "duration": 1096.0,
+    "is_url": true
+  },
+  "transcript_source": "captions",
+  "overview": "סוכני AI צרים, עם מטרה אחת ו-7 עד 10 skills, ינצחו סוכנים כלליים עם מחשב לכל משימה. הדובר בונה צוות של 15 סוכנים כאלה על OpenClaw כדי להריץ את מחלקת הצמיחה שלו.",
+  "chapters": [
+    {
+      "chapter_id": "ch01",
+      "title": "התזה: סוכנים צרים הם העתיד",
+      "blocks": [
+        {
+          "block_id": "ch01_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "אחרי שבועיים של בניית מאות זרימות עבודה של סוכני AI, בעיקר על OpenClaw אבל גם על Manus, Claude Code ו-Perplexity Computer, הדובר מגיע למסקנה אחת: חברות ישתמשו בסוכנים צרים מאוד שפועלים כצוות. התוכנית שלו היא לבנות 15 סוכנים איכותיים שיריצו את כל מחלקת הצמיחה ב-vibecheck.dev, והסרטון מסביר למה סוכנים צרים עדיפים ולמה OpenClaw הוא הבסיס לפרויקט.",
+          "seg_ids": [
+            "seg_0000",
+            "seg_0001",
+            "seg_0002",
+            "seg_0003",
+            "seg_0004",
+            "seg_0005",
+            "seg_0006",
+            "seg_0007",
+            "seg_0008"
+          ]
+        }
+      ],
+      "key_points": [
+        "המסקנה משבועיים של ניסויים: סוכנים צרים בצוות, לא סוכן כללי אחד",
+        "היעד: 15 סוכנים שמריצים את מחלקת הצמיחה"
+      ],
+      "start": 0.0,
+      "end": 43.0,
+      "coverage_status": "not-required"
+    },
+    {
+      "chapter_id": "ch02",
+      "title": "הסוכנים הכלליים שנבדקו: Perplexity Computer ו-Manus",
+      "blocks": [
+        {
+          "block_id": "ch02_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "נבדקו 4 כלים עיקריים: OpenClaw, Manus, Claude Code ו-Perplexity Computer. ב-Perplexity עוברים ממצב חיפוש למצב מחשב, נותנים משימה אחת כמו \"תבנה אפליקציה\", והסוכן מתחיל לעבוד כמו ChatGPT. ההבדל הוא שהסוכן מקבל ארגז חול: מחשב שרץ בענן, יוצר קבצים, וכל תוצר נפתח בפאנל צדדי.",
+          "seg_ids": [
+            "seg_0009",
+            "seg_0010",
+            "seg_0011",
+            "seg_0012",
+            "seg_0013",
+            "seg_0014",
+            "seg_0015",
+            "seg_0016",
+            "seg_0017"
+          ]
+        },
+        {
+          "block_id": "ch02_b02",
+          "kind": "prose",
+          "lang": null,
+          "text": "הכלי Manus עובד באותה צורה וקדם ל-Perplexity Computer. הוא היה כלי הסוכן הכללי הראשון שבו כל משימה מקבלת גישה למחשב, ואפשר לצפות במחשב של הסוכן, שיוצר ועורך קבצים ועושה מה שאדם עושה על מחשב. בשני הכלים מזינים משימה, מחשב מוקם, וכשמריצים 5 משימות כל אחת מקבלת מחשב משלה. זהו למעשה מרכז פיקוד לסוכנים שיש להם גישה למחשב.",
+          "seg_ids": [
+            "seg_0018",
+            "seg_0019",
+            "seg_0020",
+            "seg_0021",
+            "seg_0022",
+            "seg_0023",
+            "seg_0024",
+            "seg_0025",
+            "seg_0026",
+            "seg_0027",
+            "seg_0028",
+            "seg_0029",
+            "seg_0030",
+            "seg_0031"
+          ]
+        }
+      ],
+      "key_points": [
+        "משימה אחת = מחשב אחד בענן; 5 משימות = 5 מחשבים",
+        "המודל של Manus ו-Perplexity הוא מרכז פיקוד, לא עובד"
+      ],
+      "start": 43.0,
+      "end": 154.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch03",
+      "title": "למה הצורה של OpenClaw מנצחת: מחשב אחד, זיכרון, skills ו-gateway",
+      "blocks": [
+        {
+          "block_id": "ch03_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "מרכז פיקוד מתאים לדברים מסוימים, אבל לדעת הדובר זו לא הצורה השימושית ביותר של סוכן. הצורה השימושית היא OpenClaw: סוכן שרץ על מחשב אחד. מחשבי Mac Mini אזלו מהמדפים כי אנשים רבים מריצים עליהם OpenClaw. מה ש-OpenClaw עשה: שם סוכן על מחשב, נתן לו זיכרון טוב, skills מובנים שקל להוסיף, ו-gateway שמאפשר לשוחח איתו מ-Telegram, WhatsApp, Discord ו-Slack. זו הסיבה שהוא הפך ויראלי: סוכן עם מחשב, נגיש בכל הכלים שבהם כבר מדברים עם אנשים.",
+          "seg_ids": [
+            "seg_0032",
+            "seg_0033",
+            "seg_0034",
+            "seg_0035",
+            "seg_0036",
+            "seg_0037",
+            "seg_0038",
+            "seg_0039",
+            "seg_0040",
+            "seg_0041",
+            "seg_0042",
+            "seg_0043",
+            "seg_0044",
+            "seg_0045"
+          ]
+        }
+      ],
+      "key_points": [
+        "הצורה של OpenClaw: מחשב אחד + זיכרון + skills + gateway להודעות",
+        "הנגישות מתוך Telegram ו-WhatsApp היא מה שהפך אותו לוויראלי"
+      ],
+      "start": 154.0,
+      "end": 227.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch04",
+      "title": "התפשטות ה-skills: יותר skills, פחות אמינות",
+      "blocks": [
+        {
+          "block_id": "ch04_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "הסוכן הראשון שהדובר בנה על OpenClaw קיבל skills רבים. האהוב עליו: מנתח תמלילים של רשתות חברתיות דרך API בשם Supadata, שהופך כל קישור YouTube, Twitter, Instagram או TikTok לתמליל. נוספו שליטה ב-Notion, בכל Google Workspace (יומן, מייל, Docs, Sheets), גישה ל-Linear כדי לראות מה עומד להשתחרר, שליטה ב-Figma על המחשב, יצירת מדיה עם FAL ואפילו עריכת וידאו.",
+          "seg_ids": [
+            "seg_0046",
+            "seg_0047",
+            "seg_0048",
+            "seg_0049",
+            "seg_0050",
+            "seg_0051",
+            "seg_0052",
+            "seg_0053",
+            "seg_0054",
+            "seg_0055",
+            "seg_0056",
+            "seg_0057",
+            "seg_0058"
+          ]
+        },
+        {
+          "block_id": "ch04_b02",
+          "kind": "prose",
+          "lang": null,
+          "text": "עם הזמן התברר דפוס ברור: ככל שמספר ה-skills עלה, האמינות של הסוכן ירדה.",
+          "seg_ids": [
+            "seg_0059",
+            "seg_0060",
+            "seg_0061"
+          ]
+        }
+      ],
+      "key_points": [
+        "ה-skill האהוב: תמלול רשתות חברתיות דרך Supadata",
+        "יותר skills = פחות אמינות: ההקשר מתערפל והאישיות מתערבבת"
+      ],
+      "start": 227.0,
+      "end": 307.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch05",
+      "title": "נקודת המתיקות של 7 עד 10 skills, ובעיית מרכז הפיקוד",
+      "blocks": [
+        {
+          "block_id": "ch05_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "אי אפשר להוסיף skills בלי גבול. הסוכן מפסיק להשתמש ב-skill הנכון בזמן הנכון, ההקשר מתערפל, האינטגרציות הלא-נכונות נבחרות והאישיות מתערבבת. המסקנה: צריך צוות של סוכנים עם 7 עד 10 skills כל אחד, במקום סוכן אחד עם 30 skills. זו נקודת המתיקות; מעליה הביצועים נופלים. זו גם הסיבה שהדובר לא בחר ב-Manus למרות הפוטנציאל שלו: ב-Manus לוחצים על `use skills`, עוברים ל-`manage skills` ורואים את כל ה-skills הרשמיים, אבל מוסיפים אותם למרכז הפיקוד ולא לסוכן ספציפי.",
+          "seg_ids": [
+            "seg_0062",
+            "seg_0063",
+            "seg_0064",
+            "seg_0065",
+            "seg_0066",
+            "seg_0067",
+            "seg_0068",
+            "seg_0069",
+            "seg_0070",
+            "seg_0071",
+            "seg_0072",
+            "seg_0073"
+          ]
+        },
+        {
+          "block_id": "ch05_b02",
+          "kind": "prose",
+          "lang": null,
+          "text": "התוצאה היא שהכול פרואקטיבי מהצד הלא-נכון: צריך ללכת למרכז הפיקוד ולבקש ממנו לפעול.",
+          "seg_ids": [
+            "seg_0073",
+            "seg_0074"
+          ]
+        }
+      ],
+      "key_points": [
+        "7 עד 10 skills לסוכן; 30 זה יותר מדי",
+        "סוכן טוב = עובד שמבצע, מפתיע ומציע, ולכן צריך כוונה"
+      ],
+      "start": 307.0,
+      "end": 369.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch06",
+      "title": "מפרומפטים לכוונה",
+      "blocks": [
+        {
+          "block_id": "ch06_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "אנשים רוצים עובד שמבצע. עובד טוב מבצע, עושה דברים שמפתיעים, ומציע הצעות מועילות. כדי לקבל את שלושת אלה צריך לתת לסוכן מטרות ספציפיות, כלומר כוונה. הרעיון מגיע מציוץ של Emmett Shear, מי שהיה מנכ\"ל זמני של OpenAI כשסאם אלטמן כמעט פוטר:",
+          "seg_ids": [
+            "seg_0075",
+            "seg_0076",
+            "seg_0077",
+            "seg_0078",
+            "seg_0079",
+            "seg_0080",
+            "seg_0081",
+            "seg_0082"
+          ]
+        },
+        {
+          "block_id": "ch06_b02",
+          "kind": "quote",
+          "lang": null,
+          "text": "Prompts are so late 2025. We are giving models intents now.",
+          "seg_ids": [
+            "seg_0083",
+            "seg_0084"
+          ]
+        },
+        {
+          "block_id": "ch06_b03",
+          "kind": "prose",
+          "lang": null,
+          "text": "הדובר מרחיב: אנחנו נותנים כוונה לסוכנים עם מחשב. כוונה היא מטרה, ואנחנו נותנים לסוכנים מטרה. בפרדיגמה של הסוכנים הכלליים קשה לתת מטרה כי הם כלליים מדי, עם המון skills ופרואקטיביות מפוזרת. לכן הוא לא אוהב את Perplexity Computer ו-Manus, ולכן הוא רוצה צוות של סוכני OpenClaw צרים עם מטרות ו-skills ספציפיים.",
+          "seg_ids": [
+            "seg_0084",
+            "seg_0085",
+            "seg_0086",
+            "seg_0087",
+            "seg_0088",
+            "seg_0089",
+            "seg_0090",
+            "seg_0091",
+            "seg_0092"
+          ]
+        }
+      ],
+      "key_points": [
+        "כוונה = מטרה; מטרה קשה לתת לסוכן כללי מדי"
+      ],
+      "start": 369.0,
+      "end": 452.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch07",
+      "title": "איך נראה סוכן ממוקד בפועל",
+      "blocks": [
+        {
+          "block_id": "ch07_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "אחרי שבועיים של הרצת סוכנים ב-Telegram, בהם בוט היומן, הדובר משוכנע לאן התחום הולך: סוכן ממוקד עם אישיות ספציפית, משימות ספציפיות ו-heartbeat ספציפי. כשהסוכנים מוגבלים למיקוד צר הכול מתפקד טוב יותר, ואפשר לרכז את ה-skills והאינטגרציות במה שמשרת מטרה מסוימת.",
+          "seg_ids": [
+            "seg_0093",
+            "seg_0094",
+            "seg_0095",
+            "seg_0096",
+            "seg_0097",
+            "seg_0098",
+            "seg_0099",
+            "seg_0100",
+            "seg_0101",
+            "seg_0102"
+          ]
+        }
+      ],
+      "key_points": [
+        "סוכן ממוקד = אישיות + משימות + heartbeat ספציפיים"
+      ],
+      "start": 452.0,
+      "end": 504.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch08",
+      "title": "אנטומיה של סוכן ה-YouTube: ממטרות ל-skills לאינטגרציות",
+      "blocks": [
+        {
+          "block_id": "ch08_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "הסוכן האהוב על הדובר הוא בוט התוכן ב-Telegram, סוכן ה-YouTube. הדבר היחיד שהוא ממוקד בו הוא יצירת סרטוני YouTube, ובקבצים שלו יש 3 מטרות: מנויים, צפיות והמרות. כשהוא מתבקש לכתוב תסריט הוא יודע שהמטרה היא להעלות את שלושתן. מטרות צרות מאפשרות skills היפר-ספציפיים שאפשר לאמת: skill שלא קשור למטרות פשוט לא מוסיפים.",
+          "seg_ids": [
+            "seg_0103",
+            "seg_0104",
+            "seg_0105",
+            "seg_0106",
+            "seg_0107",
+            "seg_0108",
+            "seg_0109",
+            "seg_0110",
+            "seg_0111",
+            "seg_0112",
+            "seg_0113",
+            "seg_0114",
+            "seg_0115"
+          ]
+        },
+        {
+          "block_id": "ch08_b02",
+          "kind": "prose",
+          "lang": null,
+          "text": "ה-skill המרכזי הוא מחקר YouTube, עם שתי אינטגרציות: SERP API לחיפוש ב-YouTube ו-Supadata לגריפת תמלילים. ה-skill השני הוא מחולל תמונות ממוזערות: כל בוקר הסוכן גורף את התמונות של המתחרים ומציע גרסאות עם הפנים של הדובר, דרך Nano Banana ועם תמונות שלו כהקשר. השלישי הוא שליטה ב-Notion, שבו נשמרים כל התסריטים, דרך אינטגרציית Notion.",
+          "seg_ids": [
+            "seg_0116",
+            "seg_0117",
+            "seg_0118",
+            "seg_0119",
+            "seg_0120",
+            "seg_0121",
+            "seg_0122",
+            "seg_0123",
+            "seg_0124",
+            "seg_0125",
+            "seg_0126",
+            "seg_0127",
+            "seg_0128",
+            "seg_0129",
+            "seg_0130",
+            "seg_0131"
+          ]
+        },
+        {
+          "block_id": "ch08_b03",
+          "kind": "prose",
+          "lang": null,
+          "text": "כך נוצר נתיב ישיר: הסוכן אחראי להעלות מנויים, צפיות והמרות, וכששואלים אותו אילו skills הוא צריך, הוא יודע לאן הולכים.",
+          "seg_ids": [
+            "seg_0131",
+            "seg_0132",
+            "seg_0133",
+            "seg_0134",
+            "seg_0135"
+          ]
+        }
+      ],
+      "key_points": [
+        "שלוש מטרות: מנויים, צפיות, המרות",
+        "שלושה skills: מחקר YouTube (SERP API + Supadata), תמונות ממוזערות (Nano Banana), שליטה ב-Notion",
+        "כל skill שלא משרת את המטרות לא נכנס"
+      ],
+      "start": 504.0,
+      "end": 664.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch09",
+      "title": "סוכנים צרים קל לשכפל ולרמקס",
+      "blocks": [
+        {
+          "block_id": "ch09_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "ההשוואה היא לגיוס עובדים: המעצבנים ביותר הם בעלי skills מעורפלים בלי מטרה, והטובים ביותר יודעים במה הם טובים ואיך זה מקדם את מטרות החברה. סוכן ה-YouTube הוא רק אחד מהסוכנים, ומכאן השאלה: למה סוכנים צרים? הסיבה הראשונה: כשמוצאים סוכן מועיל, קל לשכפל אותו ולרמקס אותו למשהו אחר. סוכן YouTube הופך בקלות לסוכן TikTok או לסוכן Substack. כשמנסים לבנות סוכן ענק עם 50 skills, קשה לחלץ ממנו רק את החלק שרוצים לשכפל. סוכן צר משתכפל בקלות.",
+          "seg_ids": [
+            "seg_0136",
+            "seg_0137",
+            "seg_0138",
+            "seg_0139",
+            "seg_0140",
+            "seg_0141",
+            "seg_0142",
+            "seg_0143",
+            "seg_0144",
+            "seg_0145",
+            "seg_0146",
+            "seg_0147",
+            "seg_0148",
+            "seg_0149",
+            "seg_0150",
+            "seg_0151",
+            "seg_0152",
+            "seg_0153"
+          ]
+        }
+      ],
+      "key_points": [
+        "סוכן צר קל לשכפל; מסוכן עם 50 skills קשה לחלץ חלק"
+      ],
+      "start": 664.0,
+      "end": 746.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch10",
+      "title": "סוכן היומן: שיתוף, וזיכרון לכל הצוות",
+      "blocks": [
+        {
+          "block_id": "ch10_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "הסיבה השנייה היא שיתוף עם הצוות. באותו יום הדובר בנה סוכן יומן שחי ב-Telegram ופונה אליו כל 30 דקות, אלא אם אין מה לעשות. הוא מנתח כל פגישה וכל סרטון, מבקש הקשר כשצריך, וכותב כל יום כמה רשומות יומן עם כל המידע החשוב לעסק ולתוכן.",
+          "seg_ids": [
+            "seg_0154",
+            "seg_0155",
+            "seg_0156",
+            "seg_0157",
+            "seg_0158",
+            "seg_0159",
+            "seg_0160",
+            "seg_0161",
+            "seg_0162"
+          ]
+        },
+        {
+          "block_id": "ch10_b02",
+          "kind": "prose",
+          "lang": null,
+          "text": "המטרה של סוכן היומן היא להזין את שאר הסוכנים. לכל סוכן יש גישה ל-Notion, וכולם מודעים ליומן שהוא כותב. סוכן הניוזלטר קורא כל יום את היומן ומציע רעיונות; כשיש עדכון מוצר הוא מנסח ניוזלטר לרשימה של 300,000 אנשים. למסוכן הניוזלטר יש מטרות משלו, המרות, שיעור פתיחה ושיעור הקלקה, והוא לא מתערפל ממטרות סוכן היומן.",
+          "seg_ids": [
+            "seg_0163",
+            "seg_0164",
+            "seg_0165",
+            "seg_0166",
+            "seg_0167",
+            "seg_0168",
+            "seg_0169",
+            "seg_0170",
+            "seg_0171",
+            "seg_0172",
+            "seg_0173",
+            "seg_0174",
+            "seg_0175",
+            "seg_0176"
+          ]
+        }
+      ],
+      "key_points": [
+        "סוכן היומן פונה כל 30 דקות וכותב רשומות יומיות",
+        "היומן מזין את סוכן הניוזלטר, שמשרת רשימה של 300,000 אנשים"
+      ],
+      "start": 746.0,
+      "end": 848.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch11",
+      "title": "מובן, ניתן לביקורת, וקל ללולאה",
+      "blocks": [
+        {
+          "block_id": "ch11_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "מפני שסוכן היומן צר, הדובר שיתף אותו במלואו עם השותף שלו Ange, שהצליח לשכפל אותו בכ-5 דקות. סוכן צר ומועיל קל לשכפל ולשתף, והוא גם מובן יותר: סוכן OpenClaw רץ על מחשב ועורך קבצים, וכל ה-skills הם קובצי markdown בתיקיית OpenClaw. סוכן עם מעט skills וקומץ אינטגרציות קל להבין כששולחים אותו לאחרים.",
+          "seg_ids": [
+            "seg_0177",
+            "seg_0178",
+            "seg_0179",
+            "seg_0180",
+            "seg_0181",
+            "seg_0182",
+            "seg_0183",
+            "seg_0184",
+            "seg_0185",
+            "seg_0186",
+            "seg_0187",
+            "seg_0188"
+          ]
+        },
+        {
+          "block_id": "ch11_b02",
+          "kind": "prose",
+          "lang": null,
+          "text": "מטרות צרות הן גם ניתנות לביקורת. לניוזלטר יש KPI ברורים: שיעור פתיחה, מנויים, שיעור הקלקה ובמקרה של עסק ניוזלטר גם הכנסה. אפשר להסתכל על הסוכן ולומר עבר או נכשל, ולדעת בדיוק מה לשנות. סוכנים במצב עבר-נכשל קל לגזום: רוב הסוכנים שייבנו בשנים הקרובות לא יהיו שווים, וככל שהם צרים יותר קל יותר לומר \"לא, זרוק אותו\".",
+          "seg_ids": [
+            "seg_0188",
+            "seg_0189",
+            "seg_0190",
+            "seg_0191",
+            "seg_0192",
+            "seg_0193",
+            "seg_0194",
+            "seg_0195",
+            "seg_0196",
+            "seg_0197",
+            "seg_0198",
+            "seg_0199",
+            "seg_0200"
+          ]
+        },
+        {
+          "block_id": "ch11_b03",
+          "kind": "prose",
+          "lang": null,
+          "text": "שתי הסיבות האחרונות: מיקוד צר מאפשר לולאות פשוטות, ולכן יותר אוטונומיה. לדובר כמה סוכנים צרים שהם לולאות פשוטות עם 3 משימות ביום; המשימות הן cron jobs שמופעלים בשעות קבועות, והסוכן פשוט רץ. סוכן ענק קשה להכניס ללולאה צפויה.",
+          "seg_ids": [
+            "seg_0200",
+            "seg_0201",
+            "seg_0202",
+            "seg_0203",
+            "seg_0204",
+            "seg_0205",
+            "seg_0206",
+            "seg_0207",
+            "seg_0208"
+          ]
+        },
+        {
+          "block_id": "ch11_b04",
+          "kind": "prose",
+          "lang": null,
+          "text": "המטרה ברורה: סוכנים צרים עם מטרות ספציפיות שפועלים כצוות, שיגדל לפי מה שזרימות העבודה ידרשו.",
+          "seg_ids": [
+            "seg_0209",
+            "seg_0210",
+            "seg_0211",
+            "seg_0212"
+          ]
+        }
+      ],
+      "key_points": [
+        "שיתוף עם שותף: שכפול בכ-5 דקות",
+        "ה-skills הם קובצי markdown, ולכן סוכן צר מובן",
+        "מדדי KPI צרים = עבר-נכשל, ולכן קל לגזום סוכנים",
+        "לולאות פשוטות עם cron jobs = אוטונומיה"
+      ],
+      "start": 848.0,
+      "end": 1004.0,
+      "coverage_status": "covered"
+    },
+    {
+      "chapter_id": "ch12",
+      "title": "צוות הסוכנים, הענן, והשאלות הפתוחות",
+      "blocks": [
+        {
+          "block_id": "ch12_b01",
+          "kind": "prose",
+          "lang": null,
+          "text": "הדבר שבו Perplexity ו-Manus צדקו הוא הרצה על מחשב בענן, אבל לא מחשב לכל משימה: הפרדיגמה תהיה OpenClaw שרץ במחשב בענן.",
+          "seg_ids": [
+            "seg_0213",
+            "seg_0214",
+            "seg_0215",
+            "seg_0216",
+            "seg_0217",
+            "seg_0218"
+          ]
+        },
+        {
+          "block_id": "ch12_b02",
+          "kind": "prose",
+          "lang": null,
+          "text": "מכאן השאלות הפתוחות. איך להריץ את הסוכנים ביעילות בענן, כשבעוד 2 שנים לכל אחד יהיו 20 סוכנים, כלומר 200 סוכנים? איך לשתף אותם עם אנשים בצוות? ואיך לגרום להם לתקשר זה עם זה, או לפחות לשתף זיכרון? בסרטונים הבאים הדובר יראה איך סוכנים משתפים זיכרון ומעבירים מידע מועיל זה לזה, כמו שצוות הנדסה מתקשר עם צוות שיווק. השורה התחתונה: סוכנים צרים שרצים בענן ינצחו.",
+          "seg_ids": [
+            "seg_0218",
+            "seg_0219",
+            "seg_0220",
+            "seg_0221",
+            "seg_0222",
+            "seg_0223",
+            "seg_0224",
+            "seg_0225",
+            "seg_0226",
+            "seg_0227",
+            "seg_0228",
+            "seg_0229",
+            "seg_0230",
+            "seg_0231",
+            "seg_0232",
+            "seg_0233",
+            "seg_0234",
+            "seg_0235",
+            "seg_0236"
+          ]
+        }
+      ],
+      "key_points": [
+        "הפרדיגמה: OpenClaw במחשב בענן, לא מחשב לכל משימה",
+        "שאלות פתוחות: הרצה יעילה של 200 סוכנים, שיתוף בצוות, תקשורת וזיכרון משותף"
+      ],
+      "start": 1004.0,
+      "end": 1096.0,
+      "coverage_status": "covered"
+    }
+  ],
+  "frames": [
+    {
+      "candidate_id": "c_0001",
+      "name": "ch02_perplexity_computer",
+      "chapter_id": "ch02",
+      "requested_t": 61.97,
+      "actual_t": 61.995,
+      "triaged_t": 61.995,
+      "refinement": {
+        "t": 61.995,
+        "applied": false,
+        "blur_before": 4.1528,
+        "blur_after": 4.1528,
+        "delta_s": 0.0,
+        "eligible": 70,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "target_ids": [
+        "ch02_perplexity_switch"
+      ],
+      "family_id": "f_001",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "רשימת המשימות ב-Perplexity Computer אחרי המעבר ממצב `Search` למצב `Computer`.",
+        "why": "זה המסך שמדגים 'משימה אחת, מחשב אחד' שהדובר מתאר.",
+        "look_at": null
+      },
+      "alt": "רשימת המשימות ב-Perplexity Computer אחרי המעבר ממצב Search למצב Computer.",
+      "anchor_seg_ids": [
+        "seg_0011",
+        "seg_0012",
+        "seg_0013"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 222.415,
+        "contrast": 56.603,
+        "sharpness": 8.121,
+        "blank": false,
+        "fingerprint": "05bf28b6e31553d506f501be341ddb35ef23a88b0853d8739c59e63c970bdba0",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch02_perplexity_computer-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "9344ba5875cfc7892c23757b9d94fad96dbe8be099ef89f638fbbec008463191"
+        },
+        "thumb": {
+          "file": "ch02_perplexity_computer-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "ec1b8c0933d8276bd70fb0f7a130fcd83f0b8f97d9c11de95610cdbd3702dd42"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0008",
+      "name": "ch02_manus_computer",
+      "chapter_id": "ch02",
+      "requested_t": 111.99,
+      "actual_t": 112.012,
+      "triaged_t": 112.012,
+      "refinement": {
+        "t": 112.012,
+        "applied": false,
+        "blur_before": 5.138,
+        "blur_after": 5.138,
+        "delta_s": -0.0,
+        "eligible": 22,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "target_ids": [
+        "ch02_manus_computer"
+      ],
+      "family_id": "f_006",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "המחשב של Manus (`View Manus's computer`) לצד מסמך המשימה.",
+        "why": "הראיה לכך שכל משימה ב-Manus מקבלת מחשב משלה.",
+        "look_at": null
+      },
+      "alt": "המחשב של Manus (View Manus's computer) לצד מסמך המשימה.",
+      "anchor_seg_ids": [
+        "seg_0021",
+        "seg_0022",
+        "seg_0023"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 212.67,
+        "contrast": 60.346,
+        "sharpness": 10.339,
+        "blank": false,
+        "fingerprint": "1adaaae98e9a44546a3d77e80f90223f0abcb4141ed3e3c36cb23890f7feb93c",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch02_manus_computer-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "6e1437d9ec969ffd8aa811cfc543408beebcd9be9ed88e0033bf8613d130744c"
+        },
+        "thumb": {
+          "file": "ch02_manus_computer-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "7aa69597f97a3bcb04a386661f1b3c61d49d46480db1a12a5fe24273a941c210"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0013",
+      "name": "ch03_openclaw_shape",
+      "chapter_id": "ch03",
+      "requested_t": 217.651,
+      "actual_t": 217.684,
+      "triaged_t": 217.684,
+      "refinement": {
+        "t": 217.684,
+        "applied": false,
+        "blur_before": 5.4261,
+        "blur_after": 5.4261,
+        "delta_s": 0.0,
+        "eligible": 2,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0044"
+      ],
+      "target_ids": [],
+      "family_id": null,
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח: OpenClaw ו-Claude Code מעל `Computer`, עם `memory`, `skills`, `gateway` וחץ מ-telegram, whatsapp, discord, slack.",
+        "why": "המצב השלם של התרשים שמגדיר את צורת OpenClaw; ההמשך נשען עליו.",
+        "look_at": null
+      },
+      "alt": "הלוח: OpenClaw ו-Claude Code מעל Computer, עם memory, skills, gateway וחץ מ-telegram, whatsapp, discord, slack.",
+      "anchor_seg_ids": [
+        "seg_0044"
+      ],
+      "selection_reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 215.781,
+        "contrast": 63.255,
+        "sharpness": 13.179,
+        "blank": false,
+        "fingerprint": "d4e064d17ac38ec81893c83038cffc3f5e941aa24df05cafbaacb2c923d8b1ba",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch03_openclaw_shape-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "958b9e9f351848030e449d78835a1cb7794eaab09794db45cafd4d1b45dea432"
+        },
+        "thumb": {
+          "file": "ch03_openclaw_shape-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "ddedb3b729fdfff5add543f6e38ba8abb665c1f6673a6fbc0a9f8fb6709c6ce8"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0015",
+      "name": "ch04_skills_overview",
+      "chapter_id": "ch04",
+      "requested_t": 261.42,
+      "actual_t": 261.428,
+      "triaged_t": 261.428,
+      "refinement": {
+        "t": 261.428,
+        "applied": false,
+        "blur_before": 4.5853,
+        "blur_after": 4.5853,
+        "delta_s": -0.0,
+        "eligible": 59,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "target_ids": [
+        "ch04_skills_overview"
+      ],
+      "family_id": "f_010",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "לוח ה-skills של הסוכן הראשון: כרטיסים לפי אשכולות, עם `supadata`.",
+        "why": "ממחיש כמה skills נערמו לפני שהאמינות ירדה.",
+        "look_at": null
+      },
+      "alt": "לוח ה-skills של הסוכן הראשון: כרטיסים לפי אשכולות, עם supadata.",
+      "anchor_seg_ids": [
+        "seg_0047",
+        "seg_0048",
+        "seg_0052",
+        "seg_0053",
+        "seg_0056",
+        "seg_0057"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.709,
+        "contrast": 62.579,
+        "sharpness": 10.115,
+        "blank": false,
+        "fingerprint": "b21c6e1543b43589a8d5569623f64d9d6cc892eadf6ba9e97e9b15d871da639b",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "assets": {
+        "full": {
+          "file": "ch04_skills_overview-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "771cf5d02c34669ac52d4caa796d75dfb689dcdebb1dd7423a785a3af48ce334"
+        },
+        "thumb": {
+          "file": "ch04_skills_overview-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "4ac961a617876860d8e1125a279a84ce9a8e1144e941fa3767e7e40965f70ab9"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0019",
+      "name": "ch04_dependability",
+      "chapter_id": "ch04",
+      "requested_t": 306.749,
+      "actual_t": 306.773,
+      "triaged_t": 306.773,
+      "refinement": {
+        "t": 306.773,
+        "applied": false,
+        "blur_before": 5.61,
+        "blur_after": 5.61,
+        "delta_s": 0.0,
+        "eligible": 31,
+        "total": 45
+      },
+      "seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "target_ids": [
+        "ch04_dependability_chart"
+      ],
+      "family_id": null,
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "`Skills / Integrations / Personality / Memory` עם חצים מול `Tasks / Heartbeat / Webhook`.",
+        "why": "התרשים שמסביר מה מתערבב כשיש יותר מדי skills.",
+        "look_at": null
+      },
+      "alt": "Skills / Integrations / Personality / Memory עם חצים מול Tasks / Heartbeat / Webhook.",
+      "anchor_seg_ids": [
+        "seg_0059",
+        "seg_0060",
+        "seg_0061"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 221.395,
+        "contrast": 64.623,
+        "sharpness": 9.708,
+        "blank": false,
+        "fingerprint": "967fac7d95e60f09578c7e86d984f23f8d9296c67ebfe669042d971958255bcc",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch04_dependability-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "b538290639b6fb672e59a33bb9f87ede6d6c9b8cb0ef849d2e52d1d56a3da307"
+        },
+        "thumb": {
+          "file": "ch04_dependability-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "c834a6d063f4c72e4d0cff5e39e57419124cbdc39f4ca34e00bc4e2431360cd7"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0023",
+      "name": "ch05_sweet_spot",
+      "chapter_id": "ch05",
+      "requested_t": 340.54,
+      "actual_t": 340.54,
+      "triaged_t": 340.54,
+      "refinement": {
+        "t": 340.54,
+        "applied": false,
+        "blur_before": 4.7532,
+        "blur_after": 4.7532,
+        "delta_s": 0.0,
+        "eligible": 65,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067",
+        "seg_0073"
+      ],
+      "target_ids": [
+        "ch05_sweet_spot"
+      ],
+      "family_id": "f_014",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הכיתוב `7-10 skills` באדום על לוח ה-skills.",
+        "why": "מוכיח את המספר: נקודת המתיקות שהדובר קובע.",
+        "look_at": null
+      },
+      "alt": "הכיתוב 7-10 skills באדום על לוח ה-skills.",
+      "anchor_seg_ids": [
+        "seg_0065",
+        "seg_0066",
+        "seg_0067",
+        "seg_0073"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 217.543,
+        "contrast": 62.945,
+        "sharpness": 10.153,
+        "blank": false,
+        "fingerprint": "4f0d71f44cfe8bc4aa94d7bc97c369da48c3ebc11a809011e7c6befcfd00ae0a",
+        "faces": "unavailable",
+        "text_chars": 364
+      },
+      "assets": {
+        "full": {
+          "file": "ch05_sweet_spot-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "54aca40b0a455b3ab2e266722cbe54ccc3b72db5ad41a671abb6a67386bacae7"
+        },
+        "thumb": {
+          "file": "ch05_sweet_spot-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "516ea001817808d0ab24ec09f11f2e27b990db3f040f199031a4f22978adece3"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0025",
+      "name": "ch05_manus_skills",
+      "chapter_id": "ch05",
+      "requested_t": 354.56,
+      "actual_t": 354.588,
+      "triaged_t": 354.588,
+      "refinement": {
+        "t": 354.588,
+        "applied": false,
+        "blur_before": 6.2124,
+        "blur_after": 6.2124,
+        "delta_s": -0.0,
+        "eligible": 33,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "target_ids": [
+        "ch05_manus_skills"
+      ],
+      "family_id": "f_016",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "ספריית ה-skills הרשמית של Manus (`Official library`).",
+        "why": "המסך שמראה למה ב-Manus ה-skill נוסף למרכז הפיקוד ולא לסוכן.",
+        "look_at": null
+      },
+      "alt": "ספריית ה-skills הרשמית של Manus (Official library).",
+      "anchor_seg_ids": [
+        "seg_0070",
+        "seg_0071"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 138.541,
+        "contrast": 64.402,
+        "sharpness": 9.041,
+        "blank": false,
+        "fingerprint": "2b82217203e5a6f0922acb7ca919ad3c7d15fa28651833e162e3169033e1a800",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch05_manus_skills-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "1059a47d7a8faf38826861e3a90fa49fc730027ea6b9c08d6f7e86394b4142ed"
+        },
+        "thumb": {
+          "file": "ch05_manus_skills-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "ff4dc8b7e95954fe8b866112ef03efdcc4fdb37468fdfa8c39eaaeeb5496731a"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0026",
+      "name": "ch06_employee",
+      "chapter_id": "ch06",
+      "requested_t": 369.936,
+      "actual_t": 369.936,
+      "triaged_t": 369.936,
+      "refinement": {
+        "t": 369.936,
+        "applied": false,
+        "blur_before": 5.4037,
+        "blur_after": 5.4037,
+        "delta_s": 0.0,
+        "eligible": 46,
+        "total": 74
+      },
+      "seg_ids": [
+        "seg_0075"
+      ],
+      "target_ids": [],
+      "family_id": null,
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח: OpenClaw עם `memory / skills / gateway` ומתחתיו רשימת `Employee`: מבצע, מפתיע, מציע.",
+        "why": "שלוש התכונות של עובד טוב, שמהן נגזרת הדרישה לכוונה.",
+        "look_at": null
+      },
+      "alt": "הלוח: OpenClaw עם memory / skills / gateway ומתחתיו רשימת Employee: מבצע, מפתיע, מציע.",
+      "anchor_seg_ids": [
+        "seg_0075"
+      ],
+      "selection_reasons": [
+        "scene"
+      ],
+      "quality": {
+        "mean_luma": 220.432,
+        "contrast": 63.918,
+        "sharpness": 9.918,
+        "blank": false,
+        "fingerprint": "e267ecb7691d08ee612f10897d9894efb978611a8a579a37b7d2c4c813f0ca0e",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch06_employee-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "2b0f46222a564dd013608c05c60a53fed71cf2dc67539940ad1781a3fb37fab6"
+        },
+        "thumb": {
+          "file": "ch06_employee-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "68316d75e1ba2169eb8dcd0063c9225664d409e0ad5d73ad5ab03e8d2c680528"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0029",
+      "name": "ch06_shear_tweet",
+      "chapter_id": "ch06",
+      "requested_t": 410.12,
+      "actual_t": 410.143,
+      "triaged_t": 410.143,
+      "refinement": {
+        "t": 410.143,
+        "applied": false,
+        "blur_before": 5.5667,
+        "blur_after": 5.5667,
+        "delta_s": 0.0,
+        "eligible": 71,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "target_ids": [
+        "ch06_shear_tweet"
+      ],
+      "family_id": "f_018",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הציוץ של Emmett Shear: `Prompts are so late 2025. We're giving models intents now.`",
+        "why": "המקור למושג הכוונה שהסרטון בנוי עליו.",
+        "look_at": null
+      },
+      "alt": "הציוץ של Emmett Shear: Prompts are so late 2025. We're giving models intents now.",
+      "anchor_seg_ids": [
+        "seg_0081",
+        "seg_0082",
+        "seg_0083",
+        "seg_0084"
+      ],
+      "selection_reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 211.868,
+        "contrast": 64.702,
+        "sharpness": 14.172,
+        "blank": false,
+        "fingerprint": "8c63fb594fb349f277e23804e23de26658ec324f8d47042e5aafab82ad4502bd",
+        "faces": "unavailable",
+        "text_chars": 348
+      },
+      "assets": {
+        "full": {
+          "file": "ch06_shear_tweet-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "b789ae538a0afa18ca06d626d59fc018781dcad54da0687debe7ed6892c1e384"
+        },
+        "thumb": {
+          "file": "ch06_shear_tweet-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "65ff3a4febb89da35756d0714f05b5467bbba666d5d1001bf8146cb06ae8a1e2"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0034",
+      "name": "ch07_journal_bot",
+      "chapter_id": "ch07",
+      "requested_t": 463.37,
+      "actual_t": 463.396,
+      "triaged_t": 463.396,
+      "refinement": {
+        "t": 463.396,
+        "applied": false,
+        "blur_before": 6.0098,
+        "blur_after": 6.0098,
+        "delta_s": 0.0,
+        "eligible": 68,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "target_ids": [
+        "ch07_journal_bot_telegram"
+      ],
+      "family_id": "f_023",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "שיחת בוט היומן ב-Telegram מעל הלוח.",
+        "why": "סוכן ממוקד בפעולה, בכלי ההודעות שבו הדובר משתמש.",
+        "look_at": null
+      },
+      "alt": "שיחת בוט היומן ב-Telegram מעל הלוח.",
+      "anchor_seg_ids": [
+        "seg_0093",
+        "seg_0094",
+        "seg_0095"
+      ],
+      "selection_reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 168.881,
+        "contrast": 92.32,
+        "sharpness": 14.413,
+        "blank": false,
+        "fingerprint": "6081c1bbe35e1aebc79e50e5c8680c54cc61e8168ae3b671c5c6f0f2db9fd27a",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch07_journal_bot-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "2cc9e14688b18acdd3810b7e593bc9bc66875d11e5bec2f5921da042b7e15158"
+        },
+        "thumb": {
+          "file": "ch07_journal_bot-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "7833c0cf1ea54179b0092e434cdf89ecd12c04c998e18f8da0e26b6809f6aa08"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0037",
+      "name": "ch07_focused_agent",
+      "chapter_id": "ch07",
+      "requested_t": 481.26,
+      "actual_t": 481.281,
+      "triaged_t": 481.281,
+      "refinement": {
+        "t": 481.281,
+        "applied": false,
+        "blur_before": 5.2585,
+        "blur_after": 5.2585,
+        "delta_s": -0.0,
+        "eligible": 81,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0096",
+        "seg_0097",
+        "seg_0099"
+      ],
+      "target_ids": [
+        "ch07_focused_agent_shape"
+      ],
+      "family_id": "f_025",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח: `Focused Agent` עם `Personality / Tasks / Heartbeat`, חץ ל-`Goal 1/2/3`, ו-`skill 1-3` שמשרתים את המטרות.",
+        "why": "המבנה הגנרי של סוכן ממוקד לפני הדוגמה הקונקרטית.",
+        "look_at": null
+      },
+      "alt": "הלוח: Focused Agent עם Personality / Tasks / Heartbeat, חץ ל-Goal 1/2/3, ו-skill 1-3 שמשרתים את המטרות.",
+      "anchor_seg_ids": [
+        "seg_0096",
+        "seg_0097",
+        "seg_0099"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.247,
+        "contrast": 64.039,
+        "sharpness": 9.476,
+        "blank": false,
+        "fingerprint": "4b586e3ffeeb8327f9542a0cb2fa3d5df799dac98d0a3fb5dad45ab0924c3011",
+        "faces": "unavailable",
+        "text_chars": 371
+      },
+      "assets": {
+        "full": {
+          "file": "ch07_focused_agent-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "d579d7cfb9dc2a6ba3d8eb1afba66493c30f95fde8fd14a3f29c05b3c96d7036"
+        },
+        "thumb": {
+          "file": "ch07_focused_agent-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "30b27fe048f9bdb6d13d91a7d5d71a7bbabe19a1969a17d5e8dbaadd8f5a3bd1"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0044",
+      "name": "ch08_youtube_agent",
+      "chapter_id": "ch08",
+      "requested_t": 548.23,
+      "actual_t": 548.248,
+      "triaged_t": 548.248,
+      "refinement": {
+        "t": 548.248,
+        "applied": false,
+        "blur_before": 5.015,
+        "blur_after": 5.015,
+        "delta_s": -0.0,
+        "eligible": 90,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "target_ids": [
+        "ch08_goals_skills"
+      ],
+      "family_id": "f_030",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח: `YouTube AI Agent` עם חץ ל-`Subs / Views / Conversions`.",
+        "why": "שלוש המטרות של סוכן ה-YouTube, כפי שנכתבו בלוח.",
+        "look_at": null
+      },
+      "alt": "הלוח: YouTube AI Agent עם חץ ל-Subs / Views / Conversions.",
+      "anchor_seg_ids": [
+        "seg_0106",
+        "seg_0107",
+        "seg_0111",
+        "seg_0112"
+      ],
+      "selection_reasons": [
+        "coverage",
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.664,
+        "contrast": 63.473,
+        "sharpness": 10.809,
+        "blank": false,
+        "fingerprint": "f92d319541d7eb40b4865068d0d66a2a21a1bd906f1caa3957177e4acaafd01a",
+        "faces": "unavailable",
+        "text_chars": 389
+      },
+      "assets": {
+        "full": {
+          "file": "ch08_youtube_agent-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "06746a48d22c85af4fca5992f1748fa63de075c96426c1afdeaf80bce70ce5a4"
+        },
+        "thumb": {
+          "file": "ch08_youtube_agent-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "7009ff95cd309cbc87ce867d1487f048ba084a5c40044ed422d6e50bd11ac8fb"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0048",
+      "name": "ch08_youtube_skills",
+      "chapter_id": "ch08",
+      "requested_t": 660.86,
+      "actual_t": 660.86,
+      "triaged_t": 660.86,
+      "refinement": {
+        "t": 660.86,
+        "applied": false,
+        "blur_before": 5.0697,
+        "blur_after": 5.0697,
+        "delta_s": 0.0,
+        "eligible": 61,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "target_ids": [
+        "ch08_direct_path"
+      ],
+      "family_id": "f_034",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח המלא: `YouTube Research`, `Thumbnail Generator`, `Control my Notion` ומתחתם האינטגרציות `Serp API`, `Supadata`, `Nano Banana`, `Notion`.",
+        "why": "המצב הסופי של הבנייה: המטרות, ה-skills והאינטגרציות בנתיב אחד.",
+        "look_at": null
+      },
+      "alt": "הלוח המלא: YouTube Research, Thumbnail Generator, Control my Notion ומתחתם האינטגרציות Serp API, Supadata, Nano Banana, Notion.",
+      "anchor_seg_ids": [
+        "seg_0131",
+        "seg_0132",
+        "seg_0133",
+        "seg_0134"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 215.249,
+        "contrast": 63.458,
+        "sharpness": 12.11,
+        "blank": false,
+        "fingerprint": "71a45f416633b7c33c10e3cb1c2c6ca1c80b57b2d08ce348378d3397910382bc",
+        "faces": "unavailable",
+        "text_chars": 410
+      },
+      "assets": {
+        "full": {
+          "file": "ch08_youtube_skills-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "145c6f69c5ecdfddf6df1ea0bbabbe1eb37f463641b1186a849593c17aa48847"
+        },
+        "thumb": {
+          "file": "ch08_youtube_skills-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "9d826ec064ee18fe3becb842f3e744bc90224ddd25eab4f1145e80865d4de180"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0051",
+      "name": "ch09_team_chart",
+      "chapter_id": "ch09",
+      "requested_t": 715.36,
+      "actual_t": 715.381,
+      "triaged_t": 715.381,
+      "refinement": {
+        "t": 715.381,
+        "applied": false,
+        "blur_before": 5.2342,
+        "blur_after": 5.2342,
+        "delta_s": 0.0,
+        "eligible": 57,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "family_id": "f_035",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "תרשים צוות הסוכנים: `Growth & Strategy`, `Marketing & Distribution`, `Content Creation`, עם סוכן YouTube מודגש.",
+        "why": "הצוות שאליו הדובר מכוון, כדוגמה לשכפול ולרמיקס.",
+        "look_at": null
+      },
+      "alt": "תרשים צוות הסוכנים: Growth & Strategy, Marketing & Distribution, Content Creation, עם סוכן YouTube מודגש.",
+      "anchor_seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 220.211,
+        "contrast": 63.59,
+        "sharpness": 9.124,
+        "blank": false,
+        "fingerprint": "cd605d3a3fa3f3df0323132850102b9ab7ce8b81e841124d7bb1a82b99a074c4",
+        "faces": "unavailable",
+        "text_chars": 353
+      },
+      "assets": {
+        "full": {
+          "file": "ch09_team_chart-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "68c2e4f2561dba61a50f92f9b089ee6107e6bcd57b8ae67cd3d352acc36898dd"
+        },
+        "thumb": {
+          "file": "ch09_team_chart-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "632548063823e2dcc7f9242ef4125d77e8c3b606da2496018e10f565e83b7e9b"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0052",
+      "name": "ch09_narrow_focus",
+      "chapter_id": "ch09",
+      "requested_t": 724.14,
+      "actual_t": 724.157,
+      "triaged_t": 724.157,
+      "refinement": {
+        "t": 724.157,
+        "applied": false,
+        "blur_before": 5.1103,
+        "blur_after": 5.1103,
+        "delta_s": -0.0,
+        "eligible": 22,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "target_ids": [
+        "ch09_remix"
+      ],
+      "family_id": "f_036",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח: `Narrow Focus`, `Duplicable (Remixable)`, `Sharable` לצד תרשים הצוות.",
+        "why": "שלוש הסיבות הראשונות לסוכנים צרים, כפי שנכתבו בזמן אמת.",
+        "look_at": null
+      },
+      "alt": "הלוח: Narrow Focus, Duplicable (Remixable), Sharable לצד תרשים הצוות.",
+      "anchor_seg_ids": [
+        "seg_0145",
+        "seg_0146",
+        "seg_0147",
+        "seg_0148"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 218.725,
+        "contrast": 63.47,
+        "sharpness": 8.709,
+        "blank": false,
+        "fingerprint": "846100422d1d58435637678376e26f688b8117d17ced3a264cc67de7faf80e97",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "assets": {
+        "full": {
+          "file": "ch09_narrow_focus-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "285c1d453cf243702ad6e58e81b06d2a9d89b9454d58b8940b648f4a11eec839"
+        },
+        "thumb": {
+          "file": "ch09_narrow_focus-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "b595327c6e9bf348e49b6f8912f71ecfc1cfbc7e97a7dfc8314618a4bb7918ea"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0056",
+      "name": "ch10_journal_agent",
+      "chapter_id": "ch10",
+      "requested_t": 760.031,
+      "actual_t": 760.059,
+      "triaged_t": 760.059,
+      "refinement": {
+        "t": 760.059,
+        "applied": false,
+        "blur_before": 6.3462,
+        "blur_after": 6.3462,
+        "delta_s": 0.0,
+        "eligible": 19,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156",
+        "seg_0159"
+      ],
+      "target_ids": [
+        "ch10_journal_agent"
+      ],
+      "family_id": "f_038",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "שיחת סוכן היומן ב-Telegram: עדכון מסמך ההשקה ורשימת סרטונים.",
+        "why": "הדוגמה החיה לסוכן היומן שפונה כל 30 דקות.",
+        "look_at": null
+      },
+      "alt": "שיחת סוכן היומן ב-Telegram: עדכון מסמך ההשקה ורשימת סרטונים.",
+      "anchor_seg_ids": [
+        "seg_0154",
+        "seg_0155",
+        "seg_0156",
+        "seg_0159"
+      ],
+      "selection_reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 168.507,
+        "contrast": 91.798,
+        "sharpness": 14.018,
+        "blank": false,
+        "fingerprint": "b4b9f5ea83af86d830b9dbf8f8372c0b88426f16285ad1d76976a924939529d3",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch10_journal_agent-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "6bd0e78f3353b5faf336ba35fd9708f7c00e183f0607fbf4e5cd671db991d59b"
+        },
+        "thumb": {
+          "file": "ch10_journal_agent-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "e354a19a4f8e742a88686057767d8e31be673e0cf7a11403e09a84e01c2d9331"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0059",
+      "name": "ch10_team_highlight",
+      "chapter_id": "ch10",
+      "requested_t": 809.9,
+      "actual_t": 809.909,
+      "triaged_t": 809.909,
+      "refinement": {
+        "t": 809.909,
+        "applied": false,
+        "blur_before": 5.0798,
+        "blur_after": 5.0798,
+        "delta_s": 0.0,
+        "eligible": 90,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "target_ids": [
+        "ch10_journal_informs"
+      ],
+      "family_id": null,
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "תרשים הצוות עם `Email Newsletter Agent` ו-`Journal Agent` מודגשים.",
+        "why": "ממחיש איך היומן מזין את סוכן הניוזלטר.",
+        "look_at": null
+      },
+      "alt": "תרשים הצוות עם Email Newsletter Agent ו-Journal Agent מודגשים.",
+      "anchor_seg_ids": [
+        "seg_0163",
+        "seg_0164",
+        "seg_0165",
+        "seg_0166",
+        "seg_0167"
+      ],
+      "selection_reasons": [
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 216.589,
+        "contrast": 62.461,
+        "sharpness": 11.3,
+        "blank": false,
+        "fingerprint": "ff597ca1b3b7e5a01f1fce8bd192d83fe9b572c1faaa4cabbe15e350997a3e96",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch10_team_highlight-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "54697054f25fffc7de8b3c644a6699c0054be9e40aa3ca95864544e6d07ea5a3"
+        },
+        "thumb": {
+          "file": "ch10_team_highlight-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "60a92a8762a331af3429ac0a4c35d246be4ba45ef96e2cc888eb08c72756efb8"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0064",
+      "name": "ch11_email_agent",
+      "chapter_id": "ch11",
+      "requested_t": 886.71,
+      "actual_t": 886.719,
+      "triaged_t": 886.719,
+      "refinement": {
+        "t": 886.719,
+        "applied": false,
+        "blur_before": 5.0261,
+        "blur_after": 5.0261,
+        "delta_s": 0.0,
+        "eligible": 90,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "target_ids": [
+        "ch11_markdown_skills"
+      ],
+      "family_id": "f_043",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח: `Focused Agent` עם חץ ל-`Open rate / Subscribe / Revenue`.",
+        "why": "ה-KPI של סוכן הניוזלטר, הדוגמה לביקורת עבר-נכשל.",
+        "look_at": null
+      },
+      "alt": "הלוח: Focused Agent עם חץ ל-Open rate / Subscribe / Revenue.",
+      "anchor_seg_ids": [
+        "seg_0184",
+        "seg_0185",
+        "seg_0186"
+      ],
+      "selection_reasons": [
+        "coverage",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.31,
+        "contrast": 63.84,
+        "sharpness": 10.643,
+        "blank": false,
+        "fingerprint": "a1fa7834204efda0c8c1472772eb0aff139be05474a34ad51303ff8f357d2c1e",
+        "faces": "unavailable"
+      },
+      "assets": {
+        "full": {
+          "file": "ch11_email_agent-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "6d4a9b122ce3f6208d496a778092c29fa05c61782319a0da701bab822bb4b164"
+        },
+        "thumb": {
+          "file": "ch11_email_agent-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "0f68ec0b7da8223383fe5cb34cb5d94d8f485cc1c4536e185e19fe2adaa9aa8f"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0069",
+      "name": "ch11_narrow_list",
+      "chapter_id": "ch11",
+      "requested_t": 961.22,
+      "actual_t": 961.227,
+      "triaged_t": 961.227,
+      "refinement": {
+        "t": 961.227,
+        "applied": false,
+        "blur_before": 5.0549,
+        "blur_after": 5.0549,
+        "delta_s": -0.0,
+        "eligible": 90,
+        "total": 90
+      },
+      "seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "target_ids": [
+        "ch11_loops"
+      ],
+      "family_id": "f_044",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הרשימה המלאה: `Narrow Focus`, `Duplicable`, `Sharable`, `Understandable`, `Reviewable`, `Easier loops`, `More autonomous`.",
+        "why": "המצב הסופי של הרשימה שהסרטון בונה לאורך כל הפרקים.",
+        "look_at": null
+      },
+      "alt": "הרשימה המלאה: Narrow Focus, Duplicable, Sharable, Understandable, Reviewable, Easier loops, More autonomous.",
+      "anchor_seg_ids": [
+        "seg_0201",
+        "seg_0202",
+        "seg_0203",
+        "seg_0204",
+        "seg_0205"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.933,
+        "contrast": 64.126,
+        "sharpness": 9.231,
+        "blank": false,
+        "fingerprint": "298ea31acebf52dcf15a31b480539bb6a2b32ff359743afdae7f6e949af1db5f",
+        "faces": "unavailable",
+        "text_chars": 343
+      },
+      "assets": {
+        "full": {
+          "file": "ch11_narrow_list-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "819c223fd9ef3c34600cdf14c3d520656f81f8be0d038fd48707bdeca4351156"
+        },
+        "thumb": {
+          "file": "ch11_narrow_list-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "beb77926934b1049be6ebbe92a38a3a6e81a17263f98edb9ef05e69c4f3a5cb8"
+        }
+      }
+    },
+    {
+      "candidate_id": "c_0071",
+      "name": "ch12_open_questions",
+      "chapter_id": "ch12",
+      "requested_t": 1004.0,
+      "actual_t": 1004.003,
+      "triaged_t": 1004.003,
+      "refinement": {
+        "t": 1004.003,
+        "applied": false,
+        "blur_before": 5.0393,
+        "blur_after": 5.0393,
+        "delta_s": 0.0,
+        "eligible": 22,
+        "total": 46
+      },
+      "seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211",
+        "seg_0218"
+      ],
+      "target_ids": [
+        "ch12_team"
+      ],
+      "family_id": "f_045",
+      "role": "evidence",
+      "novelty": "new_state",
+      "caption": {
+        "shows": "הלוח: `How to most efficiently run these in the cloud / share these agents with the team / get these AI agents to communicate`.",
+        "why": "שלוש השאלות הפתוחות שהסרטון מסתיים בהן.",
+        "look_at": null
+      },
+      "alt": "הלוח: How to most efficiently run these in the cloud / share these agents with the team / get these AI agents to communicate.",
+      "anchor_seg_ids": [
+        "seg_0209",
+        "seg_0210",
+        "seg_0211",
+        "seg_0218"
+      ],
+      "selection_reasons": [
+        "scene",
+        "target"
+      ],
+      "quality": {
+        "mean_luma": 219.179,
+        "contrast": 63.467,
+        "sharpness": 9.496,
+        "blank": false,
+        "fingerprint": "c15de7059c783af55806fb97afe1241bd8f80415148f165044e551fe570a9fd8",
+        "faces": "unavailable",
+        "text_chars": 344
+      },
+      "assets": {
+        "full": {
+          "file": "ch12_open_questions-full.jpg",
+          "width": 1280,
+          "height": 720,
+          "sha256": "14ba49a0c44d5168c578a7370b2453c0cafd338c1b3b0c760ba6d5685387d94e"
+        },
+        "thumb": {
+          "file": "ch12_open_questions-thumb.jpg",
+          "width": 640,
+          "height": 360,
+          "sha256": "24f70e4e0e4e298112a52e9308c3fd30c1368faa981949d40efd78f0ac3c8a31"
+        }
+      }
+    }
+  ],
+  "audit": {
+    "errors": 0,
+    "reviews": 16,
+    "warnings": 0,
+    "stats": {
+      "lang": "he",
+      "words": 1076,
+      "cited_segments": 237,
+      "segments": 237,
+      "coverage": 1.0,
+      "hebrew_ratio": 0.846
+    }
+  },
+  "summary_sha256": "d27e47180a8a96e24045f2328e62e7abc7c088149c8671a1c7cbc1f33a5ec471",
+  "selections_sha256": "fd05835130184b68758ae097affec4834335c4fe7f70437545d87393bfc0c418"
+}

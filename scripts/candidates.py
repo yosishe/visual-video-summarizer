@@ -83,12 +83,20 @@ ADVANCED_CAP = PROFILES["high"]["cap"]
 UNPLANNED_FLOOR = PROFILES["standard"]["unplanned_floor"]
 LIGHT_SCENE_THRESHOLD = PROFILES["standard"]["scene_threshold"]
 ADVANCED_SCENE_FLOOR = PROFILES["high"]["scene_floor"]
-IMAGE_TOKEN_DIVISOR = 750  # Anthropic: ≈ w×h/750 tokens per image
+IMAGE_PATCH = 28  # Anthropic vision: ⌈w/28⌉ × ⌈h/28⌉ visual tokens per image (verified 2026-09-04)
+
+
+def image_tokens(width: int, height: int) -> int:
+    """Exact visual-token cost of one image on the Claude API: one token per
+    28×28 patch, ceilings on both axes (512×288 → 19×11 = 209)."""
+    if width <= 0 or height <= 0:
+        return 0
+    return -(-width // IMAGE_PATCH) * -(-height // IMAGE_PATCH)
 MERGE_EPS = 0.20
 LONG_VIDEO_SECONDS = 20 * 60
 SECTION_PADDING = 5.0
 MAX_READ_DIMENSION = 1998
-REASON_PRIORITY = ("target", "cue", "pin", "coverage", "scene", "final", "safety")
+REASON_PRIORITY = ("target", "cue", "pin", "coverage", "scene", "final")
 PROTECTED = {"target", "cue", "pin", "coverage"}
 SHOWINFO_TS_RE = re.compile(r"pts_time:([-0-9.]+)")
 SCENE_SCORE_RE = re.compile(
@@ -661,7 +669,7 @@ def make_point(
     seg_ids = {str(seg_id) for row in target_rows for seg_id in row.get("seg_ids", [])}
     if not seg_ids:
         seg_ids.update(segment_ids_for_time(segments, timestamp))
-    priority = {"target": 100, "cue": 90, "pin": 80, "coverage": 70, "scene": 40, "final": 20, "safety": 10}.get(reason, 0)
+    priority = {"target": 100, "cue": 90, "pin": 80, "coverage": 70, "scene": 40, "final": 20}.get(reason, 0)
     return {
         "requested_t": round(timestamp, 3),
         "reasons": {reason},
@@ -1080,8 +1088,8 @@ def cost_estimate(
     overlay_seconds: float = 0.0,
 ) -> dict:
     """An honest cost line: image tokens use each candidate's real dimensions
-    (w×h/750, the Anthropic estimate — other providers differ), CPU passes are
-    listed, and the other tier's ceiling is quoted for comparison."""
+    (⌈w/28⌉×⌈h/28⌉ patches, the documented Claude formula — other providers
+    differ), CPU passes are listed, and the other tier's ceiling is quoted."""
     dimensions: Counter[str] = Counter()
     tokens = 0
     for record in records:
@@ -1089,7 +1097,7 @@ def cost_estimate(
         if width <= 0 or height <= 0:
             width, height = profile["resolution"], round(profile["resolution"] * 9 / 16)
         dimensions[f"{width}x{height}"] += 1
-        tokens += max(1, round(width * height / IMAGE_TOKEN_DIVISOR))
+        tokens += image_tokens(width, height)
     per_image = round(tokens / len(records)) if records else 0
     other_tier = "high" if tier == "standard" else "standard"
     other_cap = PROFILES[other_tier]["cap"]
@@ -1098,7 +1106,7 @@ def cost_estimate(
         "candidates": len(records),
         "image_tokens_estimate": tokens,
         "image_tokens_per_candidate": per_image,
-        "token_formula": f"w*h/{IMAGE_TOKEN_DIVISOR} per image (Anthropic estimate); one batched Read",
+        "token_formula": f"ceil(w/{IMAGE_PATCH})*ceil(h/{IMAGE_PATCH}) per image (Anthropic vision docs); one batched Read",
         "frame_dimensions": dict(dimensions),
         "cpu": {
             "scene_pass": profile["scene"],
@@ -1117,7 +1125,7 @@ def cost_estimate(
         "other_tier": {
             "tier": other_tier,
             "cap": other_cap,
-            "max_image_tokens": other_cap * (per_image or round(512 * 288 / IMAGE_TOKEN_DIVISOR)),
+            "max_image_tokens": other_cap * (per_image or image_tokens(512, 288)),
         },
     }
 
@@ -1507,7 +1515,11 @@ def main() -> int:
         "terminal_probes": terminal_probes,
         "cost": cost,
         "triage": {
-            "instructions": "Read temporal strips first; open individual 512px candidates only when selected or uncertain.",
+            "instructions": (
+                "Read temporal strips first; open individual 512px candidates only when selected or uncertain."
+                if strips else
+                "Read every candidate path in one message (parallel Reads), then select by candidate_id."
+            ),
             "strips": strips,
             "pixel_area": strip_pixels,
             "projected_individual_reads": projected_individual_reads,
@@ -1546,7 +1558,7 @@ def main() -> int:
     dims = ", ".join(f"{n}×{size}" for size, n in cost["frame_dimensions"].items()) or "-"
     print(
         f"- **Image tokens (estimate):** ≈{cost['image_tokens_estimate']:,} for one batched Read "
-        f"({dims}; ≈{cost['image_tokens_per_candidate']} each, w×h/{IMAGE_TOKEN_DIVISOR}; other providers differ)"
+        f"({dims}; {cost['image_tokens_per_candidate']} each, ⌈w/{IMAGE_PATCH}⌉×⌈h/{IMAGE_PATCH}⌉; other providers differ)"
     )
     cpu = cost["cpu"]
     refine_note = (

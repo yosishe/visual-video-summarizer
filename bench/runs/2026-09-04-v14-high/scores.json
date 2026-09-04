@@ -344,6 +344,42 @@
         ]
       }
     ],
+    "summary": {
+      "coverage": 1.0,
+      "claims": [
+        {
+          "claim_id": "k01",
+          "present": true
+        },
+        {
+          "claim_id": "k02",
+          "present": true
+        },
+        {
+          "claim_id": "k03",
+          "present": true
+        },
+        {
+          "claim_id": "k04",
+          "present": true
+        },
+        {
+          "claim_id": "k05",
+          "present": true
+        },
+        {
+          "claim_id": "k06",
+          "present": true
+        }
+      ],
+      "lang": "he",
+      "words": 1108,
+      "hebrew_ratio": 0.8521653543307086,
+      "niqqud": 0,
+      "bidi_controls": 0,
+      "blocks_leading_latin": 0,
+      "dashes": 0
+    },
     "annotation_status": "draft"
   }
 ]

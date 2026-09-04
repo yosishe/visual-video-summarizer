@@ -220,7 +220,7 @@ class SignalTests(unittest.TestCase):
             wide, "standard", PROFILES["standard"], scene_seconds=100.0, terminal_probes=0,
             seeks=48, faces_status="off", ocr_frames=0,
         )
-        self.assertEqual(cost["image_tokens_estimate"], 48 * 197)
+        self.assertEqual(cost["image_tokens_estimate"], 48 * 209)  # ⌈512/28⌉ × ⌈288/28⌉ = 19 × 11
         self.assertEqual(cost["other_tier"]["tier"], "high")
         square = [{"width": 512, "height": 384} for _ in range(48)]
         taller = candidates.cost_estimate(

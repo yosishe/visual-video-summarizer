@@ -85,6 +85,13 @@ Every missed essential visual is attributed to `not_in_pool`, `blank_dropped`,
 Residual near-duplicate pairs inside the pool (masked predicate): 4 → 0
 (standard), 4 → 1 (high); distinct pictures 47 → 50 / 72 → 75.
 
+The v14-high run also carries the first **Hebrew** summary (`--lang he`):
+1,108 words, checklist coverage 100 % (bilingual `must_tokens`), 100 % of
+segments cited, 85 % Hebrew letters, 0 niqqud, 0 bidi controls, 0 prose blocks
+opening with Latin, 0 audit errors (after two rounds of fixes the audit forced:
+boundary segments cited in the wrong chapter, counts the speaker never said);
+render 4.5 s, PDF 2.2 MB via Chrome.
+
 Still missed by every profile: `s06` "Enter Task → Computer" (2:07–2:43) and
 `s13` "Employee" list (6:03–6:45) in standard, `s02`/`s06` in high — unplanned
 whiteboard states between targets that scene detection never sampled

@@ -57,7 +57,7 @@ Each candidate contains:
 
 `coverage.chapters` and `coverage.targets` use `covered`, `not-required`, or `unresolved`. An unresolved required row is a fail-closed signal.
 
-`cost` carries `image_tokens_estimate` (Σ w×h/750 over the candidates' real dimensions — an Anthropic estimate, other providers differ), `cpu` (scene pass, terminal probes, seeks, OCR frames, faces status, refinement) and `other_tier` (the other tier's cap and token ceiling).
+`cost` carries `image_tokens_estimate` (Σ ⌈w/28⌉×⌈h/28⌉ over the candidates' real dimensions — the documented Claude vision formula; other providers differ), `cpu` (scene pass, terminal probes, seeks, OCR frames, faces status, refinement) and `other_tier` (the other tier's cap and token ceiling).
 
 `triage.strips` is populated only when `candidates.py --strips` was used; it maps each left-to-right temporal strip to its ordered candidate IDs. `projected_to_baseline_ratio` estimates strip pixels plus one individual 512px read per strip (or one read per candidate when strips are off) against the former 60-frame baseline; it is not a provider token quote.
 
@@ -73,16 +73,23 @@ Required fields:
 - `name`: safe asset stem using letters, digits, `_`, or `-`.
 - `chapter_id`: must equal the candidate's timestamp-derived chapter.
 - `role`: `evidence` or `illustration`.
-- `caption` and `alt`: non-empty English text.
-- `anchor_seg_ids`: transcript IDs that overlap both candidate provenance and a summary block.
+- `caption`: either a string (legacy) or an object `{"shows", "why", "look_at"}` — `shows` required; `why` required when `novelty` is `build_stage`; all in the document language (Hebrew when `lang` is `he`), with on-screen strings, commands and numbers in `backticks` (rendered LTR).
+- `alt`: non-empty, ≤ 160 characters, visual content only.
+- `anchor_seg_ids`: transcript IDs that overlap both candidate provenance (`seg_ids` ∪ `aligned_seg_ids`) and a summary block.
 
-Optional `crop` uses FFmpeg's `w:h:x:y` syntax and is applied to full and thumbnail assets.
+Optional: `novelty` (`new_state` default | `build_stage` | `reprise`), `crop` (FFmpeg `w:h:x:y`, applied to full and thumbnail assets). A sibling `triage-rejections.json` (`[{candidate_id, reason}]`, reasons `people_frame | duplicate_of:<id> | no_information | wrong_chapter | build_stage`) is optional and read only by the benchmark.
 
-## `summary.json`
+## `summary.json` (schema 3)
 
-Top-level object with a non-empty English `overview` and one entry for every chapter.
+Top-level object: `schema_version` 3, `lang` (`he` | `en`; absent = `en`), optional `source_language`, optional `glossary` (`{term: form}`), a non-empty `overview` in the document language, and one entry for every chapter.
 
-Each chapter has `chapter_id`, optional display `title`, non-empty `blocks`, and optional `key_points`. Every block requires English `text` and one or more `seg_ids`. The renderer inserts a selected frame after the first block that overlaps its `anchor_seg_ids`.
+Each chapter has `chapter_id`, optional display `title`, non-empty `blocks`, and optional `key_points`. Every block requires `text` and one or more `seg_ids`; optional `block_id` (default `<chapter>_bNN`), `kind` (`prose` default | `code` — rendered `<pre dir="ltr">` | `quote` — rendered `<blockquote dir="auto">`), and `lang` for code. Inside prose, `backticks` are the only markup (→ `<code dir="ltr">`); everything else is escaped literally. In a Hebrew document every prose block, the overview and every caption must contain Hebrew. The renderer inserts a selected frame after the first block that overlaps its `anchor_seg_ids`.
+
+`audit_summary.py` checks the summary before rendering (and `render.py` runs it again, exit 5 on errors): numbers, `backtick` identifiers and URLs must appear in the cited segments (or the video's metadata); segments in order and inside their chapter (±5 s); Hebrew hygiene (no niqqud, no bidi control characters, Hebrew prose in Hebrew blocks); soft reviews for Latin names found elsewhere in the transcript, dropped negations, uncited stretches over 60 s and captions whose terms are not in the frame's segments or OCR text. Output `<work>/audit.json` `{errors, reviews, warnings, stats}`.
+
+## `transcript.json`
+
+`source` (`captions` | `whisper (backend)` | null), `source_detail` (captions: `track`, `manual`, `original`, `translated` (always false — machine-translated tracks are rejected), `youtube_language`, `tracks_considered`, `rejected_translated`; whisper: `backend`, `language_hint`, `detected`), `language` (normalised: YouTube's `iw` → `he`), `video` (`id`, `title`, `uploader`, `url`, `duration`, `is_url`, `language`, `chapters` — the creator's chapter list when YouTube has one), `segments`. Exit 6 when no transcript could be obtained.
 
 ## Generated output
 
@@ -90,8 +97,8 @@ Each chapter has `chapter_id`, optional display `title`, non-empty `blocks`, and
 
 `render.py` refuses to render when extraction failed, hard duplicates exist, a timestamp (the candidate's or the asset's) belongs to another chapter, provenance does not overlap, budgets are exceeded, or assets are missing. Captions and timestamp links use the asset's `actual_t`. It writes:
 
-- `manifest.json`: combined video, chapter, prose, frame (with `triaged_t` and `refinement`), provenance, quality, and asset-hash source of truth; plus `tier` and `engine_version`.
-- `index.html`: escaped, deterministic English HTML that references only validated assets; carries print CSS.
+- `manifest.json` (schema 3): combined video, chapter, prose (blocks with `block_id`/`kind`), frame (with `triaged_t`, `refinement`, `family_id`, `novelty`, caption object), provenance, quality, and asset-hash source of truth; plus `tier`, `engine_version`, `lang`, `direction`, `source_language`, `translation_mode` (`translated` | `hebrew_passthrough` | `same_language`), `transcript_source`, an `audit` summary and `summary_sha256` / `selections_sha256` (canonical JSON hashes of the inputs). Written with `ensure_ascii=False`. Asset files are re-hashed against `assets-manifest.json` before rendering.
+- `index.html`: escaped, deterministic HTML in the document language — `<html lang dir>` set from `lang`, logical CSS, timestamps/ranges/code isolated LTR, the title in its own direction, Heebo subsets embedded for Hebrew; carries print CSS.
 - `../summary-<id>.html` (next to the output directory): the single self-contained deliverable produced by `bundle.py`, with every image embedded as a data URI. `render.py` bundles automatically; re-run it after any change.
 - `../summary-<id>.pdf` with `--pdf`: printed from the single file by Chrome headless (or WeasyPrint). Exit 4 when neither engine exists.
 
@@ -100,6 +107,8 @@ Schema versions are unchanged (all additions are new fields).
 ## CLI compatibility
 
 `candidates.json` (1.4) also carries `overlays` (persistent picture-in-picture / bar boxes as frame fractions `[x0, y0, x1, y1]` with `kind`, `motion_fraction`, `pairs`), `mask_fraction` (share of every signature that is ignored), `profile_override` and `profile_sha256` (the effective `PROFILES` entry after `--profile-override`), and per candidate `family_id` (shared by frames the engine judged the same picture; `null` for singletons) and `family_revisits` (times in other chapters where that picture appeared again and was dropped). `work/dropped.json` lists every discarded raw frame: `t`, `requested_t`, `reason` (`blank` | `dedup` | `cap`), `reasons`, `chapter_id`, `target_ids`, `kept_by_t`. `grab.py` reads `overlays` and applies the same mask to the verification gate, the refinement series and the hard-duplicate audit. Profile keys `pip_mask` (`on`|`off`) and `dedup_scope` (`family`|`chapter`, the pre-1.4 behaviour) exist for ablation via `--profile-override`.
+
+`render.py --lang he|en` sets the document language (default: `summary.json` `lang` → `SUMMARY_LANG` in the environment or `~/.config/summarize-video/.env` → `en`); `--pdf-engine auto|chrome|weasyprint`; `--allow-audit-errors` (benchmark only). `transcript.py --langs` now bypasses track ranking instead of being the default; `--wanted he,en`, `--language xx`. Exit codes: 2 / 3 grab, 4 no PDF engine, 5 audit errors, 6 no transcript; every other `SystemExit` message is exit 1.
 
 `candidates.py --tier standard|high` is the tier switch; `--mode light|advanced` remain as aliases (`light` = `standard`, `advanced` = `high`) and `candidates.json` keeps the `mode` key. `--cues` and `--pins` remain accepted for older runs. `--max-candidates` is now a hard ceiling; `--scene-threshold` sets the fixed threshold in `standard` and the adaptive floor in `high`; `--resolution`, `--sections`, and `--no-dedup` remain available. Candidate resolution is capped at 512px. `grab.py --refine sharpness|none` overrides the tier's default; `render.py --pdf` adds the PDF.
 

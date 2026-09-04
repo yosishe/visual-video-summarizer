@@ -414,10 +414,18 @@
       "claim_id": "k01",
       "claim": "Four agent products were tested: OpenClaw, Manus, Claude Code, Perplexity Computer",
       "must_tokens": [
-        "OpenClaw",
-        "Manus",
-        "Claude Code",
-        "Perplexity"
+        [
+          "OpenClaw"
+        ],
+        [
+          "Manus"
+        ],
+        [
+          "Claude Code"
+        ],
+        [
+          "Perplexity"
+        ]
       ],
       "seg_ids": [
         "seg_0011",
@@ -430,9 +438,16 @@
       "claim_id": "k02",
       "claim": "An OpenClaw agent = computer + memory + skills + gateway (telegram/whatsapp/discord/slack)",
       "must_tokens": [
-        "memory",
-        "skills",
-        "gateway"
+        [
+          "memory",
+          "זיכרון"
+        ],
+        [
+          "skills"
+        ],
+        [
+          "gateway"
+        ]
       ],
       "seg_ids": [
         "seg_0038",
@@ -446,8 +461,12 @@
       "claim_id": "k03",
       "claim": "Sweet spot is 7–10 skills per agent",
       "must_tokens": [
-        "7",
-        "10"
+        [
+          "7"
+        ],
+        [
+          "10"
+        ]
       ],
       "seg_ids": [
         "seg_0065",
@@ -460,7 +479,9 @@
       "claim_id": "k04",
       "claim": "Emmett Shear: prompts are late 2025, models get intents now",
       "must_tokens": [
-        "Shear"
+        [
+          "Shear"
+        ]
       ],
       "seg_ids": [
         "seg_0081",
@@ -474,8 +495,16 @@
       "claim_id": "k05",
       "claim": "Narrow agents: focused goals, duplicable/remixable, sharable, understandable, reviewable",
       "must_tokens": [
-        "Narrow",
-        "Sharable"
+        [
+          "Narrow",
+          "צר"
+        ],
+        [
+          "Sharable",
+          "שיתוף",
+          "לשתף",
+          "לשכפל"
+        ]
       ],
       "seg_ids": [
         "seg_0145",
@@ -489,8 +518,14 @@
       "claim_id": "k06",
       "claim": "Open questions: running agents in the cloud, sharing with the team, agent-to-agent communication",
       "must_tokens": [
-        "cloud",
-        "team"
+        [
+          "cloud",
+          "ענן"
+        ],
+        [
+          "team",
+          "צוות"
+        ]
       ],
       "seg_ids": [
         "seg_0219",
@@ -502,5 +537,6 @@
       "weight": 1
     }
   ],
-  "revision": "2026-09-04b: s02/s29 starts moved earlier after inspecting extracted frames"
+  "revision": "2026-09-04b: s02/s29 starts moved earlier after inspecting extracted frames",
+  "notes": "must_tokens entries are lists of alternatives so English and Hebrew summaries score alike"
 }

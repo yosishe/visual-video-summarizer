@@ -1,5 +1,9 @@
 {
   "candidates_wall_s": 81.5,
   "candidates_rc": 0,
-  "profile": "v14-high"
+  "profile": "v14-high",
+  "grab_wall_s": 28.2,
+  "grab_rc": 0,
+  "render_wall_s": 4.5,
+  "render_rc": 0
 }
