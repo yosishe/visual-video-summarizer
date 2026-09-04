@@ -1,0 +1,21 @@
+visual-video-summarizer
+Copyright (c) 2026 Yosi (yosishe)
+Licensed under the MIT License (see LICENSE).
+
+Third-party notices
+
+- claude-video (https://github.com/bradautomates/claude-video),
+  Copyright (c) bradautomates, MIT License.
+  scripts/whisper.py is copied from that project; the frame-engine internals
+  in scripts/candidates.py (ffmpeg scene detection via select=gt(scene,T) with
+  showinfo pts stamps, thumbnail dedup, even sampling) are adapted from it.
+
+- Heebo typeface, Copyright 2014 The Heebo Project Authors
+  (https://github.com/OdedEzer/heebo), SIL Open Font License 1.1.
+  scripts/fonts/Heebo-Regular.subset.woff and scripts/fonts/Heebo-Bold.subset.woff
+  are subsets (Hebrew, Basic Latin, Latin-1 punctuation, General Punctuation, U+20AA);
+  the license text is in scripts/fonts/OFL.txt.
+
+- Design references, no code copied: CZX2244/dsh-bilibili (blurdetect sharpness
+  gate, "content gap" targeting rubric) and ConflictHQ/PlanOpticon (MIT;
+  people-frame demotion).
