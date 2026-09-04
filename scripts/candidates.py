@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 from statistics import median
 from urllib.parse import urlparse
@@ -27,8 +28,12 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from frame_utils import (  # noqa: E402
     chapter_for_time,
     compare_signatures,
+    detect_faces,
+    faces_available,
     format_time,
     is_near_duplicate,
+    ocr_text_density,
+    parse_metadata_series,
     parse_time,
     probe_media,
     public_quality,
@@ -36,15 +41,45 @@ from frame_utils import (  # noqa: E402
     visual_signature,
 )
 
-# Light reserves up to two frames per target plus one per chapter before any
-# unplanned scene change gets a slot; 36 left too few for those, so a slide
-# nobody predicted in chapters.json could be capped out. 48 keeps the pool
-# bounded while leaving room for what the transcript did not foresee.
-LIGHT_CAP = 48
-ADVANCED_CAP = 60
-UNPLANNED_FLOOR = 12  # scene/safety slots always kept beyond reserved target frames
-LIGHT_SCENE_THRESHOLD = 0.15
-ADVANCED_SCENE_FLOOR = 0.04
+ENGINE_VERSION = "1.3.0"
+
+# Every tier-dependent number lives here. `standard` is the default: it
+# reserves up to two frames per target plus one per chapter before any
+# unplanned scene change gets a slot (36 left too few for those, so a slide
+# nobody predicted in chapters.json could be capped out; 48 keeps the pool
+# bounded while leaving room for what the transcript did not foresee). `high`
+# spends more CPU and image tokens for accuracy: adaptive scene scoring, denser
+# sampling, three alternatives per target, blurdetect refinement at grab time,
+# optional face demotion (cv2) and OCR text density as a ranking signal.
+PROFILES: dict[str, dict] = {
+    "standard": {
+        "cap": 48, "per_target": 2, "unplanned_floor": 12,
+        "scene": "fixed", "scene_threshold": 0.15, "scene_floor": None,
+        "action_offsets": (0.20, 0.80, 1.60),
+        "state_offsets": (0.0, 0.60), "state_fractions": (),
+        "slide_fractions": (),  # slide/diagram = anchor + measured terminal
+        "coverage_min": 1, "cue_offsets": (0.5, 1.5),
+        "refine": "none", "faces": "off", "ocr": "off", "resolution": 512,
+    },
+    "high": {
+        "cap": 64, "per_target": 3, "unplanned_floor": 16,
+        "scene": "adaptive", "scene_threshold": None, "scene_floor": 0.04,
+        "action_offsets": (0.10, 0.35, 0.70, 1.20, 1.80, 2.40),
+        "state_offsets": (), "state_fractions": (0.10, 0.30, 0.50, 0.70, 0.90),
+        "slide_fractions": (0.30, 0.70),  # + anchor + measured terminal
+        "coverage_min": 2, "cue_offsets": (0.2, 0.5, 1.0, 1.5, 2.0),
+        "refine": "sharpness", "faces": "auto", "ocr": "on", "resolution": 512,
+    },
+}
+MODE_ALIASES = {"light": "standard", "advanced": "high"}
+TIER_TO_MODE = {tier: mode for mode, tier in MODE_ALIASES.items()}
+# Read-through aliases kept for older imports.
+LIGHT_CAP = PROFILES["standard"]["cap"]
+ADVANCED_CAP = PROFILES["high"]["cap"]
+UNPLANNED_FLOOR = PROFILES["standard"]["unplanned_floor"]
+LIGHT_SCENE_THRESHOLD = PROFILES["standard"]["scene_threshold"]
+ADVANCED_SCENE_FLOOR = PROFILES["high"]["scene_floor"]
+IMAGE_TOKEN_DIVISOR = 750  # Anthropic: ≈ w×h/750 tokens per image
 MERGE_EPS = 0.20
 LONG_VIDEO_SECONDS = 20 * 60
 SECTION_PADDING = 5.0
@@ -327,45 +362,140 @@ def scene_detect_light(
     return points
 
 
-def scene_detect_advanced(part: dict, windows: list[tuple[float, float]]) -> list[tuple[float, float]]:
+def scene_score_series(
+    part: dict, window: tuple[float, float], width: int | None = None
+) -> list[tuple[float, float]]:
+    """Per-frame lavfi.scene_score over an absolute window (already clamped to
+    the part). `width` downscales before scoring — cheaper for short probes."""
+    start, end = window
+    if end - start <= 0:
+        return []
+    vf = "select='gte(scene,0)',metadata=print:key=lavfi.scene_score"
+    if width:
+        vf = f"scale={int(width)}:-2," + vf
+    cmd = [
+        "ffmpeg", "-hide_banner", "-loglevel", "info", "-copyts",
+        "-ss", f"{_media_timestamp(part, start):.3f}",
+        "-t", f"{end - start:.3f}", "-i", part["path"],
+        "-vf", vf, "-an", "-f", "null", "-",
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"ffmpeg scene scoring failed: {result.stderr.strip()}")
+    return [
+        (_absolute_from_media_pts(part, pts), score)
+        for pts, score in parse_metadata_series(result.stderr, "scene_score")
+    ]
+
+
+def adaptive_maxima(scores: list[tuple[float, float]], floor: float) -> list[tuple[float, float]]:
+    """Local maxima above an adaptive threshold (median + 8·MAD, never below
+    `floor`), with 0.35 s non-maximum suppression."""
+    if not scores:
+        return []
+    values = [score for _, score in scores]
+    center = median(values)
+    deviations = [abs(score - center) for score in values]
+    adaptive = max(floor, center + 8 * median(deviations))
+    local_maxima: list[tuple[float, float]] = []
+    for index, (timestamp, score) in enumerate(scores):
+        before = scores[index - 1][1] if index else -1.0
+        after = scores[index + 1][1] if index + 1 < len(scores) else -1.0
+        if score >= adaptive and score >= before and score >= after:
+            if local_maxima and timestamp - local_maxima[-1][0] < 0.35:
+                if score > local_maxima[-1][1]:
+                    local_maxima[-1] = (timestamp, score)
+            else:
+                local_maxima.append((timestamp, score))
+    return [(round(timestamp, 3), round(score, 6)) for timestamp, score in local_maxima]
+
+
+def scene_detect_advanced(
+    part: dict, windows: list[tuple[float, float]], floor: float = ADVANCED_SCENE_FLOOR
+) -> list[tuple[float, float]]:
     selected: list[tuple[float, float]] = []
     for window in windows:
         overlap = _part_window(part, window)
         if overlap is None:
             continue
-        start, end = overlap
-        cmd = [
-            "ffmpeg", "-hide_banner", "-loglevel", "info", "-copyts",
-            "-ss", f"{_media_timestamp(part, start):.3f}",
-            "-t", f"{end - start:.3f}", "-i", part["path"],
-            "-vf", "select='gte(scene,0)',metadata=print:key=lavfi.scene_score",
-            "-an", "-f", "null", "-",
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise SystemExit(f"ffmpeg adaptive scene scoring failed: {result.stderr.strip()}")
-        scores = [
-            (_absolute_from_media_pts(part, float(match.group(1))), float(match.group(2)))
-            for match in SCENE_SCORE_RE.finditer(result.stderr)
-        ]
-        if not scores:
-            continue
-        values = [score for _, score in scores]
-        center = median(values)
-        deviations = [abs(score - center) for score in values]
-        adaptive = max(ADVANCED_SCENE_FLOOR, center + 8 * median(deviations))
-        local_maxima: list[tuple[float, float]] = []
-        for index, (timestamp, score) in enumerate(scores):
-            before = scores[index - 1][1] if index else -1.0
-            after = scores[index + 1][1] if index + 1 < len(scores) else -1.0
-            if score >= adaptive and score >= before and score >= after:
-                if local_maxima and timestamp - local_maxima[-1][0] < 0.35:
-                    if score > local_maxima[-1][1]:
-                        local_maxima[-1] = (timestamp, score)
-                else:
-                    local_maxima.append((timestamp, score))
-        selected.extend((round(timestamp, 3), round(score, 6)) for timestamp, score in local_maxima)
+        try:
+            scores = scene_score_series(part, overlap)
+        except RuntimeError as exc:
+            raise SystemExit(f"ffmpeg adaptive scene scoring failed: {exc}") from exc
+        selected.extend(adaptive_maxima(scores, floor))
     return selected
+
+
+def stable_terminal_from_scores(
+    scores: list[tuple[float, float]],
+    anchor: float,
+    window: tuple[float, float],
+    *,
+    step_tau: float | None = None,
+    flip_tau: float = LIGHT_SCENE_THRESHOLD,
+    settle: float = 0.20,
+) -> dict | None:
+    """Measure where a slide/board stops being built up.
+
+    A board is drawn WHILE the speaker talks about it; its most complete state
+    is the last frame before the screen flips to something else. Scores above
+    `step_tau` (median + 6·MAD, min 0.015) are events: a *build step* when
+    below `flip_tau`, a *flip* at or above it. Starting from the stable run
+    containing `anchor`, walk forward across build steps and stop at the first
+    flip (minus `settle`) or at the window end (minus 0.25 s).
+    """
+    if not scores:
+        return None
+    window_start, window_end = float(window[0]), float(window[1])
+    values = [score for _, score in scores]
+    if step_tau is None:
+        center = median(values)
+        deviation = median(abs(score - center) for score in values)
+        step_tau = max(0.015, center + 6 * deviation)
+    events = [(timestamp, score) for timestamp, score in scores if score >= step_tau]
+    flips = [timestamp for timestamp, score in events if score >= flip_tau]
+    run_start = max([window_start] + [timestamp for timestamp in flips if timestamp <= anchor])
+    later = [timestamp for timestamp in flips if timestamp > anchor]
+    if later:
+        stop = later[0]
+        flipped = True
+        terminal = stop - settle
+    else:
+        stop = window_end
+        flipped = False
+        terminal = window_end - 0.25
+    terminal = max(run_start, min(terminal, window_end))
+    build_steps = [
+        timestamp for timestamp, score in events
+        if run_start <= timestamp < stop and score < flip_tau
+    ]
+    return {
+        "terminal_t": round(terminal, 3),
+        "run_start": round(run_start, 3),
+        "stop": round(stop, 3),
+        "flipped": flipped,
+        "build_steps": len(build_steps),
+        "events": len(events),
+        "step_tau": round(step_tau, 4),
+    }
+
+
+def measure_stable_terminal(parts: list[dict], target: dict) -> dict | None:
+    """Probe one slide/diagram target window (cheap 192px scene pass, zero
+    tokens). Returns None — and the caller keeps `end-0.25` — on any failure."""
+    anchor = float(target["anchor_t"])
+    part = part_for(parts, anchor)
+    if part is None:
+        return None
+    overlap = _part_window(part, (float(target["window"][0]), float(target["window"][1])))
+    if overlap is None:
+        return None
+    try:
+        scores = scene_score_series(part, overlap, width=192)
+    except RuntimeError as exc:
+        print(f"[vsum] terminal probe failed for {target['target_id']}: {exc}; using window end", file=sys.stderr)
+        return None
+    return stable_terminal_from_scores(scores, anchor, overlap)
 
 
 def load_transcript(path: str | None, work: Path) -> dict:
@@ -541,23 +671,55 @@ def make_point(
     }
 
 
-def target_sample_times(target: dict, mode: str) -> list[float]:
+def resolve_profile(tier: str | None, mode: str | None) -> tuple[str, dict]:
+    """`--tier standard|high` is the user-facing switch; `--mode light|advanced`
+    stays as an alias. Both given and disagreeing is an error, not a guess."""
+    from_mode = MODE_ALIASES.get(mode) if mode else None
+    if mode and from_mode is None:
+        raise SystemExit(f"Unknown --mode {mode!r}; use --tier standard|high")
+    if tier and from_mode and tier != from_mode:
+        raise SystemExit(f"--tier {tier} conflicts with --mode {mode} (an alias of --tier {from_mode})")
+    name = tier or from_mode or "standard"
+    if name not in PROFILES:
+        raise SystemExit(f"Unknown tier {name!r}; use standard or high")
+    return name, dict(PROFILES[name])
+
+
+def _profile_arg(profile: dict | str) -> dict:
+    if isinstance(profile, str):  # legacy callers passed the mode name
+        return PROFILES[MODE_ALIASES.get(profile, profile)]
+    return profile
+
+
+def target_sample_times(target: dict, profile: dict | str) -> list[float]:
+    profile = _profile_arg(profile)
     start, end = target["window"]
     anchor = target["anchor_t"]
-    if target["kind"] == "action_result":
-        offsets = (0.20, 0.80, 1.60) if mode == "light" else (0.10, 0.35, 0.70, 1.20, 1.80, 2.40)
-        return [min(end, max(start, anchor + offset)) for offset in offsets]
-    if mode == "light":
-        if target["kind"] in ("diagram", "slide"):
-            # A board or slide is built up WHILE the speaker talks about it, so
-            # its most complete state is at the end of the referenced segments.
-            # Sampling only the midpoint returned half-typed titles and diagrams
-            # missing their last labels. The mid sample stays for the case where
-            # the screen moves on before the segment ends.
-            return [min(end, max(start, anchor)), max(start, end - 0.25)]
-        return [min(end, max(start, anchor)), min(end, max(start, anchor + 0.60))]
     span = max(0.05, end - start)
-    return [start + span * fraction for fraction in (0.10, 0.30, 0.50, 0.70, 0.90)]
+
+    def clamp(value: float) -> float:
+        return min(end, max(start, value))
+
+    if target["kind"] == "action_result":
+        return [clamp(anchor + offset) for offset in profile["action_offsets"]]
+    times: list[float] = []
+    if target["kind"] in ("diagram", "slide"):
+        # A board or slide is built up WHILE the speaker talks about it, so its
+        # most complete state is the last frame before the screen moves on.
+        # `terminal_t` is that moment when the probe measured it; otherwise the
+        # end of the referenced segments stands in. Sampling only the midpoint
+        # returned half-typed titles and diagrams missing their last labels.
+        terminal = target.get("terminal_t")
+        times = [clamp(anchor), clamp(float(terminal)) if terminal is not None else max(start, end - 0.25)]
+        times += [start + span * fraction for fraction in profile["slide_fractions"]]
+    else:
+        times = [clamp(anchor + offset) for offset in profile["state_offsets"]]
+        times += [start + span * fraction for fraction in profile["state_fractions"]]
+    ordered: list[float] = []
+    for value in times:
+        if not any(abs(value - seen) < 1e-6 for seen in ordered):
+            ordered.append(value)
+    return ordered
 
 
 def merge_points(points: list[dict], epsilon: float = MERGE_EPS) -> list[dict]:
@@ -646,6 +808,16 @@ def _frame_score(frame: dict) -> float:
     score += min(float(frame.get("scene_score", 0.0)), 1.0) * 20
     if frame.get("target_ids"):
         score += 30
+    # High tier signals. A people frame loses 25 — below the +30 target bonus,
+    # so a face-bearing target frame still outranks an unplanned scene but loses
+    # to its own faceless alternative. OCR text density rewards the most
+    # complete build state of a slide (ranking only; never a text source).
+    faces = quality.get("faces")
+    if isinstance(faces, dict) and faces.get("people_frame"):
+        score -= 25
+    text_chars = quality.get("text_chars")
+    if text_chars is not None:
+        score += min(float(text_chars), 200.0) / 200.0 * 15
     if "action_result" in frame.get("target_kinds", set()):
         score += frame["actual_t"] * 0.0001
     else:
@@ -663,7 +835,11 @@ def _same_dedup_scope(first: dict, second: dict) -> bool:
     return bool(first_targets & second_targets) or (not first_targets and not second_targets)
 
 
-def deduplicate_frames(frames: list[dict]) -> tuple[list[dict], int]:
+def deduplicate_frames(frames: list[dict], *, cluster_hook=None) -> tuple[list[dict], int]:
+    """Cluster near-duplicates (same chapter + target scope) and keep the best
+    member of each. `cluster_hook(cluster)` runs on multi-member clusters
+    before the representative is chosen — the place for signals that only
+    matter when there is a choice to make (OCR text density in `high`)."""
     clusters: list[list[dict]] = []
     for frame in sorted(frames, key=lambda item: item["actual_t"]):
         cluster = next(
@@ -681,6 +857,8 @@ def deduplicate_frames(frames: list[dict]) -> tuple[list[dict], int]:
     kept: list[dict] = []
     dropped = 0
     for cluster in clusters:
+        if cluster_hook is not None and len(cluster) > 1:
+            cluster_hook(cluster)
         representative = max(cluster, key=_frame_score)
         for member in cluster:
             if member is representative:
@@ -726,8 +904,18 @@ def _recover_blank(
 
 
 def select_with_budget(
-    frames: list[dict], chapters: list[dict], cap: int, per_target: int
-) -> tuple[list[dict], int]:
+    frames: list[dict],
+    chapters: list[dict],
+    cap: int,
+    per_target: int,
+    *,
+    unplanned_floor: int = UNPLANNED_FLOOR,
+    hard_cap: bool = False,
+) -> tuple[list[dict], int, int]:
+    """Returns (selected, dropped, trimmed_reserved). With `hard_cap` the cap is
+    a ceiling even for reserved target/coverage frames (an explicit
+    --max-candidates); otherwise reserved frames always keep `unplanned_floor`
+    slots on top."""
     keep_paths: set[str] = set()
     targets = [target for chapter in chapters for target in chapter.get("visual_targets", [])]
     for target in targets:
@@ -744,9 +932,15 @@ def select_with_budget(
     # Planned frames (targets + chapter coverage) must never crowd out the
     # unplanned ones: a run with many targets would otherwise leave zero slots
     # for the scene changes the transcript did not predict. Guarantee a floor of
-    # UNPLANNED_FLOOR slots on top of whatever is reserved.
-    cap = max(cap, len(selected) + UNPLANNED_FLOOR)
+    # `unplanned_floor` slots on top of whatever is reserved — unless the user
+    # asked for a hard ceiling with --max-candidates.
+    reserved = len(selected)
+    if not hard_cap:
+        cap = max(cap, reserved + unplanned_floor)
+    select_with_budget.last = {"reserved": reserved, "cap_effective": cap}
+    trimmed = 0
     if len(selected) > cap:
+        trimmed = len(selected) - cap
         selected = sorted(selected, key=_frame_score, reverse=True)[:cap]
         keep_paths = {frame["path"] for frame in selected}
     slots = cap - len(selected)
@@ -767,7 +961,67 @@ def select_with_budget(
     for frame in frames:
         if frame["path"] not in selected_paths:
             drop_frame(frame)
-    return sorted(selected, key=lambda item: item["actual_t"]), len(frames) - len(selected)
+    return sorted(selected, key=lambda item: item["actual_t"]), len(frames) - len(selected), trimmed
+
+
+def _scaled_dimensions(width: int, height: int, resolution: int) -> tuple[int, int]:
+    """Candidate size after `_scale_filter` (aspect kept, even dimensions)."""
+    if width <= 0 or height <= 0:
+        return resolution, round(resolution * 9 / 16)
+    out_w = min(resolution, width)
+    out_h = min(MAX_READ_DIMENSION, round(height * out_w / width))
+    return out_w - out_w % 2, out_h - out_h % 2
+
+
+def cost_estimate(
+    records: list[dict],
+    tier: str,
+    profile: dict,
+    *,
+    scene_seconds: float,
+    terminal_probes: int,
+    seeks: int,
+    faces_status: str,
+    ocr_frames: int,
+    refine_selections: int = 20,
+) -> dict:
+    """An honest cost line: image tokens use each candidate's real dimensions
+    (w×h/750, the Anthropic estimate — other providers differ), CPU passes are
+    listed, and the other tier's ceiling is quoted for comparison."""
+    dimensions: Counter[str] = Counter()
+    tokens = 0
+    for record in records:
+        width, height = int(record.get("width") or 0), int(record.get("height") or 0)
+        if width <= 0 or height <= 0:
+            width, height = profile["resolution"], round(profile["resolution"] * 9 / 16)
+        dimensions[f"{width}x{height}"] += 1
+        tokens += max(1, round(width * height / IMAGE_TOKEN_DIVISOR))
+    per_image = round(tokens / len(records)) if records else 0
+    other_tier = "high" if tier == "standard" else "standard"
+    other_cap = PROFILES[other_tier]["cap"]
+    return {
+        "tier": tier,
+        "candidates": len(records),
+        "image_tokens_estimate": tokens,
+        "image_tokens_per_candidate": per_image,
+        "token_formula": f"w*h/{IMAGE_TOKEN_DIVISOR} per image (Anthropic estimate); one batched Read",
+        "frame_dimensions": dict(dimensions),
+        "cpu": {
+            "scene_pass": profile["scene"],
+            "scene_seconds": round(scene_seconds, 1),
+            "terminal_probes": terminal_probes,
+            "seeks": seeks,
+            "ocr_frames": ocr_frames,
+            "faces": faces_status,
+            "refine": profile["refine"],
+            "refine_max_decodes": refine_selections if profile["refine"] != "none" else 0,
+        },
+        "other_tier": {
+            "tier": other_tier,
+            "cap": other_cap,
+            "max_image_tokens": other_cap * (per_image or round(512 * 288 / IMAGE_TOKEN_DIVISOR)),
+        },
+    }
 
 
 def coverage_report(chapters: list[dict], records: list[dict]) -> dict:
@@ -848,9 +1102,10 @@ def generate_strips(work: Path, chapters: list[dict], records: list[dict]) -> li
     return strips
 
 
-def _write_empty_manifest(work: Path, mode: str, chapters: list[dict]) -> None:
+def _write_empty_manifest(work: Path, tier: str, profile: dict, chapters: list[dict]) -> None:
     payload = {
-        "schema_version": 2, "mode": mode, "parts": [],
+        "schema_version": 2, "engine_version": ENGINE_VERSION,
+        "tier": tier, "mode": TIER_TO_MODE[tier], "profile": profile, "parts": [],
         "counts": {
             "scene": 0, "raw": 0, "blank_or_seek_dropped": 0, "recovered": 0,
             "dedup_dropped": 0, "cap_dropped": 0, "final": 0,
@@ -869,13 +1124,23 @@ def main() -> int:
     parser.add_argument("--work", required=True, help="Working directory from transcript.py")
     parser.add_argument("--transcript", default=None, help="Path to transcript.json (default: <work>/transcript.json)")
     parser.add_argument("--chapters", default=None, help="Path to chapters.json with optional visual_targets")
-    parser.add_argument("--mode", choices=("light", "advanced"), default="light")
+    parser.add_argument("--tier", choices=tuple(PROFILES), default=None,
+                        help="standard (default) or high: adaptive scene scoring, denser sampling, "
+                             "3 alternatives per target, blurdetect refinement at grab time, face "
+                             "demotion when cv2 is importable, OCR text density as a ranking signal.")
+    parser.add_argument("--mode", choices=tuple(MODE_ALIASES), default=None,
+                        help="Legacy alias: light = --tier standard, advanced = --tier high")
     parser.add_argument("--cues", default=None, help="Legacy comma-separated cue timestamps")
     parser.add_argument("--pins", default=None, help="Legacy comma-separated pinned timestamps")
     parser.add_argument("--sections", default=None, help="Explicit comma-separated source ranges S-E")
-    parser.add_argument("--scene-threshold", type=float, default=None)
-    parser.add_argument("--resolution", type=int, default=512)
-    parser.add_argument("--max-candidates", type=int, default=None)
+    parser.add_argument("--scene-threshold", type=float, default=None,
+                        help="standard: fixed scene threshold (default 0.15); high: floor of the "
+                             "adaptive threshold (default 0.04)")
+    parser.add_argument("--resolution", type=int, default=512,
+                        help="Candidate width, capped at 512: legibility is bought at grab time "
+                             "(1280px re-grab), not at triage.")
+    parser.add_argument("--max-candidates", type=int, default=None,
+                        help="Hard ceiling on the pool (reserved target frames included).")
     parser.add_argument("--min-per-chapter", type=int, default=None)
     parser.add_argument("--no-dedup", action="store_true")
     parser.add_argument("--strips", action="store_true",
@@ -888,6 +1153,8 @@ def main() -> int:
         raise SystemExit(f"ffmpeg/ffprobe not installed. {TOOL_HINT}")
     if args.resolution > 512:
         raise SystemExit("Candidate resolution is capped at 512px; use grab.py for deliverable quality")
+    tier, profile = resolve_profile(args.tier, args.mode)
+    mode_alias = TIER_TO_MODE[tier]
 
     work = Path(args.work).expanduser().resolve()
     if not work.exists():
@@ -900,7 +1167,7 @@ def main() -> int:
     legacy_pins = parse_times(args.pins)
 
     if chapters and not any(chapter["needs_frames"] for chapter in chapters) and not legacy_cues and not legacy_pins:
-        _write_empty_manifest(work, args.mode, chapters)
+        _write_empty_manifest(work, tier, profile, chapters)
         print("[vsum] no visual chapters or legacy cues: no video downloaded", file=sys.stderr)
         return 0
     if args.source is None and not (work / "download" / "parts.json").exists():
@@ -922,29 +1189,49 @@ def main() -> int:
     windows = visual_windows(chapters) if chapters else [
         (min(float(part["source_start"]) for part in parts), total_end)
     ]
+    scene_seconds = sum(end - start for start, end in windows)
     points: list[dict] = []
-    scene_threshold = args.scene_threshold or LIGHT_SCENE_THRESHOLD
     scene_points: list[tuple[float, float]] = []
-    for part in parts:
-        if args.mode == "advanced":
-            scene_points.extend(scene_detect_advanced(part, windows))
-        else:
+    if profile["scene"] == "adaptive":
+        scene_floor = args.scene_threshold or profile["scene_floor"]
+        scene_setting = f"adaptive (median+8·MAD, floor {scene_floor})"
+        for part in parts:
+            scene_points.extend(scene_detect_advanced(part, windows, scene_floor))
+    else:
+        scene_threshold = args.scene_threshold or profile["scene_threshold"]
+        scene_setting = f"fixed threshold {scene_threshold}"
+        for part in parts:
             scene_points.extend(scene_detect_light(part, windows, scene_threshold))
     for timestamp, score in scene_points:
         points.append(make_point(timestamp, "scene", chapters, segments, scene_score=score))
+
+    # Slide/diagram targets: measure where the build-up ends instead of assuming
+    # the end of the referenced segments (both tiers; one cheap probe each).
+    terminal_probes: list[dict] = []
+    for chapter in chapters:
+        if not chapter["needs_frames"]:
+            continue
+        for target in chapter.get("visual_targets", []):
+            if target["kind"] not in ("slide", "diagram"):
+                continue
+            measured = measure_stable_terminal(parts, target)
+            if measured:
+                target["terminal_t"] = measured["terminal_t"]
+                target["terminal"] = measured
+                terminal_probes.append({"target_id": target["target_id"], **measured})
 
     for chapter in chapters:
         if not chapter["needs_frames"]:
             continue
         for target in chapter.get("visual_targets", []):
-            for timestamp in target_sample_times(target, args.mode):
+            for timestamp in target_sample_times(target, profile):
                 points.append(make_point(timestamp, "target", chapters, segments, target=target))
-        minimum = args.min_per_chapter if args.min_per_chapter is not None else (1 if args.mode == "light" else 2)
+        minimum = args.min_per_chapter if args.min_per_chapter is not None else profile["coverage_min"]
         span = chapter["end"] - chapter["start"]
         for fraction in ((0.5,) if minimum == 1 else (0.5, 0.25, 0.75))[:minimum]:
             points.append(make_point(chapter["start"] + span * fraction, "coverage", chapters, segments))
     for cue in legacy_cues:
-        for offset in ((0.5, 1.5) if args.mode == "light" else (0.2, 0.5, 1.0, 1.5, 2.0)):
+        for offset in profile["cue_offsets"]:
             points.append(make_point(cue + offset, "cue", chapters, segments))
     for pin in legacy_pins:
         points.append(make_point(pin, "pin", chapters, segments))
@@ -953,9 +1240,42 @@ def main() -> int:
 
     merged = merge_points(points)
     frames: list[dict] = []
+    faces_status = "off"
+    if profile["faces"] == "auto":
+        faces_status = "on" if faces_available() else "unavailable"
+    ocr_state = {
+        "budget": profile["cap"] * 2 if profile["ocr"] == "on" else 0,
+        "frames": 0,
+        "status": "on" if profile["ocr"] == "on" else "off",
+    }
+
+    def _ocr_cluster(cluster: list[dict]) -> None:
+        # OCR text density decides only which build state of a slide/diagram
+        # represents its cluster — it is never a text source, and it never runs
+        # where there is no choice to make.
+        if not ocr_state["budget"]:
+            return
+        kinds = set().union(*(frame.get("target_kinds", set()) for frame in cluster))
+        if not kinds & {"slide", "diagram"}:
+            return
+        for frame in cluster:
+            if ocr_state["frames"] >= ocr_state["budget"]:
+                return
+            text = ocr_text_density(frame["path"])
+            if text is None:
+                ocr_state["status"] = "unavailable"
+                ocr_state["budget"] = 0
+                return
+            ocr_state["frames"] += 1
+            frame["quality"] = public_quality(
+                frame["_signature"], faces=frame["quality"].get("faces"), text_chars=text,
+            )
+
+    seeks = 0
     for sequence, point in enumerate(merged):
         point["chapters"] = chapters
         frame = point_grab(parts, point, raw_dir, args.resolution, f"{sequence:04d}")
+        seeks += 1
         if not frame:
             continue
         frame.pop("chapters", None)
@@ -969,23 +1289,44 @@ def main() -> int:
                 frames.append(recovered)
             continue
         frames.append(frame)
+    # The face signal runs on the surviving pool (blank frames never pay for it).
+    if faces_status != "off":
+        for frame in frames:
+            faces: dict | str = "unavailable"
+            if faces_status == "on":
+                faces = detect_faces(frame["path"]) or {"count": 0, "area_ratio": 0.0, "people_frame": False}
+            frame["quality"] = public_quality(frame["_signature"], faces=faces)
     raw_count = len(frames)
     recovered_count = sum("recovered" in frame["reasons"] for frame in frames)
     blank_dropped = len(merged) - raw_count
 
     dedup_dropped = 0
     if not args.no_dedup:
-        frames, dedup_dropped = deduplicate_frames(frames)
-    cap = args.max_candidates or (LIGHT_CAP if args.mode == "light" else ADVANCED_CAP)
-    per_target = 2 if args.mode == "light" else 3
-    frames, cap_dropped = select_with_budget(frames, chapters, cap, per_target)
+        frames, dedup_dropped = deduplicate_frames(frames, cluster_hook=_ocr_cluster)
+    ocr_frames = ocr_state["frames"]
+    ocr_status = ocr_state["status"]
+    hard_cap = args.max_candidates is not None
+    cap = args.max_candidates or profile["cap"]
+    frames, cap_dropped, trimmed_reserved = select_with_budget(
+        frames, chapters, cap, profile["per_target"],
+        unplanned_floor=profile["unplanned_floor"], hard_cap=hard_cap,
+    )
+    budget = getattr(select_with_budget, "last", {"reserved": 0, "cap_effective": cap})
+    if trimmed_reserved:
+        print(f"[vsum] warning: --max-candidates {cap} dropped {trimmed_reserved} reserved frames", file=sys.stderr)
 
+    part_dimensions = {
+        part["path"]: probe_media(part["path"]) for part in parts
+    }
     records: list[dict] = []
     for index, frame in enumerate(frames):
         reason = next((reason for reason in REASON_PRIORITY if reason in frame["reasons"]), "scene")
         final_path = candidate_dir / f"c_{index:04d}_t{frame['actual_t']:08.3f}_{reason}.jpg"
         Path(frame["path"]).rename(final_path)
         candidate_id = f"c_{index:04d}"
+        part = part_for(parts, frame["actual_t"]) or parts[0]
+        media = part_dimensions[part["path"]]
+        width, height = _scaled_dimensions(media["width"], media["height"], args.resolution)
         records.append({
             "candidate_id": candidate_id,
             "frame_id": candidate_id,
@@ -994,6 +1335,8 @@ def main() -> int:
             "t": frame["actual_t"],
             "timestamp_error": frame["timestamp_error"],
             "path": str(final_path),
+            "width": width,
+            "height": height,
             "chapter_id": frame.get("chapter_id"),
             "target_ids": sorted(frame.get("target_ids", set())),
             "seg_ids": sorted(frame.get("seg_ids", set())),
@@ -1005,6 +1348,11 @@ def main() -> int:
     shutil.rmtree(raw_dir, ignore_errors=True)
     strips = generate_strips(work, chapters, records) if (args.strips and chapters) else []
     coverage = coverage_report(chapters, records)
+    cost = cost_estimate(
+        records, tier, profile,
+        scene_seconds=scene_seconds, terminal_probes=len(terminal_probes), seeks=seeks,
+        faces_status=faces_status, ocr_frames=ocr_frames,
+    )
     strip_pixels = sum(strip["pixel_area"] for strip in strips)
     baseline_pixels = 60 * 512 * 288
     # Without strips every candidate is read individually — say so in the metric
@@ -1013,15 +1361,22 @@ def main() -> int:
     projected_total_pixels = strip_pixels + projected_individual_reads * 512 * 288
     payload = {
         "schema_version": 2,
-        "mode": args.mode,
+        "engine_version": ENGINE_VERSION,
+        "tier": tier,
+        "mode": mode_alias,
+        "profile": profile,
         "parts": parts,
         "counts": {
             "scene": len(scene_points), "raw": raw_count,
             "blank_or_seek_dropped": blank_dropped, "recovered": recovered_count,
             "dedup_dropped": dedup_dropped,
-            "cap_dropped": cap_dropped, "final": len(records),
+            "cap_dropped": cap_dropped, "reserved_trimmed": trimmed_reserved,
+            "cap": cap, "cap_effective": budget["cap_effective"], "reserved": budget["reserved"],
+            "final": len(records),
         },
         "coverage": coverage,
+        "terminal_probes": terminal_probes,
+        "cost": cost,
         "triage": {
             "instructions": "Read temporal strips first; open individual 512px candidates only when selected or uncertain.",
             "strips": strips,
@@ -1039,8 +1394,42 @@ def main() -> int:
     print()
     print("# candidate frames report")
     print()
-    print(f"- **Mode:** {args.mode}")
-    print(f"- **Candidates:** {len(records)} (raw {raw_count}; dedup {dedup_dropped}; cap {cap_dropped})")
+    print(f"- **Tier:** {tier} (alias: --mode {mode_alias}) — scene pass: {scene_setting}")
+    cap_note = f"pool {cap}"
+    if budget["cap_effective"] > cap:
+        cap_note += (
+            f" lifted to {budget['cap_effective']}: {budget['reserved']} reserved target/coverage frames "
+            f"+ {profile['unplanned_floor']} unplanned slots"
+        )
+    print(f"- **Candidates:** {len(records)} ({cap_note}; raw {raw_count}; dedup {dedup_dropped}; cap {cap_dropped})")
+    dims = ", ".join(f"{n}×{size}" for size, n in cost["frame_dimensions"].items()) or "-"
+    print(
+        f"- **Image tokens (estimate):** ≈{cost['image_tokens_estimate']:,} for one batched Read "
+        f"({dims}; ≈{cost['image_tokens_per_candidate']} each, w×h/{IMAGE_TOKEN_DIVISOR}; other providers differ)"
+    )
+    cpu = cost["cpu"]
+    refine_note = (
+        f"grab refinement: {cpu['refine']} (≤{cpu['refine_max_decodes']} × ~3 s decodes)"
+        if cpu["refine"] != "none" else "grab refinement: off"
+    )
+    print(
+        f"- **CPU:** 1 {cpu['scene_pass']} scene pass over {format_time(scene_seconds)} of chapter windows · "
+        f"{cpu['terminal_probes']} terminal probe{'s' if cpu['terminal_probes'] != 1 else ''} · "
+        f"{cpu['seeks']} seeks + signatures · OCR: {ocr_status}"
+        f"{f' ({ocr_frames} frames)' if ocr_frames else ''} · faces: {faces_status} · {refine_note}"
+    )
+    other = cost["other_tier"]
+    print(
+        f"- **Other tier:** `--tier {other['tier']}` pool {other['cap']} candidates "
+        f"(≈{other['max_image_tokens']:,} image tokens before the reserved-frame lift; "
+        f"it reserves {PROFILES[other['tier']]['per_target']} frames per target)"
+    )
+    if terminal_probes:
+        flipped = sum(1 for probe in terminal_probes if probe["flipped"])
+        print(
+            f"- **Slide/diagram terminal probes:** {len(terminal_probes)} measured, "
+            f"{flipped} ended at a screen flip, {len(terminal_probes) - flipped} at the window end"
+        )
     print(f"- **Manifest:** `{work / 'candidates.json'}`")
     if strips:
         print(
@@ -1080,10 +1469,19 @@ def main() -> int:
               "then triage per the skill rubric. Select by `candidate_id` — never copy times.**")
         print()
     for record in records:
+        extras = ""
+        quality = record["quality"]
+        faces = quality.get("faces")
+        if isinstance(faces, dict):
+            extras += f", faces={faces['count']}/{faces['area_ratio']:.2f}"
+            if faces["people_frame"]:
+                extras += " (people frame)"
+        if quality.get("text_chars") is not None:
+            extras += f", text={quality['text_chars']}"
         print(
             f"- `{record['path']}` ({record['candidate_id']}, "
             f"actual_t={record['actual_t']:.3f} [{format_time(record['actual_t'])}], "
-            f"chapter={record['chapter_id']}, targets={','.join(record['target_ids']) or '-'})"
+            f"chapter={record['chapter_id']}, targets={','.join(record['target_ids']) or '-'}{extras})"
         )
     return 0
 

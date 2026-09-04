@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import shutil
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -17,7 +19,13 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from bundle import bundle as bundle_summary  # noqa: E402
 from frame_utils import chapter_for_time, format_time  # noqa: E402
 
+ENGINE_VERSION = "1.3.0"
 ROLES = {"evidence", "illustration"}
+CHROME_CANDIDATES = (
+    "google-chrome", "google-chrome-stable", "chromium", "chromium-browser",
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+)
 
 
 def _load_json(path: Path) -> object:
@@ -123,13 +131,18 @@ def _validate(
         chapter = chapter_map.get(chapter_id)
         if chapter is None:
             raise SystemExit(f"{candidate_id}: unknown chapter {chapter_id!r}")
-        timestamp = float(candidate["actual_t"])
-        owning = chapter_for_time(chapters, timestamp)
-        if owning is None or owning["chapter_id"] != chapter_id:
-            raise SystemExit(
-                f"{candidate_id}: t={timestamp:.3f} belongs to "
-                f"{owning['chapter_id'] if owning else 'no chapter'}, not {chapter_id}"
-            )
+        # The caption time is the time of the pixels that were WRITTEN — the
+        # asset's — which grab-time refinement may have moved off the triaged
+        # candidate's time. Both must sit inside the selection's chapter.
+        triaged_t = float(candidate["actual_t"])
+        timestamp = float(asset.get("actual_t", triaged_t))
+        for label, value in (("candidate", triaged_t), ("asset", timestamp)):
+            owning = chapter_for_time(chapters, value)
+            if owning is None or owning["chapter_id"] != chapter_id:
+                raise SystemExit(
+                    f"{candidate_id}: {label} t={value:.3f} belongs to "
+                    f"{owning['chapter_id'] if owning else 'no chapter'}, not {chapter_id}"
+                )
         role = str(selection.get("role") or "")
         name = str(selection.get("name") or "").strip()
         caption = str(selection.get("caption") or "").strip()
@@ -161,6 +174,8 @@ def _validate(
             "candidate_id": candidate_id,
             "chapter_id": chapter_id,
             "actual_t": timestamp,
+            "triaged_t": float(asset.get("triaged_t", triaged_t)),
+            "refinement": asset.get("refinement"),
             "requested_t": candidate.get("requested_t"),
             "seg_ids": candidate.get("seg_ids", []),
             "target_ids": candidate.get("target_ids", []),
@@ -215,7 +230,82 @@ STYLE = """
   @media (max-width: 640px) { .duo { grid-template-columns: 1fr; } nav.toc ol { columns: 1; } }
   footer { border-top: 3px solid var(--ink); background: var(--card); padding: 1.6rem; text-align: center;
            color: var(--muted); font-size: .85rem; }
+  @media print {
+    @page { size: A4; margin: 14mm; }
+    body { background: #fff; font-size: 11pt; }
+    header.hero { padding: 1.2rem 0 1rem; }
+    main { padding: 0; }
+    section.chapter { margin-top: 1.6rem; padding-top: 1.2rem; }
+    h2 { break-after: avoid; }
+    figure { break-inside: avoid; box-shadow: none; }
+    figure img { max-height: 110mm; object-fit: contain; }
+    .duo { grid-template-columns: 1fr 1fr; }
+    a { color: inherit; text-decoration: none; }
+    nav.toc ol { columns: 2; }
+  }
 """
+
+
+def _find_chrome() -> str | None:
+    """A Chrome/Chromium binary for headless print-to-pdf, if any."""
+    explicit = os.environ.get("CHROME_BIN")
+    if explicit and Path(explicit).exists():
+        return explicit
+    for candidate in CHROME_CANDIDATES:
+        if candidate.startswith("/"):
+            if Path(candidate).exists():
+                return candidate
+        elif shutil.which(candidate):
+            return shutil.which(candidate)
+    return None
+
+
+def _find_weasyprint() -> list[str] | None:
+    """A WeasyPrint invocation, if any: in-process module, CLI, or `uv run`."""
+    try:
+        import weasyprint  # type: ignore  # noqa: F401 — optional
+    except Exception:
+        pass
+    else:
+        return [sys.executable, "-m", "weasyprint"]
+    if shutil.which("weasyprint"):
+        return ["weasyprint"]
+    if shutil.which("uv"):
+        return ["uv", "run", "--with", "weasyprint", "weasyprint"]
+    return None
+
+
+def export_pdf(single_html: Path, out_pdf: Path) -> dict:
+    """Print the self-contained HTML to PDF: Chrome headless first, WeasyPrint
+    second. Works on a temporary copy without `loading="lazy"` (headless
+    printers skip lazy images); the bundle itself is untouched."""
+    print_html = single_html.with_name(single_html.stem + ".print.html")
+    text = single_html.read_text(encoding="utf-8").replace(' loading="lazy"', "")
+    print_html.write_text(text, encoding="utf-8")
+    attempts: list[str] = []
+    try:
+        chrome = _find_chrome()
+        if chrome:
+            command = [
+                chrome, "--headless=new", "--disable-gpu", "--no-first-run",
+                "--no-pdf-header-footer", "--virtual-time-budget=10000",
+                f"--print-to-pdf={out_pdf}", print_html.as_uri(),
+            ]
+            result = subprocess.run(command, capture_output=True, text=True, timeout=240)
+            if result.returncode == 0 and out_pdf.exists() and out_pdf.stat().st_size > 0:
+                return {"engine": "chrome", "binary": chrome, "path": str(out_pdf)}
+            attempts.append(f"chrome: exit {result.returncode} {result.stderr.strip()[-200:]}")
+        weasy = _find_weasyprint()
+        if weasy:
+            result = subprocess.run(
+                weasy + [str(print_html), str(out_pdf)], capture_output=True, text=True, timeout=600
+            )
+            if result.returncode == 0 and out_pdf.exists() and out_pdf.stat().st_size > 0:
+                return {"engine": "weasyprint", "binary": weasy[0], "path": str(out_pdf)}
+            attempts.append(f"weasyprint: exit {result.returncode} {result.stderr.strip()[-200:]}")
+        return {"engine": None, "attempts": attempts}
+    finally:
+        print_html.unlink(missing_ok=True)
 
 
 def _figure(frame: dict, source_url: str | None) -> str:
@@ -357,6 +447,9 @@ def main() -> int:
     parser.add_argument("--selections", required=True)
     parser.add_argument("--assets-dir", required=True)
     parser.add_argument("--out-dir", required=True)
+    parser.add_argument("--pdf", action="store_true",
+                        help="Also print the single-file HTML to summary-<id>.pdf "
+                             "(Chrome headless, or WeasyPrint as a fallback)")
     args = parser.parse_args()
 
     work = Path(args.work).expanduser().resolve()
@@ -391,8 +484,8 @@ def main() -> int:
         manifest_frames.append({
             key: frame[key]
             for key in (
-                "candidate_id", "name", "chapter_id", "requested_t", "actual_t",
-                "seg_ids", "target_ids", "role", "caption", "alt", "anchor_seg_ids",
+                "candidate_id", "name", "chapter_id", "requested_t", "actual_t", "triaged_t",
+                "refinement", "seg_ids", "target_ids", "role", "caption", "alt", "anchor_seg_ids",
                 "selection_reasons", "quality",
             )
         } | {
@@ -403,6 +496,8 @@ def main() -> int:
         })
     manifest = {
         "schema_version": 2,
+        "engine_version": ENGINE_VERSION,
+        "tier": candidate_payload.get("tier"),
         "video": transcript.get("video", {}),
         "overview": overview,
         "chapters": [summaries[chapter["chapter_id"]] | {
@@ -429,6 +524,16 @@ def main() -> int:
     single = bundle_summary(out_dir, None)
     size_mb = single.stat().st_size / (1024 * 1024)
     print(f"Bundled single-file deliverable: `{single}` ({size_mb:.1f} MB) — opens with a double click.")
+    if args.pdf:
+        pdf_path = single.with_suffix(".pdf")
+        outcome = export_pdf(single, pdf_path)
+        if not outcome.get("engine"):
+            print("PDF: no engine (install Google Chrome or WeasyPrint)", file=sys.stderr)
+            for attempt in outcome.get("attempts", []):
+                print(f"  {attempt}", file=sys.stderr)
+            return 4
+        pdf_mb = pdf_path.stat().st_size / (1024 * 1024)
+        print(f"PDF: `{pdf_path}` ({pdf_mb:.1f} MB via {outcome['engine']})")
     return 0
 
 

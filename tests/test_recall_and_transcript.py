@@ -17,11 +17,11 @@ class RecallTests(unittest.TestCase):
         """A board is drawn while it is discussed; the complete state is at the
         end of the referenced segments, so light mode must sample there."""
         target = {"kind": "diagram", "window": [100.0, 120.0], "anchor_t": 110.0}
-        times = candidates.target_sample_times(target, "light")
+        times = candidates.target_sample_times(target, candidates.PROFILES["standard"])
         self.assertIn(110.0, times)
         self.assertAlmostEqual(max(times), 119.75)
         state = {"kind": "state", "window": [100.0, 120.0], "anchor_t": 110.0}
-        self.assertEqual(candidates.target_sample_times(state, "light"), [110.0, 110.6])
+        self.assertEqual(candidates.target_sample_times(state, candidates.PROFILES["standard"]), [110.0, 110.6])
 
     def test_budget_keeps_unplanned_slots_beyond_reserved_targets(self) -> None:
         """Many targets must not consume the whole cap: UNPLANNED_FLOOR scene
@@ -44,7 +44,8 @@ class RecallTests(unittest.TestCase):
                            "target_ids": set(), "target_kinds": set(), "target_anchors": {},
                            "reasons": {"scene"}, "priority": 40, "scene_score": 0.3,
                            "quality": {"sharpness": 5, "contrast": 5}})
-        selected, dropped = candidates.select_with_budget(frames, chapters, cap=48, per_target=2)
+        selected, dropped, trimmed = candidates.select_with_budget(frames, chapters, cap=48, per_target=2)
+        self.assertEqual(trimmed, 0)
         unplanned = [f for f in selected if not f["target_ids"]]
         self.assertEqual(len([f for f in selected if f["target_ids"]]), 40)
         self.assertGreaterEqual(len(unplanned), candidates.UNPLANNED_FLOOR)

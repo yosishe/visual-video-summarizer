@@ -16,6 +16,8 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from candidates import part_for, resolve_parts  # noqa: E402
 from frame_utils import (  # noqa: E402
+    blur_signature_series,
+    choose_refined_frame,
     compare_signatures,
     format_time,
     is_hard_duplicate,
@@ -27,6 +29,10 @@ from frame_utils import (  # noqa: E402
 MAX_READ_DIMENSION = 1998
 CROP_RE = re.compile(r"^\d+:\d+:\d+:\d+$")
 SHOWINFO_TS_RE = re.compile(r"pts_time:([-0-9.]+)")
+# Sharpness refinement (adapted from CZX2244/dsh-bilibili): look ±1.5 s around
+# the triaged frame for the sharpest frame that is still the same picture.
+REFINE_HALF_WINDOW = 1.5
+REFINE_CHAPTER_MARGIN = 0.25
 
 
 def _media_timestamp(part: dict, absolute_timestamp: float) -> float:
@@ -52,9 +58,15 @@ def _extract_source(parts: list[dict], timestamp: float, output: Path, width: in
     part = part_for(parts, timestamp)
     if part is None:
         raise RuntimeError(f"t={format_time(timestamp)} is outside downloaded media")
+    # `timestamp` is a decoded pts rounded to 3 decimals. Seeking to it exactly
+    # lands on the NEXT frame whenever the rounding went up (pts 903.8029 →
+    # 903.803): harmless on a static slide, a different picture mid-pan — and
+    # the verification gate then rightly refuses. Aim half a frame early so
+    # the first frame at or after the target is the intended one.
+    seek_t = _media_timestamp(part, timestamp) - float(part.get("frame_duration", 0.04)) / 2
     cmd = [
         "ffmpeg", "-hide_banner", "-loglevel", "info", "-y", "-copyts",
-        "-ss", f"{_media_timestamp(part, timestamp):.3f}", "-i", part["path"],
+        "-ss", f"{max(0.0, seek_t):.4f}", "-i", part["path"],
         "-frames:v", "1", "-vf", f"showinfo,{_scale_filter(width)}",
         "-q:v", "2", str(output),
     ]
@@ -100,7 +112,7 @@ def _sha256(path: Path) -> str:
 def _safe_name(value: object) -> str:
     name = str(value or "").strip()
     if not name or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,79}", name):
-        raise SystemExit(f"Bad selection name: {value!r}")
+        raise ValueError(f"bad selection name {value!r}; use letters, digits, _ or -")
     return name
 
 
@@ -116,6 +128,54 @@ def _load_candidates(work: Path) -> tuple[dict, dict[str, dict]]:
     return payload, candidates
 
 
+def _load_chapters(work: Path) -> dict[str, tuple[float, float]]:
+    """Chapter windows by id; empty when chapters.json is absent (refinement is
+    then skipped — it must never move a frame across a chapter boundary)."""
+    path = work / "chapters.json"
+    if not path.exists():
+        return {}
+    try:
+        rows = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    windows: dict[str, tuple[float, float]] = {}
+    if isinstance(rows, list):
+        for index, row in enumerate(rows):
+            chapter_id = str(row.get("chapter_id") or f"ch{index + 1:02d}")
+            try:
+                windows[chapter_id] = (float(row["start"]), float(row["end"]))
+            except (KeyError, TypeError, ValueError):
+                continue
+    return windows
+
+
+def _refine_selection(
+    parts: list[dict],
+    candidate_signature: dict,
+    triaged_t: float,
+    chapter_window: tuple[float, float] | None,
+) -> dict:
+    """Sharpness refinement, zero tokens: one blurdetect+signature pass over
+    ±1.5 s (clamped inside the chapter and the media), then the sharpest frame
+    that is still a near-duplicate of the triaged candidate. Never raises."""
+    part = part_for(parts, triaged_t)
+    if part is None:
+        return {"t": triaged_t, "applied": False, "reason": "outside-media"}
+    part_start = float(part["source_start"])
+    part_end = part_start + float(part["duration"])
+    lo = max(triaged_t - REFINE_HALF_WINDOW, part_start)
+    hi = min(triaged_t + REFINE_HALF_WINDOW, part_end)
+    if chapter_window is not None:
+        lo = max(lo, chapter_window[0])
+        hi = min(hi, chapter_window[1] - REFINE_CHAPTER_MARGIN)
+    if hi - lo < 0.1:
+        return {"t": triaged_t, "applied": False, "reason": "window-too-small"}
+    series = blur_signature_series(part["path"], _media_timestamp(part, lo), hi - lo)
+    for row in series:
+        row["t"] = _absolute_timestamp(part, row["t"])
+    return choose_refined_frame(candidate_signature, series, triaged_t)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="grab", description="Re-extract selected candidate IDs at deliverable quality."
@@ -125,6 +185,9 @@ def main() -> int:
     parser.add_argument("--out-dir", required=True, help="Summary assets directory")
     parser.add_argument("--full-width", type=int, default=1280)
     parser.add_argument("--thumb-width", type=int, default=640)
+    parser.add_argument("--refine", choices=("sharpness", "none"), default=None,
+                        help="Sharpest near-duplicate within ±1.5 s of the triaged frame "
+                             "(default: the tier recorded in candidates.json; high = sharpness)")
     args = parser.parse_args()
 
     work = Path(args.work).expanduser().resolve()
@@ -137,6 +200,11 @@ def main() -> int:
     if len(selections) > 20:
         raise SystemExit("HTML frame budget exceeded: selections.json contains more than 20 frames")
     parts = resolve_parts(None, work)
+    refine = args.refine or str(candidate_payload.get("profile", {}).get("refine") or "none")
+    chapter_windows = _load_chapters(work) if refine != "none" else {}
+    if refine != "none" and not chapter_windows:
+        print("[vsum] chapters.json not found in work dir: refinement skipped", file=sys.stderr)
+        refine = "none"
 
     assets: list[dict] = []
     failures: list[str] = []
@@ -154,10 +222,11 @@ def main() -> int:
                     f"{candidate_id}: selection chapter {selection['chapter_id']} != candidate chapter {candidate.get('chapter_id')}"
                 )
                 continue
-            name = _safe_name(selection.get("name") or candidate_id)
             timestamp = float(candidate["actual_t"])
-            source_frame = temp_dir / f"{name}-source.jpg"
             try:
+                name = _safe_name(selection.get("name") or candidate_id)
+                source_frame = temp_dir / f"{name}-source.jpg"
+                # 1. The frame the model triaged, re-decoded and verified.
                 actual = _extract_source(parts, timestamp, source_frame, args.full_width)
                 candidate_signature = visual_signature(candidate["path"])
                 source_signature = visual_signature(source_frame)
@@ -168,6 +237,33 @@ def main() -> int:
                         f"(luma={delta['luma_mad']:.2f}, edge={delta['edge_mad']:.2f}, "
                         f"changed={delta['changed_ratio']:.1%})"
                     )
+                # 2. Optional refinement: sharpest frame that is still that picture,
+                #    verified again after the seek. A failed refinement keeps step 1.
+                refinement: dict | None = None
+                if refine == "sharpness":
+                    chapter_window = chapter_windows.get(str(candidate.get("chapter_id")))
+                    refinement = _refine_selection(parts, candidate_signature, timestamp, chapter_window)
+                    if refinement.get("applied"):
+                        refined_frame = temp_dir / f"{name}-refined.jpg"
+                        try:
+                            refined_actual = _extract_source(
+                                parts, float(refinement["t"]), refined_frame, args.full_width
+                            )
+                            refined_signature = visual_signature(refined_frame)
+                            inside_chapter = chapter_window is None or (
+                                chapter_window[0] <= refined_actual < chapter_window[1]
+                            )
+                            if inside_chapter and is_near_duplicate(candidate_signature, refined_signature):
+                                source_frame = refined_frame
+                                actual = refined_actual
+                                refinement["t"] = refined_actual
+                                refinement["delta_s"] = round(refined_actual - timestamp, 3)
+                            else:
+                                refinement["applied"] = False
+                                refinement["fallback"] = "gate-failed" if inside_chapter else "outside-chapter"
+                        except RuntimeError as exc:
+                            refinement["applied"] = False
+                            refinement["fallback"] = f"extract-failed: {exc}"
                 crop = selection.get("crop")
                 if crop is not None and not CROP_RE.fullmatch(str(crop)):
                     raise RuntimeError(
@@ -187,6 +283,8 @@ def main() -> int:
                     "chapter_id": candidate.get("chapter_id"),
                     "requested_t": candidate.get("requested_t"),
                     "actual_t": actual,
+                    "triaged_t": timestamp,
+                    "refinement": refinement,
                     "seg_ids": candidate.get("seg_ids", []),
                     "target_ids": candidate.get("target_ids", []),
                     "full": {
@@ -200,7 +298,7 @@ def main() -> int:
                         "sha256": _sha256(thumb_path),
                     },
                 })
-            except (OSError, RuntimeError) as exc:
+            except (OSError, RuntimeError, ValueError) as exc:
                 failures.append(f"{candidate_id}: {exc}")
 
     duplicate_pairs: list[dict] = []
@@ -218,6 +316,8 @@ def main() -> int:
     assets_manifest = {
         "schema_version": 2,
         "candidate_manifest_schema": candidate_payload.get("schema_version", 1),
+        "tier": candidate_payload.get("tier"),
+        "refine": refine,
         "assets": assets,
         "duplicate_pairs": duplicate_pairs,
         "failures": failures,
@@ -228,10 +328,20 @@ def main() -> int:
     print()
     print("# grab report")
     print()
+    applied = [asset for asset in assets if (asset.get("refinement") or {}).get("applied")]
+    if refine != "none":
+        print(f"- **Refinement:** {refine}; moved {len(applied)}/{len(assets)} frames to a sharper near-duplicate")
     for asset in assets:
+        note = ""
+        refinement = asset.get("refinement") or {}
+        if refinement.get("applied"):
+            note = (
+                f" (refined {refinement['delta_s']:+.3f}s: blur "
+                f"{refinement['blur_before']:.2f} → {refinement['blur_after']:.2f})"
+            )
         print(
             f"- `{asset['candidate_id']}` -> `{asset['full']['file']}`, `{asset['thumb']['file']}` "
-            f"at {format_time(asset['actual_t'])}"
+            f"at {format_time(asset['actual_t'])}{note}"
         )
     if failures:
         print("\n## Failures")
