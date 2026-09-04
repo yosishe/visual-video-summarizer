@@ -155,11 +155,15 @@ Exit 2 = an extraction failure or unsafe name/crop (fix it); exit 3 = two select
 
 ## Step 6 — Write the summary, then render
 
-Write `<work>/summary.json` — the prose, with provenance. Every block cites the segments it synthesizes; a frame is inserted after the first block whose `seg_ids` overlap its `anchor_seg_ids`. Author it **chapters first, overview and key points last** (they are a synthesis of the blocks you already wrote, not a first impression):
+Write `<work>/summary.json` — the prose, with provenance. Every block cites the segments it synthesizes; a frame is inserted after the first block whose `seg_ids` overlap its `anchor_seg_ids`. Author it **chapters first, then overview, chapter key points, and the opening brief** (synthesize the completed explanation, not a first impression):
 
 ```json
 {"schema_version": 3, "lang": "he", "source_language": "en",
  "overview": "הטענה של הסרטון במשפט אחד או שניים.",
+ "brief": {
+   "synthesis": {"text": "הטענה המרכזית, הסיבה לחשיבותה וההסתייגות הנחוצה להבנתה.", "seg_ids": ["seg_0084", "seg_0085"]},
+   "main_points": [{"text": "הרעיון החשוב וההסבר התומך בו.", "seg_ids": ["seg_0084"]}],
+   "takeaways": [{"text": "המסקנה הנתמכת בתמליל והתנאים שבהם היא חלה.", "seg_ids": ["seg_0085"]}]},
  "glossary": {"agent": "סוכן", "skill": "skill", "workflow": "זרימת עבודה"},
  "chapters": [{"chapter_id": "ch03", "title": "זרימת הייצוא",
    "blocks": [
@@ -170,6 +174,20 @@ Write `<work>/summary.json` — the prose, with provenance. Every block cites th
 ```
 
 `kind` is `prose` (default), `code` (rendered LTR in a `<pre>`), or `quote` (a verbatim line of the speaker, in the source language). Inside prose, `backticks` are the **only** markup: identifiers, commands, file names, UI strings, numbers with units and formulas go in backticks and the renderer isolates them left-to-right — never emit HTML, never bidi control characters.
+
+### Opening brief (both output languages)
+
+Include `brief` in newly authored summaries. It appears before the detailed chapters in the same HTML/PDF, in the selected document language. Older summaries without it remain valid. The JSON example above illustrates the shape, not a length requirement or text to reuse.
+
+- **`synthesis`:** one short paragraph explaining the whole video's central argument and why it matters. Connect ideas across chapters; do not concatenate chapter summaries or merely list topics.
+- **`main_points`:** usually 3–5 essential ideas, with the mechanism, reason, example, or limitation needed to understand each. Select by importance, not novelty alone.
+- **`takeaways`:** usually 2–3 distinct conclusions to remember or apply, including their conditions. Conceptual lessons are valid; do not manufacture action items. Attribute speaker recommendations, and label a supported inference as a synthesis rather than something the speaker explicitly said.
+
+Aim for **150–250 words total across all three parts**, excluding headings and timestamps. These are soft targets, not quotas: use fewer words or bullets when the source warrants it. Arrays may be empty; empty lists have no rendered heading. Do not shorten the detailed chapters to meet this brief's budget, or replace the existing overview and chapter key points.
+
+Draft from the completed chapters, then verify against the original transcript, including its ending. Every item needs non-empty `text` and unique, existing `seg_ids` in transcript order. An item may cite distant chapters; items themselves can follow importance order. Cite the actual support for each claim, not an entire chapter as a substitute for checking it. The renderer derives compact source links from these IDs; never invent timestamps.
+
+Before auditing, check that the brief answers: **What is the central claim? Why does it hold? What should the reader remember, and under what conditions?** Preserve qualifications, negations, quantities, trade-offs, and late corrections. Remove repeated ideas between main points and takeaways; add no external facts or unsupported advice. The deterministic audit checks references, numerical grounding and language hygiene, but cannot establish the truth of an ordinary-language paraphrase. Brief citations do not count toward detailed chapter coverage or frame placement.
 
 Then run the audit and fix every `error` (a number, identifier or URL the cited segments do not contain; wrong segment order; niqqud; bidi controls; a non-Hebrew block in a Hebrew document). `review` lines are judgement calls (a name that is in the transcript but not in this block's segments; a negation the block dropped) — decide each one:
 

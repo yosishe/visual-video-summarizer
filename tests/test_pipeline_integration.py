@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -183,6 +184,46 @@ class PipelineIntegrationTests(unittest.TestCase):
         self.assertEqual(manifest["tier"], "standard")
         self.assertIsNone(manifest["frames"][0]["refinement"])
         self.assertEqual(manifest["frames"][0]["triaged_t"], manifest["frames"][0]["actual_t"])
+
+        # Adding an opening synthesis must not steal the image's prose anchor
+        # or alter any existing chapter, selection, timestamp, or asset hash.
+        self.assertNotIn("brief", manifest)
+        summary["brief"] = {
+            "synthesis": {"text": "A click reveals the completed result.", "seg_ids": ["seg_0001", "seg_0002"]},
+            "main_points": [{"text": "The completed state is visible.", "seg_ids": ["seg_0002"]}],
+            "takeaways": [{"text": "The result follows the click.", "seg_ids": ["seg_0001", "seg_0002"]}],
+        }
+        summary_path.write_text(json.dumps(summary), encoding="utf-8")
+        rerender = self._run(
+            sys.executable, SCRIPTS / "render.py", "--work", work,
+            "--summary", summary_path, "--selections", selection_path,
+            "--assets-dir", assets_dir, "--out-dir", summary_dir,
+        )
+        self.assertEqual(rerender.returncode, 0, rerender.stderr + rerender.stdout)
+        updated = json.loads((summary_dir / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(updated["brief"], summary["brief"])
+        for key in ("chapters", "frames", "selections_sha256", "tier", "engine_version"):
+            self.assertEqual(updated[key], manifest[key], key)
+        self.assertEqual(updated["audit"]["stats"], manifest["audit"]["stats"])
+        self.assertNotEqual(updated["summary_sha256"], manifest["summary_sha256"])
+        updated_html = (summary_dir / "index.html").read_text(encoding="utf-8")
+        chapter_html = lambda h: re.findall(r'<section class="chapter".*?</section>', h, re.S)
+        self.assertEqual(chapter_html(updated_html), chapter_html(html_text))
+        bundled = summary_dir.with_suffix(".html").read_text(encoding="utf-8")
+        self.assertIn('class="brief"', bundled)
+        self.assertIn('data:image/jpeg;base64,', bundled)
+
+        # The actual CLI must stop on a new brief error, just like chapter errors.
+        summary["brief"]["synthesis"]["text"] = "The result takes 999 seconds."
+        summary_path.write_text(json.dumps(summary), encoding="utf-8")
+        rejected = self._run(
+            sys.executable, SCRIPTS / "render.py", "--work", work,
+            "--summary", summary_path, "--selections", selection_path,
+            "--assets-dir", assets_dir, "--out-dir", summary_dir,
+        )
+        self.assertEqual(rejected.returncode, 5, rejected.stderr)
+        self.assertIn("brief/synthesis", rejected.stderr)
+        self.assertEqual((summary_dir / "index.html").read_text(encoding="utf-8"), updated_html)
 
     def test_advanced_mode_uses_adaptive_windowed_engine(self) -> None:
         work = self._prepare_work("advanced")
