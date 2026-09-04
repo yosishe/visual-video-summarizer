@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Readable mixed-direction source labels.** Isolated metadata items keep Hebrew frame counts beside their labels when the caption source is English. Opening-brief timestamps wrap between complete bracketed links, preserving readable citations on narrow screens and in PDF without forcing a long citation list onto one line.
+
 - **Clearer discovery and first-run setup.** Outcome-focused README and portable skill description; read-only `scripts/doctor.py` with optional JSON/PDF checks; explicit local/host/cloud data flows, current limitations, and private vulnerability reporting in `SECURITY.md`. Removed broad `allowed-tools` preapproval metadata; hosts retain their normal permission controls.
 - **Explicit transcription consent (behavior change).** Audio upload now requires `--whisper groq|openai`, even when a key exists. `--no-whisper` takes precedence; no legacy `/watch` credential fallback. Fixed provider endpoints reject redirects, and error output omits provider bodies and raw network exception details that may echo sensitive content.
 - **Constrained downloads and output.** yt-dlp ignores ambient configuration, plugins, exec hooks and remote components. Rendering binds hashes to the actual image filenames, rejects symlinked assets before copying, and adds a restrictive CSP. Bundling rechecks full-size siblings and the asset root. Static-output validation rejects active HTML and external resources. Atomic writes use unpredictable temporary files and reject output symlinks. PDF export no longer installs WeasyPrint through `uv`.
