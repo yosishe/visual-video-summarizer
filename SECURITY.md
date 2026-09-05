@@ -42,6 +42,7 @@ Source URLs and metadata may contain personal information or signed query parame
 | Generated HTML has no active page content | Text escaping in [`render.py`](scripts/render.py), static-subset validation in [`safety.py`](scripts/safety.py), restrictive generated CSP (scripts, objects, frames and connections disabled), no-referrer policy; script/event/remote-resource tests |
 | PDF export does not acquire software | Installed Chrome/WeasyPrint only; generated HTML validated before export; no `uv --with` fallback |
 | Summary evidence is auditable | Segment references, grounding checks, decoded frame provenance and hashes; see [`contracts.md`](references/contracts.md) and the existing audit/integration tests |
+| Delivery is bound to its inputs | Every stage records the hashes of what it consumed (`gates.py`); `grab.py`/`render.py` refuse a swapped download, a changed transcript, chapters or pool, or assets from another selection (exit 11); `workflow.py verify` proves which stages completed; `test_workflow.py`, `test_reliability_integration.py` (a shim `yt-dlp` asserts the safety flags on every downloader call) |
 
 Run `python3 -m unittest discover -s tests -p test_security.py -v` for the security regressions; use the full suite for compatibility. The [CI results](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml) show exactly what ran. Passing tests demonstrate the covered cases, not absence of all vulnerabilities.
 

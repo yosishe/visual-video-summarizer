@@ -11,7 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from safety import YTDLP_FLAGS, ytdlp_command
+from hostenv import find_chrome, platform_key, python_command  # noqa: E402
+from safety import YTDLP_FLAGS, ytdlp_command  # noqa: E402
 
 
 def check(local: bool = False, pdf: bool = False) -> dict:
@@ -34,20 +35,21 @@ def check(local: bool = False, pdf: bool = False) -> dict:
                 row["available"] = False
                 row["note"] = "Could not run the version check."
         rows.append(row)
-    chrome = next((str(p) for p in [
-        Path(os.environ.get("CHROME_BIN") or "/nonexistent"),
-        Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
-    ] if p.is_file()), None)
-    chrome = chrome or next((shutil.which(n) for n in
-                            ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser")
-                            if shutil.which(n)), None)
+    chrome = find_chrome()
     weasy = shutil.which("weasyprint") or bool(importlib.util.find_spec("weasyprint"))
     rows.append({"name": "PDF engine", "required": pdf, "available": bool(chrome or weasy),
+                 "path": chrome,
                  "note": "Installed engine detected; export confirms system libraries are usable." if chrome or weasy
-                 else "Optional: install Chrome or WeasyPrint yourself if PDF is needed."})
+                 else "Optional: install Chrome/Edge or WeasyPrint yourself if PDF is needed."})
+    rows.append({"name": "Pillow", "required": False, "available": bool(importlib.util.find_spec("PIL")),
+                 "note": "Optional: contact sheets need it; without it every candidate is read individually."})
+    rows.append({"name": "workflow", "required": False,
+                 "available": (Path(__file__).resolve().parent / "workflow.py").is_file(),
+                 "note": "scripts/workflow.py is the canonical entry point (init → run → verify)."})
     config = Path.home() / ".config" / "summarize-video" / ".env"
     return {
         "ready": all(r["available"] for r in rows if r["required"]), "checks": rows,
+        "platform": platform_key(), "python_command": python_command(),
         "cloud_transcription": "off unless --whisper groq|openai is explicitly selected",
         "model_privacy": "Your agent provider processes the transcript and selected images under its own settings.",
         "config_present": config.is_file(),

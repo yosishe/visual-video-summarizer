@@ -29,16 +29,23 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from frame_utils import format_time  # noqa: E402
+from hostenv import mono_font_candidates  # noqa: E402
+from safety import atomic_write  # noqa: E402
 
 try:
     from PIL import Image, ImageDraw, ImageFont  # type: ignore
 except Exception:  # pragma: no cover - environment dependent
     Image = None
+    ImageDraw = ImageFont = None  # type: ignore
 
 COLS = 4
 BAR_H = 18
 SENTINEL_SHADE = 118
 PATCH = 28
+# The font the last sheet run actually used: the burned-in ids are the whole
+# point of a contact sheet, so the report must say when only the bitmap
+# fallback was available.
+FONT_USED: dict[str, str] = {"name": "default"}
 
 
 def image_tokens(width: int, height: int) -> int:
@@ -46,12 +53,20 @@ def image_tokens(width: int, height: int) -> int:
 
 
 def _font(size: int):
-    for name in ("Menlo.ttc", "DejaVuSansMono.ttf", "Arial.ttf"):
+    for name in mono_font_candidates():
         try:
-            return ImageFont.truetype(name, size)
+            font = ImageFont.truetype(name, size)
         except OSError:
             continue
-    return ImageFont.load_default()
+        FONT_USED["name"] = name
+        return font
+    FONT_USED["name"] = "default"
+    print("[vsum] warning: no TrueType monospace font found; contact-sheet ids use PIL's bitmap font — "
+          "if an id is not legible, read that candidate individually", file=sys.stderr)
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:  # Pillow < 10.1
+        return ImageFont.load_default()
 
 
 def plan_sheets(candidates: list[dict], tiles_per_sheet: int, seed: int = 7) -> list[dict]:
@@ -110,7 +125,7 @@ def build_sheets(work: Path, tiles_per_sheet: int = 16, tile_width: int = 320) -
     candidates = payload.get("candidates", [])
     if Image is None:
         payload["sheets"] = {"status": "unavailable", "reason": "PIL not importable", "sheets": []}
-        payload_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        atomic_write(payload_path, json.dumps(payload, indent=2) + "\n")
         return payload["sheets"]
     out_dir = work / "sheets"
     out_dir.mkdir(exist_ok=True)
@@ -126,10 +141,10 @@ def build_sheets(work: Path, tiles_per_sheet: int = 16, tile_width: int = 320) -
         for tile in sheet["tiles"]:
             tile.pop("path", None)
     block = {"status": "ok", "tiles_per_sheet": tiles_per_sheet, "tile_width": tile_width,
-             "sheets": plan, "image_tokens": total,
+             "sheets": plan, "image_tokens": total, "font": FONT_USED["name"],
              "individual_tokens": sum(image_tokens(int(c.get("width", 512)), int(c.get("height", 288))) for c in candidates)}
     payload["sheets"] = block
-    payload_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    atomic_write(payload_path, json.dumps(payload, indent=2) + "\n")
     return block
 
 

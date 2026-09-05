@@ -30,22 +30,35 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
+import datetime as _dt  # noqa: E402
+
 from audit_summary import HEBREW_RE, brief_items, run_audit  # noqa: E402
 from bundle import bundle as bundle_summary  # noqa: E402
 from frame_utils import chapter_for_time, format_time  # noqa: E402
+from gates import (  # noqa: E402
+    ENGINE_VERSION,
+    GateError,
+    StaleError,
+    UnresolvedError,
+    candidates_digest,
+    canonical_sha256,
+    selections_binding,
+    sha256_file,
+    validate_assets,
+    validate_chapters,
+    validate_selections,
+    validate_transcript,
+)
+from hostenv import chrome_candidates, find_chrome, utf8_stdio  # noqa: E402
 from safety import CSP, asset_file, atomic_write, validate_generated_html  # noqa: E402
 
-ENGINE_VERSION = "1.6.0"
 MANIFEST_SCHEMA = 3
 ROLES = {"evidence", "illustration"}
 NOVELTY = {"new_state", "build_stage", "reprise"}
 BLOCK_KINDS = {"prose", "code", "quote"}
 LANGS = {"he", "en"}
-CHROME_CANDIDATES = (
-    "google-chrome", "google-chrome-stable", "chromium", "chromium-browser",
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    "/Applications/Chromium.app/Contents/MacOS/Chromium",
-)
+OUTPUT_MODES = ("illustrated", "text-only")
+CHROME_CANDIDATES = tuple(chrome_candidates())
 FONT_DIR = SCRIPT_DIR / "fonts"
 CONFIG_ENV = Path.home() / ".config" / "summarize-video" / ".env"
 INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
@@ -100,8 +113,7 @@ def _load_json(path: Path) -> object:
 
 
 def canonical_json_sha256(payload: object) -> str:
-    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return canonical_sha256(payload)
 
 
 def _env_lang() -> str | None:
@@ -225,6 +237,20 @@ def _validate(
         raise SystemExit("assets-manifest.json contains extraction failures")
     if len(selections) > 20:
         raise SystemExit("HTML frame budget exceeded: more than 20 selections")
+    # The assets must have been grabbed for THIS selections.json from THIS
+    # candidate pool; older manifests without the bindings only warn.
+    recorded_selections = assets_payload.get("selections_binding_sha256") or assets_payload.get("selections_sha256")
+    if assets_payload.get("selections_binding_sha256"):
+        if recorded_selections != selections_binding(selections):
+            raise StaleError("the selected frames (ids, names or crops) changed after grab — re-run grab.py")
+    elif recorded_selections and recorded_selections != canonical_sha256(selections):
+        raise StaleError("assets were grabbed from a different selections.json — re-run grab.py")
+    recorded_candidates = assets_payload.get("candidates_sha256")
+    if recorded_candidates and recorded_candidates != candidates_digest(candidate_payload):
+        raise StaleError("assets were grabbed from a different candidates.json — re-run grab.py")
+    if selections and not (recorded_selections and recorded_candidates):
+        print("[vsum] warning: assets-manifest.json predates input binding; staleness cannot be verified",
+              file=sys.stderr)
     chapter_map = {chapter["chapter_id"]: chapter for chapter in chapters}
     segment_ids = {str(segment["seg_id"]) for segment in transcript.get("segments", [])}
     candidates = {
@@ -233,15 +259,18 @@ def _validate(
     }
     assets = {str(asset["candidate_id"]): asset for asset in assets_payload.get("assets", [])}
     summaries = _normalized_summary(summary_payload, chapters, lang)
-    unresolved_required = {
-        row["chapter_id"]
-        for row in candidate_payload.get("coverage", {}).get("chapters", [])
-        if row.get("status") == "unresolved"
-        and chapter_map.get(row.get("chapter_id"), {}).get("needs_frames", False)
-    }
+    # coverage_report only marks a chapter unresolved when it needs frames, so
+    # every unresolved row is required (the old `.get("needs_frames", False)`
+    # re-check silently disabled this gate whenever the key was omitted).
+    coverage = candidate_payload.get("coverage", {})
+    unresolved_required = sorted(
+        {row["chapter_id"] for row in coverage.get("chapters", []) if row.get("status") == "unresolved"}
+        | {f"target {row['target_id']}" for row in coverage.get("targets", []) if row.get("status") == "unresolved"}
+    )
     if unresolved_required:
-        raise SystemExit(
-            "Required visual chapters remain unresolved: " + ", ".join(sorted(unresolved_required))
+        raise UnresolvedError(
+            "Required visual chapters/targets remain unresolved: " + ", ".join(unresolved_required)
+            + " — fix chapters.json or re-run candidates.py (--tier high); do not render around it"
         )
     for chapter_id, summary in summaries.items():
         for block in summary["blocks"]:
@@ -442,17 +471,8 @@ def font_face_css(lang: str) -> str:
 
 
 def _find_chrome() -> str | None:
-    """A Chrome/Chromium binary for headless print-to-pdf, if any."""
-    explicit = os.environ.get("CHROME_BIN")
-    if explicit and Path(explicit).exists():
-        return explicit
-    for candidate in CHROME_CANDIDATES:
-        if candidate.startswith("/"):
-            if Path(candidate).exists():
-                return candidate
-        elif shutil.which(candidate):
-            return shutil.which(candidate)
-    return None
+    """A Chrome/Chromium/Edge binary for headless print-to-pdf, if any (see hostenv)."""
+    return find_chrome()
 
 
 def _find_weasyprint() -> list[str] | None:
@@ -732,44 +752,95 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Render validated HTML (Hebrew RTL or English) from summary evidence")
     parser.add_argument("--work", required=True)
     parser.add_argument("--summary", required=True, help="Model-authored summary.json")
-    parser.add_argument("--selections", required=True)
-    parser.add_argument("--assets-dir", required=True)
+    parser.add_argument("--selections", default=None,
+                        help="Model-authored selections.json (required unless --output-mode text-only)")
+    parser.add_argument("--assets-dir", default=None,
+                        help="grab.py output directory (required unless --output-mode text-only)")
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--lang", choices=sorted(LANGS), default=None,
                         help="Output language (default: summary.json lang, then SUMMARY_LANG, then en)")
+    parser.add_argument("--output-mode", choices=OUTPUT_MODES, default="illustrated",
+                        help="illustrated (default): at least one verified frame is required; text-only: an explicit "
+                             "no-visuals delivery, recorded in manifest.json as output_mode")
     parser.add_argument("--pdf", action="store_true",
                         help="Also print the single-file HTML to summary-<id>.pdf")
     parser.add_argument("--pdf-engine", choices=("auto", "chrome", "weasyprint"), default="auto")
     parser.add_argument("--allow-audit-errors", action="store_true",
                         help="Render even when audit_summary.py reports errors (benchmark use only)")
     args = parser.parse_args()
+    utf8_stdio()
 
     work = Path(args.work).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()
-    assets_dir = Path(args.assets_dir).expanduser().absolute()
-    if assets_dir.is_symlink() or (assets_dir / "assets-manifest.json").is_symlink():
-        raise SystemExit("Refusing symlinked assets input")
-    assets_payload = _checked_assets(_load_json(assets_dir / "assets-manifest.json"), assets_dir)
-    assets_dir = assets_dir.resolve()
-    out_dir.mkdir(parents=True, exist_ok=True)
-    expected_assets = out_dir / "assets"
-    if assets_dir != expected_assets:
-        if expected_assets.exists():
-            raise SystemExit(f"Refusing to replace existing assets directory: {expected_assets}")
-        shutil.copytree(assets_dir, expected_assets, symlinks=True)
-        assets_dir = expected_assets
-        assets_payload = _checked_assets(assets_payload, assets_dir)
+    text_only = args.output_mode == "text-only"
+    if not text_only and (not args.selections or not args.assets_dir):
+        raise GateError("--selections and --assets-dir are required for an illustrated summary "
+                        "(pass --output-mode text-only only for an explicit no-visuals delivery)")
 
+    # Every input is loaded and gated BEFORE any side effect, so a bad
+    # summary.json never leaves a half-built output directory behind.
     transcript = _load_json(work / "transcript.json")
     chapters = _load_json(work / "chapters.json")
     candidate_payload = _load_json(work / "candidates.json")
-    selections = _load_json(Path(args.selections).expanduser().resolve())
+    selections = _load_json(Path(args.selections).expanduser().resolve()) if args.selections else []
     summary_payload = _load_json(Path(args.summary).expanduser().resolve())
     if not isinstance(chapters, list) or not isinstance(selections, list):
         raise SystemExit("chapters.json and selections.json must be arrays")
     if not isinstance(summary_payload, dict):
         raise SystemExit("summary.json must be an object")
+    if not isinstance(candidate_payload, dict):
+        raise SystemExit("candidates.json must be an object")
     lang = resolve_lang(args.lang, summary_payload)
+    gate = validate_transcript(transcript)
+    gate.raise_for_errors("transcript.json")
+    duration = float((transcript.get("video") or {}).get("duration") or 0)
+    gate = validate_chapters(chapters, transcript, duration,
+                             visual_decision="none" if text_only else "illustrated")
+    gate.raise_for_errors("chapters.json")
+    if not text_only:
+        if not selections:
+            raise GateError("selections.json is empty: an illustrated summary needs at least one verified frame; "
+                            "a genuinely non-visual video is delivered with --output-mode text-only after an "
+                            "explicit no-visuals decision")
+        gate = validate_selections(selections, candidate_payload, lang=lang,
+                                   shortlist_receipt=candidate_payload.get("shortlist"))
+        gate.print_warnings("selections.json")
+        gate.raise_for_errors("selections.json")
+    # The candidate pool must have been cut from THIS transcript and THESE chapters.
+    inputs = candidate_payload.get("inputs") if isinstance(candidate_payload.get("inputs"), dict) else {}
+    transcript_sha = sha256_file(work / "transcript.json")
+    chapters_sha = sha256_file(work / "chapters.json")
+    if inputs.get("transcript_sha256") and inputs["transcript_sha256"] != transcript_sha:
+        raise StaleError("transcript.json changed after candidates were extracted — re-run candidates.py")
+    if inputs.get("chapters_sha256") and inputs["chapters_sha256"] != chapters_sha:
+        raise StaleError("chapters.json changed after candidates were extracted — re-run candidates.py")
+    if not inputs:
+        print("[vsum] warning: candidates.json predates input binding; staleness cannot be verified", file=sys.stderr)
+
+    if text_only:
+        assets_dir = None
+        assets_manifest_sha = None
+        assets_payload = {"schema_version": 2, "assets": [], "failures": [], "duplicate_pairs": []}
+        out_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        assets_dir = Path(args.assets_dir).expanduser().absolute()
+        if assets_dir.is_symlink() or (assets_dir / "assets-manifest.json").is_symlink():
+            raise SystemExit("Refusing symlinked assets input")
+        assets_manifest_sha = sha256_file(assets_dir / "assets-manifest.json")
+        assets_payload = _checked_assets(_load_json(assets_dir / "assets-manifest.json"), assets_dir)
+        assets_dir = assets_dir.resolve()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        expected_assets = out_dir / "assets"
+        if assets_dir != expected_assets:
+            if expected_assets.exists():
+                existing = expected_assets / "assets-manifest.json"
+                if existing.is_file() and not existing.is_symlink() and sha256_file(existing) == assets_manifest_sha:
+                    shutil.rmtree(expected_assets)  # the same grab, copied by an earlier render: refresh it
+                else:
+                    raise SystemExit(f"Refusing to replace existing assets directory: {expected_assets}")
+            shutil.copytree(assets_dir, expected_assets, symlinks=True)
+            assets_dir = expected_assets
+            assets_payload = _checked_assets(assets_payload, assets_dir)
     summaries, frames, _ = _validate(
         transcript, chapters, candidate_payload, selections, assets_payload, summary_payload, lang
     )
@@ -789,7 +860,7 @@ def main() -> int:
             info = None
     audit = run_audit(transcript, chapters, summary_payload, selections=selections,
                       candidates=candidate_payload, info=info, lang=lang)
-    (work / "audit.json").write_text(json.dumps(audit, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    atomic_write(work / "audit.json", json.dumps(audit, ensure_ascii=False, indent=2) + "\n")
     if audit["errors"]:
         print(f"[vsum] audit: {len(audit['errors'])} error(s), {len(audit['reviews'])} review(s)", file=sys.stderr)
         for row in audit["errors"][:20]:
@@ -843,6 +914,16 @@ def main() -> int:
                   "warnings": len(audit["warnings"]), "stats": audit.get("stats", {})},
         "summary_sha256": canonical_json_sha256(summary_payload),
         "selections_sha256": canonical_json_sha256(selections),
+        # Bindings to every other input, so `workflow.py verify` can prove which
+        # transcript, chapters, pool and assets this document was rendered from.
+        "transcript_sha256": transcript_sha,
+        "chapters_sha256": chapters_sha,
+        "candidates_sha256": candidates_digest(candidate_payload),
+        "assets_manifest_sha256": assets_manifest_sha,
+        "output_mode": args.output_mode,
+        "visual_content": inputs.get("visual_content"),
+        "frames_count": len(frames),
+        "generated_at": _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat(),
     }
     if "brief" in summary_payload:
         # Structural errors cannot be bypassed, even in benchmark mode.

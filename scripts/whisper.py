@@ -25,6 +25,9 @@ import uuid
 from pathlib import Path
 from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from hostenv import install_hint  # noqa: E402
+
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
 GROQ_MODEL = "whisper-large-v3"
@@ -117,7 +120,7 @@ def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, 
 def extract_audio(video_path: str, out_path: Path) -> Path:
     """Extract mono 16kHz 64kbps mp3 — ~480 kB/min, fits any Whisper limit."""
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(f"ffmpeg is not installed. {install_hint('ffmpeg')}")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
@@ -144,7 +147,7 @@ def extract_audio(video_path: str, out_path: Path) -> Path:
 def audio_duration(audio_path: Path) -> float:
     """Return the duration of an audio file in seconds via ffprobe."""
     if shutil.which("ffprobe") is None:
-        raise SystemExit("ffprobe is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(f"ffprobe is not installed. {install_hint('ffprobe')}")
 
     result = subprocess.run(
         [
@@ -174,7 +177,7 @@ def split_audio(
     mp3 frame boundaries are close enough for transcription's purposes.
     """
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(f"ffmpeg is not installed. {install_hint('ffmpeg')}")
 
     work_dir.mkdir(parents=True, exist_ok=True)
     chunks: list[tuple[Path, float]] = []
@@ -368,14 +371,20 @@ def _segments_from_response(data: dict) -> list[dict]:
     return out
 
 
+# Every skipped chunk is recorded here so transcript.json can say where the
+# transcript has holes; reset by transcribe_video().
+CHUNK_FAILURES: list[dict] = []
+
+
 def transcribe_chunks(
     chunks: list[tuple[Path, float]],
     transcribe_one,
 ) -> list[dict]:
     """Transcribe each chunk, shift its segments by the chunk offset, concatenate.
 
-    A chunk that fails after its own retries is logged and skipped so one bad
-    slice doesn't discard the whole transcript. Raises only if every chunk fails.
+    A chunk that fails after its own retries is logged, recorded in
+    CHUNK_FAILURES and skipped so one bad slice doesn't discard the whole
+    transcript. Raises only if every chunk fails.
     """
     segments: list[dict] = []
     failures = 0
@@ -384,6 +393,7 @@ def transcribe_chunks(
             chunk_segments = transcribe_one(path)
         except SystemExit as exc:
             failures += 1
+            CHUNK_FAILURES.append({"index": index, "offset_s": round(float(offset), 3), "error": str(exc)[:200]})
             print(
                 f"[vsum] chunk {index + 1}/{len(chunks)} failed — skipping ({exc})",
                 file=sys.stderr,
@@ -432,6 +442,7 @@ def transcribe_video(
     service reports back is left in `DETECTED_LANGUAGE["value"]`.
     """
     DETECTED_LANGUAGE["value"] = None
+    CHUNK_FAILURES.clear()
     if backend not in {"groq", "openai"}:
         raise SystemExit("Explicit transcription provider required: groq or openai")
     if api_key is None:
