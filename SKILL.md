@@ -1,6 +1,6 @@
 ---
 name: summarize-video
-description: Creates source-linked study notes from a YouTube video or local recording, with a concise summary, main points, takeaways, and illustrated chapters using timestamped original frames. Produces self-contained HTML and optional PDF in Hebrew or English. Use for lectures, tutorials, screencasts, demos, or requests for a visual video summary. Fetches captions first; audio upload requires explicit --whisper groq|openai selection. See SECURITY.md for data flows and host-agent limits.
+description: Creates illustrated, source-linked study notes from YouTube URLs or local recordings in Hebrew or English. Use for lectures, tutorials, screencasts and demos. Guides Codex, Claude Code or Antigravity through capability checks and user-approved setup, then produces verified original frames, self-contained HTML and optional PDF. Chats without execution tools get a copy-ready handoff to the user's own agent. Cloud transcription requires explicit --whisper groq|openai selection. See SECURITY.md for data flows.
 license: MIT
 metadata:
   version: "1.6.0"
@@ -9,7 +9,29 @@ metadata:
   author: yosishe
 ---
 
-# /summarize-video
+# summarize-video
+
+## Choose the available route before running anything
+
+A repository URL or an uploaded SKILL.md is not an installation, a video, or proof of tool access. Apply this routing to summarization requests; do not replace a request to review, edit, or install the repository with summarization.
+
+- **Missing source:** if the user sent only this repository/instructions for a summary, ask one short question for the YouTube video URL. Use an already supplied source; do not ask again. Keep explicit review/edit/install-only requests in their own scope.
+- **Agent with execution tools:** use the setup check below, then the full pipeline. Codex, Claude Code and Antigravity are documented routes; verify actual shell, file, network and image-review capabilities. Do not require permanent skill registration: a reviewed working copy is enough. A missing `yt-dlp` executable is a setup issue, not proof that URL-based summarization is impossible.
+- **Session without execution or image-review tools:** follow [CHAT-PROMPT.txt](CHAT-PROMPT.txt) to hand off the same YouTube URL and preferences to the user's own local agent. Do not infer capabilities from a product name, browser access or a Python-only sandbox. Do not automatically demand a video upload or replace the requested illustrated report with a text summary. If no installation is allowed, reuse existing tools; if required tools are absent, explain that exact blocker and stop the dependent path.
+
+**If the handoff file cannot be opened:** provide a short copy-ready message containing this repository's URL, the supplied video URL, language and output request. Tell the receiving agent to obtain and review the repository, read `SKILL.md` and `SECURITY.md`, check prerequisites, request approval for missing software, and run through verified HTML delivery. Explain that the user should paste it into Codex, Claude Code or Antigravity with local execution tools. Do not claim to transfer or run the task automatically. The human guide is [CHAT-GUIDE.he.md](CHAT-GUIDE.he.md); the direct starter is [AGENT-START.txt](AGENT-START.txt).
+
+## Setup check — before summarization
+
+1. Inspect the actual tools, OS, shell and selected workspace. Shell execution, file writing, model access to local images and network access to the selected source are necessary. Keep normal host approval controls enabled. If the session cannot provide a required capability, give one actionable next step; do not keep searching repository pages or promise work in the background.
+2. Locate a verified copy of this repository, or obtain it in a fresh task subfolder without overwriting existing files. Downloading source into a task folder is distinct from registering a permanent skill. Read this file, `SECURITY.md` and the scripts before execution; record the source commit. For persistent installation, obtain approval and use the host-specific paths in [README.md](README.md#get-started). No hooks, settings changes, plugin setup or hosted service is required.
+3. Check Python 3.10+ first. If available, run `python3 "$SKILL_DIR/scripts/doctor.py" --json`; resolve `SKILL_DIR` as described below. For YouTube, require compatible `yt-dlp`, `ffmpeg` and `ffprobe`. For an explicitly supplied local recording, the doctor accepts `--local`. A passing doctor checks installed tools only: try the source through Step 1, and verify video access during Step 3 before claiming success.
+4. If Python or another required tool is absent/incompatible, explain the missing item in one short sentence, propose the exact installation/update and its scope, and request approval unless the user already approved that specific setup. Use the OS's available trusted package manager or official installation guidance. Do not pipe remote scripts into a shell, assume Homebrew exists, or change safety flags. After approval, perform only the approved setup, rerun the check and resume the same request. If installation fails or is forbidden, report the concrete error and one next step. Never repeat the same failed action without new evidence or a changed condition.
+5. Prefer existing tools and the caption-based route. Do not install optional PDF/vision packages, obtain credentials, or enable cloud transcription automatically. A missing PDF engine still permits HTML. If captions are unavailable, report exit 6 and the explicit transcription option from Step 1; a coding-agent subscription is not a transcription API key. A download failure is a source-access issue, not evidence that another install will fix it. Do not acquire cookies, login or bypass access controls automatically.
+
+Use plain progress updates: checking tools, getting the video, selecting images, writing the report. Perform the authorized work, rather than returning only commands for a nontechnical user to run. Keep partial work resumable and report completion only after the output exists and the evidence checks pass.
+
+## Local engine workflow
 
 Pipeline: **transcript → chapters + visual targets → candidates (512px) → one visual triage by candidate ID → pixel-verified re-grab → rendered HTML → one self-contained file (+ optional PDF).**
 
@@ -17,18 +39,20 @@ The ordering is the point: every text decision happens before an image token is 
 
 **Tiers and language.** `--tier standard` (default) or `--tier high`, and `--lang he` (default) or `--lang en`, chosen by the user as arguments — never ask. Parse the arguments: a `--tier high` token means every `candidates.py` call below adds `--tier high` (grab.py picks the tier up from `candidates.json`); `--lang en` means the summary, captions and page are English (otherwise Hebrew, right-to-left, written directly from the transcript — never a translation of an English draft); a `--pdf` token means the final `render.py` call adds `--pdf`. Everything else is the source and free-text focus notes. When `--lang` is absent, `SUMMARY_LANG` in `~/.config/summarize-video/.env` decides, then `he` (the public skill default; use `--lang en` for English); write `summary.json` with the matching `lang` field so the renderer and the audit agree with you. `high` buys accuracy with CPU and a larger triage: adaptive scene scoring, denser sampling, 3 alternatives per target, a 64-frame pool, blurdetect sharpness refinement at grab time (still pixel-verified), face demotion when OpenCV is importable, and OCR text density as a ranking signal for slide completeness. Both tiers print an honest cost line.
 
+Natural-language requests are equivalent to explicit options: map "in Hebrew"/"בעברית" to `--lang he`, "in English"/"באנגלית" to `--lang en`, an explicit high-quality request to `--tier high`, and a requested PDF to `--pdf`. Carry these preferences through a chat handoff; do not ask a nontechnical user to restate them as flags. Transcription-provider selection and long-video/budget overrides retain their separate explicit authorization requirements.
+
 Frame-engine internals (scene detection, pts stamps, thumbnail dedup) are adapted from `bradautomates/claude-video` (MIT); the sharpness gate and "content gap" targeting follow `CZX2244/dsh-bilibili`; face demotion follows `ConflictHQ/PlanOpticon`. Whisper keys are read from the environment or `~/.config/summarize-video/.env` only after the user explicitly selects `--whisper groq|openai`. Keys from other skills are not reused.
 
 ## Resolve SKILL_DIR
 
-Set `SKILL_DIR` to the absolute path of the directory containing THIS SKILL.md — your harness reported that path when this file was loaded (a plain clone lands at `~/.claude/skills/summarize-video`). The scripts are direct siblings at `SKILL_DIR/scripts/`. Guard once:
+Set `SKILL_DIR` to the absolute directory containing THIS SKILL.md: use the harness-reported skill path or the verified task clone path. Do not assume a Claude-specific location or the current working directory. The scripts are direct siblings at `SKILL_DIR/scripts/`. Shell examples use POSIX syntax; adapt quoting and the available Python command to the active host without changing the script arguments. Guard once:
 
 ```bash
 SKILL_DIR="<absolute path of the directory containing this SKILL.md>"
 [ -f "$SKILL_DIR/scripts/transcript.py" ] || { echo "scripts not found under $SKILL_DIR" >&2; exit 1; }
 ```
 
-Prereqs: `ffmpeg`, `ffprobe`, `yt-dlp` (`brew install ffmpeg yt-dlp`). Run `python3 "$SKILL_DIR/scripts/doctor.py" --json` once to check readiness without installing anything or reading keys. A Whisper key is optional; using it requires explicit `--whisper groq|openai` authorization to upload audio. Missing prerequisites are a setup issue, not permission to install them. JSON contracts for every file you author are in [references/contracts.md](references/contracts.md).
+Prereqs: Python 3.10+, `ffmpeg`, `ffprobe`, and compatible `yt-dlp` for URLs. Use the setup check above; do not rerun an unchanged successful check. A Whisper key is optional; using it requires explicit `--whisper groq|openai` authorization to upload audio. JSON contracts for every file you author are in [references/contracts.md](references/contracts.md).
 
 If no language was supplied, obtain only the validated language setting through the local helper below; never open the shared config file in a model read tool:
 
@@ -43,7 +67,7 @@ python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); from render import _env
 - Work only on the user-selected source and this task's work/output folders. Derive output names from safe identifiers (`A–Z`, `a–z`, digits, `_`, `-`), never raw titles or paths from the transcript. Use quoted argv; never interpolate source text into executable shell syntax.
 - Do not read or display API-key files through model tools. The transcription helper reads its own scoped config only after explicit provider selection. A key being present does not authorize upload. Explain the provider and audio transmission if consent is missing, and stop that path until the user chooses it. `--no-whisper` always disables upload.
 - The host model processes transcript text and selected images. Local Python processing does **not** make a hosted model private or offline. Keep normal host approval/sandbox controls enabled; this skill grants no permissions and never asks for bypass flags.
-- No package installs, updates, background services, telemetry, or credential setup during summarization. Use only reviewed installed tools; a missing optional PDF engine leaves the HTML usable. Do not upload, publish, or share outputs unless requested.
+- Dependency installation/updates belong only to the separate, explicitly approved setup phase above; the summarization scripts never install or update tools. No background services, telemetry or automatic credential setup. Use reviewed installed tools; a missing optional PDF engine leaves HTML usable. Do not upload, publish or share outputs unless requested.
 
 See [SECURITY.md](SECURITY.md) for implemented controls, data destinations, residual risks, and reporting. Do not describe this skill as certified, audited by an independent party, or safe for every source.
 
