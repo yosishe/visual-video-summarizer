@@ -1,86 +1,57 @@
-"""Reliability regressions at the CLI boundary, with real ffmpeg and a fake yt-dlp.
+"""Reliability regressions at the CLI boundary, with real ffmpeg.
 
 Every case here reproduced a silent success on 1.6.0: missing or empty
 transcript, an empty or all-talk chapters.json, a chapter that needs frames
 but yields none, unknown segment references, a swapped download, stale
-bindings, and a zero-frame "illustrated" render. The end-to-end case drives
-`workflow.py` from a YouTube-shaped URL through a shim `yt-dlp` on PATH.
+bindings, and a zero-frame "illustrated" render. The stage scripts are
+invoked directly (the way the benchmark and a bypassing agent would call
+them) so the gates are proven at the script boundary, not only through the
+controller — the controller loop itself lives in `test_workflow_e2e.py`.
 """
 from __future__ import annotations
 
 import json
-import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = ROOT / "scripts"
-SHIM = ROOT / "tests" / "support" / "ytdlp_shim.py"
-sys.path.insert(0, str(SCRIPTS))
+SUPPORT = Path(__file__).resolve().parent / "support"
+sys.path.insert(0, str(SUPPORT))
 
-from safety import YTDLP_FLAGS  # noqa: E402
-
-CAPTIONS = "WEBVTT\n\n" + "".join(
-    f"00:00:{i * 2:02d}.000 --> 00:00:{i * 2 + 2:02d}.000\nsegment {i} shows the counter at value {i * 7}\n\n"
-    for i in range(6))
-
-
-def transcript_payload() -> dict:
-    return {"schema_version": 2, "status": "ok", "source": "captions", "language": "en",
-            "video": {"id": "fixture", "title": "Fixture", "duration": 12.0, "is_url": False},
-            "segments": [{"seg_id": f"seg_{i:04d}", "start": i * 2.0, "end": i * 2.0 + 2.0,
-                          "text": f"segment {i} shows the counter at value {i * 7}"} for i in range(6)]}
-
-
-def chapters(visual_second: bool = True) -> list[dict]:
-    rows = [{"chapter_id": "ch01", "title": "Pattern", "start": 0.0, "end": 6.0, "needs_frames": True,
-             "visual_targets": [{"target_id": "t_pattern", "kind": "state", "seg_ids": ["seg_0001"], "why": "pattern"}]},
-            {"chapter_id": "ch02", "title": "Black", "start": 6.0, "end": 12.0, "needs_frames": visual_second}]
-    return rows
+from media_fixtures import (  # noqa: E402
+    SCRIPTS,
+    chapters,
+    run_script,
+    synthesize_fixture_video,
+    transcript_payload,
+)
 
 
 @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "ffmpeg required")
 class ReliabilityIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.class_temporary = tempfile.TemporaryDirectory(prefix="vsum-rel-")
+        cls.class_temporary = tempfile.TemporaryDirectory(prefix="vsum-rel-", ignore_cleanup_errors=True)
         cls.fixtures = Path(cls.class_temporary.name) / "fixtures"
         cls.fixtures.mkdir()
         cls.video = cls.fixtures / "video.mp4"
-        # 0–6 s: a moving test pattern (visual); 6–12 s: pure black (no usable frame).
-        subprocess.run([
-            "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-            "-f", "lavfi", "-i", "testsrc2=size=640x360:rate=10:duration=6",
-            "-f", "lavfi", "-i", "color=c=black:size=640x360:rate=10:duration=6",
-            "-filter_complex", "[0:v][1:v]concat=n=2:v=1:a=0[v]", "-map", "[v]",
-            "-c:v", "libx264", "-pix_fmt", "yuv420p", str(cls.video),
-        ], check=True)
-        (cls.fixtures / "captions.vtt").write_text(CAPTIONS, encoding="utf-8")
+        synthesize_fixture_video(cls.video)
 
     @classmethod
     def tearDownClass(cls):
         cls.class_temporary.cleanup()
 
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix="vsum-rel-case-")
+        self.temporary = tempfile.TemporaryDirectory(prefix="vsum-rel-case-", ignore_cleanup_errors=True)
         self.root = Path(self.temporary.name)
 
     def tearDown(self):
         self.temporary.cleanup()
 
-    def _run(self, *arguments, env: dict | None = None) -> subprocess.CompletedProcess:
-        environment = os.environ.copy()
-        environment["PYTHONPYCACHEPREFIX"] = str(self.root / "pycache")
-        environment["SUMMARY_LANG"] = "en"
-        environment["PYTHONUTF8"] = "1"
-        if env:
-            environment.update(env)
-        return subprocess.run([str(a) for a in arguments], cwd=self.root, env=environment,
-                              capture_output=True, text=True, check=False)
+    def _run(self, *arguments, env: dict | None = None):
+        return run_script(self.root, *arguments, env=env)
 
     def _work(self, name: str, *, transcript: dict | None = transcript_payload(), chapter_rows=None) -> Path:
         work = self.root / name
@@ -91,7 +62,7 @@ class ReliabilityIntegrationTests(unittest.TestCase):
             (work / "chapters.json").write_text(json.dumps(chapter_rows), encoding="utf-8")
         return work
 
-    def _candidates(self, work: Path, *extra) -> subprocess.CompletedProcess:
+    def _candidates(self, work: Path, *extra):
         return self._run(sys.executable, SCRIPTS / "candidates.py", self.video, "--work", work,
                          "--chapters", work / "chapters.json", *extra)
 
@@ -245,82 +216,6 @@ class ReliabilityIntegrationTests(unittest.TestCase):
         text_manifest = json.loads((self.root / "summary-text" / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(text_manifest["output_mode"], "text-only")
         self.assertEqual(text_manifest["frames_count"], 0)
-
-    # --- end to end through the controller and a shim yt-dlp -------------------------
-    def _shim_env(self, mode: str = "captions") -> dict:
-        bin_dir = self.root / "bin"
-        bin_dir.mkdir(exist_ok=True)
-        wrapper = bin_dir / "yt-dlp"
-        wrapper.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{SHIM}" "$@"\n', encoding="utf-8")
-        wrapper.chmod(0o755)
-        return {"PATH": f"{bin_dir}{os.pathsep}{os.environ.get('PATH', '')}",
-                "VSUM_SHIM_FIXTURE_DIR": str(self.fixtures), "VSUM_SHIM_MODE": mode,
-                "VSUM_SHIM_DURATION": "12", "VSUM_SHIM_LOG": str(self.root / "shim.log")}
-
-    def _wf(self, env: dict, *argv) -> subprocess.CompletedProcess:
-        return self._run(sys.executable, SCRIPTS / "workflow.py", *argv, env=env)
-
-    @unittest.skipUnless(os.name == "posix", "the PATH shim needs a POSIX shell")
-    def test_workflow_end_to_end_with_shim_ytdlp(self):
-        env = self._shim_env()
-        work = self.root / "work"
-        url = "https://www.youtube.com/watch?v=fixture"
-        self.assertEqual(self._wf(env, "init", url, "--work", work, "--lang", "en").returncode, 0)
-        first = self._wf(env, "run", "--work", work)
-        self.assertEqual(first.returncode, 0, first.stderr)
-        self.assertIn("NEXT (chapters", first.stdout)
-        transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
-        self.assertEqual(transcript["status"], "ok")
-        self.assertEqual(transcript["source_detail"]["track"], "en")
-        self.assertFalse(transcript["source_detail"]["translated"])
-        (work / "chapters.json").write_text(json.dumps(chapters(False)), encoding="utf-8")
-        second = self._wf(env, "run", "--work", work)
-        self.assertEqual(second.returncode, 0, second.stderr)
-        self.assertIn("NEXT (shortlist", second.stdout)
-        manifest = json.loads((work / "candidates.json").read_text(encoding="utf-8"))
-        ids = manifest["candidates"][0]["candidate_id"]
-        self.assertEqual(self._wf(env, "shortlist", "--work", work, "--ids", ids).returncode, 0)
-        third = self._wf(env, "run", "--work", work)
-        self.assertIn("NEXT (selections", third.stdout)
-        self._select(work, manifest)
-        fourth = self._wf(env, "run", "--work", work)
-        self.assertEqual(fourth.returncode, 0, fourth.stderr)
-        self.assertIn("NEXT (summary", fourth.stdout)
-        self._summarize(work)
-        fifth = self._wf(env, "run", "--work", work)
-        self.assertEqual(fifth.returncode, 0, fifth.stderr)
-        verify = self._wf(env, "verify", "--work", work, "--json")
-        self.assertEqual(verify.returncode, 0, verify.stdout + verify.stderr)
-        report = json.loads(verify.stdout)
-        self.assertTrue(report["complete"])
-        self.assertTrue(Path(report["deliverable"]).is_file())
-        # every yt-dlp call carried the safety flags and the Whisper path was never reached
-        calls = [json.loads(line) for line in (self.root / "shim.log").read_text(encoding="utf-8").splitlines()]
-        self.assertTrue(calls)
-        for call in calls:
-            if "--version" in call:
-                continue
-            for flag in YTDLP_FLAGS:
-                self.assertIn(flag, call)
-            self.assertNotIn("ba/bestaudio", call)
-        # the reports survive for a compacted agent
-        self.assertTrue((work / "reports" / "candidates.md").is_file())
-
-    @unittest.skipUnless(os.name == "posix", "the PATH shim needs a POSIX shell")
-    def test_workflow_no_captions_stops_with_exit_6_and_blocker(self):
-        env = self._shim_env("no-captions")
-        work = self.root / "work"
-        self._wf(env, "init", "https://www.youtube.com/watch?v=fixture", "--work", work, "--lang", "en")
-        result = self._wf(env, "run", "--work", work)
-        self.assertEqual(result.returncode, 6, result.stderr)
-        run = json.loads((work / "run.json").read_text(encoding="utf-8"))
-        self.assertEqual(run["blocker"]["stage"], "transcript")
-        self.assertEqual(run["blocker"]["exit_code"], 6)
-        transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
-        self.assertEqual(transcript["status"], "no_transcript")
-        self.assertIn("not authorized", transcript["source_detail"]["reason"])
-        verify = self._wf(env, "verify", "--work", work)
-        self.assertEqual(verify.returncode, 12)
 
 
 if __name__ == "__main__":
