@@ -48,7 +48,7 @@ The extraction engine is an **agent skill**: the scripts handle media and eviden
 
 ### 1. Review and install
 
-Read [SKILL.md](SKILL.md), [SECURITY.md](SECURITY.md), and the [scripts](scripts/) before running them. For a one-off task, clone into a fresh folder under your chosen workspace. This downloads source without registering a skill or starting a service; it does not install dependencies. Do not overwrite an existing copy.
+Read [SKILL.md](SKILL.md) and [SECURITY.md](SECURITY.md) before running; the [scripts](scripts/) are reviewable and each prints `--help`. For a one-off task, clone into a fresh folder under your chosen workspace. This downloads source without registering a skill or starting a service; it does not install dependencies. Do not overwrite an existing copy.
 
 ```bash
 git clone https://github.com/yosishe/visual-video-summarizer.git visual-video-summarizer
@@ -66,7 +66,7 @@ For reproducible installations, review a particular commit in GitHub and check o
 | [Claude Code](https://code.claude.com/docs/en/skills) | `.claude/skills/summarize-video/` | `~/.claude/skills/summarize-video/` | `/summarize-video` followed by the URL |
 | [Antigravity](https://antigravity.google/docs/skills/) | `.agents/skills/summarize-video/` | `~/.gemini/config/skills/summarize-video/` | Ask to use `summarize-video` for the URL |
 
-Paths and invocation conventions checked against the linked official documentation on 2026-09-05. Resolve `~` using the host's actual user directory; adapt commands to the active shell. Examples below use a POSIX shell. This project has not verified the complete pipeline on each of these hosts or on every operating system. Skill discovery and terminal/network/image access are separate checks. For one-off use, ask the agent to read `SKILL.md` from the actual clone path instead of assuming a slash command exists.
+Paths and invocation conventions checked against the linked official documentation on 2026-09-05. Resolve `~` using the host's actual user directory. Every command is a single Python line (`python3` on macOS/Linux, `python` on Windows); no shell-specific syntax is required. The fast test job runs on Linux, macOS and Windows; the media integration job runs on Linux. This project has not verified the complete pipeline with every host agent on every operating system. Skill discovery and terminal/network/image access are separate checks. For one-off use, ask the agent to read `SKILL.md` from the actual clone path instead of assuming a slash command exists.
 
 ### 2. Check your tools
 
@@ -90,7 +90,7 @@ On Linux, use your distribution's packages for Python and ffmpeg and the [offici
 
 ### 3. Make your first summary
 
-In any of the three agents, provide the YouTube URL and ask it to follow the local `SKILL.md` to create an illustrated Hebrew summary. In Claude Code with the skill registered, you can also use:
+In any of the three agents, provide the YouTube URL and ask it to follow the local `SKILL.md` to create an illustrated Hebrew summary. The agent runs `scripts/workflow.py` in a loop, authors the three files it is asked for, and reports completion only after `workflow.py verify` passes. In Claude Code with the skill registered, you can also use:
 
 ```text
 /summarize-video https://www.youtube.com/watch?v=VIDEO_ID --lang en
@@ -121,6 +121,8 @@ transcript → chapters and visual targets → contact sheets → verified short
            → selected original frames → detailed prose and opening brief
            → evidence audit → HTML and optional PDF
 ```
+
+A deterministic controller, `scripts/workflow.py`, drives this sequence: `init` records the request, `run` executes every stage it can and stops at the next file only the agent can write (chapters, selections, summary), `verify` proves which stages completed. Each stage refuses a missing, empty, invalid or stale input — a transcript that failed, a chapter citing segments that do not exist, a candidate pool cut from an older transcript, assets grabbed for a different selection — so an incomplete run cannot be reported as a finished one. A video without informative visuals is delivered only after an explicit, recorded no-visuals decision, never by a quiet zero-frame render. `<work>/run.json` and `verify.json` say what actually happened. Details: [references/contracts.md](references/contracts.md#reliability-contract-17).
 
 Text planning happens before image review. Targets reference transcript segment IDs; the engine derives search windows, decoded timestamps, and chapter placement. Scene detection also scans chapters for useful visuals the transcript did not predict. Blank and duplicate candidates are filtered before image review. The model reads the contact sheets once and the verified shortlist once; the selected output frames are re-decoded and checked against those candidates.
 
@@ -159,32 +161,36 @@ The repository adds no telemetry, background service, auto-updater, or permissio
 |---|---|
 | Doctor reports a missing or incompatible dependency | Install/update that tool explicitly, then rerun the doctor. |
 | YouTube HTTP 403 / PO Token / JavaScript challenge error | Check current yt-dlp requirements and source access restrictions. Updating alone may not fix every video. Cookies/logins and remote component downloads are not enabled automatically. |
-| No transcript / exit 6 | Choose a captioned source, or explicitly authorize a configured `--whisper` provider. Local files use the same opt-in fallback. |
-| Unresolved chapter/target or audit failure | Correct the cited segments or frame selection. Inspect the report; do not bypass the audit to claim completion. |
+| No transcript / exit 6 | Choose a captioned source, or explicitly authorize a configured `--whisper` provider. Local files use the same opt-in fallback. `transcript.json` records `status: no_transcript` and the reason. |
+| Unresolved chapter/target (exit 9) or audit failure (exit 5) | Correct the cited segments or frame selection. Inspect the report; do not bypass the audit to claim completion. |
+| Invalid artifact (exit 10) | The message names the file and rows: unknown segment ids, a non-boolean `needs_frames`, an empty chapters file, zero selections for an illustrated request. For a genuinely non-visual video record `workflow.py decide no-visuals --reason …`. |
+| Stale binding (exit 11) | A later artifact was made from different inputs; `workflow.py run` re-executes the stale stage. Do not edit manifests. |
+| `verify` incomplete (exit 12) | The report lists the failing stage; finish it before reporting completion. |
 | PDF unavailable / exit 4 | Open the HTML. Install a PDF engine yourself if you need PDF. |
 | Faces or OCR unavailable | Optional signal absent; other extraction and verification stages still run. |
 | Unsafe asset or active HTML rejected | Regenerate from the validated summary and original frames. Do not bundle an arbitrary web page. |
 
-## Standalone scripts and development
+## The workflow loop, standalone scripts and development
 
-The agent authors chapters, selections, and prose between deterministic script stages. The commands below are **not** an automatic one-command summarizer:
+The agent authors chapters, selections, and prose between deterministic script stages; the controller runs the rest and refuses to advance past a bad artifact. This is **not** an automatic one-command summarizer:
 
 ```bash
-python3 scripts/transcript.py "<url-or-path>" --work WORK
-# Author WORK/chapters.json with visual targets referencing transcript segments.
-python3 scripts/candidates.py "<url-or-path>" --work WORK --transcript WORK/transcript.json --chapters WORK/chapters.json
-# Review contact sheets and the verified shortlist; author WORK/selections.json.
-python3 scripts/grab.py --work WORK --spec WORK/selections.json --out-dir summary-ID/assets
-# Author WORK/summary.json with detailed chapters, then the opening brief.
-python3 scripts/render.py --work WORK --summary WORK/summary.json --selections WORK/selections.json --assets-dir summary-ID/assets --out-dir summary-ID
+python3 scripts/workflow.py init "<url-or-path>" --work WORK --lang he
+python3 scripts/workflow.py run --work WORK      # transcript → NEXT: author WORK/chapters.json
+python3 scripts/workflow.py run --work WORK      # candidates → NEXT: read the contact sheets, then shortlist
+python3 scripts/workflow.py shortlist --work WORK --ids c_0003,c_0011
+python3 scripts/workflow.py run --work WORK      # NEXT: author WORK/selections.json
+python3 scripts/workflow.py run --work WORK      # grab → NEXT: author WORK/summary.json
+python3 scripts/workflow.py run --work WORK      # audit → render → bundle (→ PDF)
+python3 scripts/workflow.py verify --work WORK   # exit 0 only when every stage is proven
 ```
 
-Each script provides `--help`. Caption/audio opt-in flags belong to `transcript.py`; quality/budget flags to `candidates.py`; PDF flags to `render.py`. See [contracts](references/contracts.md), [benchmark instructions](bench/README.md), and [changelog](CHANGELOG.md).
+`status`, `next` and `validate <stage>` inspect a run without executing anything; `decide no-visuals --reason …` records the one legitimate zero-frame outcome. The stage scripts (`transcript.py`, `candidates.py`, `shortlist.py`, `grab.py`, `audit_summary.py`, `render.py`) remain usable on their own with the same flags and now the same gates; each provides `--help`. Caption/audio opt-in flags belong to `transcript.py`; quality/budget flags to `candidates.py`; PDF and output-mode flags to `render.py`. See [contracts](references/contracts.md), [benchmark instructions](bench/README.md), and [changelog](CHANGELOG.md).
 
-Tests synthesize media fixtures locally, need ffmpeg and Pillow, and run in GitHub CI on Python 3.11 and 3.12:
+Tests synthesize media fixtures locally (the media classes need ffmpeg; the contact-sheet tests need Pillow) and run in GitHub CI as a fast cross-platform job (Linux, macOS, Windows; Python 3.10 and 3.12; no ffmpeg) plus a Linux media job (Python 3.11 and 3.12):
 
 ```bash
-python3 -m compileall -q scripts tests
+python3 -m compileall -q scripts tests bench
 python3 -m unittest discover -s tests -v
 ```
 
