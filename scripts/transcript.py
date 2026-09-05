@@ -35,8 +35,12 @@ from urllib.parse import urlparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from safety import ytdlp_command
-from whisper import DETECTED_LANGUAGE, load_api_key, transcribe_video  # noqa: E402
+from gates import ENGINE_VERSION, source_identity, transcript_health  # noqa: E402
+from hostenv import install_hint, utf8_stdio  # noqa: E402
+from safety import atomic_write, ytdlp_command  # noqa: E402
+from whisper import CHUNK_FAILURES, DETECTED_LANGUAGE, load_api_key, transcribe_video  # noqa: E402
+
+TRANSCRIPT_SCHEMA = 2
 
 TS_RE = re.compile(
     r"(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2})[.,](\d{3})"
@@ -200,7 +204,7 @@ def rank_caption_tracks(info: dict, wanted: tuple[str, ...] = DEFAULT_WANTED) ->
 
 def _run_ytdlp(args: list[str]) -> int:
     if shutil.which("yt-dlp") is None:
-        raise SystemExit("yt-dlp is not installed. Install with: brew install yt-dlp")
+        raise SystemExit(f"yt-dlp is not installed. {install_hint('yt-dlp')}")
     proc = subprocess.run(ytdlp_command(args), stdout=sys.stderr, stderr=sys.stderr)
     return proc.returncode
 
@@ -250,6 +254,13 @@ def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str
             key = subtitle.name[len("video."):-len(".vtt")]
             chosen = next((t for t in tracks if t["key"] == key), {"key": key, "kind": "unknown",
                                                                      "language": normalize_lang(key), "original": None})
+            # A forced pattern bypasses the ranking, not the provenance record: say
+            # truthfully whether the fetched track is YouTube machine translation.
+            entries = ((raw.get("subtitles") or {}).get(key) or (raw.get("automatic_captions") or {}).get(key)
+                       or []) if raw else []
+            chosen = {**chosen, "translated": bool(entries) and _is_translated(entries)}
+            if chosen["translated"]:
+                print(f"[vsum] warning: --langs selected `{key}`, a machine-translated track", file=sys.stderr)
     elif tracks:
         chosen = tracks[0]
         # --sub-langs is a regex: a bare `en` also matches `en-de` (a translated
@@ -287,7 +298,7 @@ def download_audio(url: str, out_dir: Path) -> Path:
 
 def probe(path: str) -> dict:
     if shutil.which("ffprobe") is None:
-        raise SystemExit("ffprobe is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(f"ffprobe is not installed. {install_hint('ffprobe')}")
     result = subprocess.run(
         ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", path],
         capture_output=True, text=True,
@@ -320,6 +331,7 @@ def main() -> int:
     ap.add_argument("--whisper", choices=["groq", "openai"], default=None,
                     help="Allow audio upload to this provider when captions are unavailable")
     args = ap.parse_args()
+    utf8_stdio()
 
     work = Path(args.work).expanduser().resolve() if args.work else Path(
         tempfile.mkdtemp(prefix="vsum-"))
@@ -332,6 +344,8 @@ def main() -> int:
     source_detail: dict = {}
     language: str | None = None
     info: dict = {}
+    failure_reason: str | None = None
+    fetched: dict = {}
     url_source = is_url(args.source)
     wanted = tuple(w.strip() for w in args.wanted.split(",") if w.strip()) or DEFAULT_WANTED
 
@@ -348,7 +362,8 @@ def main() -> int:
                 source_detail = {
                     "kind": "captions", "track": (track or {}).get("key"),
                     "manual": (track or {}).get("kind") == "manual",
-                    "original": (track or {}).get("original"), "translated": False,
+                    "original": (track or {}).get("original"),
+                    "translated": bool((track or {}).get("translated", False)),
                     "youtube_language": info.get("language"),
                     "tracks_considered": fetched["tracks_considered"],
                     "rejected_translated": fetched["rejected_translated"],
@@ -357,7 +372,10 @@ def main() -> int:
                       f"{', original' if source_detail['original'] else ''}); "
                       f"{fetched['rejected_translated']} machine-translated tracks ignored", file=sys.stderr)
             except Exception as exc:
+                failure_reason = f"caption track could not be parsed: {exc}"
                 print(f"[vsum] subtitle parse failed: {exc}", file=sys.stderr)
+        else:
+            failure_reason = "no caption track was available (machine translations are never used)"
         duration = float(info.get("duration") or 0)
     else:
         local = Path(args.source).expanduser().resolve()
@@ -366,10 +384,13 @@ def main() -> int:
         meta = probe(str(local))
         duration = meta["duration"]
         info = {"id": local.stem, "title": local.name, "url": str(local)}
+        failure_reason = "a local recording has no captions"
         if not meta["has_audio"]:
             print("[vsum] no audio stream — no transcript possible", file=sys.stderr)
+            failure_reason = "the recording has no audio stream"
             args.no_whisper = True
 
+    whisper_report: dict | None = None
     if not segments and not args.no_whisper and args.whisper:
         backend, api_key = load_api_key(args.whisper)
         if backend and api_key:
@@ -382,9 +403,18 @@ def main() -> int:
                 language = normalize_lang(DETECTED_LANGUAGE["value"]) or hint
                 source_detail = {"kind": "whisper", "backend": used, "language_hint": hint,
                                  "detected": DETECTED_LANGUAGE["value"], "translated": False}
+                failure_reason = None
             except SystemExit as exc:
+                failure_reason = f"{args.whisper} transcription failed: {exc}"
                 print(f"[vsum] whisper fallback failed: {exc}", file=sys.stderr)
+            whisper_report = {"backend": args.whisper, "chunks_failed": len(CHUNK_FAILURES),
+                              "failed_chunks": list(CHUNK_FAILURES)}
+            if CHUNK_FAILURES:
+                print(f"[vsum] warning: {len(CHUNK_FAILURES)} audio chunk(s) were skipped; "
+                      "the transcript has gaps (see transcript.json health)", file=sys.stderr)
         else:
+            failure_reason = (f"{failure_reason or 'no captions'}; --whisper {args.whisper} was selected "
+                              "but no API key is available")
             print(
                 "[vsum] no captions and no Whisper API key (GROQ_API_KEY / OPENAI_API_KEY in "
                 "env or ~/.config/summarize-video/.env) — transcript unavailable",
@@ -392,9 +422,17 @@ def main() -> int:
             )
 
     if not segments and not args.whisper and not args.no_whisper:
+        failure_reason = f"{failure_reason or 'no captions'}; cloud transcription was not authorized"
         print("[vsum] cloud transcription is off. To upload audio, explicitly choose "
               "--whisper groq or --whisper openai; a stored key alone is not consent.", file=sys.stderr)
+    elif not segments and args.no_whisper:
+        failure_reason = f"{failure_reason or 'no captions'}; --no-whisper disables transcription"
 
+    # Segment ids are the join keys of everything downstream: they must follow
+    # time order. Captions occasionally arrive out of order; sort and say so.
+    reordered = any(segments[i]["start"] > segments[i + 1]["start"] for i in range(len(segments) - 1))
+    if reordered:
+        segments = sorted(segments, key=lambda seg: (float(seg["start"]), float(seg["end"])))
     records = [
         {
             "seg_id": f"seg_{i:04d}",
@@ -404,10 +442,33 @@ def main() -> int:
         }
         for i, seg in enumerate(segments)
     ]
+    health = transcript_health(records, duration)
+    if reordered:
+        health["warnings"].append("caption cues were re-sorted into time order")
+    if whisper_report and whisper_report["chunks_failed"]:
+        health["warnings"].append(f"{whisper_report['chunks_failed']} transcription chunk(s) failed and were skipped")
+    if whisper_report:
+        health["whisper"] = whisper_report
+    if not records:
+        source_detail = {
+            "kind": "none", "reason": failure_reason or "no usable transcript",
+            "tracks_considered": fetched.get("tracks_considered", 0) if fetched else 0,
+            "rejected_translated": fetched.get("rejected_translated", 0) if fetched else 0,
+            "whisper_selected": args.whisper, "whisper_disabled": bool(args.no_whisper),
+        }
+    try:
+        identity = source_identity(args.source)
+    except OSError:
+        identity = str(args.source)
 
     payload = {
+        "schema_version": TRANSCRIPT_SCHEMA,
+        "engine_version": ENGINE_VERSION,
+        "status": "ok" if records else "no_transcript",
+        "generated_at": _now(),
         "source": source_kind,
         "source_detail": source_detail,
+        "source_identity": identity,
         "language": language,
         "video": {
             "id": info.get("id") or "video",
@@ -419,15 +480,17 @@ def main() -> int:
             "language": info.get("language"),
             "chapters": info.get("chapters") or [],
         },
+        "health": health,
         "segments": records,
     }
-    (work / "transcript.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False),
-                                          encoding="utf-8")
+    atomic_write(work / "transcript.json", json.dumps(payload, indent=2, ensure_ascii=False))
     txt_lines = [
         f"{r['seg_id']} [{format_time(r['start'])}-{format_time(r['end'])}] {r['text']}"
         for r in records
     ]
-    (work / "transcript.txt").write_text("\n".join(txt_lines), encoding="utf-8")
+    atomic_write(work / "transcript.txt", "\n".join(txt_lines))
+    for warning in health["warnings"]:
+        print(f"[vsum] transcript health: {warning}", file=sys.stderr)
 
     # --- report ---
     print()
@@ -449,6 +512,11 @@ def main() -> int:
         ) + (" …" if len(info["chapters"]) > 12 else ""))
     if records:
         print(f"- **Segments:** {len(records)} (via {source_kind})")
+        coverage = health.get("coverage_ratio")
+        print(f"- **Health:** {'ok' if not health['warnings'] else 'warnings'} — "
+              f"coverage {coverage:.0%} · " if coverage is not None else "- **Health:** ", end="")
+        print(f"largest gap {health['largest_gap_s']:.0f} s · {health['words']} words"
+              + (" · " + "; ".join(health["warnings"]) if health["warnings"] else ""))
         print(f"- **Files:** `{work / 'transcript.json'}`, `{work / 'transcript.txt'}`")
         print()
         print("## Transcript")
@@ -457,9 +525,15 @@ def main() -> int:
         print("\n".join(txt_lines))
         print("```")
         return 0
-    print("- **Transcript:** none available — no usable captions or authorized transcription. "
-          "Choose --whisper groq|openai with its key to allow audio upload, or supply a captioned source.")
+    print(f"- **Transcript:** none available — {source_detail.get('reason')}. "
+          "Choose --whisper groq|openai with its key to allow audio upload, or supply a captioned source. "
+          "`transcript.json` records `status: no_transcript`; every later stage refuses it.")
     return EXIT_NO_TRANSCRIPT
+
+
+def _now() -> str:
+    import datetime as _dt
+    return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
 
 
 if __name__ == "__main__":
