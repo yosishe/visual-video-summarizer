@@ -227,6 +227,16 @@ def _norm_option(value: object) -> object:
     return None if value in (None, False, "") else value
 
 
+def _mmss(seconds: object) -> str:
+    value = _num(seconds)
+    if value is None:
+        return "?"
+    total = int(round(value))
+    hours, rem = divmod(total, 3600)
+    minutes, sec = divmod(rem, 60)
+    return f"{hours}:{minutes:02d}:{sec:02d}" if hours else f"{minutes:02d}:{sec:02d}"
+
+
 def option_diffs(recorded: dict, expected: dict) -> list[str]:
     """Human-readable `key: recorded -> expected` for every option that differs."""
     diffs = []
@@ -590,6 +600,32 @@ def validate_candidates(payload: object, *, transcript_sha: str | None = None, c
         if visual_decision == "illustrated":
             result.errors.append("candidate extraction was skipped because no chapter needs frames, "
                                  "but the request is an illustrated summary")
+            return result
+        # The decision was probed against the video (1.8): a model decision the
+        # probe contradicts is refused; a user decision is recorded with a warning.
+        probe = payload.get("visual_probe") if isinstance(payload.get("visual_probe"), dict) else None
+        by = inputs.get("visual_decided_by") or "model"
+        result.info["visual_probe"] = probe
+        if probe is None:
+            if by != "init":
+                result.warnings.append("no visual probe recorded for the no-visuals decision "
+                                       "(pre-1.8 manifest); the decision stands unverified")
+        elif probe.get("verdict") == "unavailable":
+            result.warnings.append(f"visual probe unavailable ({probe.get('reason')}); "
+                                   "the no-visuals decision stands unverified")
+        elif probe.get("verdict") == "contradicts":
+            spans = ", ".join(
+                f"{row.get('mode_label')} at {_mmss(row.get('start'))}–{_mmss(row.get('end'))}"
+                + (f" ({', '.join(row.get('chapter_ids') or [])})" if row.get("chapter_ids") else "")
+                for row in (probe.get("non_talk_spans") or [])[:3] if isinstance(row, dict))
+            message = (f"the visual probe contradicts the no-visuals decision: {spans or probe.get('reason')} — "
+                       f"{probe.get('reason')}. Mark those chapters needs_frames: true with a target inside the span "
+                       "and run again, or, only if the user confirms the video has no informative visuals, record "
+                       "the decision with `workflow.py decide no-visuals --by user --reason \"...\"`")
+            if by == "user":
+                result.warnings.append(f"visual probe contradicts the decision (user override): {probe.get('reason')}")
+            else:
+                result.errors.append(message)
         return result
     if status not in ("ok", "unresolved"):
         result.errors.append(f"candidates.json status is {status!r}")

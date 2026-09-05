@@ -1500,6 +1500,10 @@ def main() -> int:
     parser.add_argument("--allow-unresolved", action="store_true",
                         help="Exit 0 instead of 9 when a needs_frames chapter or a target has no candidate "
                              "(benchmark/ablation use; the report still lists the unresolved rows).")
+    parser.add_argument("--decided-by", choices=("init", "model", "user"), default="model",
+                        help="Who recorded a no-visuals decision: init = the user asked for a text-only summary "
+                             "(no probe); model = the agent's judgement (probed, refused when contradicted); "
+                             "user = the user's confirmation (probed, recorded, never refused).")
     args = parser.parse_args()
     utf8_stdio()
 
@@ -1557,6 +1561,7 @@ def main() -> int:
         "chapters_path": str(chapters_file) if chapters_file else None,
         "chapters_sha256": sha256_file(chapters_file) if chapters_file else None,
         "visual_content": args.visual_content,
+        "visual_decided_by": args.decided_by,
         # The request options this pool answers (gates.validate_candidates compares them).
         "options": {"tier": tier, "sections": args.sections, "max_image_tokens": args.max_image_tokens,
                     "allow_long": bool(args.allow_long)},
