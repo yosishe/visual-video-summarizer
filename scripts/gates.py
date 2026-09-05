@@ -48,13 +48,20 @@ class GateError(SystemExit):
         self.message = message
         if not quiet:
             print(f"[vsum] {message}", file=sys.stderr)
-        super().__init__(self.exit_code)
+        super().__init__(message)   # str(exc) is the message …
+        self.code = self.exit_code  # … and the process exit status is the code
 
 
 class StaleError(GateError):
     """A later artifact no longer matches the inputs it was made from."""
 
     exit_code = EXIT_STALE
+
+
+class UnresolvedError(GateError):
+    """A chapter or target that needs visual evidence has none."""
+
+    exit_code = EXIT_UNRESOLVED
 
 
 @dataclass
@@ -102,6 +109,19 @@ def candidates_digest(payload: dict) -> str:
     """Identity of a candidate pool: the manifest minus the triage receipts written after it."""
     trimmed = {key: value for key, value in payload.items() if key not in RECEIPT_KEYS}
     return canonical_sha256(trimmed)
+
+
+def selections_binding(selections: list) -> str:
+    """The part of selections.json that decides which pixels grab writes:
+    candidate id, asset name and crop. Captions and anchors can change without
+    a re-grab (render re-reads them), so they are not part of the binding."""
+    rows = []
+    for selection in selections if isinstance(selections, list) else []:
+        if isinstance(selection, dict):
+            rows.append({"candidate_id": str(selection.get("candidate_id") or ""),
+                         "name": str(selection.get("name") or ""),
+                         "crop": selection.get("crop")})
+    return canonical_sha256(rows)
 
 
 def is_url(source: str) -> bool:
@@ -550,8 +570,12 @@ def validate_assets(assets_payload: object, selections: list | None = None, *, s
         result.errors.append("grab reported hard-duplicate selections")
     stale = []
     recorded_sel = assets_payload.get("selections_sha256")
+    recorded_binding = assets_payload.get("selections_binding_sha256")
     recorded_cand = assets_payload.get("candidates_sha256")
-    if selections_sha and recorded_sel and recorded_sel != selections_sha:
+    if recorded_binding and selections is not None:
+        if recorded_binding != selections_binding(selections):
+            stale.append("the selected frames (ids, names or crops) changed after the assets were grabbed; re-run grab.py")
+    elif selections_sha and recorded_sel and recorded_sel != selections_sha:
         stale.append("selections.json changed after the assets were grabbed; re-run grab.py")
     if candidates_sha and recorded_cand and recorded_cand != candidates_sha:
         stale.append("candidates.json changed after the assets were grabbed; re-run grab.py")

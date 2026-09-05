@@ -17,7 +17,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import datetime as dt  # noqa: E402
 
 from candidates import part_for, resolve_cached_parts, resolve_parts  # noqa: E402, F401
-from gates import ENGINE_VERSION, candidates_digest, canonical_sha256  # noqa: E402
+from gates import ENGINE_VERSION, candidates_digest, canonical_sha256, selections_binding  # noqa: E402
 from hostenv import utf8_stdio  # noqa: E402
 from safety import atomic_write  # noqa: E402
 from frame_utils import (  # noqa: E402
@@ -349,6 +349,7 @@ def main() -> int:
         # the candidate pool they were grabbed for has changed.
         "selections_path": str(spec_path),
         "selections_sha256": canonical_sha256(selections),
+        "selections_binding_sha256": selections_binding(selections),
         "candidates_sha256": candidates_digest(candidate_payload),
         "full_width": args.full_width,
         "thumb_width": args.thumb_width,

@@ -38,7 +38,7 @@ SKILL = BENCH.parent
 SCRIPTS = SKILL / "scripts"
 
 ARTIFACTS = ("candidates.json", "dropped.json", "chapters.json", "transcript.json",
-             "selections.json", "summary.json", "triage-rejections.json", "audit.json")
+             "selections.json", "summary.json", "triage-rejections.json", "audit.json", "run.json")
 
 
 def load_json(path: Path):
@@ -134,8 +134,10 @@ def cmd_candidates(args) -> int:
         if not (work / "chapters.json").exists():
             print(f"[bench] {video['id']}: no work/chapters.json — run prepare and author chapters first", file=sys.stderr)
             continue
+        # The benchmark measures recall, so an unresolved chapter is a score,
+        # not a stop: keep the report and the manifest, skip exit 9.
         cmd = [sys.executable, str(SCRIPTS / "candidates.py"), video["url"], "--work", str(work),
-               "--chapters", str(work / "chapters.json"), "--tier", profile["tier"]]
+               "--chapters", str(work / "chapters.json"), "--tier", profile["tier"], "--allow-unresolved"]
         if profile.get("override"):
             cmd += ["--profile-override", json.dumps(profile["override"])]
         cmd += args.extra

@@ -27,7 +27,14 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from gates import load_json  # noqa: E402
+from hostenv import utf8_stdio  # noqa: E402
+from safety import atomic_write  # noqa: E402
+
 HEBREW_RE = re.compile(r"[א-ת]")
+LOW_COVERAGE_RATIO = 0.15
 LATIN_RE = re.compile(r"[A-Za-z]")
 NIQQUD_RE = re.compile(r"[ְ-ׇ]")
 BIDI_CONTROL_RE = re.compile(r"[‎‏‪-‮⁦-⁩]")
@@ -147,6 +154,15 @@ def run_audit(
     audit = Audit()
     lang = (lang or summary.get("lang") or "en").lower()
     segments = {str(s["seg_id"]): s for s in transcript.get("segments", [])}
+    if not segments:
+        # Nothing can be grounded against an empty transcript; say so instead
+        # of auditing clean with 0/0 coverage.
+        audit.add("errors", "transcript", "transcript",
+                  "transcript has no segments (status "
+                  f"{transcript.get('status', 'unknown')}); nothing can be grounded")
+        return {"errors": audit.errors, "reviews": audit.reviews, "warnings": audit.warnings,
+                "stats": {"lang": lang, "words": 0, "cited_segments": 0, "segments": 0, "coverage": None,
+                          "hebrew_ratio": 0.0}}
     order = {seg_id: index for index, seg_id in enumerate(segments)}
     chapter_map = {c["chapter_id"]: c for c in chapters}
     glossary = summary.get("glossary") or {}
@@ -238,6 +254,11 @@ def run_audit(
             kind = str(block.get("kind") or "prose")
             all_text_parts.append(text)
             seg_ids = [str(s) for s in block.get("seg_ids", [])]
+            unknown_ids = [s for s in seg_ids if s not in segments]
+            if unknown_ids:
+                audit.add("errors", "reference", where, f"cites unknown seg_ids {unknown_ids}")
+            if not seg_ids:
+                audit.add("errors", "reference", where, "block cites no segments")
             cited_rows = [segments[s] for s in seg_ids if s in segments]
             cited.update(s for s in seg_ids if s in segments)
             total_words += len(text.split())
@@ -356,14 +377,19 @@ def run_audit(
             round(len(HEBREW_RE.findall(all_text)) / max(1, len(HEBREW_RE.findall(all_text)) + len(LATIN_RE.findall(all_text))), 3)
         ),
     }
+    if stats["coverage"] is not None and stats["coverage"] < LOW_COVERAGE_RATIO:
+        audit.add("reviews", "coverage", "summary",
+                  f"only {stats['coverage']:.0%} of the transcript segments are cited by any block — "
+                  "the summary may not represent the video")
     return {"errors": audit.errors, "reviews": audit.reviews, "warnings": audit.warnings, "stats": stats}
 
 
 def render_report(result: dict) -> str:
     lines = ["# summary audit", ""]
     stats = result["stats"]
+    coverage = "n/a (no transcript)" if stats["coverage"] is None else f"{stats['coverage'] * 100:.0f} %"
     lines.append(f"- lang {stats['lang']} · {stats['words']} words · cited {stats['cited_segments']}/{stats['segments']} segments "
-                 f"({(stats['coverage'] or 0) * 100:.0f} %) · Hebrew ratio {stats['hebrew_ratio']:.0%}")
+                 f"({coverage}) · Hebrew ratio {stats['hebrew_ratio']:.0%}")
     lines.append(f"- **{len(result['errors'])} errors**, {len(result['reviews'])} reviews, {len(result['warnings'])} warnings")
     for level in ("errors", "reviews", "warnings"):
         if result[level]:
@@ -376,19 +402,21 @@ def render_report(result: dict) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--work", required=True)
-    parser.add_argument("--summary", required=True)
-    parser.add_argument("--selections", default=None)
-    parser.add_argument("--lang", default=None)
+    parser.add_argument("--work", required=True, help="work directory holding transcript.json, chapters.json, candidates.json")
+    parser.add_argument("--summary", required=True, help="model-authored summary.json to audit")
+    parser.add_argument("--selections", default=None,
+                        help="selections.json — also grounds the frame captions (omit only for a text-only summary)")
+    parser.add_argument("--lang", default=None, help="he|en (default: summary.json lang, then en)")
     args = parser.parse_args()
+    utf8_stdio()
     work = Path(args.work).expanduser().resolve()
-    transcript = json.loads((work / "transcript.json").read_text(encoding="utf-8"))
-    chapters = json.loads((work / "chapters.json").read_text(encoding="utf-8"))
-    summary = json.loads(Path(args.summary).expanduser().read_text(encoding="utf-8"))
-    selections = json.loads(Path(args.selections).expanduser().read_text(encoding="utf-8")) if args.selections else None
+    transcript = load_json(work / "transcript.json", "transcript.json")
+    chapters = load_json(work / "chapters.json", "chapters.json")
+    summary = load_json(Path(args.summary).expanduser(), "summary.json")
+    selections = load_json(Path(args.selections).expanduser(), "selections.json") if args.selections else None
     candidates = None
     if (work / "candidates.json").exists():
-        candidates = json.loads((work / "candidates.json").read_text(encoding="utf-8"))
+        candidates = load_json(work / "candidates.json", "candidates.json")
     info = None
     info_path = work / "download" / "video.info.json"
     if info_path.exists():
@@ -399,7 +427,7 @@ def main() -> int:
             info = None
     result = run_audit(transcript, chapters, summary, selections=selections, candidates=candidates,
                        info=info, lang=args.lang)
-    (work / "audit.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    atomic_write(work / "audit.json", json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print(render_report(result))
     return 5 if result["errors"] else 0
 
