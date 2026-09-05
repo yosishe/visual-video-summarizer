@@ -307,6 +307,8 @@ def runs_to_states(runs: list[list[dict]], chapters: list[dict], windows: list[d
                 "luma": round(sum(f["luma"] for f in piece) / len(piece), 1),
                 "ink": round(max(f["ink"] for f in piece), 4),
                 "samples": len(piece),
+                # how long the picture actually held still (the probe's evidence)
+                "settled_samples": sum(1 for f in piece if f["changed"] <= SETTLED_CHANGED),
                 "_signature": max(piece, key=lambda f: f["t"] if f["t"] <= representative else -1)["signature"],
             })
     return states

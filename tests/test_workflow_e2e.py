@@ -139,6 +139,52 @@ class WorkflowEndToEndTests(unittest.TestCase):
         # the reports survive for a compacted agent
         self.assertTrue((self.work / "reports" / "candidates.md").is_file())
 
+    def test_workflow_source_unavailable_is_exit_13_without_a_retry_loop(self):
+        env = self._env("unavailable")
+        self._wf(env, "init", "https://www.youtube.com/watch?v=fixture", "--work", self.work, "--lang", "en")
+        result = self._wf(env, "run", "--work", self.work)
+        self.assertEqual(result.returncode, 13, result.stderr)
+        transcript = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(transcript["status"], "source_unavailable")
+        self.assertIn("Video unavailable", transcript["source_detail"]["reason"])
+        self.assertNotIn("SECRET-TOKEN", (self.work / "transcript.json").read_text(encoding="utf-8"))
+        run = json.loads((self.work / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual(run["blocker"]["exit_code"], 13)
+        self.assertIn("cookies", run["blocker"]["next"])
+        # a second run does not retry on its own, and nothing was uploaded
+        self.assertEqual(self._wf(env, "run", "--work", self.work).returncode, 13)
+        calls = [call for call in self._shim_calls() if "--version" not in call]
+        self.assertEqual(len(calls), 1)
+        verify = self._wf(env, "verify", "--work", self.work, "--json")
+        self.assertEqual(verify.returncode, 12)
+        source = next(row for row in json.loads(verify.stdout)["rows"] if row["check"] == "source")
+        self.assertEqual(source["status"], "FAIL")
+
+    def test_workflow_no_visuals_decision_is_probed_and_reaches_verify(self):
+        env = self._env()
+        url = "https://www.youtube.com/watch?v=fixture"
+        self.assertEqual(self._wf(env, "init", url, "--work", self.work, "--lang", "en").returncode, 0)
+        self.assertEqual(self._wf(env, "run", "--work", self.work).returncode, 0)
+        rows = [dict(c, needs_frames=False, visual_targets=[]) for c in chapters()]
+        (self.work / "chapters.json").write_text(json.dumps(rows), encoding="utf-8")
+        self.assertEqual(self._wf(env, "run", "--work", self.work).returncode, 10)   # illustrated intent
+        decide = self._wf(env, "decide", "no-visuals", "--work", self.work, "--reason",
+                          "a moving test pattern and a black screen show nothing informative")
+        self.assertEqual(decide.returncode, 0, decide.stderr)
+        result = self._wf(env, "run", "--work", self.work)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("NEXT (summary", result.stdout)
+        run = json.loads((self.work / "run.json").read_text(encoding="utf-8"))
+        self.assertEqual(run["visual_probe"]["verdict"], "supports")
+        self.assertTrue(any("-f" in call for call in self._shim_calls()))   # the video was fetched for the probe
+        self._summarize()
+        self.assertEqual(self._wf(env, "run", "--work", self.work).returncode, 0)
+        verify = self._wf(env, "verify", "--work", self.work, "--json")
+        self.assertEqual(verify.returncode, 0, verify.stdout + verify.stderr)
+        report = json.loads(verify.stdout)
+        self.assertIn("probe: supports", report["rows"][0]["evidence"])
+        self.assertEqual(report["rows"][0]["warnings"], [])
+
     def test_workflow_no_captions_stops_with_exit_6_and_blocker(self):
         env = self._env("no-captions")
         self._wf(env, "init", "https://www.youtube.com/watch?v=fixture", "--work", self.work, "--lang", "en")

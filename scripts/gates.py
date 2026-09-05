@@ -44,6 +44,21 @@ HEALTH_MIN_COVERAGE = 0.6
 HEALTH_MAX_GAP_S = 120.0
 HEALTH_MAX_REPETITION = 0.3
 HEALTH_WPM_RANGE = (40.0, 260.0)
+HEALTH_MAX_EMPTY_TEXT = 0.10        # share of segments with blank text
+HEALTH_MIN_SEGMENTS_PER_MIN = 2.0   # coarser than that, citations cannot point at a sentence
+# flags that mean the transcript under-represents or misrepresents the speech → status "thin"
+THIN_FLAGS = {"low_coverage", "large_gap", "sparse_segments", "empty_text", "translated", "chunks_failed"}
+LEGACY_LANG_CODES = {"iw": "he", "ji": "yi", "in": "id"}
+
+# visual probe: evidence for (or against) a no-visuals decision. A picture that
+# holds still for PROBE_MIN_SETTLED_SAMPLES consecutive samples is "content"
+# (a slide, a UI state, a drawn board, a photo); a talking head never holds
+# still. The dominant still picture is the backdrop (cover image, main shot)
+# and does not count. Enough still seconds beyond it contradict the decision.
+PROBE_MIN_STILL_S = 90.0
+PROBE_MIN_STILL_RATIO = 0.20
+PROBE_MIN_SETTLED_SAMPLES = 2
+PROBE_MAX_SPANS = 6
 
 
 class GateError(SystemExit):
@@ -272,7 +287,67 @@ def _num(value: object) -> float | None:
     return number
 
 
-def transcript_health(segments: list[dict], duration: float | None) -> dict:
+def _lang_base(code: object) -> str | None:
+    text = str(code or "").strip().lower()
+    if not text:
+        return None
+    base = text.split("-")[0].split("_")[0]
+    return LEGACY_LANG_CODES.get(base, base)
+
+
+def health_status(flags: list[str]) -> str:
+    return "thin" if any(flag in THIN_FLAGS for flag in flags) else "ok"
+
+
+def health_provenance(source: object, source_detail: object, language: object, video_language: object) -> dict:
+    """Where the words came from, in one record: caption track or transcription
+    backend, manual/automatic, original/translated, and whether the track's
+    language is the video's."""
+    detail = source_detail if isinstance(source_detail, dict) else {}
+    kind = detail.get("kind")
+    if not kind:
+        text = str(source or "")
+        kind = "captions" if text == "captions" else ("whisper" if text.startswith("whisper") else "none")
+    track_language, video_base = _lang_base(language), _lang_base(video_language)
+    return {
+        "source": source, "kind": kind, "track": detail.get("track"), "backend": detail.get("backend"),
+        "manual": detail.get("manual"), "original": detail.get("original"),
+        "translated": bool(detail.get("translated", False)),
+        "language": track_language, "video_language": video_base,
+        "language_match": (track_language == video_base) if track_language and video_base else None,
+    }
+
+
+def health_summary(health: dict) -> str:
+    """The one line every report prints for the transcript."""
+    if not isinstance(health, dict):
+        return "health unknown"
+    provenance = health.get("provenance") if isinstance(health.get("provenance"), dict) else {}
+    kind = provenance.get("kind") or "transcript"
+    name = provenance.get("track") or provenance.get("backend") or provenance.get("language") or ""
+    qualifiers = []
+    if provenance.get("manual") is True:
+        qualifiers.append("manual")
+    elif provenance.get("manual") is False:
+        qualifiers.append("auto")
+    if provenance.get("original"):
+        qualifiers.append("original")
+    if provenance.get("translated"):
+        qualifiers.append("machine-translated")
+    if provenance.get("language_match") is False:
+        qualifiers.append(f"video language {provenance.get('video_language')}")
+    head = f"{kind} {name}".strip() + (f" ({', '.join(qualifiers)})" if qualifiers else "")
+    coverage = health.get("coverage_ratio")
+    coverage_text = f"coverage {coverage:.0%}" if isinstance(coverage, (int, float)) else "coverage n/a"
+    status = health.get("status") or health_status(list(health.get("flags") or []))
+    warnings = list(health.get("warnings") or [])
+    tail = f"health {status}" + (f": {'; '.join(warnings[:3])}" if warnings else "")
+    return f"{head} · {health.get('segments', 0)} segments · {coverage_text} · {tail}"
+
+
+def transcript_health(segments: list[dict], duration: float | None, *, source: object = None,
+                      source_detail: object = None, language: object = None,
+                      video_language: object = None) -> dict:
     """Deterministic quality signals. Warnings only: a thin transcript is a fact to report."""
     rows = []
     for segment in segments:
@@ -310,26 +385,54 @@ def transcript_health(segments: list[dict], duration: float | None) -> dict:
     minutes = (covered or duration) / 60.0
     wpm = words / minutes if minutes > 0 else None
     coverage = round(covered / duration, 3) if duration > 0 else None
+    sorted_rows = sorted(rows)
+    span = (sorted_rows[-1][1] - sorted_rows[0][0]) if sorted_rows else 0.0
+    blank = sum(1 for _, _, text in rows if not text.strip())
+    empty_ratio = round(blank / len(rows), 3) if rows else 0.0
+    reference_span = duration if duration > 0 else span
+    per_minute = round(len(rows) / (reference_span / 60.0), 2) if reference_span >= 60.0 else None
+    provenance = health_provenance(source, source_detail, language, video_language)
     warnings: list[str] = []
+    flags: list[str] = []
+
+    def flag(code: str, message: str | None) -> None:
+        flags.append(code)
+        if message:
+            warnings.append(message)
+
     if coverage is not None and coverage < HEALTH_MIN_COVERAGE:
-        warnings.append(f"captions cover {coverage:.0%} of the {duration:.0f} s video")
+        flag("low_coverage", f"captions cover {coverage:.0%} of the {duration:.0f} s video")
     if largest_gap > HEALTH_MAX_GAP_S:
-        warnings.append(f"largest uncaptioned gap is {largest_gap:.0f} s")
+        flag("large_gap", f"largest uncaptioned gap is {largest_gap:.0f} s")
     if repetition > HEALTH_MAX_REPETITION:
-        warnings.append(f"{repetition:.0%} of segments repeat a recent segment")
+        flag("repetition", f"{repetition:.0%} of segments repeat a recent segment")
     if wpm is not None and rows and not (HEALTH_WPM_RANGE[0] <= wpm <= HEALTH_WPM_RANGE[1]):
-        warnings.append(f"{wpm:.0f} words per minute is outside the plausible range")
+        flag("wpm", f"{wpm:.0f} words per minute is outside the plausible range")
+    if rows and empty_ratio > HEALTH_MAX_EMPTY_TEXT:
+        flag("empty_text", f"{empty_ratio:.0%} of segments have no text")
+    if per_minute is not None and per_minute < HEALTH_MIN_SEGMENTS_PER_MIN:
+        flag("sparse_segments", f"{per_minute:.1f} segments per minute: citations will be coarser than 30 s")
+    if rows and duration <= 0:
+        flag("no_duration", "video duration unknown; coverage cannot be computed")
+    if provenance["translated"]:
+        flag("translated", "the caption track is a machine translation (forced with --langs); "
+                           "the summary is grounded in translated text")
+    if provenance["language_match"] is False:
+        flag("language_mismatch", (f"the {provenance['language']} track is not in the video's language "
+                                   f"({provenance['video_language']})") if provenance.get("manual") is not True else None)
     if non_positive:
-        warnings.append(f"{non_positive} segment(s) have end <= start")
+        flag("non_positive", f"{non_positive} segment(s) have end <= start")
     if beyond:
-        warnings.append(f"{beyond} segment(s) start after the video ends")
+        flag("beyond_duration", f"{beyond} segment(s) start after the video ends")
     if not monotonic:
-        warnings.append("segments are not in chronological order")
+        flag("not_monotonic", "segments are not in chronological order")
     return {
         "segments": len(rows), "words": words, "covered_seconds": round(covered, 3),
         "coverage_ratio": coverage, "largest_gap_s": round(largest_gap, 3), "gaps_over_30s": gaps_over_30,
         "monotonic": monotonic, "non_positive": non_positive, "beyond_duration": beyond,
         "repetition_ratio": round(repetition, 3), "wpm": round(wpm, 1) if wpm is not None else None,
+        "empty_text_ratio": empty_ratio, "segments_per_minute": per_minute, "span_seconds": round(span, 3),
+        "provenance": provenance, "flags": flags, "status": health_status(flags),
         "warnings": warnings,
     }
 
@@ -401,9 +504,22 @@ def validate_transcript(payload: object, *, expected_identity: object = None,
         if not isinstance(segment.get("text"), str):
             result.errors.append(f"segment {seg_id or index} has no text")
     video = payload.get("video") if isinstance(payload.get("video"), dict) else {}
-    health = payload.get("health") if isinstance(payload.get("health"), dict) else None
-    if health is None:
-        health = transcript_health(segments, video.get("duration"))
+    # Always recompute, then let a stored (1.8) record win: a 1.7 file gains
+    # status/flags/provenance without losing its own notes (whisper chunks, re-sorts).
+    fresh = transcript_health(segments, video.get("duration"), source=payload.get("source"),
+                              source_detail=payload.get("source_detail"), language=payload.get("language"),
+                              video_language=video.get("language"))
+    stored = payload.get("health") if isinstance(payload.get("health"), dict) else None
+    if stored:
+        health = {**fresh, **stored}
+        stored_warnings = list(stored.get("warnings") or [])
+        health["warnings"] = stored_warnings + [w for w in fresh["warnings"] if w not in stored_warnings]
+        stored_flags = list(stored.get("flags") or [])
+        health["flags"] = stored_flags + [f for f in fresh["flags"] if f not in stored_flags]
+        health["status"] = health_status(health["flags"]) if "status" not in stored else stored["status"]
+        health.setdefault("provenance", fresh["provenance"])
+    else:
+        health = fresh
     result.info["health"] = health
     result.info["video_id"] = video.get("id")
     result.warnings.extend(health.get("warnings", []))
@@ -543,6 +659,103 @@ def validate_chapters(raw: object, transcript: dict | None, duration: float | No
     return result
 
 
+# ----------------------------------------------------------------------------- visual probe
+
+
+def _probe_record(verdict: str, reason: str, **extra) -> dict:
+    record = {"verdict": verdict, "reason": reason, "scanned_seconds": 0.0, "fps": None,
+              "modes": {"A": 0.0, "B": 0.0, "C": 0.0, "D": 0.0}, "backdrop": None, "distinct_still_pictures": 0,
+              "non_talk_seconds": 0.0, "non_talk_ratio": 0.0, "threshold_s": None, "non_talk_spans": [],
+              "method": "settled seconds (<=0.4 % of masked signature pixels changing between samples) of "
+                        "distinct still pictures outside the dominant still picture"}
+    record.update(extra)
+    return record
+
+
+def probe_verdict(states: list[dict], scanned_seconds: object, *, fps: object, chapters: list[dict] | None = None) -> dict:
+    """Pure verdict over a whole-video state scan (states.scan_video with no chapters).
+
+    `contradicts` when the still pictures beyond the backdrop add up to at least
+    min(PROBE_MIN_STILL_S, PROBE_MIN_STILL_RATIO × scanned) seconds; `supports`
+    otherwise; `unavailable` when nothing was scanned. The mode timeline is
+    reported for audit but does not decide (a seated interview reads as
+    "dynamic UI" to the mode classifier; stillness is what separates it)."""
+    scanned = _num(scanned_seconds) or 0.0
+    rate = _num(fps) or 1.0
+    rows = [s for s in states or [] if isinstance(s, dict)]
+    if scanned <= 0 or not rows:
+        return _probe_record("unavailable", "nothing was scanned", fps=rate)
+    modes = {"A": 0.0, "B": 0.0, "C": 0.0, "D": 0.0}
+    for state in rows:
+        start, end = _num(state.get("start")), _num(state.get("end"))
+        if start is not None and end is not None and state.get("mode") in modes:
+            modes[state["mode"]] += max(0.0, end - start)
+    still = [s for s in rows if int(_num(s.get("settled_samples")) or 0) >= PROBE_MIN_SETTLED_SAMPLES]
+    families: dict[str, dict] = {}
+    for state in still:
+        key = str(state.get("family_id") or state.get("state_id"))
+        entry = families.setdefault(key, {"settled_s": 0.0, "build": False, "mode": state.get("mode")})
+        entry["settled_s"] += int(_num(state.get("settled_samples")) or 0) / rate
+        entry["build"] = entry["build"] or bool((state.get("build") or {}).get("is_build"))
+    non_build = [key for key, entry in families.items() if not entry["build"]]
+    backdrop_key = max(non_build, key=lambda key: families[key]["settled_s"]) if non_build else None
+    backdrop = None
+    if backdrop_key is not None:
+        backdrop = {"family": backdrop_key, "settled_s": round(families[backdrop_key]["settled_s"], 1),
+                    "mode": families[backdrop_key]["mode"]}
+    non_talk = sum(entry["settled_s"] for key, entry in families.items() if key != backdrop_key)
+    threshold = min(PROBE_MIN_STILL_S, PROBE_MIN_STILL_RATIO * scanned)
+
+    def chapter_ids(start: float, end: float) -> list[str]:
+        ids = []
+        for chapter in chapters or []:
+            if not isinstance(chapter, dict):
+                continue
+            c0, c1 = _num(chapter.get("start")), _num(chapter.get("end"))
+            if c0 is not None and c1 is not None and c0 < end and c1 > start:
+                ids.append(str(chapter.get("chapter_id")))
+        return ids
+
+    beyond = [s for s in still if str(s.get("family_id") or s.get("state_id")) != backdrop_key]
+    beyond.sort(key=lambda s: -(int(_num(s.get("settled_samples")) or 0)))
+    spans = []
+    for state in beyond[:PROBE_MAX_SPANS]:
+        start, end = float(_num(state.get("start")) or 0.0), float(_num(state.get("end")) or 0.0)
+        spans.append({"start": start, "end": end, "settled_s": round(int(_num(state.get("settled_samples")) or 0) / rate, 1),
+                      "mode": state.get("mode"), "mode_label": state.get("mode_label"),
+                      "chapter_ids": chapter_ids(start, end)})
+    verdict = "contradicts" if non_talk >= threshold else "supports"
+    reason = (f"{non_talk:.0f} s of still on-screen content beyond the main picture "
+              f"(threshold {threshold:.0f} s of {scanned:.0f} s scanned)")
+    return _probe_record(verdict, reason, scanned_seconds=round(scanned, 1), fps=rate,
+                         modes={key: round(value, 1) for key, value in modes.items()}, backdrop=backdrop,
+                         distinct_still_pictures=len(families), non_talk_seconds=round(non_talk, 1),
+                         non_talk_ratio=round(non_talk / scanned, 3) if scanned else 0.0,
+                         threshold_s=round(threshold, 1), non_talk_spans=spans)
+
+
+def probe_spans_text(probe: dict) -> str:
+    return ", ".join(
+        f"{row.get('mode_label') or row.get('mode')} at {_mmss(row.get('start'))}–{_mmss(row.get('end'))}"
+        + (f" ({', '.join(row.get('chapter_ids') or [])})" if row.get("chapter_ids") else "")
+        for row in (probe.get("non_talk_spans") or [])[:3] if isinstance(row, dict))
+
+
+def probe_refusal(probe: dict) -> str:
+    """The exit-10 message when a model's no-visuals decision is contradicted."""
+    spans = probe_spans_text(probe)
+    return (f"the visual probe contradicts the no-visuals decision: {spans or probe.get('reason')} — "
+            f"{probe.get('reason')}. Mark those chapters needs_frames: true with a target inside the span and run "
+            "again, or, only if the user confirms the video has no informative visuals, record the decision with "
+            "`workflow.py decide no-visuals --by user --reason \"...\"`")
+
+
+def probe_summary(probe: object) -> str:
+    if not isinstance(probe, dict):
+        return "no visual probe recorded"
+    return f"{probe.get('verdict')} — {probe.get('reason')}"
+
+
 # ----------------------------------------------------------------------------- candidates
 
 
@@ -614,18 +827,10 @@ def validate_candidates(payload: object, *, transcript_sha: str | None = None, c
             result.warnings.append(f"visual probe unavailable ({probe.get('reason')}); "
                                    "the no-visuals decision stands unverified")
         elif probe.get("verdict") == "contradicts":
-            spans = ", ".join(
-                f"{row.get('mode_label')} at {_mmss(row.get('start'))}–{_mmss(row.get('end'))}"
-                + (f" ({', '.join(row.get('chapter_ids') or [])})" if row.get("chapter_ids") else "")
-                for row in (probe.get("non_talk_spans") or [])[:3] if isinstance(row, dict))
-            message = (f"the visual probe contradicts the no-visuals decision: {spans or probe.get('reason')} — "
-                       f"{probe.get('reason')}. Mark those chapters needs_frames: true with a target inside the span "
-                       "and run again, or, only if the user confirms the video has no informative visuals, record "
-                       "the decision with `workflow.py decide no-visuals --by user --reason \"...\"`")
             if by == "user":
                 result.warnings.append(f"visual probe contradicts the decision (user override): {probe.get('reason')}")
             else:
-                result.errors.append(message)
+                result.errors.append(probe_refusal(probe))
         return result
     if status not in ("ok", "unresolved"):
         result.errors.append(f"candidates.json status is {status!r}")

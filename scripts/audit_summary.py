@@ -29,7 +29,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gates import GateError, candidates_digest, load_json, sha256_file  # noqa: E402
+from gates import GateError, _mmss as mmss, candidates_digest, load_json, sha256_file  # noqa: E402
 from hostenv import utf8_stdio  # noqa: E402
 from safety import atomic_write  # noqa: E402
 
@@ -79,6 +79,18 @@ OWNERSHIP_TOLERANCE_S = 5.0
 MAX_SEGMENTS_PER_BLOCK = 25
 UNCITED_GAP_S = 60.0
 WPM_RANGE = (50, 200)
+# Late corrections (structural: a cue word in the last part of the video that no
+# block or brief item cites — never a judgement about what was corrected).
+LATE_WINDOW_RATIO = 0.15
+CORRECTION_STRONG_RE = re.compile(
+    r"\b(i misspoke|i was wrong|i stand corrected|let me correct|scratch that|strike that|more precisely|"
+    r"i meant to say|i should have said)\b|^\s*correction\b|\bcorrection\s*[:,]", re.I)
+CORRECTION_WEAK_RE = re.compile(r"\b(actually|to be clear)\b", re.I)
+CORRECTION_STRONG_HE_RE = re.compile(r"(תיקון|טעיתי|אני מתקנ[תה]?|למען הדיוק|ליתר דיוק|לא מדויק)")
+CORRECTION_WEAK_HE_RE = re.compile(r"בעצם")
+# Per-chapter representation (structural: how many of a chapter's own segments its blocks cite).
+CHAPTER_MIN_SEGMENTS = 8
+CHAPTER_MIN_CITED_RATIO = 0.20
 
 
 def _normalize_number(token: str) -> str:
@@ -191,6 +203,7 @@ def run_audit(
     all_transcript_tokens = _tokens(" ".join(s["text"] for s in segments.values()))
     all_transcript_joined = "".join(all_transcript_tokens)
     cited: set[str] = set()
+    cited_by_chapter: dict[str, set[str]] = {}
     total_words = 0
     all_text_parts: list[str] = [str(summary.get("overview") or "")]
 
@@ -275,6 +288,7 @@ def run_audit(
                 audit.add("errors", "reference", where, "block cites no segments")
             cited_rows = [segments[s] for s in seg_ids if s in segments]
             cited.update(s for s in seg_ids if s in segments)
+            cited_by_chapter.setdefault(chapter_id, set()).update(s for s in seg_ids if s in segments)
             total_words += len(text.split())
 
             # 6. ordering and ownership
@@ -317,9 +331,28 @@ def run_audit(
     except ValueError as exc:
         audit.add("errors", "brief", "brief", str(exc))
         items = []
+    brief_cited: set[str] = set()
     for where, item in items:
         brief_text_parts.append(item["text"])
+        brief_cited.update(item["seg_ids"])
         check_text(item["text"], "prose", [segments[s] for s in item["seg_ids"]], where)
+
+    # 4b. late corrections: a correction cue late in the video that nothing cites.
+    # Structural only — it points at a segment to re-read, it cannot say what was corrected.
+    total_span = float(transcript.get("video", {}).get("duration") or 0) or \
+        max((float(row["end"]) for row in segments.values()), default=0.0)
+    late_from = (1.0 - LATE_WINDOW_RATIO) * total_span
+    for seg_id, row in segments.items():
+        if total_span <= 0 or float(row["start"]) < late_from or seg_id in cited or seg_id in brief_cited:
+            continue
+        text = str(row.get("text") or "")
+        strong = CORRECTION_STRONG_RE.search(text) or CORRECTION_STRONG_HE_RE.search(text)
+        weak = (CORRECTION_WEAK_RE.search(text) and NEGATION_SOURCE_RE.search(text)) or \
+            (CORRECTION_WEAK_HE_RE.search(text) and NEGATION_TARGET_RE.search(text))
+        if strong or weak:
+            excerpt = " ".join(text.split())[:80]
+            audit.add("reviews", "late-correction", mmss(row["start"]),
+                      f'possible late correction at {mmss(row["start"])} ("{excerpt}") is cited by no block or brief item')
 
     # 5. coverage
     uncited_runs: list[tuple[float, float]] = []
@@ -339,6 +372,21 @@ def run_audit(
         if end - start > UNCITED_GAP_S:
             audit.add("reviews", "coverage", f"{start:.0f}-{end:.0f}s",
                       f"{end - start:.0f} s of transcript are cited by no block")
+
+    # 5b. per-chapter representation: a chapter whose blocks cite few of its own
+    # segments (structural; a compressed-but-faithful chapter looks the same).
+    for chapter in chapters:
+        chapter_id = str(chapter.get("chapter_id"))
+        start, end = float(chapter.get("start") or 0), float(chapter.get("end") or 0)
+        inside = {seg_id for seg_id, row in segments.items() if start <= float(row["start"]) < end}
+        if len(inside) < CHAPTER_MIN_SEGMENTS:
+            continue
+        own = len(inside & cited_by_chapter.get(chapter_id, set()))
+        ratio = own / len(inside)
+        if ratio < CHAPTER_MIN_CITED_RATIO:
+            audit.add("reviews", "chapter-coverage", chapter_id,
+                      f"chapter {chapter_id} ({mmss(start)}–{mmss(end)}): {own} of {len(inside)} segments cited by "
+                      f"its blocks ({ratio:.0%}) — under-represented?")
 
     # 8. length budget
     duration_min = float(transcript.get("video", {}).get("duration") or 0) / 60

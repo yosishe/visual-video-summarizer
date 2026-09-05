@@ -35,7 +35,14 @@ from urllib.parse import urlparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from gates import ENGINE_VERSION, EXIT_SOURCE_UNAVAILABLE, source_identity, transcript_health  # noqa: E402
+from gates import (  # noqa: E402
+    ENGINE_VERSION,
+    EXIT_SOURCE_UNAVAILABLE,
+    health_status,
+    health_summary,
+    source_identity,
+    transcript_health,
+)
 from hostenv import require_tools, run_text, utf8_stdio  # noqa: E402
 from safety import atomic_write, sanitize_tool_output, ytdlp_command  # noqa: E402
 from whisper import CHUNK_FAILURES, DETECTED_LANGUAGE, load_api_key, transcribe_video  # noqa: E402
@@ -479,13 +486,17 @@ def main() -> int:
         }
         for i, seg in enumerate(segments)
     ]
-    health = transcript_health(records, duration)
+    health = transcript_health(records, duration, source=source_kind, source_detail=source_detail,
+                               language=language, video_language=info.get("language"))
     if reordered:
         health["warnings"].append("caption cues were re-sorted into time order")
+        health["flags"].append("reordered")
     if whisper_report and whisper_report["chunks_failed"]:
         health["warnings"].append(f"{whisper_report['chunks_failed']} transcription chunk(s) failed and were skipped")
+        health["flags"].append("chunks_failed")
     if whisper_report:
         health["whisper"] = whisper_report
+    health["status"] = health_status(health["flags"])
     if not records:
         source_detail = {
             "kind": "none", "reason": failure_reason or "no usable transcript",
@@ -555,11 +566,8 @@ def main() -> int:
         ) + (" …" if len(info["chapters"]) > 12 else ""))
     if records:
         print(f"- **Segments:** {len(records)} (via {source_kind})")
-        coverage = health.get("coverage_ratio")
-        print(f"- **Health:** {'ok' if not health['warnings'] else 'warnings'} — "
-              f"coverage {coverage:.0%} · " if coverage is not None else "- **Health:** ", end="")
-        print(f"largest gap {health['largest_gap_s']:.0f} s · {health['words']} words"
-              + (" · " + "; ".join(health["warnings"]) if health["warnings"] else ""))
+        print(f"- **Health:** {health_summary(health)} · largest gap {health['largest_gap_s']:.0f} s · "
+              f"{health['words']} words")
         print(f"- **Files:** `{work / 'transcript.json'}`, `{work / 'transcript.txt'}`")
         print()
         print("## Transcript")

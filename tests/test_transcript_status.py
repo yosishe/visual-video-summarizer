@@ -10,6 +10,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import gates  # noqa: E402
 import hostenv  # noqa: E402
 import transcript  # noqa: E402
 import whisper  # noqa: E402
@@ -91,6 +92,8 @@ class TranscriptStatusTests(unittest.TestCase):
         payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
         self.assertTrue(payload["source_detail"]["translated"])
         self.assertEqual(payload["source_detail"]["track"], "en-de")
+        self.assertEqual(payload["health"]["status"], "thin")
+        self.assertIn("translated", payload["health"]["flags"])
 
     def test_whisper_chunk_failures_are_recorded_in_health(self):
         def fake_transcribe(*_args, **_kwargs):
@@ -141,6 +144,20 @@ class TranscriptStatusTests(unittest.TestCase):
         self.assertNotIn("SECRET-VALUE", text)
         self.assertNotIn("example.invalid", text)
         self.assertNotIn("gsk-secret-value", text)
+
+    def test_ok_transcript_records_status_and_provenance(self):
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)):
+            code = self._main()
+        self.assertEqual(code, 0)
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        health = payload["health"]
+        # three 2-second cues over a 12-second video: truthfully thin (50 % coverage)
+        self.assertEqual(health["status"], "thin")
+        self.assertEqual(health["flags"], ["low_coverage"])
+        self.assertEqual(health["provenance"]["track"], "en")
+        self.assertTrue(health["provenance"]["manual"])
+        self.assertTrue(health["provenance"]["language_match"])
+        self.assertIn("health thin", gates.health_summary(health))
 
     def test_ok_transcript_records_the_request_options(self):
         with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)):

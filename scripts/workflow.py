@@ -52,6 +52,7 @@ from gates import (  # noqa: E402
     canonical_sha256,
     describe_identity,
     engine_drift,
+    health_summary,
     is_url,
     load_json,
     selections_binding,
@@ -353,8 +354,7 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
             block(stage, "stale", "the source or transcription options changed since transcript.json was written")
         else:
             stage.status = "ok"
-            health = result.info["health"]
-            stage.reason = f"{health['segments']} segments; health warnings: {len(result.warnings)}"
+            stage.reason = health_summary(result.info["health"])
             drift_check(stage, transcript, "transcript.json", stale_on_minor=False)
             video = transcript.get("video") if isinstance(transcript.get("video"), dict) else {}
             run.setdefault("source", {}).update({"video_id": video.get("id"), "title": video.get("title"),
