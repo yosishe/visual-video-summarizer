@@ -32,7 +32,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 import datetime as _dt  # noqa: E402
 
-from audit_summary import HEBREW_RE, brief_items, run_audit  # noqa: E402
+from audit_summary import HEBREW_RE, audit_inputs, brief_items, run_audit  # noqa: E402
 from bundle import bundle as bundle_summary  # noqa: E402
 from frame_utils import chapter_for_time, format_time  # noqa: E402
 from gates import (  # noqa: E402
@@ -49,6 +49,7 @@ from gates import (  # noqa: E402
     validate_selections,
     validate_transcript,
 )
+from gates import describe_identity, engine_drift, identity_matches  # noqa: E402
 from hostenv import chrome_candidates, find_chrome, run_text, utf8_stdio  # noqa: E402
 from safety import CSP, asset_file, atomic_write, validate_generated_html  # noqa: E402
 
@@ -814,6 +815,21 @@ def main() -> int:
         raise StaleError("chapters.json changed after candidates were extracted — re-run candidates.py")
     if not inputs:
         print("[vsum] warning: candidates.json predates input binding; staleness cannot be verified", file=sys.stderr)
+    # … and from THIS source: transcript and pool must name the same video.
+    recorded_identity, pool_identity = transcript.get("source_identity"), inputs.get("source_identity")
+    if recorded_identity is not None and pool_identity is not None \
+            and not identity_matches(recorded_identity, pool_identity):
+        raise StaleError(f"candidates.json was cut from {describe_identity(pool_identity)} but transcript.json is "
+                         f"for {describe_identity(recorded_identity)} — re-run candidates.py")
+    transcript_video = (transcript.get("video") or {}).get("id")
+    if transcript_video and inputs.get("video_id") and str(inputs["video_id"]) != str(transcript_video):
+        raise StaleError(f"candidates.json belongs to video {inputs['video_id']} but transcript.json is "
+                         f"for {transcript_video} — re-run candidates.py")
+    for label, payload_version in (("transcript.json", transcript.get("engine_version")),
+                                   ("candidates.json", candidate_payload.get("engine_version"))):
+        drift, drift_message = engine_drift(payload_version)
+        if drift in ("minor", "major", "unknown"):
+            print(f"[vsum] warning: {label} {drift_message}", file=sys.stderr)
 
     if text_only:
         assets_dir = None
@@ -858,6 +874,9 @@ def main() -> int:
             info = None
     audit = run_audit(transcript, chapters, summary_payload, selections=selections,
                       candidates=candidate_payload, info=info, lang=lang)
+    audit["inputs"] = audit_inputs(work, Path(args.summary).expanduser().resolve(),
+                                   Path(args.selections).expanduser().resolve() if args.selections else None,
+                                   candidate_payload, lang)
     atomic_write(work / "audit.json", json.dumps(audit, ensure_ascii=False, indent=2) + "\n")
     if audit["errors"]:
         print(f"[vsum] audit: {len(audit['errors'])} error(s), {len(audit['reviews'])} review(s)", file=sys.stderr)
@@ -919,9 +938,13 @@ def main() -> int:
         "candidates_sha256": candidates_digest(candidate_payload),
         "assets_manifest_sha256": assets_manifest_sha,
         "output_mode": args.output_mode,
-        "visual_content": inputs.get("visual_content"),
+        "visual_content": "none" if text_only else (inputs.get("visual_content") or "illustrated"),
         "frames_count": len(frames),
         "generated_at": _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat(),
+        # Filled after bundling / printing (a second write of this file), so the
+        # deliverable itself is bound to the manifest, not only the inputs.
+        "bundle_sha256": None,
+        "pdf_sha256": None,
     }
     if "brief" in summary_payload:
         # Structural errors cannot be bypassed, even in benchmark mode.
@@ -942,7 +965,10 @@ def main() -> int:
     # the directory stays as the editable source.
     single = bundle_summary(out_dir, None)
     size_mb = single.stat().st_size / (1024 * 1024)
-    print(f"Bundled single-file deliverable: `{single}` ({size_mb:.1f} MB) — opens with a double click.")
+    manifest["bundle_sha256"] = sha256_file(single)
+    atomic_write(out_dir / "manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+    print(f"Bundled single-file deliverable: `{single}` ({size_mb:.1f} MB, sha256 "
+          f"{manifest['bundle_sha256'][:12]}…) — opens with a double click.")
     if args.pdf:
         pdf_path = single.with_suffix(".pdf")
         outcome = export_pdf(single, pdf_path, args.pdf_engine)
@@ -952,6 +978,8 @@ def main() -> int:
                 print(f"  {attempt}", file=sys.stderr)
             return 4
         pdf_mb = pdf_path.stat().st_size / (1024 * 1024)
+        manifest["pdf_sha256"] = sha256_file(pdf_path)
+        atomic_write(out_dir / "manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
         print(f"PDF: `{pdf_path}` ({pdf_mb:.1f} MB via {outcome['engine']})")
     return 0
 

@@ -120,6 +120,35 @@ class TranscriptStatusTests(unittest.TestCase):
         self.assertEqual(len(out), 2)
         self.assertEqual(whisper.CHUNK_FAILURES, [{"index": 1, "offset_s": 30.0, "error": "boom"}])
 
+    def test_metadata_failure_is_exit_13_with_a_sanitised_reason_and_no_upload(self):
+        def run(args: list[str]) -> int:
+            if "--write-info-json" in args:
+                transcript.YTDLP_LAST["stderr"] = ("WARNING: something first\nERROR: [youtube] vid123: Video unavailable. "
+                                                   "This video is private https://example.invalid/?token=SECRET-VALUE\n")
+                return 1
+            return 0
+        with mock.patch.object(transcript, "_run_ytdlp", run), \
+                mock.patch.object(transcript, "load_api_key", return_value=("groq", "gsk-secret-value")), \
+                mock.patch.object(transcript, "download_audio", side_effect=AssertionError("must not upload")):
+            code = self._main("--whisper", "groq")
+        self.assertEqual(code, 13)
+        text = (self.work / "transcript.json").read_text(encoding="utf-8")
+        payload = json.loads(text)
+        self.assertEqual(payload["status"], "source_unavailable")
+        self.assertIn("Video unavailable", payload["source_detail"]["reason"])
+        self.assertEqual(payload["source_detail"]["yt_dlp_exit"], 1)
+        self.assertEqual(payload["segments"], [])
+        self.assertNotIn("SECRET-VALUE", text)
+        self.assertNotIn("example.invalid", text)
+        self.assertNotIn("gsk-secret-value", text)
+
+    def test_ok_transcript_records_the_request_options(self):
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)):
+            code = self._main("--langs", "en")
+        self.assertEqual(code, 0)
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["inputs"], {"whisper": None, "no_whisper": False, "langs": "en", "wanted": None})
+
     def test_install_hint_replaces_brew_strings(self):
         with mock.patch.object(transcript.shutil, "which", return_value=None):
             with self.assertRaises(SystemExit) as ctx:

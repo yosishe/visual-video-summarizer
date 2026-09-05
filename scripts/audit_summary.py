@@ -29,9 +29,23 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from gates import load_json  # noqa: E402
+from gates import GateError, candidates_digest, load_json, sha256_file  # noqa: E402
 from hostenv import utf8_stdio  # noqa: E402
 from safety import atomic_write  # noqa: E402
+
+
+def audit_inputs(work: Path, summary_path: Path, selections_path: Path | None,
+                 candidates: dict | None, lang: str | None) -> dict:
+    """What this audit judged, by hash: workflow.py compares these with the
+    current files, so an audit.json from other inputs is stale, not trusted."""
+    return {
+        "summary_sha256": sha256_file(summary_path),
+        "selections_sha256": sha256_file(selections_path) if selections_path else None,
+        "transcript_sha256": sha256_file(work / "transcript.json") if (work / "transcript.json").is_file() else None,
+        "chapters_sha256": sha256_file(work / "chapters.json") if (work / "chapters.json").is_file() else None,
+        "candidates_sha256": candidates_digest(candidates) if isinstance(candidates, dict) else None,
+        "lang": lang,
+    }
 
 HEBREW_RE = re.compile(r"[א-ת]")
 LOW_COVERAGE_RATIO = 0.15
@@ -412,11 +426,19 @@ def main() -> int:
     work = Path(args.work).expanduser().resolve()
     transcript = load_json(work / "transcript.json", "transcript.json")
     chapters = load_json(work / "chapters.json", "chapters.json")
-    summary = load_json(Path(args.summary).expanduser(), "summary.json")
-    selections = load_json(Path(args.selections).expanduser(), "selections.json") if args.selections else None
+    summary_path = Path(args.summary).expanduser().resolve()
+    selections_path = Path(args.selections).expanduser().resolve() if args.selections else None
+    summary = load_json(summary_path, "summary.json")
+    selections = load_json(selections_path, "selections.json") if selections_path else None
     candidates = None
     if (work / "candidates.json").exists():
         candidates = load_json(work / "candidates.json", "candidates.json")
+    elif selections_path is not None:
+        # Frame captions are grounded in the candidates' segments and OCR text;
+        # without the pool that whole check would be skipped and the audit would
+        # come out clean against nothing.
+        raise GateError("candidates.json not found: frame captions cannot be grounded without the candidate pool "
+                        "(omit --selections only for a text-only summary)")
     info = None
     info_path = work / "download" / "video.info.json"
     if info_path.exists():
@@ -427,6 +449,8 @@ def main() -> int:
             info = None
     result = run_audit(transcript, chapters, summary, selections=selections, candidates=candidates,
                        info=info, lang=args.lang)
+    result["inputs"] = audit_inputs(work, summary_path, selections_path, candidates,
+                                    args.lang or result.get("stats", {}).get("lang"))
     atomic_write(work / "audit.json", json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print(render_report(result))
     return 5 if result["errors"] else 0

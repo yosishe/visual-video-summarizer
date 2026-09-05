@@ -31,6 +31,7 @@ from frame_utils import (  # noqa: E402
     visual_signature,
 )
 from layout import overlay_mask  # noqa: E402
+from frame_utils import NEAR_DUP_CHANGED, NEAR_DUP_EDGE, NEAR_DUP_LUMA  # noqa: E402
 
 MAX_READ_DIMENSION = 1998
 CROP_RE = re.compile(r"^\d+:\d+:\d+:\d+$")
@@ -283,6 +284,18 @@ def main() -> int:
                     raise RuntimeError(
                         f"bad crop {crop!r}; expected integer ffmpeg crop syntax w:h:x:y"
                     )
+                # The pixel gate's own numbers, recorded with the asset: the proof
+                # that the written frame is the triaged picture travels with it
+                # (gates.validate_assets re-checks them against the thresholds).
+                written_signature = visual_signature(source_frame, mask)
+                delta = compare_signatures(candidate_signature, written_signature)
+                verification = {
+                    "luma_mad": round(float(delta["luma_mad"]), 4),
+                    "edge_mad": round(float(delta["edge_mad"]), 4),
+                    "changed_ratio": round(float(delta["changed_ratio"]), 5),
+                    "thresholds": {"luma": NEAR_DUP_LUMA, "edge": NEAR_DUP_EDGE, "changed": NEAR_DUP_CHANGED},
+                    "refined": bool(refinement and refinement.get("applied")),
+                }
                 full_path = out_dir / f"{name}-full.jpg"
                 thumb_path = out_dir / f"{name}-thumb.jpg"
                 _render_asset(source_frame, full_path, args.full_width, crop)
@@ -299,6 +312,7 @@ def main() -> int:
                     "actual_t": actual,
                     "triaged_t": timestamp,
                     "refinement": refinement,
+                    "verification": verification,
                     "seg_ids": candidate.get("seg_ids", []),
                     "target_ids": candidate.get("target_ids", []),
                     "full": {

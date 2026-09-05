@@ -14,13 +14,20 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit, urlunsplit
 
-ENGINE_VERSION = "1.7.0"
+ENGINE_VERSION = "1.8.0"
 
-EXIT_UNRESOLVED = 9   # required visual coverage unresolved
-EXIT_INVALID = 10     # a model-authored or upstream artifact is structurally invalid
-EXIT_STALE = 11       # a downstream artifact was produced from different inputs
-EXIT_INCOMPLETE = 12  # delivery verification failed
+EXIT_UNRESOLVED = 9           # required visual coverage unresolved
+EXIT_INVALID = 10             # a model-authored or upstream artifact is structurally invalid
+EXIT_STALE = 11               # a downstream artifact was produced from different inputs
+EXIT_INCOMPLETE = 12          # delivery verification failed
+EXIT_SOURCE_UNAVAILABLE = 13  # the source could not be fetched (private, removed, blocked, unreadable)
+
+# The request options each artifact records so a changed request is a stale artifact,
+# not a silently adopted one.
+TRANSCRIPT_OPTION_KEYS = ("whisper", "no_whisper", "langs", "wanted")
+CANDIDATE_OPTION_KEYS = ("tier", "sections", "max_image_tokens", "allow_long")
 
 TARGET_KINDS = {"state", "action_result", "diagram", "slide"}
 ROLES = {"evidence", "illustration"}
@@ -128,13 +135,105 @@ def is_url(source: str) -> bool:
     return bool(URL_RE.match(str(source)))
 
 
+YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com",
+                 "youtube-nocookie.com", "www.youtube-nocookie.com"}
+YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
+
+
+def canonical_source(source: object) -> object:
+    """One spelling per video: `youtu.be/<id>`, `/shorts/<id>`, `/live/<id>`, `/embed/<id>`,
+    the mobile/music/nocookie hosts and tracking parameters (`t=`, `si=`, `list=`,
+    `feature=`) all collapse to `https://www.youtube.com/watch?v=<id>`; other URLs
+    only lose their fragment; anything that is not a URL is returned unchanged."""
+    if not isinstance(source, str) or not is_url(source):
+        return source
+    parts = urlsplit(source.strip())
+    host = (parts.hostname or "").lower()
+    video_id = None
+    if host == "youtu.be":
+        video_id = parts.path.strip("/").split("/")[0]
+    elif host in YOUTUBE_HOSTS:
+        segments = [segment for segment in parts.path.split("/") if segment]
+        if segments and segments[0] in ("shorts", "live", "embed", "v") and len(segments) > 1:
+            video_id = segments[1]
+        elif segments and segments[0] == "watch":
+            video_id = (parse_qs(parts.query).get("v") or [None])[0]
+    if video_id and YOUTUBE_ID_RE.match(video_id):
+        return f"https://www.youtube.com/watch?v={video_id}"
+    return urlunsplit((parts.scheme.lower(), parts.netloc, parts.path, parts.query, ""))
+
+
 def source_identity(source: str) -> dict | str:
-    """What makes a source *this* source: the URL, or the local path with size and mtime."""
+    """What makes a source *this* source: the canonical URL, or the local path with size and mtime."""
     if is_url(source):
-        return str(source)
+        return canonical_source(str(source))
     local = Path(source).expanduser().resolve()
     stat = local.stat()
     return {"path": str(local), "size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+
+
+def source_key(identity: object) -> str | None:
+    """The part of an identity that names the source (URL or path), without size/mtime."""
+    if isinstance(identity, dict):
+        return str(identity.get("path")) if identity.get("path") else None
+    if isinstance(identity, str):
+        return str(canonical_source(identity))
+    return None
+
+
+def identity_matches(recorded: object, expected: object) -> bool:
+    """True when both identities name the same source (or either is unknown)."""
+    if recorded is None or expected is None:
+        return True
+    if isinstance(recorded, dict) or isinstance(expected, dict):
+        if not (isinstance(recorded, dict) and isinstance(expected, dict)):
+            return False
+        return all(recorded.get(key) == expected.get(key) for key in ("path", "size", "mtime_ns"))
+    return canonical_source(str(recorded)) == canonical_source(str(expected))
+
+
+def describe_identity(identity: object) -> str:
+    if isinstance(identity, dict):
+        return f"{identity.get('path')} ({identity.get('size')} B, mtime {identity.get('mtime_ns')})"
+    return str(identity)
+
+
+def _version_tuple(version: object) -> tuple[int, int, int] | None:
+    match = re.match(r"^\s*(\d+)\.(\d+)(?:\.(\d+))?", str(version or ""))
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2)), int(match.group(3) or 0)
+
+
+def engine_drift(recorded: object, current: str | None = None) -> tuple[str, str | None]:
+    """How far an artifact's engine version is from the running one:
+    `same` | `patch` | `minor` | `major` | `unknown`, with a message for the report.
+    The running version is read at call time so tests can patch ENGINE_VERSION."""
+    current = current or ENGINE_VERSION
+    old, new = _version_tuple(recorded), _version_tuple(current)
+    if old is None or new is None:
+        return "unknown", f"no engine version recorded (this is {current})"
+    if old == new:
+        return "same", None
+    if old[0] != new[0]:
+        return "major", f"produced by engine {recorded}; this is {current} (major difference)"
+    if old[1] != new[1]:
+        return "minor", f"produced by engine {recorded}; this is {current} — re-run the stage"
+    return "patch", f"produced by engine {recorded}; this is {current} (patch difference, kept)"
+
+
+def _norm_option(value: object) -> object:
+    """None, False and "" all mean 'not requested'."""
+    return None if value in (None, False, "") else value
+
+
+def option_diffs(recorded: dict, expected: dict) -> list[str]:
+    """Human-readable `key: recorded -> expected` for every option that differs."""
+    diffs = []
+    for key, wanted in expected.items():
+        if _norm_option(recorded.get(key)) != _norm_option(wanted):
+            diffs.append(f"{key}: {recorded.get(key)!r} -> {wanted!r}")
+    return diffs
 
 
 def load_json(path: Path | str, label: str | None = None) -> object:
@@ -225,11 +324,34 @@ def transcript_health(segments: list[dict], duration: float | None) -> dict:
     }
 
 
-def validate_transcript(payload: object) -> GateResult:
+def validate_transcript(payload: object, *, expected_identity: object = None,
+                        expected_options: dict | None = None) -> GateResult:
+    """Structure, status and — when the caller says what it expects — provenance:
+    a transcript fetched for another source or under other transcription options
+    is `stale` (info["stale"]), so the controller re-runs the stage instead of
+    adopting it."""
     result = GateResult()
     if not isinstance(payload, dict):
         result.errors.append("transcript.json must be a JSON object")
         return result
+    stale: list[str] = []
+    if expected_identity is not None:
+        recorded_identity = payload.get("source_identity")
+        if recorded_identity is None:
+            result.warnings.append("transcript.json predates source binding (no source_identity)")
+        elif not identity_matches(recorded_identity, expected_identity):
+            stale.append(f"transcript.json was fetched for a different source "
+                         f"({describe_identity(recorded_identity)}, not {describe_identity(expected_identity)})")
+    if expected_options is not None:
+        recorded_options = payload.get("inputs")
+        if not isinstance(recorded_options, dict):
+            result.warnings.append("transcript.json predates option binding (no inputs block)")
+        else:
+            diffs = option_diffs(recorded_options, expected_options)
+            if diffs:
+                stale.append("transcript.json was produced with different transcription options: " + ", ".join(diffs))
+    result.info["stale"] = stale
+    result.errors.extend(stale)
     status = payload.get("status")
     if status is not None and status != "ok":
         detail = ""
@@ -392,6 +514,13 @@ def validate_chapters(raw: object, transcript: dict | None, duration: float | No
     count = len(raw)
     if count < 3 or count > 20:
         result.warnings.append(f"{count} chapters (a typical talk has 5–12)")
+    if visual_decision == "none" and needs_any:
+        needing = [str(c.get("chapter_id")) for c in raw if isinstance(c, dict) and c.get("needs_frames") is True]
+        result.errors.append(
+            f"{', '.join(needing)} need frames (needs_frames: true), but a no-visuals decision is recorded — "
+            "set needs_frames false if the screen truly shows nothing there, or revert the decision with "
+            "`workflow.py decide illustrated --reason \"...\"`"
+        )
     if visual_decision == "illustrated" and not needs_any and not result.errors:
         result.errors.append(
             "no chapter has needs_frames: true, but the request is an illustrated summary — "
@@ -408,7 +537,9 @@ def validate_chapters(raw: object, transcript: dict | None, duration: float | No
 
 
 def validate_candidates(payload: object, *, transcript_sha: str | None = None, chapters_sha: str | None = None,
-                        visual_decision: str = "illustrated", allow_unresolved: bool = False) -> GateResult:
+                        visual_decision: str = "illustrated", allow_unresolved: bool = False,
+                        expected_identity: object = None, expected_video_id: object = None,
+                        expected_options: dict | None = None) -> GateResult:
     result = GateResult()
     if not isinstance(payload, dict):
         result.errors.append("candidates.json must be a JSON object")
@@ -420,6 +551,25 @@ def validate_candidates(payload: object, *, transcript_sha: str | None = None, c
         stale.append("transcript.json changed since candidates were extracted")
     if chapters_sha and inputs.get("chapters_sha256") and inputs["chapters_sha256"] != chapters_sha:
         stale.append("chapters.json changed since candidates were extracted")
+    if expected_identity is not None and inputs.get("source_identity") is not None \
+            and not identity_matches(inputs["source_identity"], expected_identity):
+        stale.append(f"candidates.json was cut from a different source "
+                     f"({describe_identity(inputs['source_identity'])}, not {describe_identity(expected_identity)})")
+    if expected_video_id and inputs.get("video_id") and str(inputs["video_id"]) != str(expected_video_id):
+        stale.append(f"candidates.json belongs to video {inputs['video_id']}, not {expected_video_id}")
+    if expected_options is not None:
+        wanted_tier, recorded_tier = expected_options.get("tier"), payload.get("tier")
+        if wanted_tier and recorded_tier and str(recorded_tier) != str(wanted_tier):
+            stale.append(f"candidates.json was extracted at tier {recorded_tier} but the request is tier {wanted_tier}")
+        other = {key: value for key, value in expected_options.items() if key != "tier"}
+        recorded_options = inputs.get("options") if isinstance(inputs.get("options"), dict) else None
+        if recorded_options is None:
+            if inputs and other:
+                result.warnings.append("candidates.json predates option binding (no inputs.options block)")
+        else:
+            diffs = option_diffs(recorded_options, other)
+            if diffs:
+                stale.append("candidates.json was extracted with different options: " + ", ".join(diffs))
     result.info["stale"] = stale
     result.errors.extend(stale)
     if not inputs:
@@ -594,6 +744,22 @@ def validate_assets(assets_payload: object, selections: list | None = None, *, s
                 candidate_id = str(selection.get("candidate_id") or "")
                 if candidate_id not in by_id:
                     result.errors.append(f"{candidate_id}: no grabbed asset for this selection")
+    # The recorded pixel gate (1.8): grab.py stores the measured deltas next to
+    # the thresholds it applied, so the proof travels with the asset.
+    worst: dict[str, float] = {}
+    for candidate_id, asset in by_id.items():
+        verification = asset.get("verification")
+        if not isinstance(verification, dict):
+            continue
+        thresholds = verification.get("thresholds") if isinstance(verification.get("thresholds"), dict) else {}
+        for metric, key in (("luma_mad", "luma"), ("edge_mad", "edge"), ("changed_ratio", "changed")):
+            value, limit = _num(verification.get(metric)), _num(thresholds.get(key))
+            if value is None:
+                continue
+            worst[metric] = max(worst.get(metric, 0.0), value)
+            if limit is not None and value > limit:
+                result.errors.append(f"{candidate_id}: recorded pixel gate failed ({metric} {value:.3g} > {limit:.3g})")
+    result.info["verification_worst"] = worst
     if check_files:
         for candidate_id, asset in by_id.items():
             for variant in ("full", "thumb"):
@@ -611,4 +777,62 @@ def validate_assets(assets_payload: object, selections: list | None = None, *, s
                 elif sha256_file(path) != expected:
                     result.errors.append(f"{candidate_id}: {Path(path).name} does not match its recorded sha256")
     result.info["assets"] = len(by_id)
+    return result
+
+
+# ----------------------------------------------------------------------------- summary and manifest
+
+MANIFEST_HASH_KEYS = ("summary_sha256", "selections_sha256", "transcript_sha256", "chapters_sha256",
+                      "candidates_sha256", "assets_manifest_sha256")
+
+
+def validate_summary(summary: object, *, lang: str | None = None) -> GateResult:
+    """Shape only (the audit judges the content) plus the declared language."""
+    result = GateResult()
+    if not isinstance(summary, dict) or not isinstance(summary.get("chapters"), list) or not summary.get("overview"):
+        result.errors.append("summary.json must be an object with overview and chapters")
+        return result
+    declared = summary.get("lang")
+    if lang and declared and str(declared).lower() != str(lang).lower():
+        result.errors.append(f"summary.json declares lang {declared!r} but the request is {lang!r} — "
+                             f"rewrite it in {lang} (or `init --force --lang {declared}`)")
+    elif lang and not declared:
+        result.warnings.append(f"summary.json does not declare lang; the request is {lang}")
+    result.info["chapters"] = len(summary["chapters"])
+    return result
+
+
+def validate_manifest(manifest: object, *, expected: dict, bundle_sha: str | None = None,
+                      pdf_sha: str | None = None) -> GateResult:
+    """Is the rendered document the one made from the current inputs? Every
+    mismatch is `stale` (re-render), never invalid: the inputs are fine, the
+    document is old."""
+    result = GateResult()
+    if not isinstance(manifest, dict):
+        result.errors.append("manifest.json must be a JSON object")
+        return result
+    stale: list[str] = []
+    if "frames_count" not in manifest:
+        stale.append("manifest.json predates the workflow (no bindings); render again")
+    for key in MANIFEST_HASH_KEYS:
+        recorded, current = manifest.get(key), expected.get(key)
+        if recorded and current and recorded != current:
+            stale.append(f"{key} changed since the last render")
+    for key, label in (("output_mode", "output mode"), ("lang", "language"), ("tier", "tier"),
+                       ("visual_content", "visual-content decision")):
+        recorded, current = manifest.get(key), expected.get(key)
+        if recorded is not None and current is not None and str(recorded) != str(current):
+            stale.append(f"the {label} changed since the last render ({recorded} -> {current})")
+    if bundle_sha is not None:
+        recorded_bundle = manifest.get("bundle_sha256")
+        if not recorded_bundle:
+            result.warnings.append("manifest.json predates bundle binding (no bundle_sha256)")
+        elif recorded_bundle != bundle_sha:
+            stale.append("the single-file bundle does not match manifest.json (rebuilt or foreign): render again")
+    if pdf_sha is not None and manifest.get("pdf_sha256") and manifest["pdf_sha256"] != pdf_sha:
+        stale.append("the PDF does not match manifest.json: render again")
+    result.info["stale"] = stale
+    result.errors.extend(stale)
+    result.info["frames_count"] = manifest.get("frames_count")
+    result.info["bundle_bound"] = bool(manifest.get("bundle_sha256"))
     return result

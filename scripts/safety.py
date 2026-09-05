@@ -19,6 +19,21 @@ def ytdlp_command(args: list[str]) -> list[str]:
     return ["yt-dlp", *YTDLP_FLAGS, *args]
 
 
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+URL_IN_TEXT_RE = re.compile(r"https?://\S+")
+
+
+def sanitize_tool_output(text: str, limit: int = 400) -> str:
+    """The tail of a tool's stderr, fit to be recorded in an artifact: no ANSI
+    escapes, no URLs (they can carry signed query parameters or tokens), the
+    last three non-empty lines, whitespace collapsed, capped at `limit`."""
+    cleaned = ANSI_RE.sub("", str(text or ""))
+    cleaned = URL_IN_TEXT_RE.sub("<url>", cleaned)
+    lines = [" ".join(line.split()) for line in cleaned.splitlines() if line.strip()]
+    tail = " | ".join(lines[-3:])
+    return tail[:limit]
+
+
 def atomic_write(path: Path, text: str) -> None:
     """Never follow a predictable temporary-file or destination symlink."""
     if path.is_symlink():

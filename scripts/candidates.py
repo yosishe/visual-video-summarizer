@@ -32,6 +32,9 @@ from gates import (  # noqa: E402
     EXIT_UNRESOLVED,
     GateError,
     StaleError,
+    describe_identity,
+    engine_drift,
+    identity_matches,
     load_json,
     sha256_file,
     source_identity,
@@ -1516,6 +1519,19 @@ def main() -> int:
         raise SystemExit(f"Work dir not found: {work} — run transcript.py first")
     transcript = load_transcript(args.transcript, work)
     transcript_file = transcript_path(args.transcript, work)
+    # The transcript must be THIS source's: a work directory re-pointed at another
+    # video keeps its old transcript.json, and the pool would silently be cut from it.
+    try:
+        identity = source_identity(args.source) if args.source else None
+    except OSError:
+        identity = args.source
+    recorded_identity = transcript.get("source_identity")
+    if identity is not None and recorded_identity is not None and not identity_matches(recorded_identity, identity):
+        raise StaleError(f"transcript.json was fetched for a different source ({describe_identity(recorded_identity)}, "
+                         f"not {describe_identity(identity)}) — run transcript.py for this source first")
+    drift, drift_message = engine_drift(transcript.get("engine_version"))
+    if drift in ("minor", "major", "unknown"):
+        print(f"[vsum] warning: transcript.json {drift_message}", file=sys.stderr)
     duration = float(transcript.get("video", {}).get("duration") or 0)
     if duration > MAX_DURATION_SECONDS and not args.allow_long:
         print(f"[vsum] video is {format_time(duration)} long — over the {MAX_DURATION_SECONDS // 60}-minute guard. "
@@ -1532,10 +1548,6 @@ def main() -> int:
     # What this pool was cut from. Later stages compare these hashes and refuse
     # a manifest whose transcript or chapters have since changed.
     chapters_file = Path(args.chapters).expanduser().resolve() if args.chapters else None
-    try:
-        identity = source_identity(args.source) if args.source else None
-    except OSError:
-        identity = args.source
     inputs = {
         "source": args.source,
         "source_identity": identity,
@@ -1545,6 +1557,9 @@ def main() -> int:
         "chapters_path": str(chapters_file) if chapters_file else None,
         "chapters_sha256": sha256_file(chapters_file) if chapters_file else None,
         "visual_content": args.visual_content,
+        # The request options this pool answers (gates.validate_candidates compares them).
+        "options": {"tier": tier, "sections": args.sections, "max_image_tokens": args.max_image_tokens,
+                    "allow_long": bool(args.allow_long)},
         "generated_at": _now(),
         "cache_key": None,
     }

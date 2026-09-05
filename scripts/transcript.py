@@ -35,12 +35,19 @@ from urllib.parse import urlparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from gates import ENGINE_VERSION, source_identity, transcript_health  # noqa: E402
+from gates import ENGINE_VERSION, EXIT_SOURCE_UNAVAILABLE, source_identity, transcript_health  # noqa: E402
 from hostenv import require_tools, run_text, utf8_stdio  # noqa: E402
-from safety import atomic_write, ytdlp_command  # noqa: E402
+from safety import atomic_write, sanitize_tool_output, ytdlp_command  # noqa: E402
 from whisper import CHUNK_FAILURES, DETECTED_LANGUAGE, load_api_key, transcribe_video  # noqa: E402
 
 TRANSCRIPT_SCHEMA = 2
+# The tail of the last yt-dlp stderr, so a "Video unavailable" can be recorded
+# (sanitised) in transcript.json instead of being lost in the console.
+YTDLP_LAST: dict[str, str] = {"stderr": ""}
+
+
+class SourceUnavailable(RuntimeError):
+    """The source itself cannot be read (private, removed, blocked, unreadable file)."""
 
 TS_RE = re.compile(
     r"(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2})[.,](\d{3})"
@@ -204,7 +211,14 @@ def rank_caption_tracks(info: dict, wanted: tuple[str, ...] = DEFAULT_WANTED) ->
 
 def _run_ytdlp(args: list[str]) -> int:
     require_tools("yt-dlp")
-    proc = subprocess.run(ytdlp_command(args), stdout=sys.stderr, stderr=sys.stderr)
+    # Progress (stdout) streams through; the error channel is captured so the
+    # reason for a failed fetch can be recorded, then echoed for the console.
+    proc = subprocess.run(ytdlp_command(args), stdout=sys.stderr, stderr=subprocess.PIPE,
+                          text=True, encoding="utf-8", errors="replace")
+    captured = proc.stderr or ""
+    if captured:
+        sys.stderr.write(captured if captured.endswith("\n") else captured + "\n")
+    YTDLP_LAST["stderr"] = captured[-4000:]
     return proc.returncode
 
 
@@ -236,7 +250,12 @@ def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str
     rc = _run_ytdlp(base_args + ["--write-info-json", "--", url])
     info_path = out_dir / "video.info.json"
     if rc != 0 and not info_path.exists():
-        raise SystemExit(f"yt-dlp could not fetch metadata for {url} (exit {rc}); see the messages above")
+        # Not a tool problem and not "no captions": the source itself cannot be
+        # fetched. Returned, not raised, so main() records it in transcript.json.
+        tail = sanitize_tool_output(YTDLP_LAST["stderr"]) or "no message from yt-dlp"
+        return {"unavailable": True, "exit": rc, "reason": f"yt-dlp could not fetch metadata (exit {rc}): {tail}",
+                "info": {"url": url}, "subtitle_path": None, "track": None, "tracks_considered": 0,
+                "rejected_translated": 0}
     info = _read_info(info_path, url)
     raw = info.pop("_raw", {}) if isinstance(info.get("_raw"), dict) else {}
     tracks = rank_caption_tracks(raw, wanted) if raw else []
@@ -299,7 +318,8 @@ def probe(path: str) -> dict:
     require_tools("ffprobe")
     result = run_text(["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", path])
     if result.returncode != 0:
-        raise SystemExit(f"ffprobe failed: {result.stderr.strip()}")
+        raise SourceUnavailable(f"ffprobe could not read the recording (exit {result.returncode}): "
+                                f"{sanitize_tool_output(result.stderr) or 'no message'}")
     data = json.loads(result.stdout or "{}")
     streams = data.get("streams", [])
     fmt = data.get("format", {})
@@ -319,7 +339,7 @@ def main() -> int:
     ap.add_argument("--langs", default=None,
                     help="yt-dlp --sub-langs pattern (bypasses provenance ranking; default: rank tracks, "
                          "prefer manual original, then he/en; never machine-translated)")
-    ap.add_argument("--wanted", default=",".join(DEFAULT_WANTED),
+    ap.add_argument("--wanted", default=None,
                     help="Comma-separated languages acceptable besides the original (default he,en)")
     ap.add_argument("--language", default=None, help="Source language hint for Whisper (ISO 639-1)")
     ap.add_argument("--no-whisper", action="store_true", help="Disable Whisper fallback")
@@ -340,16 +360,24 @@ def main() -> int:
     language: str | None = None
     info: dict = {}
     failure_reason: str | None = None
+    unavailable_reason: str | None = None
+    ytdlp_exit: int | None = None
     fetched: dict = {}
     url_source = is_url(args.source)
-    wanted = tuple(w.strip() for w in args.wanted.split(",") if w.strip()) or DEFAULT_WANTED
+    wanted = (tuple(w.strip() for w in args.wanted.split(",") if w.strip()) or DEFAULT_WANTED) if args.wanted \
+        else DEFAULT_WANTED
 
     if url_source:
         print("[vsum] fetching metadata/captions via yt-dlp (no video download)…", file=sys.stderr)
         fetched = fetch_captions(args.source, dl_dir, args.langs, wanted)
         info = fetched["info"]
         track = fetched.get("track")
-        if fetched["subtitle_path"]:
+        if fetched.get("unavailable"):
+            unavailable_reason = str(fetched["reason"])
+            ytdlp_exit = fetched.get("exit")
+            failure_reason = unavailable_reason
+            print(f"[vsum] source unavailable: {unavailable_reason}", file=sys.stderr)
+        elif fetched["subtitle_path"]:
             try:
                 segments = parse_vtt(fetched["subtitle_path"])
                 source_kind = "captions"
@@ -374,19 +402,31 @@ def main() -> int:
         duration = float(info.get("duration") or 0)
     else:
         local = Path(args.source).expanduser().resolve()
-        if not local.exists():
-            raise SystemExit(f"File not found: {local}")
-        meta = probe(str(local))
-        duration = meta["duration"]
         info = {"id": local.stem, "title": local.name, "url": str(local)}
-        failure_reason = "a local recording has no captions"
-        if not meta["has_audio"]:
-            print("[vsum] no audio stream — no transcript possible", file=sys.stderr)
-            failure_reason = "the recording has no audio stream"
-            args.no_whisper = True
+        duration = 0.0
+        if not local.exists():
+            unavailable_reason = f"file not found: {local}"
+            failure_reason = unavailable_reason
+            print(f"[vsum] source unavailable: {unavailable_reason}", file=sys.stderr)
+        else:
+            try:
+                meta = probe(str(local))
+            except SourceUnavailable as exc:
+                unavailable_reason = str(exc)
+                failure_reason = unavailable_reason
+                print(f"[vsum] source unavailable: {unavailable_reason}", file=sys.stderr)
+            else:
+                duration = meta["duration"]
+                failure_reason = "a local recording has no captions"
+                if not meta["has_audio"]:
+                    print("[vsum] no audio stream — no transcript possible", file=sys.stderr)
+                    failure_reason = "the recording has no audio stream"
+                    args.no_whisper = True
 
     whisper_report: dict | None = None
-    if not segments and not args.no_whisper and args.whisper:
+    if unavailable_reason:
+        pass  # an unreadable source is never uploaded anywhere
+    elif not segments and not args.no_whisper and args.whisper:
         backend, api_key = load_api_key(args.whisper)
         if backend and api_key:
             media = download_audio(args.source, dl_dir) if url_source else Path(args.source).expanduser().resolve()
@@ -416,7 +456,9 @@ def main() -> int:
                 file=sys.stderr,
             )
 
-    if not segments and not args.whisper and not args.no_whisper:
+    if unavailable_reason:
+        pass  # the reason is the source, not the transcription policy
+    elif not segments and not args.whisper and not args.no_whisper:
         failure_reason = f"{failure_reason or 'no captions'}; cloud transcription was not authorized"
         print("[vsum] cloud transcription is off. To upload audio, explicitly choose "
               "--whisper groq or --whisper openai; a stored key alone is not consent.", file=sys.stderr)
@@ -451,6 +493,8 @@ def main() -> int:
             "rejected_translated": fetched.get("rejected_translated", 0) if fetched else 0,
             "whisper_selected": args.whisper, "whisper_disabled": bool(args.no_whisper),
         }
+        if unavailable_reason:
+            source_detail["yt_dlp_exit"] = ytdlp_exit
     try:
         identity = source_identity(args.source)
     except OSError:
@@ -459,11 +503,15 @@ def main() -> int:
     payload = {
         "schema_version": TRANSCRIPT_SCHEMA,
         "engine_version": ENGINE_VERSION,
-        "status": "ok" if records else "no_transcript",
+        "status": "ok" if records else ("source_unavailable" if unavailable_reason else "no_transcript"),
         "generated_at": _now(),
         "source": source_kind,
         "source_detail": source_detail,
         "source_identity": identity,
+        # The request this transcript answers: a later run with other options is
+        # a stale transcript, not an adopted one (gates.validate_transcript).
+        "inputs": {"whisper": args.whisper, "no_whisper": bool(args.no_whisper),
+                   "langs": args.langs, "wanted": args.wanted},
         "language": language,
         "video": {
             "id": info.get("id") or "video",
@@ -520,6 +568,13 @@ def main() -> int:
         print("\n".join(txt_lines))
         print("```")
         return 0
+    if unavailable_reason:
+        print(f"- **Source unavailable:** {unavailable_reason}. The video is private, removed, region-locked, "
+              "blocked, or the file cannot be read. Report this to the user in plain words with one practical step "
+              "(another public link, or a local recording); do not retry in a loop and do not use cookies, logins "
+              "or another downloader. `transcript.json` records `status: source_unavailable`; every later stage "
+              "refuses it.")
+        return EXIT_SOURCE_UNAVAILABLE
     print(f"- **Transcript:** none available — {source_detail.get('reason')}. "
           "Choose --whisper groq|openai with its key to allow audio upload, or supply a captioned source. "
           "`transcript.json` records `status: no_transcript`; every later stage refuses it.")

@@ -10,6 +10,7 @@ controller — the controller loop itself lives in `test_workflow_e2e.py`.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import sys
@@ -127,6 +128,22 @@ class ReliabilityIntegrationTests(unittest.TestCase):
         allowed = self._candidates(work, "--allow-unresolved")
         self.assertEqual(allowed.returncode, 0, allowed.stderr)
 
+    def test_needs_frames_under_a_no_visuals_decision_is_refused_before_download(self):
+        work = self._work("contradiction", chapter_rows=chapters(True))
+        result = self._candidates(work, "--visual-content", "none")
+        self.assertEqual(result.returncode, 10, result.stderr)
+        self.assertIn("decide illustrated", result.stderr)
+        self.assertFalse((work / "download").exists())
+        self.assertFalse((work / "candidates.json").exists())
+
+    def test_transcript_from_another_source_is_refused_before_download(self):
+        foreign = dict(transcript_payload(), source_identity="https://www.youtube.com/watch?v=AAAAAAAAAAA")
+        work = self._work("foreign", transcript=foreign, chapter_rows=chapters(False))
+        result = self._candidates(work)
+        self.assertEqual(result.returncode, 11, result.stderr)
+        self.assertIn("different source", result.stderr)
+        self.assertFalse((work / "download").exists())
+
     # --- provenance, triage receipt, bindings ---------------------------------------
     def _extract(self, name: str = "happy") -> tuple[Path, dict]:
         work = self._work(name, chapter_rows=chapters(False))
@@ -157,6 +174,8 @@ class ReliabilityIntegrationTests(unittest.TestCase):
         inputs = manifest["inputs"]
         for key in ("transcript_sha256", "chapters_sha256", "cache_key", "video_id", "generated_at", "source_identity"):
             self.assertTrue(inputs.get(key), key)
+        self.assertEqual(inputs["options"], {"tier": "standard", "sections": None, "max_image_tokens": None,
+                                             "allow_long": False})
         ids = ",".join(c["candidate_id"] for c in manifest["candidates"][:2])
         result = self._run(sys.executable, SCRIPTS / "shortlist.py", "--work", work, "--ids", ids)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -186,6 +205,11 @@ class ReliabilityIntegrationTests(unittest.TestCase):
         assets_manifest = json.loads((out / "assets" / "assets-manifest.json").read_text(encoding="utf-8"))
         for key in ("selections_sha256", "selections_binding_sha256", "candidates_sha256", "cache_key", "video_id"):
             self.assertTrue(assets_manifest.get(key), key)
+        # the pixel gate's numbers travel with the asset, inside their thresholds
+        verification = assets_manifest["assets"][0]["verification"]
+        for metric, key in (("luma_mad", "luma"), ("edge_mad", "edge"), ("changed_ratio", "changed")):
+            self.assertLessEqual(verification[metric], verification["thresholds"][key])
+        self.assertIn("refined", verification)
         render = [sys.executable, SCRIPTS / "render.py", "--work", work, "--summary", work / "summary.json",
                   "--selections", spec, "--assets-dir", out / "assets", "--out-dir", out, "--lang", "en"]
         result = self._run(*render)
@@ -195,6 +219,15 @@ class ReliabilityIntegrationTests(unittest.TestCase):
                     "output_mode", "frames_count", "generated_at"):
             self.assertIn(key, rendered)
         self.assertEqual(rendered["frames_count"], 1)
+        # the deliverable and the audit are bound too (1.8)
+        bundle = self.root / "summary-fixture.html"
+        self.assertEqual(rendered["bundle_sha256"], hashlib.sha256(bundle.read_bytes()).hexdigest())
+        self.assertEqual(rendered["lang"], "en")
+        self.assertEqual(rendered["visual_content"], "illustrated")
+        audit = json.loads((work / "audit.json").read_text(encoding="utf-8"))
+        self.assertEqual(audit["inputs"]["summary_sha256"],
+                         hashlib.sha256((work / "summary.json").read_bytes()).hexdigest())
+        self.assertEqual(audit["inputs"]["lang"], "en")
         # re-render into the same directory is a resume, not a refusal
         self.assertEqual(self._run(*render).returncode, 0)
         # a foreign transcript can no longer be rendered against this pool
@@ -209,13 +242,26 @@ class ReliabilityIntegrationTests(unittest.TestCase):
                           "--selections", work / "empty.json", "--assets-dir", out / "assets",
                           "--out-dir", self.root / "summary-empty", "--lang", "en")
         self.assertEqual(empty.returncode, 10, empty.stderr)
-        # an explicit text-only delivery renders without assets and says so
-        text = self._run(sys.executable, SCRIPTS / "render.py", "--work", work, "--summary", work / "summary.json",
-                         "--out-dir", self.root / "summary-text", "--lang", "en", "--output-mode", "text-only")
+        # text-only over chapters that need frames is the F4 contradiction: refused
+        contradiction = self._run(sys.executable, SCRIPTS / "render.py", "--work", work, "--summary",
+                                  work / "summary.json", "--out-dir", self.root / "summary-text-bad", "--lang", "en",
+                                  "--output-mode", "text-only")
+        self.assertEqual(contradiction.returncode, 10, contradiction.stderr)
+        self.assertIn("decide illustrated", contradiction.stderr)
+        # an explicit text-only delivery (all chapters needs_frames false) renders without assets and says so
+        text_work = self._work("text", chapter_rows=[dict(c, needs_frames=False, visual_targets=[]) for c in chapters()])
+        decided = self._candidates(text_work, "--visual-content", "none")
+        self.assertEqual(decided.returncode, 0, decided.stderr)
+        self._summarize(text_work)
+        text = self._run(sys.executable, SCRIPTS / "render.py", "--work", text_work, "--summary",
+                         text_work / "summary.json", "--out-dir", self.root / "summary-text", "--lang", "en",
+                         "--output-mode", "text-only")
         self.assertEqual(text.returncode, 0, text.stderr)
         text_manifest = json.loads((self.root / "summary-text" / "manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(text_manifest["output_mode"], "text-only")
         self.assertEqual(text_manifest["frames_count"], 0)
+        self.assertEqual(text_manifest["visual_content"], "none")
+        self.assertTrue(text_manifest["bundle_sha256"])
 
 
 if __name__ == "__main__":
