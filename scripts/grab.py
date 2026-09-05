@@ -14,7 +14,12 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from candidates import part_for, resolve_parts  # noqa: E402
+import datetime as dt  # noqa: E402
+
+from candidates import part_for, resolve_cached_parts, resolve_parts  # noqa: E402, F401
+from gates import ENGINE_VERSION, candidates_digest, canonical_sha256  # noqa: E402
+from hostenv import utf8_stdio  # noqa: E402
+from safety import atomic_write  # noqa: E402
 from frame_utils import (  # noqa: E402
     blur_signature_series,
     choose_refined_frame,
@@ -191,17 +196,21 @@ def main() -> int:
                         help="Sharpest near-duplicate within ±1.5 s of the triaged frame "
                              "(default: the tier recorded in candidates.json; high = sharpness)")
     args = parser.parse_args()
+    utf8_stdio()
 
     work = Path(args.work).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()
-    out_dir.mkdir(parents=True, exist_ok=True)
     candidate_payload, candidates = _load_candidates(work)
-    selections = json.loads(Path(args.spec).expanduser().read_text(encoding="utf-8"))
+    spec_path = Path(args.spec).expanduser().resolve()
+    selections = json.loads(spec_path.read_text(encoding="utf-8"))
     if not isinstance(selections, list) or not selections:
         raise SystemExit("selections.json must be a non-empty array")
     if len(selections) > 20:
         raise SystemExit("HTML frame budget exceeded: selections.json contains more than 20 frames")
-    parts = resolve_parts(None, work)
+    # The download the candidates came from, verified by cache key when the
+    # manifest records one — a swapped or re-downloaded source never feeds grab.
+    parts = resolve_cached_parts(work, (candidate_payload.get("inputs") or {}).get("cache_key"))
+    out_dir.mkdir(parents=True, exist_ok=True)
     # The same overlay mask the candidates were deduplicated with: the gate
     # asks "is this the same picture?", and the presenter in the corner is not
     # part of the picture.
@@ -319,17 +328,36 @@ def main() -> int:
                     "delta": compare_signatures(first_signature, second_signature),
                 })
 
+    inputs = candidate_payload.get("inputs") or {}
+    video_id = inputs.get("video_id")
+    transcript_path = work / "transcript.json"
+    if not video_id and transcript_path.exists():
+        try:
+            video_id = (json.loads(transcript_path.read_text(encoding="utf-8")).get("video") or {}).get("id")
+        except (OSError, json.JSONDecodeError, AttributeError):
+            video_id = None
     assets_manifest = {
         "schema_version": 2,
+        "engine_version": ENGINE_VERSION,
+        "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "candidate_manifest_schema": candidate_payload.get("schema_version", 1),
         "tier": candidate_payload.get("tier"),
         "refine": refine,
+        "video_id": video_id,
+        "cache_key": inputs.get("cache_key"),
+        # Bindings: render and verify refuse these assets once selections.json or
+        # the candidate pool they were grabbed for has changed.
+        "selections_path": str(spec_path),
+        "selections_sha256": canonical_sha256(selections),
+        "candidates_sha256": candidates_digest(candidate_payload),
+        "full_width": args.full_width,
+        "thumb_width": args.thumb_width,
         "assets": assets,
         "duplicate_pairs": duplicate_pairs,
         "failures": failures,
     }
     manifest_path = out_dir / "assets-manifest.json"
-    manifest_path.write_text(json.dumps(assets_manifest, indent=2), encoding="utf-8")
+    atomic_write(manifest_path, json.dumps(assets_manifest, indent=2))
 
     print()
     print("# grab report")

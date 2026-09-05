@@ -26,7 +26,19 @@ from urllib.parse import urlparse
 SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from safety import ytdlp_command
+from safety import atomic_write, ytdlp_command
+from gates import (  # noqa: E402
+    ENGINE_VERSION,
+    EXIT_UNRESOLVED,
+    GateError,
+    StaleError,
+    load_json,
+    sha256_file,
+    source_identity,
+    validate_chapters,
+    validate_transcript,
+)
+from hostenv import install_hint, python_command, utf8_stdio  # noqa: E402
 
 from frame_utils import (  # noqa: E402
     chapter_for_time,
@@ -46,9 +58,10 @@ from frame_utils import (  # noqa: E402
 from layout import detect_static_overlays, mask_fraction, overlay_mask  # noqa: E402
 from sheets import build_sheets  # noqa: E402
 from states import scan_video, states_to_points  # noqa: E402
+import datetime as _dt  # noqa: E402
 import time  # noqa: E402
 
-ENGINE_VERSION = "1.6.0"
+# ENGINE_VERSION is imported from gates so every script reports the same release.
 
 # Every tier-dependent number lives here. `standard` is the default: it
 # reserves up to two frames per target plus one per chapter before any
@@ -163,7 +176,10 @@ SHOWINFO_TS_RE = re.compile(r"pts_time:([-0-9.]+)")
 SCENE_SCORE_RE = re.compile(
     r"pts_time:([-0-9.]+).*?lavfi\.scene_score=([0-9.]+)", re.DOTALL
 )
-TOOL_HINT = "Install with: brew install ffmpeg yt-dlp"
+TOOL_HINT = install_hint("ffmpeg")
+# The cache key of the media parts the last resolve_parts() call returned, so
+# the candidate manifest can bind itself to the exact download it was cut from.
+PARTS_CACHE: dict[str, str | None] = {"key": None}
 
 
 def is_url(source: str) -> bool:
@@ -288,9 +304,11 @@ def resolve_parts(
     expected_key = _cache_key(identity) if identity else None
     cached = _load_cached_parts(parts_file, expected_key)
     if cached:
+        PARTS_CACHE["key"] = expected_key or _recorded_cache_key(parts_file)
         return cached
     if source is None:
         raise SystemExit("No valid cached video parts found; rerun candidates.py with the source")
+    PARTS_CACHE["key"] = expected_key
 
     if not is_url(source):
         local = Path(source).expanduser().resolve()
@@ -302,13 +320,13 @@ def resolve_parts(
             "media_start": media["start_time"], "duration": media["duration"],
             "frame_duration": media["frame_duration"], "mapping_confidence": "exact",
         }]
-        parts_file.write_text(json.dumps({
+        atomic_write(parts_file, json.dumps({
             "schema_version": 2, "cache_key": expected_key, "identity": identity, "parts": parts,
-        }, indent=2), encoding="utf-8")
+        }, indent=2))
         return parts
 
     if shutil.which("yt-dlp") is None:
-        raise SystemExit(f"yt-dlp is not installed. {TOOL_HINT}")
+        raise SystemExit(f"yt-dlp is not installed. {install_hint('yt-dlp')}")
     fmt = "bv*[height<=720]+ba/b[height<=720]/bv+ba/b"
     parts: list[dict] = []
     prefix = expected_key[:10] if expected_key else "video"
@@ -370,10 +388,43 @@ def resolve_parts(
         }]
     if not parts:
         raise SystemExit("No video parts available after download")
-    parts_file.write_text(json.dumps({
+    atomic_write(parts_file, json.dumps({
         "schema_version": 2, "cache_key": expected_key, "identity": identity, "parts": parts,
-    }, indent=2), encoding="utf-8")
+    }, indent=2))
     return parts
+
+
+def _recorded_cache_key(parts_file: Path) -> str | None:
+    try:
+        payload = json.loads(parts_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload.get("cache_key") if isinstance(payload, dict) else None
+
+
+def resolve_cached_parts(work: Path, expected_key: str | None = None) -> list[dict]:
+    """The media the candidates were cut from — for shortlist.py and grab.py.
+
+    When candidates.json recorded the download's cache key, the cached parts
+    must carry the same key: a re-download, a different source or different
+    sections would silently feed the pixel gate a different video (exit 11).
+    Manifests that predate the key fall back to the unverified cache.
+    """
+    parts_file = work / "download" / "parts.json"
+    if expected_key:
+        cached = _load_cached_parts(parts_file, expected_key)
+        if cached:
+            PARTS_CACHE["key"] = expected_key
+            return cached
+        if parts_file.exists():
+            raise StaleError(
+                "download/parts.json does not match the download candidates.json was cut from "
+                "(cache key mismatch: the source, sections or media changed) — re-run candidates.py"
+            )
+        raise SystemExit("No valid cached video parts found; rerun candidates.py with the source")
+    print("[vsum] warning: candidates.json records no download cache key (pre-1.7 manifest); "
+          "the cached media cannot be verified against it", file=sys.stderr)
+    return resolve_parts(None, work)
 
 
 def part_for(parts: list[dict], timestamp: float) -> dict | None:
@@ -571,13 +622,21 @@ def measure_stable_terminal(parts: list[dict], target: dict) -> dict | None:
     return stable_terminal_from_scores(scores, anchor, overlap)
 
 
+def transcript_path(path: str | None, work: Path) -> Path:
+    return Path(path).expanduser().resolve() if path else work / "transcript.json"
+
+
 def load_transcript(path: str | None, work: Path) -> dict:
-    candidate = Path(path).expanduser().resolve() if path else work / "transcript.json"
+    """A missing, empty or failed transcript is a stop, never an empty state:
+    every later stage is keyed to segment ids, so there is no frames-only path."""
+    candidate = transcript_path(path, work)
     if not candidate.exists():
-        return {"video": {}, "segments": []}
-    payload = json.loads(candidate.read_text(encoding="utf-8"))
-    if not isinstance(payload.get("segments", []), list):
-        raise SystemExit("transcript.json must contain a segments array")
+        raise GateError(f"transcript.json not found at {candidate} — run transcript.py first "
+                        "(there is no frames-only path; every candidate is keyed to segment ids)")
+    payload = load_json(candidate, "transcript.json")
+    result = validate_transcript(payload)
+    result.print_warnings("transcript.json")
+    result.raise_for_errors("transcript.json")
     return payload
 
 
@@ -633,13 +692,17 @@ def _target_from_raw(
 
 
 def load_chapters(
-    path: str | None, transcript: dict, duration: float
+    path: str | None, transcript: dict, duration: float, *, visual_decision: str = "illustrated"
 ) -> list[dict]:
+    """Model-authored chapters pass the structural gate before anything is
+    downloaded: every cited segment must exist, `needs_frames` must be a real
+    boolean, and an illustrated request needs at least one visual chapter."""
     if not path:
         return []
-    raw_chapters = json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
-    if not isinstance(raw_chapters, list):
-        raise SystemExit("chapters.json must be an array")
+    raw_chapters = load_json(Path(path).expanduser(), "chapters.json")
+    gate = validate_chapters(raw_chapters, transcript, duration, visual_decision=visual_decision)
+    gate.print_warnings("chapters.json")
+    gate.raise_for_errors("chapters.json")
     segment_map = {str(seg["seg_id"]): seg for seg in transcript.get("segments", [])}
     chapters: list[dict] = []
     for index, raw in enumerate(raw_chapters):
@@ -648,7 +711,7 @@ def load_chapters(
             "chapter_id": str(raw.get("chapter_id") or f"ch{index + 1:02d}"),
             "start": float(raw["start"]),
             "end": float(raw["end"]),
-            "needs_frames": bool(raw.get("needs_frames", True)),
+            "needs_frames": raw["needs_frames"] is True,
         }
         target_rows = list(raw.get("visual_targets") or [])
         if not target_rows:
@@ -1333,18 +1396,53 @@ def generate_strips(work: Path, chapters: list[dict], records: list[dict]) -> li
     return strips
 
 
-def _write_empty_manifest(work: Path, tier: str, profile: dict, chapters: list[dict]) -> None:
+def resolve_token_budget(explicit: int | None, tier: str) -> int:
+    budget_setting = explicit or config_value("SUMMARY_MAX_IMAGE_TOKENS")
+    try:
+        return int(budget_setting) if budget_setting else IMAGE_TOKEN_BUDGET[tier]
+    except ValueError:
+        raise SystemExit(f"SUMMARY_MAX_IMAGE_TOKENS must be an integer, got {budget_setting!r}")
+
+
+def _now() -> str:
+    return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _write_empty_manifest(work: Path, tier: str, profile: dict, chapters: list[dict], *,
+                          inputs: dict, profile_override: dict, token_budget: int) -> dict:
+    """The explicit no-visual-chapters outcome, in the full manifest shape so no
+    consumer can tell it apart from a normal run by a KeyError."""
+    cost = cost_estimate(
+        [], tier, profile, scene_seconds=0.0, terminal_probes=0, seeks=0, faces_status="off",
+        ocr_frames=0, overlays=0, overlay_seconds=0.0, engine=profile.get("engine", "states"),
+        scan_seconds=0.0, states=0,
+    )
     payload = {
         "schema_version": 2, "engine_version": ENGINE_VERSION,
-        "tier": tier, "mode": TIER_TO_MODE[tier], "profile": profile, "parts": [],
+        "status": "no_visual_chapters",
+        "inputs": inputs,
+        "tier": tier, "mode": TIER_TO_MODE[tier], "profile": profile,
+        "profile_override": profile_override, "profile_sha256": profile_digest(profile),
+        "overlays": [], "mask_fraction": 0.0, "states": None, "parts": [],
         "counts": {
             "scene": 0, "raw": 0, "blank_or_seek_dropped": 0, "recovered": 0,
-            "dedup_dropped": 0, "cap_dropped": 0, "final": 0,
+            "dedup_dropped": 0, "cap_dropped": 0, "reserved_trimmed": 0,
+            "cap": 0, "cap_effective": 0, "reserved": 0, "final": 0,
         },
-        "coverage": coverage_report(chapters, []), "triage": {"strips": [], "pixel_area": 0},
+        "baselines": {"uniform_fill": []},
+        "coverage": coverage_report(chapters, []), "terminal_probes": [], "cost": cost,
+        "triage": {"instructions": "No visual chapters: nothing to triage.", "strips": [], "pixel_area": 0,
+                   "projected_individual_reads": 0, "projected_total_pixel_area": 0,
+                   "baseline_60x512_pixel_area": 60 * 512 * 288, "strip_to_baseline_ratio": 0,
+                   "projected_to_baseline_ratio": 0},
         "candidates": [],
+        "sheets": {"status": "skipped", "reason": "no visual chapters", "sheets": [], "image_tokens": 0,
+                   "individual_tokens": 0},
+        "token_budget": plan_token_budget(token_budget, sheet_tokens=None, individual_tokens=0,
+                                          shortlist_px=int(profile.get("shortlist_px", 640))),
     }
-    (work / "candidates.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    atomic_write(work / "candidates.json", json.dumps(payload, indent=2))
+    return payload
 
 
 def main() -> int:
@@ -1393,7 +1491,15 @@ def main() -> int:
                         help="Also render 256px temporal strips per target for a cheaper first "
                              "look. Off by default: slides and UI text are not reliably legible "
                              "at strip size, so accuracy-first triage reads the 512px candidates.")
+    parser.add_argument("--visual-content", choices=("illustrated", "none"), default="illustrated",
+                        help="illustrated (default): the request needs verified frames, so a chapters.json "
+                             "with no needs_frames chapter is an error; none: the caller recorded an explicit "
+                             "no-visuals decision (workflow.py decide no-visuals) and an empty pool is a valid outcome.")
+    parser.add_argument("--allow-unresolved", action="store_true",
+                        help="Exit 0 instead of 9 when a needs_frames chapter or a target has no candidate "
+                             "(benchmark/ablation use; the report still lists the unresolved rows).")
     args = parser.parse_args()
+    utf8_stdio()
 
     if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
         raise SystemExit(f"ffmpeg/ffprobe not installed. {TOOL_HINT}")
@@ -1411,19 +1517,52 @@ def main() -> int:
     if not work.exists():
         raise SystemExit(f"Work dir not found: {work} — run transcript.py first")
     transcript = load_transcript(args.transcript, work)
+    transcript_file = transcript_path(args.transcript, work)
     duration = float(transcript.get("video", {}).get("duration") or 0)
     if duration > MAX_DURATION_SECONDS and not args.allow_long:
         print(f"[vsum] video is {format_time(duration)} long — over the {MAX_DURATION_SECONDS // 60}-minute guard. "
               "Re-run with --allow-long (and consider --sections) if you really want it.", file=sys.stderr)
         return EXIT_TOO_LONG
-    chapters = load_chapters(args.chapters, transcript, duration)
+    chapters = load_chapters(args.chapters, transcript, duration, visual_decision=args.visual_content)
     segments = transcript.get("segments", [])
     legacy_cues = parse_times(args.cues)
     legacy_pins = parse_times(args.pins)
+    if not chapters and not legacy_cues and not legacy_pins:
+        raise GateError("--chapters is required: author chapters.json (with needs_frames and visual_targets) "
+                        "before extracting candidates")
+    token_budget = resolve_token_budget(args.max_image_tokens, tier)
+    # What this pool was cut from. Later stages compare these hashes and refuse
+    # a manifest whose transcript or chapters have since changed.
+    chapters_file = Path(args.chapters).expanduser().resolve() if args.chapters else None
+    try:
+        identity = source_identity(args.source) if args.source else None
+    except OSError:
+        identity = args.source
+    inputs = {
+        "source": args.source,
+        "source_identity": identity,
+        "video_id": (transcript.get("video") or {}).get("id"),
+        "transcript_path": str(transcript_file),
+        "transcript_sha256": sha256_file(transcript_file),
+        "chapters_path": str(chapters_file) if chapters_file else None,
+        "chapters_sha256": sha256_file(chapters_file) if chapters_file else None,
+        "visual_content": args.visual_content,
+        "generated_at": _now(),
+        "cache_key": None,
+    }
 
     if chapters and not any(chapter["needs_frames"] for chapter in chapters) and not legacy_cues and not legacy_pins:
-        _write_empty_manifest(work, tier, profile, chapters)
-        print("[vsum] no visual chapters or legacy cues: no video downloaded", file=sys.stderr)
+        # validate_chapters only lets this through under an explicit no-visuals
+        # decision; record it as an outcome, not as a silent empty success.
+        _write_empty_manifest(work, tier, profile, chapters, inputs=inputs,
+                              profile_override=profile_override, token_budget=token_budget)
+        print("[vsum] no visual chapters (explicit no-visuals decision): no video downloaded", file=sys.stderr)
+        print()
+        print("# candidate frames report")
+        print()
+        print(f"- **Status:** `no_visual_chapters` — every chapter has `needs_frames: false` under an explicit "
+              f"no-visuals decision; nothing was downloaded or extracted. Manifest: `{work / 'candidates.json'}`")
+        print("- Next: write summary.json and render with `--output-mode text-only`; there are no frames to triage.")
         return 0
     if args.source is None and not (work / "download" / "parts.json").exists():
         raise SystemExit("Video source is required because no cached parts exist")
@@ -1432,6 +1571,7 @@ def main() -> int:
     if not sections and args.source and is_url(args.source) and chapters:
         sections = derive_sections(chapters, duration)
     parts = resolve_parts(args.source, work, sections, exact_sections=bool(sections))
+    inputs["cache_key"] = PARTS_CACHE["key"]
     total_end = duration or max(float(part["source_start"]) + float(part["duration"]) for part in parts)
 
     # Persistent overlays (webcam PiP, tab/subtitle bars) are masked in every
@@ -1449,7 +1589,12 @@ def main() -> int:
                           heatmap=heatmap, pip_mask=profile["pip_mask"] == "on")
         overlays = scan["overlays"]
         scan_seconds = round(time.monotonic() - started, 2)
-        (work / "states.json").write_text(json.dumps(scan, indent=2) + "\n", encoding="utf-8")
+        atomic_write(work / "states.json", json.dumps(scan, indent=2) + "\n")
+        if not scan.get("frames_scanned"):
+            raise SystemExit(
+                "the dense scan decoded zero frames from the download — ffmpeg could not read the media "
+                "or the visual chapters fall outside it (see the messages above); nothing was extracted"
+            )
     elif profile["pip_mask"] == "on":
         started = time.monotonic()
         for part in parts:
@@ -1665,9 +1810,14 @@ def main() -> int:
             "stage": frame.get("stage"),
         })
     shutil.rmtree(raw_dir, ignore_errors=True)
-    (work / "dropped.json").write_text(json.dumps(DROP_LOG, indent=2) + "\n", encoding="utf-8")
+    atomic_write(work / "dropped.json", json.dumps(DROP_LOG, indent=2) + "\n")
     strips = generate_strips(work, chapters, records) if (args.strips and chapters) else []
     coverage = coverage_report(chapters, records)
+    # coverage_report marks a chapter unresolved only when it needs frames, so
+    # every unresolved row here is a required one.
+    unresolved_rows = [f"chapter {row['chapter_id']}" for row in coverage["chapters"] if row["status"] == "unresolved"]
+    unresolved_rows += [f"target {row['target_id']}" for row in coverage["targets"] if row["status"] == "unresolved"]
+    status = "unresolved" if unresolved_rows else "ok"
     cost = cost_estimate(
         records, tier, profile,
         scene_seconds=scene_seconds, terminal_probes=len(terminal_probes), seeks=seeks,
@@ -1685,6 +1835,8 @@ def main() -> int:
     payload = {
         "schema_version": 2,
         "engine_version": ENGINE_VERSION,
+        "status": status,
+        "inputs": inputs,
         "tier": tier,
         "mode": mode_alias,
         "profile": profile,
@@ -1725,16 +1877,11 @@ def main() -> int:
         },
         "candidates": records,
     }
-    (work / "candidates.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    atomic_write(work / "candidates.json", json.dumps(payload, indent=2))
     sheet_block = None
     if profile.get("sheets") == "on" and records:
         sheet_block = build_sheets(work, int(profile.get("sheet_tiles", 16)), 320)
         payload["sheets"] = sheet_block
-    budget_setting = args.max_image_tokens or config_value("SUMMARY_MAX_IMAGE_TOKENS")
-    try:
-        token_budget = int(budget_setting) if budget_setting else IMAGE_TOKEN_BUDGET[tier]
-    except ValueError:
-        raise SystemExit(f"SUMMARY_MAX_IMAGE_TOKENS must be an integer, got {budget_setting!r}")
     sheets_ok = bool(sheet_block and sheet_block.get("status") == "ok")
     budget_plan = plan_token_budget(
         token_budget,
@@ -1743,7 +1890,7 @@ def main() -> int:
         shortlist_px=int(profile.get("shortlist_px", 640)),
     )
     payload["token_budget"] = budget_plan
-    (work / "candidates.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    atomic_write(work / "candidates.json", json.dumps(payload, indent=2))
     if budget_plan["over_budget"] and not args.allow_over_budget:
         print(f"[vsum] over budget: the mandatory read alone is ≈{budget_plan['planned']:,} image tokens against a "
               f"budget of {token_budget:,}. Raise --max-image-tokens / SUMMARY_MAX_IMAGE_TOKENS, lower "
@@ -1827,9 +1974,9 @@ def main() -> int:
             f"- **Temporal strips:** {len(strips)}; projected strip + selective-read pixel ratio "
             f"vs 60×512 baseline: {payload['triage']['projected_to_baseline_ratio']:.1%}"
         )
-    unresolved = [row for row in coverage["chapters"] if row["status"] == "unresolved"]
-    if unresolved:
-        print("- **Unresolved visual chapters:** " + ", ".join(row["chapter_id"] for row in unresolved))
+    if unresolved_rows:
+        print("- **Unresolved visual coverage (exit 9 unless --allow-unresolved):** " + ", ".join(unresolved_rows)
+              + " — add or correct a target inside the window, or re-run with `--tier high`; do not render around it.")
     if chapters:
         status_by_chapter = {row["chapter_id"]: row["status"] for row in coverage["chapters"]}
         print()
@@ -1862,7 +2009,7 @@ def main() -> int:
               f"individually would cost {sheet_block['individual_tokens']:,}): for every tile decide keep/drop by its "
               "burned-in id, group the same picture into one family, and report each sheet's sentinel tile as blank "
               "(if you cannot find it, fall back to reading the candidates below individually). Stage 2 — "
-              f"`python3 \"$SKILL_DIR/scripts/shortlist.py\" --work \"<work>\" --ids <kept ids>` re-decodes the kept "
+              f"`{python_command()} \"<SKILL_DIR>/scripts/shortlist.py\" --work \"<work>\" --ids <kept ids>` re-decodes the kept "
               f"frames at {shortlist_px}px (verified against the candidates); Read those, then write selections.json "
               "by `candidate_id` — never copy times.")
         print()
@@ -1902,6 +2049,11 @@ def main() -> int:
             f"chapter={record['chapter_id']}, targets={','.join(record['target_ids']) or '-'}{extras})"
             + _provenance_line(record, segment_text)
         )
+    if unresolved_rows and not args.allow_unresolved:
+        print(f"[vsum] unresolved visual coverage ({len(unresolved_rows)} row(s)): {', '.join(unresolved_rows)} — "
+              "fix chapters.json (a target inside the window, or needs_frames: false with reason) or re-run "
+              "--tier high; exit 9", file=sys.stderr)
+        return EXIT_UNRESOLVED
     return 0
 
 
