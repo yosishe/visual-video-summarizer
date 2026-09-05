@@ -38,7 +38,7 @@ from gates import (  # noqa: E402
     validate_chapters,
     validate_transcript,
 )
-from hostenv import install_hint, python_command, utf8_stdio  # noqa: E402
+from hostenv import install_hint, python_command, require_tools, run_text, utf8_stdio  # noqa: E402
 
 from frame_utils import (  # noqa: E402
     chapter_for_time,
@@ -325,8 +325,7 @@ def resolve_parts(
         }, indent=2))
         return parts
 
-    if shutil.which("yt-dlp") is None:
-        raise SystemExit(f"yt-dlp is not installed. {install_hint('yt-dlp')}")
+    require_tools("yt-dlp")
     fmt = "bv*[height<=720]+ba/b[height<=720]/bv+ba/b"
     parts: list[dict] = []
     prefix = expected_key[:10] if expected_key else "video"
@@ -476,7 +475,7 @@ def scene_detect_light(
             "-ss", f"{media_start:.3f}", "-t", f"{end - start:.3f}", "-i", part["path"],
             "-vf", vf, "-an", "-f", "null", "-",
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = run_text(cmd)
         if result.returncode != 0:
             raise SystemExit(f"ffmpeg scene detection failed: {result.stderr.strip()}")
         for match in SHOWINFO_TS_RE.finditer(result.stderr):
@@ -503,7 +502,7 @@ def scene_score_series(
         "-t", f"{end - start:.3f}", "-i", part["path"],
         "-vf", vf, "-an", "-f", "null", "-",
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     if result.returncode != 0:
         raise RuntimeError(f"ffmpeg scene scoring failed: {result.stderr.strip()}")
     return [
@@ -940,7 +939,7 @@ def point_grab(
         "-ss", f"{media_t:.3f}", "-i", part["path"], "-frames:v", "1",
         "-vf", vf, "-q:v", "4", str(path),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     match = SHOWINFO_TS_RE.search(result.stderr)
     if result.returncode != 0 or not path.exists() or not match:
         return None
@@ -1357,7 +1356,7 @@ def _strip_for_group(paths: list[str], output: Path) -> bool:
         )
     filters.append("".join(labels) + f"hstack=inputs={len(paths)}[out]")
     cmd += ["-filter_complex", ";".join(filters), "-map", "[out]", "-frames:v", "1", "-q:v", "4", str(output)]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     return result.returncode == 0 and output.exists()
 
 
@@ -1501,8 +1500,7 @@ def main() -> int:
     args = parser.parse_args()
     utf8_stdio()
 
-    if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
-        raise SystemExit(f"ffmpeg/ffprobe not installed. {TOOL_HINT}")
+    require_tools("ffmpeg", "ffprobe")
     if args.resolution > 512:
         raise SystemExit("Candidate resolution is capped at 512px; use grab.py for deliverable quality")
     tier, profile = resolve_profile(args.tier, args.mode)

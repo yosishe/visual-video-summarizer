@@ -30,7 +30,7 @@ from candidates import resolve_cached_parts  # noqa: E402
 from frame_utils import is_near_duplicate, probe_media, visual_signature  # noqa: E402
 from gates import GateError, candidates_digest, sha256_file  # noqa: E402
 from grab import _extract_source, _load_candidates  # noqa: E402
-from hostenv import utf8_stdio  # noqa: E402
+from hostenv import require_tools, utf8_stdio  # noqa: E402
 from layout import overlay_mask  # noqa: E402
 from safety import atomic_write  # noqa: E402
 from sheets import image_tokens  # noqa: E402
@@ -57,6 +57,7 @@ def main() -> int:
     parser.add_argument("--width", type=int, default=None, help="default: profile shortlist_px, else 640")
     args = parser.parse_args()
     utf8_stdio()
+    require_tools("ffmpeg", "ffprobe")
     work = Path(args.work).expanduser().resolve()
     payload, candidates = _load_candidates(work)
     width = args.width or int(payload.get("profile", {}).get("shortlist_px") or 640)

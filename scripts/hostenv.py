@@ -8,16 +8,17 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
 TOOL_PACKAGES = {
     "ffmpeg": {"darwin": "brew install ffmpeg", "linux": "apt install ffmpeg (or your distribution's package)",
-               "win32": "winget install Gyan.FFmpeg"},
+               "win32": "winget install Gyan.FFmpeg (or: choco install ffmpeg / scoop install ffmpeg)"},
     "ffprobe": {"darwin": "brew install ffmpeg", "linux": "apt install ffmpeg (ffprobe ships with it)",
-                "win32": "winget install Gyan.FFmpeg (ffprobe ships with it)"},
+                "win32": "winget install Gyan.FFmpeg (ffprobe ships with it; or choco/scoop install ffmpeg)"},
     "yt-dlp": {"darwin": "brew install yt-dlp", "linux": "pipx install yt-dlp (or the official release)",
-               "win32": "winget install yt-dlp.yt-dlp"},
+               "win32": "winget install yt-dlp.yt-dlp (or: choco install yt-dlp / scoop install yt-dlp / pipx install yt-dlp)"},
 }
 
 
@@ -41,6 +42,34 @@ def install_hint(tool: str) -> str:
 def python_command() -> str:
     """The interpreter name to print in reports (never executed by this module)."""
     return "python" if platform_key() == "win32" else "python3"
+
+
+def missing_tools(*names: str) -> list[str]:
+    """The subset of `names` that PATH does not resolve (no version check, no network)."""
+    return [name for name in names if shutil.which(name) is None]
+
+
+def require_tools(*names: str) -> None:
+    """Refuse to start when a required executable is absent, naming it with its install hint.
+
+    Exit 1 (a tool problem), never a traceback: every entry point calls this
+    before any media command so a missing ffmpeg at the grab stage is a one-line
+    stop instead of a FileNotFoundError deep inside a subprocess call."""
+    missing = missing_tools(*names)
+    if missing:
+        raise SystemExit("Missing required tool(s): " + ", ".join(missing) + ". "
+                         + " ".join(install_hint(name) for name in missing))
+
+
+def run_text(command: list[str], *, timeout: float | None = None, **kwargs) -> subprocess.CompletedProcess:
+    """`subprocess.run` with captured output decoded as UTF-8 (replacement on stray bytes).
+
+    ffmpeg/ffprobe/yt-dlp print file names, titles and Hebrew captions; decoding
+    them with the console locale (cp1252 on a default Windows console) raised
+    UnicodeDecodeError in the middle of a stage. The output is a str exactly as
+    before, so callers parse it unchanged."""
+    return subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          timeout=timeout, **kwargs)
 
 
 def _windows_program_dirs() -> list[Path]:

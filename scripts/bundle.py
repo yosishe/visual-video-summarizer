@@ -23,6 +23,7 @@ import re
 import sys
 from pathlib import Path
 
+from hostenv import utf8_stdio
 from safety import atomic_write, validate_generated_html
 
 MIME = {
@@ -103,6 +104,7 @@ def main() -> int:
     ap.add_argument("summary_dir", help="The summary-<id>/ directory (index.html + assets/)")
     ap.add_argument("--out", default=None, help="Output file (default: <summary-dir>.html)")
     args = ap.parse_args()
+    utf8_stdio()
 
     summary_dir = Path(args.summary_dir).expanduser().resolve()
     out = Path(args.out).expanduser().absolute() if args.out else None

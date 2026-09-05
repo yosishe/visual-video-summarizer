@@ -281,6 +281,23 @@ class DoctorTests(unittest.TestCase):
         json.dumps(result)
         run.assert_not_called()
 
+    def test_missing_required_tool_row_carries_an_install_hint(self):
+        with mock.patch.object(doctor.shutil, 'which', return_value=None), \
+             mock.patch.object(doctor.importlib.util, 'find_spec', return_value=None), \
+             mock.patch.object(doctor.subprocess, 'run') as run:
+            result = doctor.check()
+            for row in result['checks']:
+                if row['name'] in {'ffmpeg', 'ffprobe', 'yt-dlp'}:
+                    self.assertIn(row['name'], row['hint'])
+                    self.assertIn('after the user approves', row['hint'])
+            buffer = io.StringIO()
+            with mock.patch.object(sys, 'argv', ['doctor.py']), contextlib.redirect_stdout(buffer):
+                code = doctor.main()
+        self.assertEqual(code, 1)
+        self.assertIn('hint:', buffer.getvalue())
+        self.assertIn('ffmpeg', buffer.getvalue())
+        run.assert_not_called()
+
     def test_local_mode_does_not_require_ytdlp_or_read_key_files(self):
         with mock.patch.object(doctor.shutil, 'which', side_effect=lambda n: '/bin/' + n if n in {'ffmpeg', 'ffprobe'} else None), \
              mock.patch.object(doctor.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, 'version\n')), \

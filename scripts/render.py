@@ -49,7 +49,7 @@ from gates import (  # noqa: E402
     validate_selections,
     validate_transcript,
 )
-from hostenv import chrome_candidates, find_chrome, utf8_stdio  # noqa: E402
+from hostenv import chrome_candidates, find_chrome, run_text, utf8_stdio  # noqa: E402
 from safety import CSP, asset_file, atomic_write, validate_generated_html  # noqa: E402
 
 MANIFEST_SCHEMA = 3
@@ -511,15 +511,13 @@ def export_pdf(single_html: Path, out_pdf: Path, engine: str = "auto") -> dict:
                 "--no-pdf-header-footer", "--virtual-time-budget=10000",
                 f"--print-to-pdf={out_pdf}", print_html.as_uri(),
             ]
-            result = subprocess.run(command, capture_output=True, text=True, timeout=240)
+            result = run_text(command, timeout=240)
             if result.returncode == 0 and out_pdf.exists() and out_pdf.stat().st_size > 0:
                 return {"engine": "chrome", "binary": chrome, "path": str(out_pdf)}
             attempts.append(f"chrome: exit {result.returncode} {result.stderr.strip()[-200:]}")
         weasy = _find_weasyprint() if engine in ("auto", "weasyprint") else None
         if weasy:
-            result = subprocess.run(
-                weasy + [str(print_html), str(out_pdf)], capture_output=True, text=True, timeout=600
-            )
+            result = run_text(weasy + [str(print_html), str(out_pdf)], timeout=600)
             if result.returncode == 0 and out_pdf.exists() and out_pdf.stat().st_size > 0:
                 return {"engine": "weasyprint", "binary": weasy[0], "path": str(out_pdf)}
             attempts.append(f"weasyprint: exit {result.returncode} {result.stderr.strip()[-200:]}")

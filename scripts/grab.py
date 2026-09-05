@@ -18,7 +18,7 @@ import datetime as dt  # noqa: E402
 
 from candidates import part_for, resolve_cached_parts, resolve_parts  # noqa: E402, F401
 from gates import ENGINE_VERSION, candidates_digest, canonical_sha256, selections_binding  # noqa: E402
-from hostenv import utf8_stdio  # noqa: E402
+from hostenv import require_tools, run_text, utf8_stdio  # noqa: E402
 from safety import atomic_write  # noqa: E402
 from frame_utils import (  # noqa: E402
     blur_signature_series,
@@ -76,7 +76,7 @@ def _extract_source(parts: list[dict], timestamp: float, output: Path, width: in
         "-frames:v", "1", "-vf", f"showinfo,{_scale_filter(width)}",
         "-q:v", "2", str(output),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     match = SHOWINFO_TS_RE.search(result.stderr)
     if result.returncode != 0 or not output.exists() or not match:
         raise RuntimeError(f"ffmpeg grab failed: {result.stderr.strip()}")
@@ -95,13 +95,11 @@ def _render_asset(source: Path, output: Path, width: int, crop: str | None) -> N
     if crop:
         filters.append(f"crop={crop}")
     filters.append(_scale_filter(width))
-    result = subprocess.run(
+    result = run_text(
         [
             "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(source),
             "-frames:v", "1", "-vf", ",".join(filters), "-q:v", "2", str(output),
         ],
-        capture_output=True,
-        text=True,
     )
     if result.returncode != 0 or not output.exists():
         raise RuntimeError(f"asset render failed for {output.name}: {result.stderr.strip()}")
@@ -197,6 +195,7 @@ def main() -> int:
                              "(default: the tier recorded in candidates.json; high = sharpness)")
     args = parser.parse_args()
     utf8_stdio()
+    require_tools("ffmpeg", "ffprobe")
 
     work = Path(args.work).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()

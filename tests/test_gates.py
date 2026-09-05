@@ -324,6 +324,41 @@ class HostEnvTests(unittest.TestCase):
             result.raise_for_errors("assets", stale=True)
         self.assertEqual(ctx.exception.code, 11)
 
+    def test_require_tools_raises_with_hint_and_names_only_the_missing(self):
+        from unittest import mock
+        with mock.patch.object(hostenv.shutil, "which", side_effect=lambda n: None if n == "ffprobe" else "/bin/" + n):
+            hostenv.require_tools("ffmpeg")  # present: no error
+            self.assertEqual(hostenv.missing_tools("ffmpeg", "ffprobe"), ["ffprobe"])
+            with self.assertRaises(SystemExit) as ctx:
+                hostenv.require_tools("ffmpeg", "ffprobe")
+        message = str(ctx.exception)
+        self.assertIn("ffprobe", message)
+        self.assertNotIn("Missing required tool(s): ffmpeg", message)
+        self.assertIn("after the user approves", message)
+
+    def test_run_text_decodes_invalid_utf8_without_raising(self):
+        script = "import sys; sys.stderr.buffer.write(b'x \\xff\\xfe y \\xd7\\x90'); sys.stdout.write('ok')"
+        result = hostenv.run_text([sys.executable, "-c", script])
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "ok")
+        self.assertIn("�", result.stderr)   # the stray bytes became replacement characters
+        self.assertIn("א", result.stderr)   # the valid Hebrew letter survived
+
+    def test_no_locale_dependent_subprocess_calls_remain_in_scripts(self):
+        """Guard: every captured-text subprocess call goes through hostenv.run_text
+        (or names its encoding), so a cp1252 console can never raise mid-stage."""
+        import re
+        offenders = []
+        for path in sorted((Path(__file__).resolve().parents[1] / "scripts").glob("*.py")):
+            if path.name == "hostenv.py":
+                continue
+            source = path.read_text(encoding="utf-8")
+            for match in re.finditer(r"subprocess\.run\((?:[^()]|\([^()]*\))*\)", source, re.S):
+                call = match.group(0)
+                if "text=True" in call and "encoding=" not in call:
+                    offenders.append(f"{path.name}: {call[:60]}...")
+        self.assertEqual(offenders, [])
+
 
 if __name__ == "__main__":
     unittest.main()

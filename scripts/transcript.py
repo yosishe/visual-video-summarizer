@@ -36,7 +36,7 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from gates import ENGINE_VERSION, source_identity, transcript_health  # noqa: E402
-from hostenv import install_hint, utf8_stdio  # noqa: E402
+from hostenv import require_tools, run_text, utf8_stdio  # noqa: E402
 from safety import atomic_write, ytdlp_command  # noqa: E402
 from whisper import CHUNK_FAILURES, DETECTED_LANGUAGE, load_api_key, transcribe_video  # noqa: E402
 
@@ -203,8 +203,7 @@ def rank_caption_tracks(info: dict, wanted: tuple[str, ...] = DEFAULT_WANTED) ->
 
 
 def _run_ytdlp(args: list[str]) -> int:
-    if shutil.which("yt-dlp") is None:
-        raise SystemExit(f"yt-dlp is not installed. {install_hint('yt-dlp')}")
+    require_tools("yt-dlp")
     proc = subprocess.run(ytdlp_command(args), stdout=sys.stderr, stderr=sys.stderr)
     return proc.returncode
 
@@ -297,12 +296,8 @@ def download_audio(url: str, out_dir: Path) -> Path:
 
 
 def probe(path: str) -> dict:
-    if shutil.which("ffprobe") is None:
-        raise SystemExit(f"ffprobe is not installed. {install_hint('ffprobe')}")
-    result = subprocess.run(
-        ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", path],
-        capture_output=True, text=True,
-    )
+    require_tools("ffprobe")
+    result = run_text(["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", path])
     if result.returncode != 0:
         raise SystemExit(f"ffprobe failed: {result.stderr.strip()}")
     data = json.loads(result.stdout or "{}")
