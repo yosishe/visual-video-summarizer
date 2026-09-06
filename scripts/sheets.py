@@ -29,7 +29,7 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from frame_utils import format_time  # noqa: E402
-from hostenv import mono_font_candidates  # noqa: E402
+from hostenv import mono_font_candidates, utf8_stdio  # noqa: E402
 from safety import atomic_write  # noqa: E402
 
 try:
@@ -154,6 +154,7 @@ def main() -> int:
     parser.add_argument("--tiles", type=int, default=16, help="tiles per sheet incl. the sentinel (max 16)")
     parser.add_argument("--tile-width", type=int, default=320)
     args = parser.parse_args()
+    utf8_stdio()
     if args.tiles > 16:
         raise SystemExit("more than 4×4 tiles per sheet costs accuracy; use --tiles 16 or fewer")
     block = build_sheets(Path(args.work).expanduser().resolve(), args.tiles, args.tile_width)

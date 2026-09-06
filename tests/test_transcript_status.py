@@ -10,6 +10,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import gates  # noqa: E402
 import hostenv  # noqa: E402
 import transcript  # noqa: E402
 import whisper  # noqa: E402
@@ -91,6 +92,8 @@ class TranscriptStatusTests(unittest.TestCase):
         payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
         self.assertTrue(payload["source_detail"]["translated"])
         self.assertEqual(payload["source_detail"]["track"], "en-de")
+        self.assertEqual(payload["health"]["status"], "thin")
+        self.assertIn("translated", payload["health"]["flags"])
 
     def test_whisper_chunk_failures_are_recorded_in_health(self):
         def fake_transcribe(*_args, **_kwargs):
@@ -119,6 +122,49 @@ class TranscriptStatusTests(unittest.TestCase):
         out = whisper.transcribe_chunks([(Path("a"), 0.0), (Path("b"), 30.0), (Path("c"), 60.0)], one)
         self.assertEqual(len(out), 2)
         self.assertEqual(whisper.CHUNK_FAILURES, [{"index": 1, "offset_s": 30.0, "error": "boom"}])
+
+    def test_metadata_failure_is_exit_13_with_a_sanitised_reason_and_no_upload(self):
+        def run(args: list[str]) -> int:
+            if "--write-info-json" in args:
+                transcript.YTDLP_LAST["stderr"] = ("WARNING: something first\nERROR: [youtube] vid123: Video unavailable. "
+                                                   "This video is private https://example.invalid/?token=SECRET-VALUE\n")
+                return 1
+            return 0
+        with mock.patch.object(transcript, "_run_ytdlp", run), \
+                mock.patch.object(transcript, "load_api_key", return_value=("groq", "gsk-secret-value")), \
+                mock.patch.object(transcript, "download_audio", side_effect=AssertionError("must not upload")):
+            code = self._main("--whisper", "groq")
+        self.assertEqual(code, 13)
+        text = (self.work / "transcript.json").read_text(encoding="utf-8")
+        payload = json.loads(text)
+        self.assertEqual(payload["status"], "source_unavailable")
+        self.assertIn("Video unavailable", payload["source_detail"]["reason"])
+        self.assertEqual(payload["source_detail"]["yt_dlp_exit"], 1)
+        self.assertEqual(payload["segments"], [])
+        self.assertNotIn("SECRET-VALUE", text)
+        self.assertNotIn("example.invalid", text)
+        self.assertNotIn("gsk-secret-value", text)
+
+    def test_ok_transcript_records_status_and_provenance(self):
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)):
+            code = self._main()
+        self.assertEqual(code, 0)
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        health = payload["health"]
+        # three 2-second cues over a 12-second video: truthfully thin (50 % coverage)
+        self.assertEqual(health["status"], "thin")
+        self.assertEqual(health["flags"], ["low_coverage"])
+        self.assertEqual(health["provenance"]["track"], "en")
+        self.assertTrue(health["provenance"]["manual"])
+        self.assertTrue(health["provenance"]["language_match"])
+        self.assertIn("health thin", gates.health_summary(health))
+
+    def test_ok_transcript_records_the_request_options(self):
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)):
+            code = self._main("--langs", "en")
+        self.assertEqual(code, 0)
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["inputs"], {"whisper": None, "no_whisper": False, "langs": "en", "wanted": None})
 
     def test_install_hint_replaces_brew_strings(self):
         with mock.patch.object(transcript.shutil, "which", return_value=None):

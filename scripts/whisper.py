@@ -26,7 +26,7 @@ from pathlib import Path
 from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from hostenv import install_hint  # noqa: E402
+from hostenv import require_tools, run_text  # noqa: E402
 
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
@@ -119,8 +119,7 @@ def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, 
 
 def extract_audio(video_path: str, out_path: Path) -> Path:
     """Extract mono 16kHz 64kbps mp3 — ~480 kB/min, fits any Whisper limit."""
-    if shutil.which("ffmpeg") is None:
-        raise SystemExit(f"ffmpeg is not installed. {install_hint('ffmpeg')}")
+    require_tools("ffmpeg")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
@@ -136,7 +135,7 @@ def extract_audio(video_path: str, out_path: Path) -> Path:
         "-b:a", "64k",
         str(out_path.resolve()),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     if result.returncode != 0:
         raise SystemExit(f"ffmpeg audio extraction failed: {result.stderr.strip()}")
     if not out_path.exists() or out_path.stat().st_size == 0:
@@ -146,10 +145,9 @@ def extract_audio(video_path: str, out_path: Path) -> Path:
 
 def audio_duration(audio_path: Path) -> float:
     """Return the duration of an audio file in seconds via ffprobe."""
-    if shutil.which("ffprobe") is None:
-        raise SystemExit(f"ffprobe is not installed. {install_hint('ffprobe')}")
+    require_tools("ffprobe")
 
-    result = subprocess.run(
+    result = run_text(
         [
             "ffprobe",
             "-v", "quiet",
@@ -157,8 +155,6 @@ def audio_duration(audio_path: Path) -> float:
             "-show_format",
             str(audio_path.resolve()),
         ],
-        capture_output=True,
-        text=True,
     )
     if result.returncode != 0:
         raise SystemExit(f"ffprobe failed: {result.stderr.strip()}")
@@ -176,8 +172,7 @@ def split_audio(
     Uses stream copy (`-c copy`) so there is no re-encode and no quality loss;
     mp3 frame boundaries are close enough for transcription's purposes.
     """
-    if shutil.which("ffmpeg") is None:
-        raise SystemExit(f"ffmpeg is not installed. {install_hint('ffmpeg')}")
+    require_tools("ffmpeg")
 
     work_dir.mkdir(parents=True, exist_ok=True)
     chunks: list[tuple[Path, float]] = []
@@ -194,7 +189,7 @@ def split_audio(
             "-c", "copy",
             str(out_path.resolve()),
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = run_text(cmd)
         if result.returncode != 0 or not out_path.exists() or out_path.stat().st_size == 0:
             raise SystemExit(
                 f"ffmpeg failed to split audio chunk {index + 1}: {result.stderr.strip()}"

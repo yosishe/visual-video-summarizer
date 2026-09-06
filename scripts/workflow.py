@@ -6,21 +6,23 @@
     python workflow.py next --work W         # exactly what to author or run next
     python workflow.py status --work W       # every stage, recomputed from the files on disk
     python workflow.py validate <stage> --work W
-    python workflow.py decide no-visuals --work W --reason "..."
+    python workflow.py decide no-visuals --work W --reason "..."     (or `decide illustrated` to revert)
     python workflow.py shortlist --work W --ids c_0003,...
     python workflow.py verify --work W       # objective proof of what completed (exit 0 only when complete)
 
 The controller shells out to the existing scripts (transcript.py, candidates.py,
 shortlist.py, grab.py, audit_summary.py, render.py) and never re-implements a
 stage. It keeps `<work>/run.json`: the request, the visual-content decision,
-every stage's status, exit code, input and output hashes, counts and the
-current blocker. Statuses are recomputed from the artifacts and their recorded
-input hashes on every call, so a stage whose inputs changed is `stale` and
-re-runs; a model-authored artifact is gated before anything downstream runs.
+every stage's status, exit code, the inputs each stage was bound to, counts and
+the current blocker. Statuses are recomputed from the artifacts on every call
+and every artifact records what it was made for (source, options, engine,
+upstream hashes), so a stage whose inputs changed is `stale` and re-runs; a
+model-authored artifact is gated before anything downstream runs.
 
 Exit codes: 0 = done or waiting for a model-authored file (see NEXT);
-6/7/8/9 = the failing stage's own code; 10 = an artifact is invalid;
-11 = a stale binding; 12 = delivery incomplete (verify).
+1 = a tool problem (preflight); 6/7/8/9 = the failing stage's own code;
+10 = an artifact is invalid; 11 = a stale binding; 12 = delivery incomplete
+(verify); 13 = the source is unavailable.
 """
 from __future__ import annotations
 
@@ -37,27 +39,35 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from gates import (  # noqa: E402
+    CANDIDATE_OPTION_KEYS,
     ENGINE_VERSION,
     EXIT_INCOMPLETE,
     EXIT_INVALID,
+    EXIT_SOURCE_UNAVAILABLE,
     EXIT_STALE,
     EXIT_UNRESOLVED,
+    TRANSCRIPT_OPTION_KEYS,
     GateError,
-    GateResult,
     candidates_digest,
     canonical_sha256,
+    describe_identity,
+    engine_drift,
+    health_summary,
     is_url,
     load_json,
     selections_binding,
     sha256_file,
     source_identity,
+    source_key,
     validate_assets,
     validate_candidates,
     validate_chapters,
+    validate_manifest,
     validate_selections,
+    validate_summary,
     validate_transcript,
 )
-from hostenv import child_env, python_command, utf8_stdio  # noqa: E402
+from hostenv import child_env, install_hint, python_command, utf8_stdio  # noqa: E402
 from safety import atomic_write, validate_generated_html  # noqa: E402
 
 RUN_SCHEMA = 1
@@ -68,6 +78,8 @@ KINDS = {
     "render": "deterministic",
 }
 VISUAL_STAGES = ("shortlist", "selections", "grab")
+# Files that belong to a source: once any exists, `init --force` may change the request but not the source.
+ARTIFACTS = ("transcript.json", "chapters.json", "candidates.json", "selections.json", "summary.json", "audit.json")
 REFERENCES = {
     "chapters": "references/chapters.md",
     "selections": "references/triage.md",
@@ -76,6 +88,12 @@ REFERENCES = {
 }
 SKILL_DIR = SCRIPT_DIR.parent
 HISTORY_LIMIT = 50
+SOURCE_UNAVAILABLE_NEXT = (
+    "The source could not be fetched: {reason}. Report this access error to the user in plain words; do not retry "
+    "in a loop and do not use cookies, logins or another downloader. Ask for another link (or a local recording) "
+    "and start it in a fresh work directory (`workflow.py init \"<source>\" --work <new dir>`). "
+    "`run --retry` re-attempts this source if the user says it should work now."
+)
 
 
 def _now() -> str:
@@ -95,6 +113,16 @@ def _json_or_none(path: Path) -> object | None:
         return None
 
 
+def _mmss(seconds: object) -> str:
+    try:
+        total = int(round(float(seconds)))
+    except (TypeError, ValueError):
+        return "?"
+    hours, rem = divmod(total, 3600)
+    minutes, sec = divmod(rem, 60)
+    return f"{hours}:{minutes:02d}:{sec:02d}" if hours else f"{minutes:02d}:{sec:02d}"
+
+
 # ----------------------------------------------------------------------------- run.json
 
 
@@ -109,6 +137,12 @@ def load_run(work: Path) -> dict:
     run = load_json(path, "run.json")
     if not isinstance(run, dict) or run.get("schema_version") != RUN_SCHEMA:
         raise GateError("run.json has an unknown schema; re-run init --force")
+    recorded = run.get("engine_version")
+    if recorded != ENGINE_VERSION:
+        # The skill was upgraded under this run: say so, and let the artifacts'
+        # own engine stamps decide what is stale (assess).
+        record_history(run, f"engine {recorded} -> {ENGINE_VERSION}", None, None)
+        run["engine_version"] = ENGINE_VERSION
     return run
 
 
@@ -172,6 +206,10 @@ def decision(run: dict) -> str:
     return (run.get("visual_content") or {}).get("decision") or "illustrated"
 
 
+def decided_by(run: dict) -> str:
+    return (run.get("visual_content") or {}).get("decided_by") or "init"
+
+
 def request(run: dict) -> dict:
     return run.get("request") or {}
 
@@ -210,9 +248,51 @@ def _recorded(run: dict, name: str) -> dict:
     return (run.get("stages") or {}).get(name) or {}
 
 
+def _binding(run: dict, name: str) -> dict:
+    return _recorded(run, name).get("binding") or {}
+
+
 def _inputs_changed(run: dict, stage: Stage) -> bool:
-    recorded = _recorded(run, stage.name).get("inputs")
-    return bool(recorded) and recorded != stage.inputs
+    """Did the inputs change since this stage's artifact was executed or accepted?
+
+    The binding is written when a stage runs (`execute_stage`) or when a
+    model-authored file is first accepted (`persist`), and is never overwritten
+    by an assessment — so a `stale` verdict survives `status`/`next` calls and
+    `init --force`. An artifact rewritten since (different outputs) is re-bound
+    to the current inputs on acceptance instead of being reported stale."""
+    binding = _binding(run, stage.name)
+    if not binding.get("inputs"):
+        return False
+    bound_outputs = binding.get("outputs")
+    if bound_outputs and stage.outputs and bound_outputs != stage.outputs:
+        return False
+    return binding["inputs"] != stage.inputs
+
+
+def _focus_line(req: dict) -> str:
+    focus = " ".join(str(req.get("focus") or "").split())
+    return f" Focus requested by the user: {focus}." if focus else ""
+
+
+def ensure_shortlist_report(paths: Paths, receipt: dict | None) -> None:
+    """`workflow.py shortlist` keeps shortlist.py's report; a direct shortlist.py
+    call does not, so rebuild the list of verified frames from the receipt."""
+    if not isinstance(receipt, dict) or (paths.reports / "shortlist.md").is_file():
+        return
+    written = [row for row in receipt.get("written") or [] if isinstance(row, dict)]
+    if not written:
+        return
+    paths.reports.mkdir(parents=True, exist_ok=True)
+    lines = ["# shortlist", "", f"- **{len(written)} frames at {receipt.get('width')}px ≈ "
+             f"{receipt.get('image_tokens', 0):,} image tokens** — read them all in one message, then write "
+             "selections.json by candidate_id (these are the same pictures as the 512px candidates, verified).", ""]
+    for row in written:
+        lines.append(f"- `{row.get('path')}` ({row.get('candidate_id')}, actual_t={row.get('actual_t')}, "
+                     f"{row.get('tokens')} tokens)")
+    if receipt.get("failures"):
+        lines += ["", "Not written (drop these ids):"] + [f"- {failure}" for failure in receipt["failures"]]
+    lines += ["", "(rebuilt from the shortlist receipt in candidates.json)"]
+    (paths.reports / "shortlist.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def assess(work: Path, run: dict) -> dict[str, Stage]:
@@ -220,6 +300,7 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
     req = request(run)
     paths = Paths(work, run)
     visual = decision(run)
+    identity = (run.get("source") or {}).get("identity")
     stages = {name: Stage(name) for name in STAGES}
     blocked_after: str | None = None
 
@@ -229,21 +310,39 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
         if blocked_after is None:
             blocked_after = stage.name
 
+    def drift_check(stage: Stage, payload: object, label: str, *, stale_on_minor: bool = True) -> str | None:
+        """Minor/major engine drift makes a deterministic artifact stale (re-run it);
+        for the transcript it is only a note — re-fetching captions proves nothing."""
+        if not isinstance(payload, dict):
+            return None
+        level, message = engine_drift(payload.get("engine_version"))
+        if level in ("minor", "major") and stale_on_minor:
+            return f"{label} {message}"
+        if level != "same" and message:
+            stage.warnings.append(f"{label} {message}")
+        return None
+
     # transcript ------------------------------------------------------------
     stage = stages["transcript"]
-    stage.inputs = {
-        "source": canonical_sha256(run.get("source", {}).get("identity")),
-        "request": canonical_sha256({k: req.get(k) for k in ("whisper", "no_whisper", "langs", "wanted")}),
-    }
+    transcript_options = {key: req.get(key) for key in TRANSCRIPT_OPTION_KEYS}
+    stage.inputs = {"source": canonical_sha256(identity), "request": canonical_sha256(transcript_options)}
     transcript = _json_or_none(paths.transcript)
     if transcript is None:
         block(stage, "pending", "transcript.json not written yet")
     else:
-        result = validate_transcript(transcript)
+        result = validate_transcript(transcript, expected_identity=identity, expected_options=transcript_options)
         stage.warnings = result.warnings
         stage.outputs = {"transcript.json": _sha(paths.transcript)}
-        if isinstance(transcript, dict) and transcript.get("status") == "no_transcript":
-            reason = (transcript.get("source_detail") or {}).get("reason") or "no usable transcript"
+        status = transcript.get("status") if isinstance(transcript, dict) else None
+        detail = (transcript.get("source_detail") or {}) if isinstance(transcript, dict) else {}
+        if result.info.get("stale"):
+            block(stage, "stale", "; ".join(result.info["stale"]))
+        elif status == "source_unavailable":
+            reason = detail.get("reason") or "the source could not be fetched"
+            block(stage, "failed", reason, exit_code=EXIT_SOURCE_UNAVAILABLE,
+                  next_step=SOURCE_UNAVAILABLE_NEXT.format(reason=reason))
+        elif status == "no_transcript":
+            reason = detail.get("reason") or "no usable transcript"
             block(stage, "failed", reason, exit_code=6, next_step=(
                 "There is no frames-only path. Options: ask the user to authorize cloud transcription "
                 "(`init --force --whisper groq|openai` — audio is uploaded to that provider), force a caption track "
@@ -255,13 +354,18 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
             block(stage, "stale", "the source or transcription options changed since transcript.json was written")
         else:
             stage.status = "ok"
-            stage.reason = f"{result.info['health']['segments']} segments; health warnings: {len(result.warnings)}"
+            stage.reason = health_summary(result.info["health"])
+            drift_check(stage, transcript, "transcript.json", stale_on_minor=False)
+            video = transcript.get("video") if isinstance(transcript.get("video"), dict) else {}
+            run.setdefault("source", {}).update({"video_id": video.get("id"), "title": video.get("title"),
+                                                 "duration": video.get("duration")})
+            run["transcript_health"] = transcript.get("health")
             resolve_out_dir(run, result.info.get("video_id"))
             paths = Paths(work, run)
 
     # chapters --------------------------------------------------------------
     stage = stages["chapters"]
-    stage.inputs = {"transcript.json": stage.outputs.get("transcript.json") or _sha(paths.transcript)}
+    stage.inputs = {"transcript.json": stages["transcript"].outputs.get("transcript.json") or _sha(paths.transcript)}
     chapters = _json_or_none(paths.chapters)
     if blocked_after:
         stage.status, stage.reason = "blocked", f"waiting for {blocked_after}"
@@ -269,7 +373,7 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
         block(stage, "awaiting_model", "chapters.json is not written yet", next_step=(
             f"Author {paths.chapters} from the transcript (report: {paths.reports / 'transcript.md'} or "
             f"{work / 'transcript.txt'}). Contract: {REFERENCES['chapters']}. Mark needs_frames true only for "
-            "chapters that show something on screen; reference segment ids, never seconds."))
+            f"chapters that show something on screen; reference segment ids, never seconds.{_focus_line(req)}"))
     else:
         duration = float(((transcript or {}).get("video") or {}).get("duration") or 0) if isinstance(transcript, dict) else 0
         result = validate_chapters(chapters, transcript if isinstance(transcript, dict) else None, duration,
@@ -280,6 +384,10 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
             stage.errors = result.errors
             block(stage, "invalid", f"{len(result.errors)} error(s)", exit_code=EXIT_INVALID,
                   next_step=f"Fix {paths.chapters}: " + "; ".join(result.errors[:5]))
+        elif _inputs_changed(run, stage):
+            block(stage, "stale", "chapters.json was accepted against a different transcript", exit_code=EXIT_STALE,
+                  next_step=(f"Re-author {paths.chapters} for the current transcript (report: "
+                             f"{paths.reports / 'transcript.md'}), or delete it to start the chapters stage over."))
         else:
             stage.status, stage.reason = "ok", (
                 f"{len(chapters)} chapters, {result.info.get('needs_frames_chapters', 0)} need frames, "
@@ -287,10 +395,10 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
 
     # candidates ------------------------------------------------------------
     stage = stages["candidates"]
+    candidate_options = {key: req.get(key) for key in CANDIDATE_OPTION_KEYS}
     stage.inputs = {
         "transcript.json": _sha(paths.transcript), "chapters.json": _sha(paths.chapters),
-        "options": canonical_sha256({k: req.get(k) for k in ("tier", "sections", "max_image_tokens", "allow_long")}
-                                    | {"visual_content": visual}),
+        "options": canonical_sha256({**candidate_options, "visual_content": visual, "decided_by": decided_by(run)}),
     }
     candidates = _json_or_none(paths.candidates)
     if blocked_after:
@@ -298,12 +406,19 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
     elif candidates is None:
         block(stage, "pending", "candidates.json not written yet")
     else:
+        video_id = (run.get("source") or {}).get("video_id")
         result = validate_candidates(candidates, transcript_sha=stage.inputs["transcript.json"],
-                                     chapters_sha=stage.inputs["chapters.json"], visual_decision=visual)
+                                     chapters_sha=stage.inputs["chapters.json"], visual_decision=visual,
+                                     expected_identity=identity, expected_video_id=video_id,
+                                     expected_options=candidate_options)
         stage.warnings = result.warnings
         stage.outputs = {"candidates.json": candidates_digest(candidates) if isinstance(candidates, dict) else None}
-        if result.info.get("stale") or _inputs_changed(run, stage):
-            block(stage, "stale", "; ".join(result.info.get("stale") or ["extraction options changed"]))
+        stale = list(result.info.get("stale") or [])
+        drift = drift_check(stage, candidates, "candidates.json")
+        if drift:
+            stale.append(drift)
+        if stale or _inputs_changed(run, stage):
+            block(stage, "stale", "; ".join(stale or ["extraction options changed"]))
         elif isinstance(candidates, dict) and candidates.get("status") == "unresolved":
             block(stage, "failed", "unresolved visual coverage: " + ", ".join(
                 [*result.info.get("unresolved_chapters", []), *result.info.get("unresolved_targets", [])]),
@@ -312,9 +427,10 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
                     "run again, or re-run with --tier high (init --force --tier high)."))
         elif result.errors:
             stage.errors = result.errors
+            probe_error = next((e for e in result.errors if e.startswith("the visual probe")), None)
             block(stage, "invalid", "; ".join(result.errors), exit_code=EXIT_INVALID,
-                  next_step="Re-run the candidate stage; if the pool is empty by design, record "
-                            "`workflow.py decide no-visuals --reason ...` first.")
+                  next_step=probe_error or ("Re-run the candidate stage; if the pool is empty by design, record "
+                                            "`workflow.py decide no-visuals --reason ...` first."))
         else:
             stage.status = "ok"
             status = candidates.get("status", "ok") if isinstance(candidates, dict) else "ok"
@@ -337,11 +453,12 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
         stage.reason = f"{len(receipt.get('written') or [])} frames re-decoded and verified"
         if receipt.get("failures"):
             stage.warnings = [f"shortlist failures: {receipt['failures'][:3]}"]
+        ensure_shortlist_report(paths, receipt)
     else:
         block(stage, "awaiting_model", "no shortlist receipt for this candidate pool", next_step=(
             f"Read ALL contact sheets listed in {paths.reports / 'candidates.md'} in one message, decide keep/drop "
             "by burned-in id, then run: "
-            f"{python_command()} \"{SCRIPT_DIR / 'shortlist.py'}\" --work \"{work}\" --ids <kept ids>"))
+            f"{python_command()} \"{Path(__file__).resolve()}\" shortlist --work \"{work}\" --ids <kept ids>"))
 
     # selections (model) ------------------------------------------------------
     stage = stages["selections"]
@@ -384,50 +501,80 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
                                  candidates_sha=stage.inputs["candidates.json"])
         stage.warnings = result.warnings
         stage.outputs = {"assets-manifest.json": _sha(paths.assets_manifest)}
-        if result.info.get("stale"):
-            block(stage, "stale", "; ".join(result.info["stale"]))
+        stale = list(result.info.get("stale") or [])
+        drift = drift_check(stage, assets_payload, "assets-manifest.json")
+        if drift:
+            stale.append(drift)
+        if stale:
+            block(stage, "stale", "; ".join(stale))
         elif result.errors:
             stage.errors = result.errors
             block(stage, "failed", "; ".join(result.errors[:3]), exit_code=2,
                   next_step="Fix the named selection (see grab's report) and run again.")
         else:
-            stage.status, stage.reason = "ok", f"{result.info.get('assets', 0)} verified assets"
+            worst = result.info.get("verification_worst") or {}
+            evidence = ""
+            if worst:
+                evidence = (f" (pixel gate recorded: worst luma {worst.get('luma_mad', 0):.2f}, edge "
+                            f"{worst.get('edge_mad', 0):.2f}, changed {worst.get('changed_ratio', 0):.1%})")
+            stage.status, stage.reason = "ok", f"{result.info.get('assets', 0)} verified assets{evidence}"
 
     # summary (model) ---------------------------------------------------------
     stage = stages["summary"]
-    stage.inputs = {"transcript.json": _sha(paths.transcript), "chapters.json": _sha(paths.chapters),
-                    "selections.json": _sha(paths.selections)}
+    stage.inputs = {"transcript.json": _sha(paths.transcript)}
     summary = _json_or_none(paths.summary)
+    lang = req.get("lang") or "he"
     if blocked_after:
         stage.status, stage.reason = "blocked", f"waiting for {blocked_after}"
     elif summary is None:
         block(stage, "awaiting_model", "summary.json is not written yet", next_step=(
             f"Write {paths.summary} — chapters first, then overview, key points and the opening brief; "
             f"every block cites the segments it synthesizes (contract: {REFERENCES['summary']}). "
-            f"Language: {req.get('lang') or 'he'}."))
-    elif not isinstance(summary, dict) or not isinstance(summary.get("chapters"), list) or not summary.get("overview"):
-        block(stage, "invalid", "summary.json must be an object with overview and chapters", exit_code=EXIT_INVALID,
-              next_step=f"Fix {paths.summary} (contract: {REFERENCES['summary']}).")
+            f"Language: {lang}.{_focus_line(req)}"))
     else:
+        result = validate_summary(summary, lang=lang)
+        stage.warnings = result.warnings
         stage.outputs = {"summary.json": _sha(paths.summary)}
-        stage.status, stage.reason = "ok", f"{len(summary['chapters'])} chapters written"
+        if result.errors:
+            stage.errors = result.errors
+            block(stage, "invalid", "; ".join(result.errors), exit_code=EXIT_INVALID,
+                  next_step=f"Fix {paths.summary} (contract: {REFERENCES['summary']}): " + "; ".join(result.errors[:3]))
+        elif _inputs_changed(run, stage):
+            block(stage, "stale", "summary.json was written against a different transcript", exit_code=EXIT_STALE,
+                  next_step=f"Re-author {paths.summary} from the current transcript, or delete it to start over.")
+        else:
+            stage.status, stage.reason = "ok", f"{result.info.get('chapters', 0)} chapters written"
 
     # audit -----------------------------------------------------------------
     stage = stages["audit"]
-    stage.inputs = {"summary.json": _sha(paths.summary), "selections.json": _sha(paths.selections),
+    stage.inputs = {"summary.json": _sha(paths.summary),
+                    "selections.json": _sha(paths.selections) if visual != "none" else None,
                     "transcript.json": _sha(paths.transcript), "chapters.json": _sha(paths.chapters),
                     "candidates.json": stages["candidates"].outputs.get("candidates.json"),
                     "lang": req.get("lang")}
     audit = _json_or_none(paths.audit)
-    recorded = _recorded(run, "audit")
     if blocked_after:
         stage.status, stage.reason = "blocked", f"waiting for {blocked_after}"
-    elif audit is None or recorded.get("inputs") != stage.inputs:
-        block(stage, "pending" if audit is None else "stale", "audit not run for the current summary")
+    elif audit is None:
+        block(stage, "pending", "audit not run for the current summary")
     else:
-        errors = len((audit or {}).get("errors") or [])
+        recorded_inputs = audit.get("inputs") if isinstance(audit, dict) and isinstance(audit.get("inputs"), dict) else None
+        if recorded_inputs is not None:
+            bound = {"summary.json": recorded_inputs.get("summary_sha256"),
+                     "selections.json": recorded_inputs.get("selections_sha256"),
+                     "transcript.json": recorded_inputs.get("transcript_sha256"),
+                     "chapters.json": recorded_inputs.get("chapters_sha256"),
+                     "candidates.json": recorded_inputs.get("candidates_sha256"),
+                     "lang": recorded_inputs.get("lang")}
+            changed = [label for label, value in stage.inputs.items() if bound.get(label) != value]
+        else:
+            stage.warnings.append("audit.json predates input binding; freshness comes from run.json only")
+            changed = ["inputs"] if _inputs_changed(run, stage) or not _binding(run, "audit").get("inputs") else []
         stage.outputs = {"audit.json": _sha(paths.audit)}
-        if errors:
+        errors = len((audit or {}).get("errors") or []) if isinstance(audit, dict) else 0
+        if changed:
+            block(stage, "stale", "audit.json was produced for different inputs: " + ", ".join(changed))
+        elif errors:
             block(stage, "failed", f"{errors} audit error(s)", exit_code=5, next_step=(
                 f"Fix every error listed in {paths.audit} (numbers, identifiers and segment references must come "
                 f"from the cited segments) and run again."))
@@ -447,27 +594,32 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
     elif manifest is None:
         block(stage, "pending", "not rendered yet")
     else:
-        mismatches = []
-        for key, current in (("summary_sha256", canonical_sha256(summary)), ("selections_sha256", canonical_sha256(selections or [])),
-                             ("transcript_sha256", stage.inputs["transcript.json"]),
-                             ("chapters_sha256", stage.inputs["chapters.json"]),
-                             ("candidates_sha256", stage.inputs["candidates.json"]),
-                             ("assets_manifest_sha256", stage.inputs["assets-manifest.json"])):
-            recorded_value = manifest.get(key) if isinstance(manifest, dict) else None
-            if recorded_value and current and recorded_value != current:
-                mismatches.append(key)
-        if not isinstance(manifest, dict) or "frames_count" not in manifest:
-            block(stage, "stale", "manifest.json predates the workflow (no bindings); render again")
-        elif mismatches or manifest.get("output_mode") != output_mode:
-            block(stage, "stale", "inputs changed since the last render: " + ", ".join(mismatches or ["output mode"]))
+        expected = {"summary_sha256": canonical_sha256(summary), "selections_sha256": canonical_sha256(selections or []),
+                    "transcript_sha256": stage.inputs["transcript.json"], "chapters_sha256": stage.inputs["chapters.json"],
+                    "candidates_sha256": stage.inputs["candidates.json"],
+                    "assets_manifest_sha256": stage.inputs["assets-manifest.json"],
+                    "output_mode": output_mode, "lang": req.get("lang"),
+                    "tier": candidates.get("tier") if isinstance(candidates, dict) else None,
+                    "visual_content": visual}
+        bundle_sha = _sha(paths.bundle) if paths.bundle else None
+        pdf_sha = _sha(paths.pdf) if req.get("pdf") and paths.pdf else None
+        result = validate_manifest(manifest, expected=expected, bundle_sha=bundle_sha, pdf_sha=pdf_sha)
+        stage.warnings = result.warnings
+        stale = list(result.info.get("stale") or [])
+        drift = drift_check(stage, manifest, "manifest.json")
+        if drift:
+            stale.append(drift)
+        if stale:
+            block(stage, "stale", "; ".join(stale))
         elif not (paths.bundle and paths.bundle.is_file()):
             block(stage, "stale", "the single-file bundle is missing")
         elif req.get("pdf") and not (paths.pdf and paths.pdf.is_file()):
             block(stage, "failed", "PDF requested but not produced", exit_code=4,
                   next_step="Install Google Chrome/Edge or WeasyPrint (ask the user), or deliver the HTML without PDF.")
         else:
-            stage.outputs = {"manifest.json": _sha(paths.manifest), "bundle": _sha(paths.bundle)}
-            stage.status, stage.reason = "ok", f"{manifest.get('frames_count')} frames, {output_mode}"
+            stage.outputs = {"manifest.json": _sha(paths.manifest), "bundle": bundle_sha}
+            bound = "bundle hash-bound" if result.info.get("bundle_bound") else "bundle not hash-bound (pre-1.8 manifest)"
+            stage.status, stage.reason = "ok", f"{manifest.get('frames_count')} frames, {output_mode}, {bound}"
 
     return stages
 
@@ -505,7 +657,7 @@ def stage_command(name: str, work: Path, run: dict) -> list[str]:
     if name == "candidates":
         cmd = [py, _script("candidates.py"), source, "--work", str(work), "--transcript", str(paths.transcript),
                "--chapters", str(paths.chapters), "--tier", req.get("tier") or "standard",
-               "--visual-content", decision(run)]
+               "--visual-content", decision(run), "--decided-by", decided_by(run)]
         if req.get("sections"):
             cmd += ["--sections", req["sections"]]
         if req.get("allow_long"):
@@ -541,7 +693,9 @@ def execute_stage(name: str, work: Path, run: dict, stage: Stage) -> int:
     paths.reports.mkdir(parents=True, exist_ok=True)
     command = stage_command(name, work, run)
     record = {"kind": KINDS[name], "status": "running", "started_at": _now(), "finished_at": None,
-              "inputs": stage.inputs, "outputs": {}, "command": command, "exit_code": None}
+              "inputs": stage.inputs, "outputs": {}, "command": command, "exit_code": None,
+              # The inputs this execution answers; persist() never overwrites this.
+              "binding": {"inputs": stage.inputs, "outputs": None, "bound_at": _now(), "by": "execute"}}
     run.setdefault("stages", {})[name] = record
     save_run(work, run)
     print(f"[workflow] {name}: running {Path(command[1]).name}", file=sys.stderr)
@@ -573,10 +727,18 @@ def persist(work: Path, run: dict, stages: dict[str, Stage]) -> None:
     stored = run.setdefault("stages", {})
     for name, stage in stages.items():
         record = stored.get(name) or {}
+        binding = record.get("binding")
         record.update(stage.as_dict())
         record.setdefault("started_at", None)
         record.setdefault("finished_at", None)
         record.setdefault("command", None)
+        if stage.status == "ok" and (not binding or binding.get("outputs") is None
+                                     or binding.get("outputs") != stage.outputs):
+            # First acceptance of a model-authored file, or a rewritten one, or a
+            # just-executed stage: bind the artifact to the inputs it was accepted against.
+            binding = {"inputs": stage.inputs, "outputs": stage.outputs, "bound_at": _now(), "by": "accept"}
+        if binding:
+            record["binding"] = binding
         stored[name] = record
     run["counts"] = collect_counts(work, run)
     blocker = next((s for s in stages.values() if s.status in ("failed", "invalid", "stale", "awaiting_model")), None)
@@ -608,15 +770,59 @@ def collect_counts(work: Path, run: dict) -> dict:
         "audit_errors": len((audit or {}).get("errors") or []) if isinstance(audit, dict) else None,
         "audit_reviews": len((audit or {}).get("reviews") or []) if isinstance(audit, dict) else None,
     }
+    if isinstance(transcript, dict):
+        run["transcript_health"] = transcript.get("health")
     if isinstance(candidates, dict):
         coverage = candidates.get("coverage") or {}
         counts["unresolved"] = sum(1 for row in [*coverage.get("chapters", []), *coverage.get("targets", [])]
                                    if isinstance(row, dict) and row.get("status") == "unresolved")
         counts["sheets"] = len(((candidates.get("sheets") or {}).get("sheets")) or [])
         counts["shortlist_written"] = len(((candidates.get("shortlist") or {}).get("written")) or [])
-        if isinstance(transcript, dict):
-            run["transcript_health"] = transcript.get("health")
+        if isinstance(candidates.get("visual_probe"), dict):
+            run["visual_probe"] = candidates["visual_probe"]
     return counts
+
+
+# ----------------------------------------------------------------------------- preflight
+
+
+def _doctor_snapshot(run: dict, checked_by: str) -> dict:
+    kind = (run.get("source") or {}).get("kind")
+    try:
+        import doctor as doctor_module
+        result = doctor_module.check(local=(kind == "file"), pdf=bool(request(run).get("pdf")))
+    except Exception as exc:  # pragma: no cover - doctor is read-only; never crash on it
+        result = {"ready": None, "error": str(exc)[:200], "checks": []}
+    return {**result, "captured_at": _now(), "checked_by": checked_by}
+
+
+def _missing_tools(snapshot: dict) -> list[dict]:
+    return [row for row in snapshot.get("checks") or [] if row.get("required") and not row.get("available")]
+
+
+def preflight(work: Path, run: dict) -> bool:
+    """Before the first stage executes: the tools the run needs must exist.
+    A missing tool is a clear stop with the platform install hint, never a
+    traceback three stages later. Re-checks only while the snapshot is not ready."""
+    if (run.get("doctor") or {}).get("ready") is True:
+        return True
+    run["doctor"] = _doctor_snapshot(run, "preflight")
+    if run["doctor"].get("ready"):
+        save_run(work, run)
+        return True
+    missing = _missing_tools(run["doctor"])
+    names = ", ".join(row["name"] for row in missing) or (run["doctor"].get("error") or "readiness check failed")
+    hints = [row.get("hint") or install_hint(row["name"]) for row in missing]
+    print()
+    print(f"NEXT (preflight, blocked): missing required tools: {names}")
+    for hint in hints:
+        print(f"  hint: {hint}")
+    print("  Ask the user before installing anything; then run again.")
+    run["blocker"] = {"stage": "preflight", "status": "blocked", "exit_code": 1,
+                      "reason": f"missing required tools: {names}", "next": " ".join(hints)}
+    record_history(run, "preflight", None, 1)
+    save_run(work, run)
+    return False
 
 
 # ----------------------------------------------------------------------------- commands
@@ -626,8 +832,8 @@ def cmd_init(args) -> int:
     work = Path(args.work).expanduser().resolve()
     work.mkdir(parents=True, exist_ok=True)
     if run_path(work).exists() and not args.force:
-        raise GateError(f"{run_path(work)} already exists — use `run`/`status`, or `init --force` to reset the stage "
-                        "records (the files are kept)")
+        raise GateError(f"{run_path(work)} already exists — use `run`/`status`, or `init --force` to re-record the "
+                        "request (the files are kept and re-bound)")
     source = str(args.source)
     kind = "url" if is_url(source) else "file"
     if kind == "file" and not Path(source).expanduser().is_file():
@@ -640,12 +846,25 @@ def cmd_init(args) -> int:
     if lang not in ("he", "en"):
         raise GateError(f"unsupported language {lang!r}; use he or en")
     previous = _json_or_none(run_path(work)) if args.force else None
+    previous = previous if isinstance(previous, dict) else None
+    same_source = False
+    if previous:
+        previous_key = source_key((previous.get("source") or {}).get("identity"))
+        same_source = bool(previous_key) and previous_key == source_key(identity)
+        if previous_key and not same_source and any((work / name).is_file() for name in ARTIFACTS):
+            raise GateError(f"run.json was initialised for {previous_key}; {source_key(identity)} is a different "
+                            f"source. Start it in a fresh work directory: `workflow.py init \"{source}\" --work "
+                            f"<new dir>` (the files here belong to {previous_key})")
+    previous_source = (previous or {}).get("source") or {} if same_source else {}
     run = {
         "schema_version": RUN_SCHEMA, "engine_version": ENGINE_VERSION,
         "created_at": (previous or {}).get("created_at") or _now(), "updated_at": _now(),
         "skill_dir": str(SKILL_DIR), "work_dir": str(work), "cwd": str(Path.cwd()),
-        "out_dir": str(Path(args.out_dir).expanduser().resolve()) if args.out_dir else None,
-        "source": {"raw": source, "kind": kind, "identity": identity, "video_id": None, "title": None, "duration": None},
+        "out_dir": (str(Path(args.out_dir).expanduser().resolve()) if args.out_dir
+                    else ((previous or {}).get("out_dir") if same_source else None)),
+        "source": {"raw": source, "kind": kind, "identity": identity,
+                   "video_id": previous_source.get("video_id"), "title": previous_source.get("title"),
+                   "duration": previous_source.get("duration")},
         "request": {"lang": lang, "tier": args.tier, "pdf": bool(args.pdf), "whisper": args.whisper,
                     "no_whisper": bool(args.no_whisper), "langs": args.langs, "wanted": args.wanted,
                     "output_mode": args.output_mode, "sections": args.sections, "allow_long": bool(args.allow_long),
@@ -653,20 +872,27 @@ def cmd_init(args) -> int:
         "visual_content": {"decision": "none" if args.output_mode == "text-only" else "illustrated",
                            "reason": "user requested a text-only summary" if args.output_mode == "text-only" else None,
                            "decided_by": "init", "decided_at": _now()},
-        "doctor": None, "stages": {}, "transcript_health": None, "counts": {}, "blocker": None, "history": [],
+        "doctor": None,
+        # Bindings survive a re-init: a changed request invalidates exactly what depends on it.
+        "stages": ((previous or {}).get("stages") or {}) if same_source else {},
+        "transcript_health": (previous or {}).get("transcript_health") if same_source else None,
+        "counts": {}, "blocker": None, "history": list((previous or {}).get("history") or []),
     }
-    if args.force and previous and previous.get("visual_content", {}).get("decided_by") == "model":
-        run["visual_content"] = previous["visual_content"]
-    try:
-        import doctor as doctor_module
-        run["doctor"] = {**doctor_module.check(local=(kind == "file"), pdf=bool(args.pdf)), "captured_at": _now()}
-        if not run["doctor"].get("ready"):
-            missing = [row["name"] for row in run["doctor"]["checks"] if row["required"] and not row["available"]]
-            print(f"[workflow] warning: missing required tools: {', '.join(missing)} — ask the user before installing",
-                  file=sys.stderr)
-    except Exception as exc:  # pragma: no cover - doctor is read-only; never block init on it
-        run["doctor"] = {"ready": None, "error": str(exc)[:200], "captured_at": _now()}
-    record_history(run, "init", None, 0)
+    previous_decision = (previous or {}).get("visual_content") or {}
+    if same_source and previous_decision.get("decided_by") in ("model", "user") and args.output_mode != "text-only":
+        run["visual_content"] = previous_decision
+        print(f"[workflow] keeping the recorded visual-content decision ({previous_decision.get('decided_by')}): "
+              f"{previous_decision.get('decision')} — {previous_decision.get('reason')}; revert with "
+              "`decide illustrated --reason \"...\"` or `decide no-visuals --reason \"...\"`", file=sys.stderr)
+    run["doctor"] = _doctor_snapshot(run, "init")
+    if not run["doctor"].get("ready"):
+        missing = _missing_tools(run["doctor"])
+        names = ", ".join(row["name"] for row in missing) or "readiness check failed"
+        print(f"[workflow] warning: missing required tools: {names} — ask the user before installing",
+              file=sys.stderr)
+        for row in missing:
+            print(f"  hint: {row.get('hint') or install_hint(row['name'])}", file=sys.stderr)
+    record_history(run, "init --force" if args.force else "init", None, 0)
     save_run(work, run)
     print(f"Initialized {run_path(work)} (lang={lang}, tier={args.tier}, pdf={bool(args.pdf)}, "
           f"visual content: {run['visual_content']['decision']})")
@@ -674,10 +900,9 @@ def cmd_init(args) -> int:
     return 0
 
 
-def cmd_run(args) -> int:
-    work = Path(args.work).expanduser().resolve()
-    run = load_run(work)
+def _run_loop(args, work: Path, run: dict) -> int:
     until = args.until
+    preflight_done = False
     for _ in range(len(STAGES) + 2):  # each iteration executes at most one stage
         stages = assess(work, run)
         persist(work, run, stages)
@@ -707,6 +932,10 @@ def cmd_run(args) -> int:
             if stage.status == "stale" and not _stale_is_rerunnable(stage):
                 _print_next(stage)
                 return EXIT_STALE
+            if not preflight_done:
+                if not preflight(work, run):
+                    return 1
+                preflight_done = True
             code = execute_stage(name, work, run, stage)
             save_run(work, run)
             if code != 0:
@@ -719,9 +948,23 @@ def cmd_run(args) -> int:
             stages = assess(work, run)
             persist(work, run, stages)
             if all(s.status in ("ok", "skipped") for s in stages.values()):
-                print("[workflow] every stage is complete — run `verify` for the delivery report")
-                return 0
+                print("[workflow] every stage is complete — delivery verification follows")
+                print()
+                return run_verification(work, run, as_json=False)
     return 0
+
+
+def cmd_run(args) -> int:
+    work = Path(args.work).expanduser().resolve()
+    run = load_run(work)
+    code = _run_loop(args, work, run)
+    if args.json:
+        run = load_run(work)
+        stages = assess(work, run)
+        print(json.dumps({"exit_code": code, "blocker": run.get("blocker"),
+                          "stages": {name: stage.status for name, stage in stages.items()},
+                          "counts": run.get("counts")}, indent=2, ensure_ascii=False))
+    return code
 
 
 def _stale_is_rerunnable(stage: Stage) -> bool:
@@ -736,11 +979,19 @@ def cmd_status(args) -> int:
     if args.json:
         print(json.dumps({"stages": {n: s.as_dict() for n, s in stages.items()}, "counts": run.get("counts"),
                           "visual_content": run.get("visual_content"), "blocker": run.get("blocker"),
-                          "out_dir": run.get("out_dir")}, indent=2, ensure_ascii=False))
+                          "out_dir": run.get("out_dir"), "source": run.get("source"), "doctor": run.get("doctor")},
+                         indent=2, ensure_ascii=False))
         return 0
-    print(f"# workflow status — {run['source']['raw']}")
+    source = run.get("source") or {}
+    doctor = run.get("doctor") or {}
+    tools = "ready" if doctor.get("ready") else ("missing " + ", ".join(r["name"] for r in _missing_tools(doctor))
+                                               if doctor.get("checks") else "not checked")
+    print(f"# workflow status — {source.get('raw')}")
     print(f"- lang {request(run).get('lang')} · tier {request(run).get('tier')} · pdf {request(run).get('pdf')} · "
           f"visual content: {decision(run)} ({(run.get('visual_content') or {}).get('reason') or 'default'})")
+    print(f"- source: {source.get('video_id') or 'not fetched yet'}"
+          + (f' "{source.get("title")}" ({_mmss(source.get("duration"))})' if source.get("video_id") else "")
+          + f" · tools: {tools} (doctor {doctor.get('captured_at') or 'never'}) · engine {run.get('engine_version')}")
     print()
     print("| stage | kind | status | detail |")
     print("|---|---|---|---|")
@@ -763,9 +1014,15 @@ def cmd_next(args) -> int:
     for stage in stages.values():
         if stage.status in ("ok", "skipped", "blocked"):
             continue
+        if args.json:
+            print(json.dumps({"stage": stage.name, **stage.as_dict()}, indent=2, ensure_ascii=False))
+            return 0
         _print_next(stage)
         if stage.status in ("pending", "stale"):
             print(f"  Run: {python_command()} \"{Path(__file__).resolve()}\" run --work \"{work}\"")
+        return 0
+    if args.json:
+        print(json.dumps({"stage": None, "status": "complete"}))
         return 0
     print("NEXT: nothing — every stage is complete; run `verify`.")
     return 0
@@ -788,17 +1045,22 @@ def cmd_validate(args) -> int:
 def cmd_decide(args) -> int:
     work = Path(args.work).expanduser().resolve()
     run = load_run(work)
-    if args.what != "no-visuals":
-        raise GateError("the only decision is `no-visuals`")
     reason = " ".join(str(args.reason or "").split())
     if len(reason) < 20:
-        raise GateError("--reason must explain in at least 20 characters why this video has no informative visuals "
-                        "(e.g. 'talking head interview, static camera, no slides or screen content')")
-    run["visual_content"] = {"decision": "none", "reason": reason, "decided_by": args.by, "decided_at": _now()}
-    record_history(run, "decide no-visuals", None, 0)
+        raise GateError("--reason must explain in at least 20 characters why (e.g. 'talking head interview, static "
+                        "camera, no slides or screen content' / 'the screencast shows the editor in chapters 3-5')")
+    verdict = "none" if args.what == "no-visuals" else "illustrated"
+    run["visual_content"] = {"decision": verdict, "reason": reason, "decided_by": args.by, "decided_at": _now()}
+    record_history(run, f"decide {args.what}", None, 0)
     save_run(work, run)
-    print(f"Recorded: visual content = none ({args.by}): {reason}")
-    print("Downstream stages will run in text-only mode; this decision is printed first in the verify report.")
+    if verdict == "none":
+        print(f"Recorded: visual content = none ({args.by}): {reason}")
+        print("The candidates stage will probe the video (cached ≤720p download) and refuse a model decision it "
+              "contradicts; downstream stages then run in text-only mode. The decision and the probe are printed "
+              "first in the verify report.")
+    else:
+        print(f"Recorded: visual content = illustrated ({args.by}): {reason}")
+        print("Chapters that need frames are extracted, triaged and grabbed again as usual.")
     return 0
 
 
@@ -822,15 +1084,58 @@ def cmd_shortlist(args) -> int:
     return code
 
 
+def _source_row(run: dict, stages: dict[str, Stage], paths: Paths) -> dict:
+    source = run.get("source") or {}
+    transcript = _json_or_none(paths.transcript)
+    stage = stages["transcript"]
+    key = source_key(source.get("identity")) or source.get("raw")
+    status = transcript.get("status") if isinstance(transcript, dict) else None
+    if stage.status == "stale":
+        return {"check": "source", "status": "FAIL", "evidence": stage.reason, "stage_status": "stale"}
+    if transcript is None:
+        return {"check": "source", "status": "FAIL", "evidence": f"{key}: not fetched yet", "stage_status": "pending"}
+    if status == "source_unavailable":
+        reason = ((transcript.get("source_detail") or {}).get("reason")) or "unavailable"
+        return {"check": "source", "status": "FAIL", "evidence": f"{key}: {reason}", "stage_status": "failed"}
+    video = transcript.get("video") if isinstance(transcript.get("video"), dict) else {}
+    return {"check": "source", "status": "PASS", "stage_status": "ok",
+            "evidence": f"{source.get('kind')} {key} → video {video.get('id')} \"{video.get('title')}\" "
+                        f"({_mmss(video.get('duration'))})"}
+
+
+def _preflight_row(run: dict) -> dict:
+    doctor = run.get("doctor") or {}
+    if doctor.get("ready") is True:
+        tools = ", ".join(f"{row['name']} {row.get('version') or 'ok'}" for row in doctor.get("checks") or []
+                          if row.get("required") and row.get("name") != "Python")
+        return {"check": "preflight", "status": "PASS", "stage_status": "ok",
+                "evidence": f"{tools} (checked {doctor.get('captured_at')} by {doctor.get('checked_by', 'init')})"}
+    missing = ", ".join(row["name"] for row in _missing_tools(doctor)) or (doctor.get("error") or "not checked")
+    return {"check": "preflight", "status": "FAIL", "stage_status": "failed", "evidence": f"missing: {missing}"}
+
+
 def verify_report(work: Path, run: dict) -> tuple[list[dict], int]:
     stages = assess(work, run)
     persist(work, run, stages)
     paths = Paths(work, run)
     rows: list[dict] = []
     visual = run.get("visual_content") or {}
-    rows.append({"check": "visual content", "status": "PASS",
-                 "evidence": f"{visual.get('decision')} — {visual.get('reason') or 'illustrated (default request)'} "
-                             f"(decided by {visual.get('decided_by')})"})
+    probe = run.get("visual_probe") if isinstance(run.get("visual_probe"), dict) else None
+    evidence = (f"{visual.get('decision')} — {visual.get('reason') or 'illustrated (default request)'} "
+                f"(decided by {visual.get('decided_by')})")
+    warnings: list[str] = []
+    if visual.get("decision") == "none":
+        if probe:
+            evidence += f"; probe: {probe.get('verdict')} — {probe.get('reason')}"
+            if probe.get("verdict") == "unavailable":
+                warnings.append("the visual probe could not run; the no-visuals decision stands unverified")
+            elif probe.get("verdict") == "contradicts":
+                warnings.append("the visual probe contradicts the decision (user override)")
+        else:
+            warnings.append("no visual probe recorded for the no-visuals decision")
+    rows.append({"check": "visual content", "status": "PASS", "evidence": evidence, "warnings": warnings})
+    rows.append(_source_row(run, stages, paths))
+    rows.append(_preflight_row(run))
     for name in STAGES:
         stage = stages[name]
         if stage.status == "ok":
@@ -846,12 +1151,15 @@ def verify_report(work: Path, run: dict) -> tuple[list[dict], int]:
         try:
             html = paths.bundle.read_text(encoding="utf-8")
             validate_generated_html(html)
-            frames = (_json_or_none(paths.manifest) or {}).get("frames_count") if paths.manifest else None
+            manifest = _json_or_none(paths.manifest) if paths.manifest else None
+            manifest = manifest if isinstance(manifest, dict) else {}
+            frames = manifest.get("frames_count")
             embedded = html.count("data:image/")
             ok = frames is None or embedded >= frames
+            bound = "sha256 bound to manifest.json" if manifest.get("bundle_sha256") else "not bound (pre-1.8 manifest)"
             rows.append({"check": "bundle", "status": "PASS" if ok else "FAIL",
                          "evidence": f"{paths.bundle.name}: static HTML validated, {embedded} embedded images for "
-                                     f"{frames} frames"})
+                                     f"{frames} frames, {bound}"})
         except SystemExit as exc:
             rows.append({"check": "bundle", "status": "FAIL", "evidence": str(exc)})
         if request(run).get("pdf") and paths.pdf and paths.pdf.is_file():
@@ -859,22 +1167,25 @@ def verify_report(work: Path, run: dict) -> tuple[list[dict], int]:
             rows.append({"check": "pdf", "status": "PASS" if head.startswith(b"%PDF") else "FAIL",
                          "evidence": f"{paths.pdf.name} ({paths.pdf.stat().st_size // 1024} KB)"})
     failures = [row for row in rows if row["status"] == "FAIL"]
-    stale_only = failures and all(row.get("stage_status") == "stale" for row in failures)
+    # Stages blocked behind the first failure inherit its nature: when every
+    # real failure is a stale binding, `run` re-executes and exit 11 says so.
+    real = [row for row in failures if row.get("stage_status") != "blocked"]
+    stale_only = bool(real) and all(row.get("stage_status") == "stale" for row in real)
     code = 0 if not failures else (EXIT_STALE if stale_only else EXIT_INCOMPLETE)
     return rows, code
 
 
-def cmd_verify(args) -> int:
-    work = Path(args.work).expanduser().resolve()
-    run = load_run(work)
+def run_verification(work: Path, run: dict, *, as_json: bool) -> int:
     rows, code = verify_report(work, run)
     paths = Paths(work, run)
     report = {"verified_at": _now(), "complete": code == 0, "exit_code": code, "rows": rows,
               "deliverable": str(paths.bundle) if paths.bundle else None,
               "pdf": str(paths.pdf) if request(run).get("pdf") and paths.pdf else None,
-              "counts": run.get("counts"), "visual_content": run.get("visual_content")}
+              "counts": run.get("counts"), "visual_content": run.get("visual_content"),
+              "visual_probe": run.get("visual_probe"), "transcript_health": run.get("transcript_health"),
+              "source": run.get("source"), "engine_version": run.get("engine_version")}
     atomic_write(work / "verify.json", json.dumps(report, indent=2, ensure_ascii=False) + "\n")
-    if args.json:
+    if as_json:
         print(json.dumps(report, indent=2, ensure_ascii=False))
         return code
     print("# delivery verification")
@@ -893,6 +1204,12 @@ def cmd_verify(args) -> int:
             print(f"Next: {blocker['next']}")
     print(f"Report written to {work / 'verify.json'}")
     return code
+
+
+def cmd_verify(args) -> int:
+    work = Path(args.work).expanduser().resolve()
+    run = load_run(work)
+    return run_verification(work, run, as_json=args.json)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -915,15 +1232,17 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--allow-long", action="store_true")
     init.add_argument("--max-image-tokens", type=int, default=None)
     init.add_argument("--out-dir", default=None, help="default: ./summary-<video id>")
-    init.add_argument("--focus", default=None, help="free-text focus notes from the user")
-    init.add_argument("--force", action="store_true", help="reset stage records of an existing run.json")
+    init.add_argument("--focus", default=None, help="free-text focus notes from the user (shown in NEXT)")
+    init.add_argument("--force", action="store_true",
+                      help="re-record the request for the SAME source (options may change; stage bindings are kept, "
+                           "so only what depends on a changed option re-runs); a different source needs a fresh work dir")
     init.set_defaults(func=cmd_init)
 
     run = sub.add_parser("run", help="execute deterministic stages until a model-authored file is needed")
     run.add_argument("--work", required=True)
     run.add_argument("--until", choices=STAGES, default=None)
     run.add_argument("--retry", action="store_true", help="re-run a failed stage whose inputs did not change")
-    run.add_argument("--json", action="store_true")
+    run.add_argument("--json", action="store_true", help="print the blocker and stage statuses as JSON at the end")
     run.set_defaults(func=cmd_run)
 
     for name, func in (("status", cmd_status), ("next", cmd_next)):
@@ -937,8 +1256,9 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--work", required=True)
     validate.set_defaults(func=cmd_validate)
 
-    decide = sub.add_parser("decide", help="record an explicit no-visuals decision")
-    decide.add_argument("what", choices=("no-visuals",))
+    decide = sub.add_parser("decide", help="record an explicit visual-content decision")
+    decide.add_argument("what", choices=("no-visuals", "illustrated"),
+                        help="no-visuals: the video has no informative visuals (probed); illustrated: revert to frames")
     decide.add_argument("--work", required=True)
     decide.add_argument("--reason", required=True)
     decide.add_argument("--by", choices=("model", "user"), default="model")

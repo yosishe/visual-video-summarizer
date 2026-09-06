@@ -11,7 +11,12 @@ import json
 import math
 import re
 import subprocess
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from hostenv import run_text  # noqa: E402
 
 SIGNATURE_WIDTH = 64
 SIGNATURE_HEIGHT = 36
@@ -64,13 +69,11 @@ def format_time(seconds: float) -> str:
 
 
 def probe_media(path: str | Path) -> dict:
-    result = subprocess.run(
+    result = run_text(
         [
             "ffprobe", "-v", "quiet", "-print_format", "json",
             "-show_format", "-show_streams", str(path),
         ],
-        capture_output=True,
-        text=True,
     )
     if result.returncode != 0:
         raise RuntimeError(f"ffprobe failed on {path}: {result.stderr.strip()}")
@@ -467,14 +470,12 @@ def ocr_text(path: str | Path, lang: str = "eng+heb") -> tuple[int, str] | None:
     is never used to rewrite the transcript. None when unavailable."""
     if not OCR_LANG_RE.fullmatch(lang):
         raise ValueError(f"bad OCR language spec: {lang!r}")
-    result = subprocess.run(
+    result = run_text(
         [
             "ffmpeg", "-hide_banner", "-loglevel", "info", "-i", str(path),
             "-frames:v", "1", "-vf", f"ocr=language={lang},metadata=print:key=lavfi.ocr.text",
             "-an", "-f", "null", "-",
         ],
-        capture_output=True,
-        text=True,
     )
     if result.returncode != 0:
         return None

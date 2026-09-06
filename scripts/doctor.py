@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from hostenv import find_chrome, platform_key, python_command  # noqa: E402
+from hostenv import find_chrome, install_hint, platform_key, python_command, run_text, utf8_stdio  # noqa: E402
 from safety import YTDLP_FLAGS, ytdlp_command  # noqa: E402
 
 
@@ -25,7 +25,7 @@ def check(local: bool = False, pdf: bool = False) -> dict:
         if binary:
             command = ytdlp_command(["--version"]) if name == "yt-dlp" else [binary, "-version"]
             try:
-                result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+                result = run_text(command, timeout=10)
                 row["available"] = result.returncode == 0
                 if result.returncode == 0:
                     row["version"] = (result.stdout.splitlines() or ["version unavailable"])[0][:160]
@@ -34,6 +34,10 @@ def check(local: bool = False, pdf: bool = False) -> dict:
             except (OSError, subprocess.TimeoutExpired):
                 row["available"] = False
                 row["note"] = "Could not run the version check."
+        if not row["available"]:
+            # The platform-appropriate install command the agent proposes to the
+            # user (SKILL.md §2); the doctor itself never installs anything.
+            row["hint"] = install_hint(name)
         rows.append(row)
     chrome = find_chrome()
     weasy = shutil.which("weasyprint") or bool(importlib.util.find_spec("weasyprint"))
@@ -65,6 +69,7 @@ def main() -> int:
     parser.add_argument("--pdf", action="store_true", help="Require an installed PDF engine")
     parser.add_argument("--json", action="store_true", help="Machine-readable result")
     args = parser.parse_args()
+    utf8_stdio()
     result = check(args.local, args.pdf)
     if args.json:
         print(json.dumps(result, indent=2))
@@ -75,6 +80,8 @@ def main() -> int:
             print(f"- {row['name']}: {status}" + (f" ({row['version']})" if row.get("version") else ""))
             if row.get("note"):
                 print(f"  {row['note']}")
+            if row.get("hint") and (row["required"] or not row["available"]):
+                print(f"  hint: {row['hint']}")
         print("Cloud transcription: " + result["cloud_transcription"])
         print(result["model_privacy"])
         if result["config_permissions_private"] is False:

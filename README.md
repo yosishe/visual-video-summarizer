@@ -15,7 +15,7 @@
 
 ⁧**הגעתם דרך צ׳אט רגיל של ⁦ChatGPT⁩ או ⁦Gemini⁩?** [ההוראות לצ׳אט](CHAT-PROMPT.txt) יעזרו להעביר את הבקשה לסוכן המתאים, עם אותו קישור. קישור למאגר או שם המוצר לבדם אינם מקנים גישה להורדה ולחילוץ תמונות.⁩
 
-**Use your own agent:** paste [AGENT-START.txt](AGENT-START.txt) into Codex, Claude Code, or Antigravity in a local task, then add a YouTube URL. The agent checks its tools, requests approval for missing dependencies, and follows the full frame-verification pipeline. No maintainer-hosted service or extra transcription API key is needed for accessible captioned videos. Your agent account and its usage limits still apply. These are documented setup routes, not a claim of end-to-end validation on every host or operating system.
+**Use your own agent:** paste [AGENT-START.txt](AGENT-START.txt) into Codex, Claude Code, or Antigravity in a local task, then add a YouTube URL. The agent checks its tools, requests approval for missing dependencies, and follows the full frame-verification pipeline. No maintainer-hosted service or extra transcription API key is needed for accessible captioned videos. Your agent account and its usage limits still apply. CI runs the controller end to end on Linux, macOS and Windows with a real ffmpeg and a fake downloader; the pipeline has not been validated with every host agent.
 
 **For an assistant receiving this repository link:** for a summarization request, ask only for the YouTube URL if it is missing. If you have shell, file, network and image-review capabilities, read [SKILL.md](SKILL.md) and use its setup route; a missing executable is a setup issue, not a reason to abandon the request. Obtain approval before installing or updating software. If this session lacks those capabilities, use [CHAT-PROMPT.txt](CHAT-PROMPT.txt) to provide a copy-ready handoff to the user's own agent. Preserve their video URL and requested output. Do not silently substitute a transcript-only summary or demand a video upload. Repository review, editing and installation requests keep their own scope.
 
@@ -66,24 +66,25 @@ For reproducible installations, review a particular commit in GitHub and check o
 | [Claude Code](https://code.claude.com/docs/en/skills) | `.claude/skills/summarize-video/` | `~/.claude/skills/summarize-video/` | `/summarize-video` followed by the URL |
 | [Antigravity](https://antigravity.google/docs/skills/) | `.agents/skills/summarize-video/` | `~/.gemini/config/skills/summarize-video/` | Ask to use `summarize-video` for the URL |
 
-Paths and invocation conventions checked against the linked official documentation on 2026-09-05. Resolve `~` using the host's actual user directory. Every command is a single Python line (`python3` on macOS/Linux, `python` on Windows); no shell-specific syntax is required. The fast test job runs on Linux, macOS and Windows; the media integration job runs on Linux. This project has not verified the complete pipeline with every host agent on every operating system. Skill discovery and terminal/network/image access are separate checks. For one-off use, ask the agent to read `SKILL.md` from the actual clone path instead of assuming a slash command exists.
+Paths and invocation conventions checked against the linked official documentation on 2026-09-05. Resolve `~` using the host's actual user directory. Every command is a single Python line (written as `python` below; use `python3` on macOS/Linux where `python` is absent); no shell-specific syntax is required. The fast test job runs on Linux, macOS and Windows; the media job runs the full suite on Linux; a portability job runs the controller end to end with a real ffmpeg and a fake `yt-dlp` on macOS and Windows. This project has not verified the complete pipeline with every host agent. Skill discovery and terminal/network/image access are separate checks. For one-off use, ask the agent to read `SKILL.md` from the actual clone path instead of assuming a slash command exists.
 
 ### 2. Check your tools
 
 Required: **Python 3.10+, ffmpeg/ffprobe, and a current yt-dlp** for URLs. Local recordings do not need yt-dlp. The core Python scripts use the standard library; optional enhancements are listed below.
 
 ```bash
-python3 scripts/doctor.py
+python scripts/doctor.py
 # Machine-readable readiness, including an installed PDF engine:
-python3 scripts/doctor.py --pdf --json
+python scripts/doctor.py --pdf --json
 ```
 
-The doctor checks installed executable versions and config-file metadata. It does not install packages, read keys, download a video, or upload audio. A successful check confirms prerequisites, not that a particular remote video is accessible.
+The doctor checks installed executable versions and config-file metadata. It does not install packages, read keys, download a video, or upload audio. A missing tool is printed with a platform-appropriate install hint (also under `hint` in `--json`). A successful check confirms prerequisites, not that a particular remote video is accessible.
 
-If dependencies are missing, the agent should identify the missing tools and propose an OS-appropriate setup command. Approve that concrete installation once; the agent can then run it, rerun the doctor, and continue with the same video URL. Do not bypass host permissions or install optional tools by default. You can also install the tools yourself. For example, on macOS with Homebrew already installed:
+If dependencies are missing, the agent identifies the missing tools and proposes the hinted setup command. Approve that concrete installation once; the agent can then run it, rerun the doctor, and continue with the same video URL. Do not bypass host permissions or install optional tools by default. You can also install the tools yourself, for example:
 
 ```bash
-brew install python ffmpeg yt-dlp
+brew install python ffmpeg yt-dlp                              # macOS (Homebrew)
+winget install Python.Python.3.12 Gyan.FFmpeg yt-dlp.yt-dlp    # Windows (or the choco/scoop equivalents)
 ```
 
 On Linux, use your distribution's packages for Python and ffmpeg and the [official yt-dlp installation instructions](https://github.com/yt-dlp/yt-dlp#installation). YouTube extraction may also need the supported JavaScript runtime/components described by yt-dlp. This skill disables remote component downloads and ambient yt-dlp configuration; install necessary components explicitly.
@@ -110,7 +111,7 @@ The built-in fallback uploads extracted audio to the provider you explicitly sel
 /summarize-video https://www.youtube.com/watch?v=VIDEO_ID --whisper openai
 ```
 
-Only choose one after accepting that provider's audio processing and any charges. Configure its matching `GROQ_API_KEY` or `OPENAI_API_KEY` in your environment or in `~/.config/summarize-video/.env` (owner-only permissions, `chmod 600`). Do not paste keys into the agent conversation. The skill does not read another skill's credentials or a project's `.env`.
+Only choose one after accepting that provider's audio processing and any charges. Configure its matching `GROQ_API_KEY` or `OPENAI_API_KEY` in your environment or in `~/.config/summarize-video/.env` (owner-only permissions: `chmod 600` on macOS/Linux; on Windows keep it under your user profile and restrict it to your account). Do not paste keys into the agent conversation. The skill does not read another skill's credentials or a project's `.env`.
 
 `--no-whisper` disables this fallback and takes precedence if both flags are supplied. Without captions or authorized transcription, the pipeline stops with exit 6; it does not invent a frames-only transcript. Existing installations that relied on automatic upload must now select a provider explicitly.
 
@@ -163,35 +164,33 @@ The repository adds no telemetry, background service, auto-updater, or permissio
 | YouTube HTTP 403 / PO Token / JavaScript challenge error | Check current yt-dlp requirements and source access restrictions. Updating alone may not fix every video. Cookies/logins and remote component downloads are not enabled automatically. |
 | No transcript / exit 6 | Choose a captioned source, or explicitly authorize a configured `--whisper` provider. Local files use the same opt-in fallback. `transcript.json` records `status: no_transcript` and the reason. |
 | Unresolved chapter/target (exit 9) or audit failure (exit 5) | Correct the cited segments or frame selection. Inspect the report; do not bypass the audit to claim completion. |
-| Invalid artifact (exit 10) | The message names the file and rows: unknown segment ids, a non-boolean `needs_frames`, an empty chapters file, zero selections for an illustrated request. For a genuinely non-visual video record `workflow.py decide no-visuals --reason …`. |
-| Stale binding (exit 11) | A later artifact was made from different inputs; `workflow.py run` re-executes the stale stage. Do not edit manifests. |
+| Invalid artifact (exit 10) | The message names the file and rows: unknown segment ids, a non-boolean `needs_frames`, an empty chapters file, zero selections for an illustrated request, a chapter that needs frames under a no-visuals decision, a no-visuals decision the visual probe contradicts, a summary in the wrong language, or `init --force` with a different video. For a genuinely non-visual video record `workflow.py decide no-visuals --reason …` (the user's confirmation is `--by user`). |
+| Stale binding (exit 11) | A later artifact was made from different inputs, or the request (tier, sections, budget, transcription options), the source or the engine version changed since; `workflow.py run` re-executes the stale stage. Do not edit manifests. |
 | `verify` incomplete (exit 12) | The report lists the failing stage; finish it before reporting completion. |
+| Source unavailable (exit 13) | The video is private, removed, region-locked or the download was blocked; `transcript.json` records `status: source_unavailable` and the reason. Try another public source or a local recording; cookies and logins are never used automatically. |
 | PDF unavailable / exit 4 | Open the HTML. Install a PDF engine yourself if you need PDF. |
 | Faces or OCR unavailable | Optional signal absent; other extraction and verification stages still run. |
 | Unsafe asset or active HTML rejected | Regenerate from the validated summary and original frames. Do not bundle an arbitrary web page. |
 
-## The workflow loop, standalone scripts and development
+## The workflow loop, and what the stage scripts are for
 
-The agent authors chapters, selections, and prose between deterministic script stages; the controller runs the rest and refuses to advance past a bad artifact. This is **not** an automatic one-command summarizer:
+The agent authors chapters, selections and prose between deterministic stages; the controller runs the rest and refuses to advance past a bad artifact. This is **not** an automatic one-command summarizer — `run` stops at every file only the agent can write:
 
 ```bash
-python3 scripts/workflow.py init "<url-or-path>" --work WORK --lang he
-python3 scripts/workflow.py run --work WORK      # transcript → NEXT: author WORK/chapters.json
-python3 scripts/workflow.py run --work WORK      # candidates → NEXT: read the contact sheets, then shortlist
-python3 scripts/workflow.py shortlist --work WORK --ids c_0003,c_0011
-python3 scripts/workflow.py run --work WORK      # NEXT: author WORK/selections.json
-python3 scripts/workflow.py run --work WORK      # grab → NEXT: author WORK/summary.json
-python3 scripts/workflow.py run --work WORK      # audit → render → bundle (→ PDF)
-python3 scripts/workflow.py verify --work WORK   # exit 0 only when every stage is proven
+python scripts/workflow.py init "<url-or-path>" --work WORK --lang he
+python scripts/workflow.py run --work WORK       # repeat: each run ends in NEXT (<stage>) naming the file to author,
+                                                 # in a non-zero exit naming the fix, or in the delivery report
+python scripts/workflow.py shortlist --work WORK --ids c_0003,c_0011   # the one receipt the agent records by hand
+python scripts/workflow.py verify --work WORK    # exit 0 only when every stage is proven (run prints it too)
 ```
 
-`status`, `next` and `validate <stage>` inspect a run without executing anything; `decide no-visuals --reason …` records the one legitimate zero-frame outcome. The stage scripts (`transcript.py`, `candidates.py`, `shortlist.py`, `grab.py`, `audit_summary.py`, `render.py`) remain usable on their own with the same flags and now the same gates; each provides `--help`. Caption/audio opt-in flags belong to `transcript.py`; quality/budget flags to `candidates.py`; PDF and output-mode flags to `render.py`. See [contracts](references/contracts.md), [benchmark instructions](bench/README.md), and [changelog](CHANGELOG.md).
+`status`, `next` and `validate <stage>` inspect a run without executing anything; `decide no-visuals --reason …` records the one legitimate zero-frame outcome and is checked against a visual probe of the video (`decide illustrated` reverts); `init --force` keeps the files, re-binds a changed request and re-runs whatever no longer matches (a different video is a fresh work directory). `transcript.py`, `candidates.py`, `shortlist.py`, `grab.py`, `audit_summary.py` and `render.py` are the stages the controller runs; each prints `--help` and enforces the same gates when invoked directly, which is how the benchmark and development use them — but a summary produced that way has no `run.json` bindings and cannot pass `verify`. See [contracts](references/contracts.md#reliability-contract-18), [benchmark instructions](bench/README.md), and [changelog](CHANGELOG.md).
 
-Tests synthesize media fixtures locally (the media classes need ffmpeg; the contact-sheet tests need Pillow) and run in GitHub CI as a fast cross-platform job (Linux, macOS, Windows; Python 3.10 and 3.12; no ffmpeg) plus a Linux media job (Python 3.11 and 3.12):
+Tests synthesize media fixtures locally (the media classes need ffmpeg; the contact-sheet tests need Pillow) and run in GitHub CI as a fast cross-platform job (Linux, macOS, Windows; Python 3.10 and 3.12; no ffmpeg), a Linux media job (Python 3.10–3.12, the full suite) and a portability job (macOS and Windows with ffmpeg: the stage boundaries and the controller loop through a native fake `yt-dlp`, without `PYTHONUTF8`):
 
 ```bash
-python3 -m compileall -q scripts tests bench
-python3 -m unittest discover -s tests -v
+python -m compileall -q scripts tests bench
+python -m unittest discover -s tests -v
 ```
 
 Contributions are welcome: include a reproducible case and a focused test where appropriate. For visual or language changes, include a before/after output example. Use the private reporting route for vulnerabilities; never attach API keys or private recordings to a public issue.

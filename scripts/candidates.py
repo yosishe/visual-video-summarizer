@@ -32,13 +32,20 @@ from gates import (  # noqa: E402
     EXIT_UNRESOLVED,
     GateError,
     StaleError,
+    describe_identity,
+    engine_drift,
+    identity_matches,
     load_json,
+    probe_refusal,
+    probe_spans_text,
+    probe_summary,
+    probe_verdict,
     sha256_file,
     source_identity,
     validate_chapters,
     validate_transcript,
 )
-from hostenv import install_hint, python_command, utf8_stdio  # noqa: E402
+from hostenv import install_hint, python_command, require_tools, run_text, utf8_stdio  # noqa: E402
 
 from frame_utils import (  # noqa: E402
     chapter_for_time,
@@ -81,7 +88,7 @@ PROFILES: dict[str, dict] = {
         "coverage_min": 1, "cue_offsets": (0.5, 1.5),
         "refine": "none", "faces": "off", "ocr": "off", "resolution": 512,
         "pip_mask": "on", "dedup_scope": "family",
-        "engine": "states", "scan_fps": 2.0,
+        "engine": "states", "scan_fps": 2.0, "probe_fps": 1.0,
         "sheets": "on", "sheet_tiles": 16, "shortlist_px": 640,
     },
     "high": {
@@ -93,7 +100,7 @@ PROFILES: dict[str, dict] = {
         "coverage_min": 2, "cue_offsets": (0.2, 0.5, 1.0, 1.5, 2.0),
         "refine": "sharpness", "faces": "auto", "ocr": "on", "resolution": 512,
         "pip_mask": "on", "dedup_scope": "family",
-        "engine": "states", "scan_fps": 2.0,
+        "engine": "states", "scan_fps": 2.0, "probe_fps": 1.0,
         "sheets": "on", "sheet_tiles": 16, "shortlist_px": 768,
     },
 }
@@ -306,6 +313,15 @@ def resolve_parts(
     if cached:
         PARTS_CACHE["key"] = expected_key or _recorded_cache_key(parts_file)
         return cached
+    if source and sections and is_url(source):
+        # A full download already on disk (the visual probe fetches one, so does
+        # a short video) is a strict superset of any section request: reuse it
+        # under its own key instead of downloading the sections again.
+        full_key = _cache_key(_source_identity(source, [], False))
+        cached = _load_cached_parts(parts_file, full_key)
+        if cached:
+            PARTS_CACHE["key"] = full_key
+            return cached
     if source is None:
         raise SystemExit("No valid cached video parts found; rerun candidates.py with the source")
     PARTS_CACHE["key"] = expected_key
@@ -325,8 +341,7 @@ def resolve_parts(
         }, indent=2))
         return parts
 
-    if shutil.which("yt-dlp") is None:
-        raise SystemExit(f"yt-dlp is not installed. {install_hint('yt-dlp')}")
+    require_tools("yt-dlp")
     fmt = "bv*[height<=720]+ba/b[height<=720]/bv+ba/b"
     parts: list[dict] = []
     prefix = expected_key[:10] if expected_key else "video"
@@ -476,7 +491,7 @@ def scene_detect_light(
             "-ss", f"{media_start:.3f}", "-t", f"{end - start:.3f}", "-i", part["path"],
             "-vf", vf, "-an", "-f", "null", "-",
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = run_text(cmd)
         if result.returncode != 0:
             raise SystemExit(f"ffmpeg scene detection failed: {result.stderr.strip()}")
         for match in SHOWINFO_TS_RE.finditer(result.stderr):
@@ -503,7 +518,7 @@ def scene_score_series(
         "-t", f"{end - start:.3f}", "-i", part["path"],
         "-vf", vf, "-an", "-f", "null", "-",
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     if result.returncode != 0:
         raise RuntimeError(f"ffmpeg scene scoring failed: {result.stderr.strip()}")
     return [
@@ -940,7 +955,7 @@ def point_grab(
         "-ss", f"{media_t:.3f}", "-i", part["path"], "-frames:v", "1",
         "-vf", vf, "-q:v", "4", str(path),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     match = SHOWINFO_TS_RE.search(result.stderr)
     if result.returncode != 0 or not path.exists() or not match:
         return None
@@ -1357,7 +1372,7 @@ def _strip_for_group(paths: list[str], output: Path) -> bool:
         )
     filters.append("".join(labels) + f"hstack=inputs={len(paths)}[out]")
     cmd += ["-filter_complex", ";".join(filters), "-map", "[out]", "-frames:v", "1", "-q:v", "4", str(output)]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     return result.returncode == 0 and output.exists()
 
 
@@ -1408,8 +1423,38 @@ def _now() -> str:
     return _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat()
 
 
+def _run_visual_probe(source: str | None, work: Path, sections: list[tuple[float, float]], chapters: list[dict],
+                      segments: list[dict], profile: dict) -> dict:
+    """Evidence for a no-visuals decision: the same ≤720p download the illustrated
+    path uses (cached under the same key), one sparse whole-video state scan
+    (states.scan_video with no chapter filter), and gates.probe_verdict. The
+    full scan is kept in <work>/probe.json for audit; the manifest gets the summary."""
+    if source is None and not (work / "download" / "parts.json").exists():
+        return gates_probe_record("unavailable", "no source and no cached download")
+    try:
+        parts = resolve_parts(source, work, sections, exact_sections=bool(sections))
+    except SystemExit as exc:
+        return gates_probe_record("unavailable", f"download failed: {exc}")
+    started = time.monotonic()
+    scan = scan_video(parts, [], segments, fps=float(profile.get("probe_fps", 1.0)), heatmap=None,
+                      pip_mask=profile.get("pip_mask", "on") == "on")
+    elapsed = time.monotonic() - started
+    scanned = sum(float(part.get("duration") or 0.0) for part in parts)
+    atomic_write(work / "probe.json", json.dumps(scan, indent=2))
+    record = probe_verdict(scan.get("states") or [], scanned, fps=scan.get("fps"), chapters=chapters)
+    record.update({"frames_scanned": scan.get("frames_scanned", 0), "scan_seconds": round(elapsed, 1),
+                   "parts": [{"path": str(part.get("path")), "duration": part.get("duration")} for part in parts],
+                   "cache_key": PARTS_CACHE["key"], "path": str(work / "probe.json")})
+    return record
+
+
+def gates_probe_record(verdict: str, reason: str) -> dict:
+    return probe_verdict([], 0.0, fps=1.0) | {"verdict": verdict, "reason": reason}
+
+
 def _write_empty_manifest(work: Path, tier: str, profile: dict, chapters: list[dict], *,
-                          inputs: dict, profile_override: dict, token_budget: int) -> dict:
+                          inputs: dict, profile_override: dict, token_budget: int,
+                          visual_probe: dict | None = None) -> dict:
     """The explicit no-visual-chapters outcome, in the full manifest shape so no
     consumer can tell it apart from a normal run by a KeyError."""
     cost = cost_estimate(
@@ -1440,6 +1485,7 @@ def _write_empty_manifest(work: Path, tier: str, profile: dict, chapters: list[d
                    "individual_tokens": 0},
         "token_budget": plan_token_budget(token_budget, sheet_tokens=None, individual_tokens=0,
                                           shortlist_px=int(profile.get("shortlist_px", 640))),
+        "visual_probe": visual_probe,
     }
     atomic_write(work / "candidates.json", json.dumps(payload, indent=2))
     return payload
@@ -1498,11 +1544,14 @@ def main() -> int:
     parser.add_argument("--allow-unresolved", action="store_true",
                         help="Exit 0 instead of 9 when a needs_frames chapter or a target has no candidate "
                              "(benchmark/ablation use; the report still lists the unresolved rows).")
+    parser.add_argument("--decided-by", choices=("init", "model", "user"), default="model",
+                        help="Who recorded a no-visuals decision: init = the user asked for a text-only summary "
+                             "(no probe); model = the agent's judgement (probed, refused when contradicted); "
+                             "user = the user's confirmation (probed, recorded, never refused).")
     args = parser.parse_args()
     utf8_stdio()
 
-    if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
-        raise SystemExit(f"ffmpeg/ffprobe not installed. {TOOL_HINT}")
+    require_tools("ffmpeg", "ffprobe")
     if args.resolution > 512:
         raise SystemExit("Candidate resolution is capped at 512px; use grab.py for deliverable quality")
     tier, profile = resolve_profile(args.tier, args.mode)
@@ -1518,6 +1567,19 @@ def main() -> int:
         raise SystemExit(f"Work dir not found: {work} — run transcript.py first")
     transcript = load_transcript(args.transcript, work)
     transcript_file = transcript_path(args.transcript, work)
+    # The transcript must be THIS source's: a work directory re-pointed at another
+    # video keeps its old transcript.json, and the pool would silently be cut from it.
+    try:
+        identity = source_identity(args.source) if args.source else None
+    except OSError:
+        identity = args.source
+    recorded_identity = transcript.get("source_identity")
+    if identity is not None and recorded_identity is not None and not identity_matches(recorded_identity, identity):
+        raise StaleError(f"transcript.json was fetched for a different source ({describe_identity(recorded_identity)}, "
+                         f"not {describe_identity(identity)}) — run transcript.py for this source first")
+    drift, drift_message = engine_drift(transcript.get("engine_version"))
+    if drift in ("minor", "major", "unknown"):
+        print(f"[vsum] warning: transcript.json {drift_message}", file=sys.stderr)
     duration = float(transcript.get("video", {}).get("duration") or 0)
     if duration > MAX_DURATION_SECONDS and not args.allow_long:
         print(f"[vsum] video is {format_time(duration)} long — over the {MAX_DURATION_SECONDS // 60}-minute guard. "
@@ -1534,10 +1596,6 @@ def main() -> int:
     # What this pool was cut from. Later stages compare these hashes and refuse
     # a manifest whose transcript or chapters have since changed.
     chapters_file = Path(args.chapters).expanduser().resolve() if args.chapters else None
-    try:
-        identity = source_identity(args.source) if args.source else None
-    except OSError:
-        identity = args.source
     inputs = {
         "source": args.source,
         "source_identity": identity,
@@ -1547,21 +1605,47 @@ def main() -> int:
         "chapters_path": str(chapters_file) if chapters_file else None,
         "chapters_sha256": sha256_file(chapters_file) if chapters_file else None,
         "visual_content": args.visual_content,
+        "visual_decided_by": args.decided_by,
+        # The request options this pool answers (gates.validate_candidates compares them).
+        "options": {"tier": tier, "sections": args.sections, "max_image_tokens": args.max_image_tokens,
+                    "allow_long": bool(args.allow_long)},
         "generated_at": _now(),
         "cache_key": None,
     }
 
     if chapters and not any(chapter["needs_frames"] for chapter in chapters) and not legacy_cues and not legacy_pins:
         # validate_chapters only lets this through under an explicit no-visuals
-        # decision; record it as an outcome, not as a silent empty success.
+        # decision; record it as an outcome, not as a silent empty success — and
+        # test the decision against the video unless the user asked for text only.
+        probe: dict | None = None
+        if args.decided_by != "init":
+            print("[vsum] no visual chapters: probing the video for still on-screen content "
+                  "(cached ≤720p download, one sparse scan)", file=sys.stderr)
+            probe = _run_visual_probe(args.source, work, parse_ranges(args.sections), chapters, segments, profile)
+            inputs["cache_key"] = PARTS_CACHE["key"]
         _write_empty_manifest(work, tier, profile, chapters, inputs=inputs,
-                              profile_override=profile_override, token_budget=token_budget)
-        print("[vsum] no visual chapters (explicit no-visuals decision): no video downloaded", file=sys.stderr)
+                              profile_override=profile_override, token_budget=token_budget, visual_probe=probe)
         print()
         print("# candidate frames report")
         print()
         print(f"- **Status:** `no_visual_chapters` — every chapter has `needs_frames: false` under an explicit "
-              f"no-visuals decision; nothing was downloaded or extracted. Manifest: `{work / 'candidates.json'}`")
+              f"no-visuals decision; nothing was extracted. Manifest: `{work / 'candidates.json'}`")
+        if probe is None:
+            print("- **Visual probe:** not run (the user requested a text-only summary at init).")
+        else:
+            modes = probe.get("modes") or {}
+            print(f"- **Visual probe:** {probe_summary(probe)}"
+                  + (f" — {probe_spans_text(probe)}" if probe.get("non_talk_spans") else "")
+                  + f"; modes A/B/C/D seconds {modes.get('A', 0):.0f}/{modes.get('B', 0):.0f}/"
+                    f"{modes.get('C', 0):.0f}/{modes.get('D', 0):.0f}; full scan `{probe.get('path')}`")
+            if probe.get("verdict") == "unavailable":
+                print(f"[vsum] warning: visual probe unavailable ({probe.get('reason')}); "
+                      "the no-visuals decision stands unverified", file=sys.stderr)
+            elif probe.get("verdict") == "contradicts" and args.decided_by == "model":
+                raise GateError(probe_refusal(probe))
+            elif probe.get("verdict") == "contradicts":
+                print("[vsum] warning: the visual probe contradicts the decision; recorded as the user's override",
+                      file=sys.stderr)
         print("- Next: write summary.json and render with `--output-mode text-only`; there are no frames to triage.")
         return 0
     if args.source is None and not (work / "download" / "parts.json").exists():

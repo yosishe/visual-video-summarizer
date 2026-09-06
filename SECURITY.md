@@ -1,6 +1,6 @@
 # Security and privacy
 
-This skill contains instructions and local scripts. It **does not sandbox the agent**, certify a model's behavior, or make a hosted model offline. Review the source and use your host's normal approval and sandbox controls. No independent security certification or penetration test is claimed.
+This skill contains instructions and local scripts. It **does not sandbox the agent**, certify a model's behavior, or make a hosted model offline. The scripts are reviewed black boxes: read their `--help` and this document before running, read the source when you audit, and keep your host's normal approval and sandbox controls on. No independent security certification or penetration test is claimed.
 
 ## Data flow
 
@@ -9,7 +9,7 @@ This skill contains instructions and local scripts. It **does not sandbox the ag
 | Operation | What is read or sent | Destination / retention |
 |---|---|---|
 | Summarization and image review | Transcript, relevant metadata, contact sheets and selected images | The agent/model provider under your account's settings and retention policy. The repository does not control this. |
-| URL acquisition | User-selected URL; metadata, captions, and necessary video/audio downloads | yt-dlp contacts the source platform and its CDNs or other extraction infrastructure. It is not restricted to one hostname. |
+| URL acquisition | User-selected URL; metadata, captions, and necessary video/audio downloads | yt-dlp contacts the source platform and its CDNs or other extraction infrastructure. It is not restricted to one hostname. A no-visuals decision made by the agent triggers the same ≤720p video download once, to verify the decision (a user's `--output-mode text-only` request does not). A source that cannot be fetched is recorded as `source_unavailable` (exit 13) with a sanitised reason and is never uploaded. |
 | Local extraction | Recording, decoded frames, hashes, optional local OCR | Local work directory. Some candidate metadata includes an OCR excerpt; do not assume it contains only image statistics. |
 | Cloud transcription | Extracted audio and optional language hint, authenticated with the selected provider's key | Only after explicit `--whisper groq` or `--whisper openai`; fixed HTTPS endpoint at `api.groq.com` or `api.openai.com`. Provider terms and charges apply. |
 | Readiness check | Installed executable versions and the own-config file's presence/permissions | Local console/JSON; no key-file contents, network request, download or install by the checker. |
@@ -21,7 +21,7 @@ Source URLs and metadata may contain personal information or signed query parame
 ## Defaults and permissions
 
 - **Audio upload is off by default.** A stored key is not consent. Select the provider explicitly; `--no-whisper` overrides provider selection. Missing captions without authorized transcription stops with exit 6.
-- Keys come only from the matching environment variable or `~/.config/summarize-video/.env`. No current-project `.env` or legacy `~/.config/watch/.env` fallback. Configure secrets yourself, use owner-only file permissions (`chmod 600`), and never ask the agent to read or print them. This is a plaintext config, not a secret vault.
+- Keys come only from the matching environment variable or `~/.config/summarize-video/.env`. No current-project `.env` or legacy `~/.config/watch/.env` fallback. Configure secrets yourself, use owner-only file permissions (`chmod 600` on macOS/Linux; on Windows keep the file under your user profile and restrict it to your account), and never ask the agent to read or print them. This is a plaintext config, not a secret vault.
 - yt-dlp runs with `--ignore-config --no-plugin-dirs --no-exec --no-remote-components --no-playlist`. Ambient cookies, config-defined commands, and plugins are not inherited. The installed executable and its dependencies must still be trusted. Unsupported safety flags fail the dependency check; do not remove them to make an old install work.
 - No new dependency installation, automatic update, hooks, background service, or telemetry is implemented by these scripts. Optional PDF/vision tools are used only when installed. Third-party tools and the host may have their own network behavior; the repository cannot override that.
 - The agent instructions allow a separate setup phase: identify missing prerequisites, show the intended installation/update and scope, obtain explicit user approval, then run only that approved setup and repeat the readiness check. Source downloads and package installation contact GitHub/package distribution infrastructure. Permanent skill registration also requires approval; a task-local source copy does not register a skill. Neither a repository link nor a missing dependency grants permission to change the host's settings, obtain credentials, enable services or weaken its sandbox.
@@ -42,9 +42,9 @@ Source URLs and metadata may contain personal information or signed query parame
 | Generated HTML has no active page content | Text escaping in [`render.py`](scripts/render.py), static-subset validation in [`safety.py`](scripts/safety.py), restrictive generated CSP (scripts, objects, frames and connections disabled), no-referrer policy; script/event/remote-resource tests |
 | PDF export does not acquire software | Installed Chrome/WeasyPrint only; generated HTML validated before export; no `uv --with` fallback |
 | Summary evidence is auditable | Segment references, grounding checks, decoded frame provenance and hashes; see [`contracts.md`](references/contracts.md) and the existing audit/integration tests |
-| Delivery is bound to its inputs | Every stage records the hashes of what it consumed (`gates.py`); `grab.py`/`render.py` refuse a swapped download, a changed transcript, chapters or pool, or assets from another selection (exit 11); `workflow.py verify` proves which stages completed; `test_workflow.py`, `test_reliability_integration.py` (a shim `yt-dlp` asserts the safety flags on every downloader call) |
+| Delivery is bound to its inputs | Every artifact records what it was made for — source identity, request options, engine version, upstream hashes (`gates.py`); `grab.py`/`render.py` refuse a swapped download, a changed transcript, chapters or pool, a transcript from another source, or assets from another selection (exit 11); the bundle's hash is recorded in `manifest.json` and re-checked; `workflow.py verify` proves which stages completed and which video the deliverable is about; `test_workflow.py`, `test_bindings.py`, `test_reliability_integration.py`, `test_workflow_e2e.py` (a native shim `yt-dlp` on every OS asserts the safety flags on every downloader call and that the upload path is never reached) |
 
-Run `python3 -m unittest discover -s tests -p test_security.py -v` for the security regressions; use the full suite for compatibility. The [CI results](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml) show exactly what ran. Passing tests demonstrate the covered cases, not absence of all vulnerabilities.
+Run `python -m unittest discover -s tests -p test_security.py -v` for the security regressions (`python3` on macOS/Linux where `python` is absent); use the full suite for compatibility. The [CI results](https://github.com/yosishe/visual-video-summarizer/actions/workflows/ci.yml) show exactly what ran. Passing tests demonstrate the covered cases, not absence of all vulnerabilities.
 
 ## Remaining trust boundaries
 

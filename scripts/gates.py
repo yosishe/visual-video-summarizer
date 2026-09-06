@@ -14,13 +14,20 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit, urlunsplit
 
-ENGINE_VERSION = "1.7.0"
+ENGINE_VERSION = "1.8.0"
 
-EXIT_UNRESOLVED = 9   # required visual coverage unresolved
-EXIT_INVALID = 10     # a model-authored or upstream artifact is structurally invalid
-EXIT_STALE = 11       # a downstream artifact was produced from different inputs
-EXIT_INCOMPLETE = 12  # delivery verification failed
+EXIT_UNRESOLVED = 9           # required visual coverage unresolved
+EXIT_INVALID = 10             # a model-authored or upstream artifact is structurally invalid
+EXIT_STALE = 11               # a downstream artifact was produced from different inputs
+EXIT_INCOMPLETE = 12          # delivery verification failed
+EXIT_SOURCE_UNAVAILABLE = 13  # the source could not be fetched (private, removed, blocked, unreadable)
+
+# The request options each artifact records so a changed request is a stale artifact,
+# not a silently adopted one.
+TRANSCRIPT_OPTION_KEYS = ("whisper", "no_whisper", "langs", "wanted")
+CANDIDATE_OPTION_KEYS = ("tier", "sections", "max_image_tokens", "allow_long")
 
 TARGET_KINDS = {"state", "action_result", "diagram", "slide"}
 ROLES = {"evidence", "illustration"}
@@ -37,6 +44,21 @@ HEALTH_MIN_COVERAGE = 0.6
 HEALTH_MAX_GAP_S = 120.0
 HEALTH_MAX_REPETITION = 0.3
 HEALTH_WPM_RANGE = (40.0, 260.0)
+HEALTH_MAX_EMPTY_TEXT = 0.10        # share of segments with blank text
+HEALTH_MIN_SEGMENTS_PER_MIN = 2.0   # coarser than that, citations cannot point at a sentence
+# flags that mean the transcript under-represents or misrepresents the speech → status "thin"
+THIN_FLAGS = {"low_coverage", "large_gap", "sparse_segments", "empty_text", "translated", "chunks_failed"}
+LEGACY_LANG_CODES = {"iw": "he", "ji": "yi", "in": "id"}
+
+# visual probe: evidence for (or against) a no-visuals decision. A picture that
+# holds still for PROBE_MIN_SETTLED_SAMPLES consecutive samples is "content"
+# (a slide, a UI state, a drawn board, a photo); a talking head never holds
+# still. The dominant still picture is the backdrop (cover image, main shot)
+# and does not count. Enough still seconds beyond it contradict the decision.
+PROBE_MIN_STILL_S = 90.0
+PROBE_MIN_STILL_RATIO = 0.20
+PROBE_MIN_SETTLED_SAMPLES = 2
+PROBE_MAX_SPANS = 6
 
 
 class GateError(SystemExit):
@@ -128,13 +150,115 @@ def is_url(source: str) -> bool:
     return bool(URL_RE.match(str(source)))
 
 
+YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com",
+                 "youtube-nocookie.com", "www.youtube-nocookie.com"}
+YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
+
+
+def canonical_source(source: object) -> object:
+    """One spelling per video: `youtu.be/<id>`, `/shorts/<id>`, `/live/<id>`, `/embed/<id>`,
+    the mobile/music/nocookie hosts and tracking parameters (`t=`, `si=`, `list=`,
+    `feature=`) all collapse to `https://www.youtube.com/watch?v=<id>`; other URLs
+    only lose their fragment; anything that is not a URL is returned unchanged."""
+    if not isinstance(source, str) or not is_url(source):
+        return source
+    parts = urlsplit(source.strip())
+    host = (parts.hostname or "").lower()
+    video_id = None
+    if host == "youtu.be":
+        video_id = parts.path.strip("/").split("/")[0]
+    elif host in YOUTUBE_HOSTS:
+        segments = [segment for segment in parts.path.split("/") if segment]
+        if segments and segments[0] in ("shorts", "live", "embed", "v") and len(segments) > 1:
+            video_id = segments[1]
+        elif segments and segments[0] == "watch":
+            video_id = (parse_qs(parts.query).get("v") or [None])[0]
+    if video_id and YOUTUBE_ID_RE.match(video_id):
+        return f"https://www.youtube.com/watch?v={video_id}"
+    return urlunsplit((parts.scheme.lower(), parts.netloc, parts.path, parts.query, ""))
+
+
 def source_identity(source: str) -> dict | str:
-    """What makes a source *this* source: the URL, or the local path with size and mtime."""
+    """What makes a source *this* source: the canonical URL, or the local path with size and mtime."""
     if is_url(source):
-        return str(source)
+        return canonical_source(str(source))
     local = Path(source).expanduser().resolve()
     stat = local.stat()
     return {"path": str(local), "size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+
+
+def source_key(identity: object) -> str | None:
+    """The part of an identity that names the source (URL or path), without size/mtime."""
+    if isinstance(identity, dict):
+        return str(identity.get("path")) if identity.get("path") else None
+    if isinstance(identity, str):
+        return str(canonical_source(identity))
+    return None
+
+
+def identity_matches(recorded: object, expected: object) -> bool:
+    """True when both identities name the same source (or either is unknown)."""
+    if recorded is None or expected is None:
+        return True
+    if isinstance(recorded, dict) or isinstance(expected, dict):
+        if not (isinstance(recorded, dict) and isinstance(expected, dict)):
+            return False
+        return all(recorded.get(key) == expected.get(key) for key in ("path", "size", "mtime_ns"))
+    return canonical_source(str(recorded)) == canonical_source(str(expected))
+
+
+def describe_identity(identity: object) -> str:
+    if isinstance(identity, dict):
+        return f"{identity.get('path')} ({identity.get('size')} B, mtime {identity.get('mtime_ns')})"
+    return str(identity)
+
+
+def _version_tuple(version: object) -> tuple[int, int, int] | None:
+    match = re.match(r"^\s*(\d+)\.(\d+)(?:\.(\d+))?", str(version or ""))
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2)), int(match.group(3) or 0)
+
+
+def engine_drift(recorded: object, current: str | None = None) -> tuple[str, str | None]:
+    """How far an artifact's engine version is from the running one:
+    `same` | `patch` | `minor` | `major` | `unknown`, with a message for the report.
+    The running version is read at call time so tests can patch ENGINE_VERSION."""
+    current = current or ENGINE_VERSION
+    old, new = _version_tuple(recorded), _version_tuple(current)
+    if old is None or new is None:
+        return "unknown", f"no engine version recorded (this is {current})"
+    if old == new:
+        return "same", None
+    if old[0] != new[0]:
+        return "major", f"produced by engine {recorded}; this is {current} (major difference)"
+    if old[1] != new[1]:
+        return "minor", f"produced by engine {recorded}; this is {current} — re-run the stage"
+    return "patch", f"produced by engine {recorded}; this is {current} (patch difference, kept)"
+
+
+def _norm_option(value: object) -> object:
+    """None, False and "" all mean 'not requested'."""
+    return None if value in (None, False, "") else value
+
+
+def _mmss(seconds: object) -> str:
+    value = _num(seconds)
+    if value is None:
+        return "?"
+    total = int(round(value))
+    hours, rem = divmod(total, 3600)
+    minutes, sec = divmod(rem, 60)
+    return f"{hours}:{minutes:02d}:{sec:02d}" if hours else f"{minutes:02d}:{sec:02d}"
+
+
+def option_diffs(recorded: dict, expected: dict) -> list[str]:
+    """Human-readable `key: recorded -> expected` for every option that differs."""
+    diffs = []
+    for key, wanted in expected.items():
+        if _norm_option(recorded.get(key)) != _norm_option(wanted):
+            diffs.append(f"{key}: {recorded.get(key)!r} -> {wanted!r}")
+    return diffs
 
 
 def load_json(path: Path | str, label: str | None = None) -> object:
@@ -163,7 +287,67 @@ def _num(value: object) -> float | None:
     return number
 
 
-def transcript_health(segments: list[dict], duration: float | None) -> dict:
+def _lang_base(code: object) -> str | None:
+    text = str(code or "").strip().lower()
+    if not text:
+        return None
+    base = text.split("-")[0].split("_")[0]
+    return LEGACY_LANG_CODES.get(base, base)
+
+
+def health_status(flags: list[str]) -> str:
+    return "thin" if any(flag in THIN_FLAGS for flag in flags) else "ok"
+
+
+def health_provenance(source: object, source_detail: object, language: object, video_language: object) -> dict:
+    """Where the words came from, in one record: caption track or transcription
+    backend, manual/automatic, original/translated, and whether the track's
+    language is the video's."""
+    detail = source_detail if isinstance(source_detail, dict) else {}
+    kind = detail.get("kind")
+    if not kind:
+        text = str(source or "")
+        kind = "captions" if text == "captions" else ("whisper" if text.startswith("whisper") else "none")
+    track_language, video_base = _lang_base(language), _lang_base(video_language)
+    return {
+        "source": source, "kind": kind, "track": detail.get("track"), "backend": detail.get("backend"),
+        "manual": detail.get("manual"), "original": detail.get("original"),
+        "translated": bool(detail.get("translated", False)),
+        "language": track_language, "video_language": video_base,
+        "language_match": (track_language == video_base) if track_language and video_base else None,
+    }
+
+
+def health_summary(health: dict) -> str:
+    """The one line every report prints for the transcript."""
+    if not isinstance(health, dict):
+        return "health unknown"
+    provenance = health.get("provenance") if isinstance(health.get("provenance"), dict) else {}
+    kind = provenance.get("kind") or "transcript"
+    name = provenance.get("track") or provenance.get("backend") or provenance.get("language") or ""
+    qualifiers = []
+    if provenance.get("manual") is True:
+        qualifiers.append("manual")
+    elif provenance.get("manual") is False:
+        qualifiers.append("auto")
+    if provenance.get("original"):
+        qualifiers.append("original")
+    if provenance.get("translated"):
+        qualifiers.append("machine-translated")
+    if provenance.get("language_match") is False:
+        qualifiers.append(f"video language {provenance.get('video_language')}")
+    head = f"{kind} {name}".strip() + (f" ({', '.join(qualifiers)})" if qualifiers else "")
+    coverage = health.get("coverage_ratio")
+    coverage_text = f"coverage {coverage:.0%}" if isinstance(coverage, (int, float)) else "coverage n/a"
+    status = health.get("status") or health_status(list(health.get("flags") or []))
+    warnings = list(health.get("warnings") or [])
+    tail = f"health {status}" + (f": {'; '.join(warnings[:3])}" if warnings else "")
+    return f"{head} · {health.get('segments', 0)} segments · {coverage_text} · {tail}"
+
+
+def transcript_health(segments: list[dict], duration: float | None, *, source: object = None,
+                      source_detail: object = None, language: object = None,
+                      video_language: object = None) -> dict:
     """Deterministic quality signals. Warnings only: a thin transcript is a fact to report."""
     rows = []
     for segment in segments:
@@ -201,35 +385,86 @@ def transcript_health(segments: list[dict], duration: float | None) -> dict:
     minutes = (covered or duration) / 60.0
     wpm = words / minutes if minutes > 0 else None
     coverage = round(covered / duration, 3) if duration > 0 else None
+    sorted_rows = sorted(rows)
+    span = (sorted_rows[-1][1] - sorted_rows[0][0]) if sorted_rows else 0.0
+    blank = sum(1 for _, _, text in rows if not text.strip())
+    empty_ratio = round(blank / len(rows), 3) if rows else 0.0
+    reference_span = duration if duration > 0 else span
+    per_minute = round(len(rows) / (reference_span / 60.0), 2) if reference_span >= 60.0 else None
+    provenance = health_provenance(source, source_detail, language, video_language)
     warnings: list[str] = []
+    flags: list[str] = []
+
+    def flag(code: str, message: str | None) -> None:
+        flags.append(code)
+        if message:
+            warnings.append(message)
+
     if coverage is not None and coverage < HEALTH_MIN_COVERAGE:
-        warnings.append(f"captions cover {coverage:.0%} of the {duration:.0f} s video")
+        flag("low_coverage", f"captions cover {coverage:.0%} of the {duration:.0f} s video")
     if largest_gap > HEALTH_MAX_GAP_S:
-        warnings.append(f"largest uncaptioned gap is {largest_gap:.0f} s")
+        flag("large_gap", f"largest uncaptioned gap is {largest_gap:.0f} s")
     if repetition > HEALTH_MAX_REPETITION:
-        warnings.append(f"{repetition:.0%} of segments repeat a recent segment")
+        flag("repetition", f"{repetition:.0%} of segments repeat a recent segment")
     if wpm is not None and rows and not (HEALTH_WPM_RANGE[0] <= wpm <= HEALTH_WPM_RANGE[1]):
-        warnings.append(f"{wpm:.0f} words per minute is outside the plausible range")
+        flag("wpm", f"{wpm:.0f} words per minute is outside the plausible range")
+    if rows and empty_ratio > HEALTH_MAX_EMPTY_TEXT:
+        flag("empty_text", f"{empty_ratio:.0%} of segments have no text")
+    if per_minute is not None and per_minute < HEALTH_MIN_SEGMENTS_PER_MIN:
+        flag("sparse_segments", f"{per_minute:.1f} segments per minute: citations will be coarser than 30 s")
+    if rows and duration <= 0:
+        flag("no_duration", "video duration unknown; coverage cannot be computed")
+    if provenance["translated"]:
+        flag("translated", "the caption track is a machine translation (forced with --langs); "
+                           "the summary is grounded in translated text")
+    if provenance["language_match"] is False:
+        flag("language_mismatch", (f"the {provenance['language']} track is not in the video's language "
+                                   f"({provenance['video_language']})") if provenance.get("manual") is not True else None)
     if non_positive:
-        warnings.append(f"{non_positive} segment(s) have end <= start")
+        flag("non_positive", f"{non_positive} segment(s) have end <= start")
     if beyond:
-        warnings.append(f"{beyond} segment(s) start after the video ends")
+        flag("beyond_duration", f"{beyond} segment(s) start after the video ends")
     if not monotonic:
-        warnings.append("segments are not in chronological order")
+        flag("not_monotonic", "segments are not in chronological order")
     return {
         "segments": len(rows), "words": words, "covered_seconds": round(covered, 3),
         "coverage_ratio": coverage, "largest_gap_s": round(largest_gap, 3), "gaps_over_30s": gaps_over_30,
         "monotonic": monotonic, "non_positive": non_positive, "beyond_duration": beyond,
         "repetition_ratio": round(repetition, 3), "wpm": round(wpm, 1) if wpm is not None else None,
+        "empty_text_ratio": empty_ratio, "segments_per_minute": per_minute, "span_seconds": round(span, 3),
+        "provenance": provenance, "flags": flags, "status": health_status(flags),
         "warnings": warnings,
     }
 
 
-def validate_transcript(payload: object) -> GateResult:
+def validate_transcript(payload: object, *, expected_identity: object = None,
+                        expected_options: dict | None = None) -> GateResult:
+    """Structure, status and — when the caller says what it expects — provenance:
+    a transcript fetched for another source or under other transcription options
+    is `stale` (info["stale"]), so the controller re-runs the stage instead of
+    adopting it."""
     result = GateResult()
     if not isinstance(payload, dict):
         result.errors.append("transcript.json must be a JSON object")
         return result
+    stale: list[str] = []
+    if expected_identity is not None:
+        recorded_identity = payload.get("source_identity")
+        if recorded_identity is None:
+            result.warnings.append("transcript.json predates source binding (no source_identity)")
+        elif not identity_matches(recorded_identity, expected_identity):
+            stale.append(f"transcript.json was fetched for a different source "
+                         f"({describe_identity(recorded_identity)}, not {describe_identity(expected_identity)})")
+    if expected_options is not None:
+        recorded_options = payload.get("inputs")
+        if not isinstance(recorded_options, dict):
+            result.warnings.append("transcript.json predates option binding (no inputs block)")
+        else:
+            diffs = option_diffs(recorded_options, expected_options)
+            if diffs:
+                stale.append("transcript.json was produced with different transcription options: " + ", ".join(diffs))
+    result.info["stale"] = stale
+    result.errors.extend(stale)
     status = payload.get("status")
     if status is not None and status != "ok":
         detail = ""
@@ -269,9 +504,22 @@ def validate_transcript(payload: object) -> GateResult:
         if not isinstance(segment.get("text"), str):
             result.errors.append(f"segment {seg_id or index} has no text")
     video = payload.get("video") if isinstance(payload.get("video"), dict) else {}
-    health = payload.get("health") if isinstance(payload.get("health"), dict) else None
-    if health is None:
-        health = transcript_health(segments, video.get("duration"))
+    # Always recompute, then let a stored (1.8) record win: a 1.7 file gains
+    # status/flags/provenance without losing its own notes (whisper chunks, re-sorts).
+    fresh = transcript_health(segments, video.get("duration"), source=payload.get("source"),
+                              source_detail=payload.get("source_detail"), language=payload.get("language"),
+                              video_language=video.get("language"))
+    stored = payload.get("health") if isinstance(payload.get("health"), dict) else None
+    if stored:
+        health = {**fresh, **stored}
+        stored_warnings = list(stored.get("warnings") or [])
+        health["warnings"] = stored_warnings + [w for w in fresh["warnings"] if w not in stored_warnings]
+        stored_flags = list(stored.get("flags") or [])
+        health["flags"] = stored_flags + [f for f in fresh["flags"] if f not in stored_flags]
+        health["status"] = health_status(health["flags"]) if "status" not in stored else stored["status"]
+        health.setdefault("provenance", fresh["provenance"])
+    else:
+        health = fresh
     result.info["health"] = health
     result.info["video_id"] = video.get("id")
     result.warnings.extend(health.get("warnings", []))
@@ -392,6 +640,13 @@ def validate_chapters(raw: object, transcript: dict | None, duration: float | No
     count = len(raw)
     if count < 3 or count > 20:
         result.warnings.append(f"{count} chapters (a typical talk has 5–12)")
+    if visual_decision == "none" and needs_any:
+        needing = [str(c.get("chapter_id")) for c in raw if isinstance(c, dict) and c.get("needs_frames") is True]
+        result.errors.append(
+            f"{', '.join(needing)} need frames (needs_frames: true), but a no-visuals decision is recorded — "
+            "set needs_frames false if the screen truly shows nothing there, or revert the decision with "
+            "`workflow.py decide illustrated --reason \"...\"`"
+        )
     if visual_decision == "illustrated" and not needs_any and not result.errors:
         result.errors.append(
             "no chapter has needs_frames: true, but the request is an illustrated summary — "
@@ -404,11 +659,110 @@ def validate_chapters(raw: object, transcript: dict | None, duration: float | No
     return result
 
 
+# ----------------------------------------------------------------------------- visual probe
+
+
+def _probe_record(verdict: str, reason: str, **extra) -> dict:
+    record = {"verdict": verdict, "reason": reason, "scanned_seconds": 0.0, "fps": None,
+              "modes": {"A": 0.0, "B": 0.0, "C": 0.0, "D": 0.0}, "backdrop": None, "distinct_still_pictures": 0,
+              "non_talk_seconds": 0.0, "non_talk_ratio": 0.0, "threshold_s": None, "non_talk_spans": [],
+              "method": "settled seconds (<=0.4 % of masked signature pixels changing between samples) of "
+                        "distinct still pictures outside the dominant still picture"}
+    record.update(extra)
+    return record
+
+
+def probe_verdict(states: list[dict], scanned_seconds: object, *, fps: object, chapters: list[dict] | None = None) -> dict:
+    """Pure verdict over a whole-video state scan (states.scan_video with no chapters).
+
+    `contradicts` when the still pictures beyond the backdrop add up to at least
+    min(PROBE_MIN_STILL_S, PROBE_MIN_STILL_RATIO × scanned) seconds; `supports`
+    otherwise; `unavailable` when nothing was scanned. The mode timeline is
+    reported for audit but does not decide (a seated interview reads as
+    "dynamic UI" to the mode classifier; stillness is what separates it)."""
+    scanned = _num(scanned_seconds) or 0.0
+    rate = _num(fps) or 1.0
+    rows = [s for s in states or [] if isinstance(s, dict)]
+    if scanned <= 0 or not rows:
+        return _probe_record("unavailable", "nothing was scanned", fps=rate)
+    modes = {"A": 0.0, "B": 0.0, "C": 0.0, "D": 0.0}
+    for state in rows:
+        start, end = _num(state.get("start")), _num(state.get("end"))
+        if start is not None and end is not None and state.get("mode") in modes:
+            modes[state["mode"]] += max(0.0, end - start)
+    still = [s for s in rows if int(_num(s.get("settled_samples")) or 0) >= PROBE_MIN_SETTLED_SAMPLES]
+    families: dict[str, dict] = {}
+    for state in still:
+        key = str(state.get("family_id") or state.get("state_id"))
+        entry = families.setdefault(key, {"settled_s": 0.0, "build": False, "mode": state.get("mode")})
+        entry["settled_s"] += int(_num(state.get("settled_samples")) or 0) / rate
+        entry["build"] = entry["build"] or bool((state.get("build") or {}).get("is_build"))
+    non_build = [key for key, entry in families.items() if not entry["build"]]
+    backdrop_key = max(non_build, key=lambda key: families[key]["settled_s"]) if non_build else None
+    backdrop = None
+    if backdrop_key is not None:
+        backdrop = {"family": backdrop_key, "settled_s": round(families[backdrop_key]["settled_s"], 1),
+                    "mode": families[backdrop_key]["mode"]}
+    non_talk = sum(entry["settled_s"] for key, entry in families.items() if key != backdrop_key)
+    threshold = min(PROBE_MIN_STILL_S, PROBE_MIN_STILL_RATIO * scanned)
+
+    def chapter_ids(start: float, end: float) -> list[str]:
+        ids = []
+        for chapter in chapters or []:
+            if not isinstance(chapter, dict):
+                continue
+            c0, c1 = _num(chapter.get("start")), _num(chapter.get("end"))
+            if c0 is not None and c1 is not None and c0 < end and c1 > start:
+                ids.append(str(chapter.get("chapter_id")))
+        return ids
+
+    beyond = [s for s in still if str(s.get("family_id") or s.get("state_id")) != backdrop_key]
+    beyond.sort(key=lambda s: -(int(_num(s.get("settled_samples")) or 0)))
+    spans = []
+    for state in beyond[:PROBE_MAX_SPANS]:
+        start, end = float(_num(state.get("start")) or 0.0), float(_num(state.get("end")) or 0.0)
+        spans.append({"start": start, "end": end, "settled_s": round(int(_num(state.get("settled_samples")) or 0) / rate, 1),
+                      "mode": state.get("mode"), "mode_label": state.get("mode_label"),
+                      "chapter_ids": chapter_ids(start, end)})
+    verdict = "contradicts" if non_talk >= threshold else "supports"
+    reason = (f"{non_talk:.0f} s of still on-screen content beyond the main picture "
+              f"(threshold {threshold:.0f} s of {scanned:.0f} s scanned)")
+    return _probe_record(verdict, reason, scanned_seconds=round(scanned, 1), fps=rate,
+                         modes={key: round(value, 1) for key, value in modes.items()}, backdrop=backdrop,
+                         distinct_still_pictures=len(families), non_talk_seconds=round(non_talk, 1),
+                         non_talk_ratio=round(non_talk / scanned, 3) if scanned else 0.0,
+                         threshold_s=round(threshold, 1), non_talk_spans=spans)
+
+
+def probe_spans_text(probe: dict) -> str:
+    return ", ".join(
+        f"{row.get('mode_label') or row.get('mode')} at {_mmss(row.get('start'))}–{_mmss(row.get('end'))}"
+        + (f" ({', '.join(row.get('chapter_ids') or [])})" if row.get("chapter_ids") else "")
+        for row in (probe.get("non_talk_spans") or [])[:3] if isinstance(row, dict))
+
+
+def probe_refusal(probe: dict) -> str:
+    """The exit-10 message when a model's no-visuals decision is contradicted."""
+    spans = probe_spans_text(probe)
+    return (f"the visual probe contradicts the no-visuals decision: {spans or probe.get('reason')} — "
+            f"{probe.get('reason')}. Mark those chapters needs_frames: true with a target inside the span and run "
+            "again, or, only if the user confirms the video has no informative visuals, record the decision with "
+            "`workflow.py decide no-visuals --by user --reason \"...\"`")
+
+
+def probe_summary(probe: object) -> str:
+    if not isinstance(probe, dict):
+        return "no visual probe recorded"
+    return f"{probe.get('verdict')} — {probe.get('reason')}"
+
+
 # ----------------------------------------------------------------------------- candidates
 
 
 def validate_candidates(payload: object, *, transcript_sha: str | None = None, chapters_sha: str | None = None,
-                        visual_decision: str = "illustrated", allow_unresolved: bool = False) -> GateResult:
+                        visual_decision: str = "illustrated", allow_unresolved: bool = False,
+                        expected_identity: object = None, expected_video_id: object = None,
+                        expected_options: dict | None = None) -> GateResult:
     result = GateResult()
     if not isinstance(payload, dict):
         result.errors.append("candidates.json must be a JSON object")
@@ -420,6 +774,25 @@ def validate_candidates(payload: object, *, transcript_sha: str | None = None, c
         stale.append("transcript.json changed since candidates were extracted")
     if chapters_sha and inputs.get("chapters_sha256") and inputs["chapters_sha256"] != chapters_sha:
         stale.append("chapters.json changed since candidates were extracted")
+    if expected_identity is not None and inputs.get("source_identity") is not None \
+            and not identity_matches(inputs["source_identity"], expected_identity):
+        stale.append(f"candidates.json was cut from a different source "
+                     f"({describe_identity(inputs['source_identity'])}, not {describe_identity(expected_identity)})")
+    if expected_video_id and inputs.get("video_id") and str(inputs["video_id"]) != str(expected_video_id):
+        stale.append(f"candidates.json belongs to video {inputs['video_id']}, not {expected_video_id}")
+    if expected_options is not None:
+        wanted_tier, recorded_tier = expected_options.get("tier"), payload.get("tier")
+        if wanted_tier and recorded_tier and str(recorded_tier) != str(wanted_tier):
+            stale.append(f"candidates.json was extracted at tier {recorded_tier} but the request is tier {wanted_tier}")
+        other = {key: value for key, value in expected_options.items() if key != "tier"}
+        recorded_options = inputs.get("options") if isinstance(inputs.get("options"), dict) else None
+        if recorded_options is None:
+            if inputs and other:
+                result.warnings.append("candidates.json predates option binding (no inputs.options block)")
+        else:
+            diffs = option_diffs(recorded_options, other)
+            if diffs:
+                stale.append("candidates.json was extracted with different options: " + ", ".join(diffs))
     result.info["stale"] = stale
     result.errors.extend(stale)
     if not inputs:
@@ -440,6 +813,24 @@ def validate_candidates(payload: object, *, transcript_sha: str | None = None, c
         if visual_decision == "illustrated":
             result.errors.append("candidate extraction was skipped because no chapter needs frames, "
                                  "but the request is an illustrated summary")
+            return result
+        # The decision was probed against the video (1.8): a model decision the
+        # probe contradicts is refused; a user decision is recorded with a warning.
+        probe = payload.get("visual_probe") if isinstance(payload.get("visual_probe"), dict) else None
+        by = inputs.get("visual_decided_by") or "model"
+        result.info["visual_probe"] = probe
+        if probe is None:
+            if by != "init":
+                result.warnings.append("no visual probe recorded for the no-visuals decision "
+                                       "(pre-1.8 manifest); the decision stands unverified")
+        elif probe.get("verdict") == "unavailable":
+            result.warnings.append(f"visual probe unavailable ({probe.get('reason')}); "
+                                   "the no-visuals decision stands unverified")
+        elif probe.get("verdict") == "contradicts":
+            if by == "user":
+                result.warnings.append(f"visual probe contradicts the decision (user override): {probe.get('reason')}")
+            else:
+                result.errors.append(probe_refusal(probe))
         return result
     if status not in ("ok", "unresolved"):
         result.errors.append(f"candidates.json status is {status!r}")
@@ -594,6 +985,22 @@ def validate_assets(assets_payload: object, selections: list | None = None, *, s
                 candidate_id = str(selection.get("candidate_id") or "")
                 if candidate_id not in by_id:
                     result.errors.append(f"{candidate_id}: no grabbed asset for this selection")
+    # The recorded pixel gate (1.8): grab.py stores the measured deltas next to
+    # the thresholds it applied, so the proof travels with the asset.
+    worst: dict[str, float] = {}
+    for candidate_id, asset in by_id.items():
+        verification = asset.get("verification")
+        if not isinstance(verification, dict):
+            continue
+        thresholds = verification.get("thresholds") if isinstance(verification.get("thresholds"), dict) else {}
+        for metric, key in (("luma_mad", "luma"), ("edge_mad", "edge"), ("changed_ratio", "changed")):
+            value, limit = _num(verification.get(metric)), _num(thresholds.get(key))
+            if value is None:
+                continue
+            worst[metric] = max(worst.get(metric, 0.0), value)
+            if limit is not None and value > limit:
+                result.errors.append(f"{candidate_id}: recorded pixel gate failed ({metric} {value:.3g} > {limit:.3g})")
+    result.info["verification_worst"] = worst
     if check_files:
         for candidate_id, asset in by_id.items():
             for variant in ("full", "thumb"):
@@ -611,4 +1018,62 @@ def validate_assets(assets_payload: object, selections: list | None = None, *, s
                 elif sha256_file(path) != expected:
                     result.errors.append(f"{candidate_id}: {Path(path).name} does not match its recorded sha256")
     result.info["assets"] = len(by_id)
+    return result
+
+
+# ----------------------------------------------------------------------------- summary and manifest
+
+MANIFEST_HASH_KEYS = ("summary_sha256", "selections_sha256", "transcript_sha256", "chapters_sha256",
+                      "candidates_sha256", "assets_manifest_sha256")
+
+
+def validate_summary(summary: object, *, lang: str | None = None) -> GateResult:
+    """Shape only (the audit judges the content) plus the declared language."""
+    result = GateResult()
+    if not isinstance(summary, dict) or not isinstance(summary.get("chapters"), list) or not summary.get("overview"):
+        result.errors.append("summary.json must be an object with overview and chapters")
+        return result
+    declared = summary.get("lang")
+    if lang and declared and str(declared).lower() != str(lang).lower():
+        result.errors.append(f"summary.json declares lang {declared!r} but the request is {lang!r} — "
+                             f"rewrite it in {lang} (or `init --force --lang {declared}`)")
+    elif lang and not declared:
+        result.warnings.append(f"summary.json does not declare lang; the request is {lang}")
+    result.info["chapters"] = len(summary["chapters"])
+    return result
+
+
+def validate_manifest(manifest: object, *, expected: dict, bundle_sha: str | None = None,
+                      pdf_sha: str | None = None) -> GateResult:
+    """Is the rendered document the one made from the current inputs? Every
+    mismatch is `stale` (re-render), never invalid: the inputs are fine, the
+    document is old."""
+    result = GateResult()
+    if not isinstance(manifest, dict):
+        result.errors.append("manifest.json must be a JSON object")
+        return result
+    stale: list[str] = []
+    if "frames_count" not in manifest:
+        stale.append("manifest.json predates the workflow (no bindings); render again")
+    for key in MANIFEST_HASH_KEYS:
+        recorded, current = manifest.get(key), expected.get(key)
+        if recorded and current and recorded != current:
+            stale.append(f"{key} changed since the last render")
+    for key, label in (("output_mode", "output mode"), ("lang", "language"), ("tier", "tier"),
+                       ("visual_content", "visual-content decision")):
+        recorded, current = manifest.get(key), expected.get(key)
+        if recorded is not None and current is not None and str(recorded) != str(current):
+            stale.append(f"the {label} changed since the last render ({recorded} -> {current})")
+    if bundle_sha is not None:
+        recorded_bundle = manifest.get("bundle_sha256")
+        if not recorded_bundle:
+            result.warnings.append("manifest.json predates bundle binding (no bundle_sha256)")
+        elif recorded_bundle != bundle_sha:
+            stale.append("the single-file bundle does not match manifest.json (rebuilt or foreign): render again")
+    if pdf_sha is not None and manifest.get("pdf_sha256") and manifest["pdf_sha256"] != pdf_sha:
+        stale.append("the PDF does not match manifest.json: render again")
+    result.info["stale"] = stale
+    result.errors.extend(stale)
+    result.info["frames_count"] = manifest.get("frames_count")
+    result.info["bundle_bound"] = bool(manifest.get("bundle_sha256"))
     return result

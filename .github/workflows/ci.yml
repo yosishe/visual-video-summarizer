@@ -32,7 +32,7 @@ jobs:
         run: pip install Pillow
       - name: Byte-compile
         run: python -m compileall -q scripts tests bench
-      - name: Fast tests (gates, workflow controller, transcript status, audit, security)
+      - name: Fast tests (gates, bindings, workflow controller, transcript status, audit, security)
         run: python -m unittest discover -s tests -v
 
   # Linux media-engine integration: the tests synthesize their fixtures with ffmpeg.
@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.12"]
+        python: ["3.10", "3.11", "3.12"]
     runs-on: ubuntu-latest
     env:
       PYTHONUTF8: "1"
@@ -59,3 +59,39 @@ jobs:
         run: python -m compileall -q scripts tests bench
       - name: Test (full suite incl. media integration)
         run: python -m unittest discover -s tests -v
+
+  # The controller end to end on macOS and Windows with a real ffmpeg and the
+  # native yt-dlp shim: only the stage-boundary and controller modules, so a
+  # portability bug in the real subprocess chain is caught without running the
+  # whole media suite twice more. Deliberately no PYTHONUTF8: the scripts run
+  # under the host locale (cp1252 on Windows) exactly as an agent runs them.
+  portability-e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: brew install ffmpeg
+      - name: Install ffmpeg (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg -y --no-progress
+      - name: Show the ffmpeg that will run (blurdetect needs 5.1+)
+        run: ffmpeg -version
+      - name: Install Pillow (contact sheets; without it the controller reads candidates individually)
+        run: pip install Pillow
+      - name: Byte-compile
+        run: python -m compileall -q scripts tests
+      - name: Stage boundaries and the controller loop through a native yt-dlp shim
+        run: python -m unittest -v tests.test_reliability_integration tests.test_workflow_e2e

@@ -18,7 +18,7 @@ import datetime as dt  # noqa: E402
 
 from candidates import part_for, resolve_cached_parts, resolve_parts  # noqa: E402, F401
 from gates import ENGINE_VERSION, candidates_digest, canonical_sha256, selections_binding  # noqa: E402
-from hostenv import utf8_stdio  # noqa: E402
+from hostenv import require_tools, run_text, utf8_stdio  # noqa: E402
 from safety import atomic_write  # noqa: E402
 from frame_utils import (  # noqa: E402
     blur_signature_series,
@@ -31,6 +31,7 @@ from frame_utils import (  # noqa: E402
     visual_signature,
 )
 from layout import overlay_mask  # noqa: E402
+from frame_utils import NEAR_DUP_CHANGED, NEAR_DUP_EDGE, NEAR_DUP_LUMA  # noqa: E402
 
 MAX_READ_DIMENSION = 1998
 CROP_RE = re.compile(r"^\d+:\d+:\d+:\d+$")
@@ -76,7 +77,7 @@ def _extract_source(parts: list[dict], timestamp: float, output: Path, width: in
         "-frames:v", "1", "-vf", f"showinfo,{_scale_filter(width)}",
         "-q:v", "2", str(output),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = run_text(cmd)
     match = SHOWINFO_TS_RE.search(result.stderr)
     if result.returncode != 0 or not output.exists() or not match:
         raise RuntimeError(f"ffmpeg grab failed: {result.stderr.strip()}")
@@ -95,13 +96,11 @@ def _render_asset(source: Path, output: Path, width: int, crop: str | None) -> N
     if crop:
         filters.append(f"crop={crop}")
     filters.append(_scale_filter(width))
-    result = subprocess.run(
+    result = run_text(
         [
             "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(source),
             "-frames:v", "1", "-vf", ",".join(filters), "-q:v", "2", str(output),
         ],
-        capture_output=True,
-        text=True,
     )
     if result.returncode != 0 or not output.exists():
         raise RuntimeError(f"asset render failed for {output.name}: {result.stderr.strip()}")
@@ -197,6 +196,7 @@ def main() -> int:
                              "(default: the tier recorded in candidates.json; high = sharpness)")
     args = parser.parse_args()
     utf8_stdio()
+    require_tools("ffmpeg", "ffprobe")
 
     work = Path(args.work).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()
@@ -284,6 +284,18 @@ def main() -> int:
                     raise RuntimeError(
                         f"bad crop {crop!r}; expected integer ffmpeg crop syntax w:h:x:y"
                     )
+                # The pixel gate's own numbers, recorded with the asset: the proof
+                # that the written frame is the triaged picture travels with it
+                # (gates.validate_assets re-checks them against the thresholds).
+                written_signature = visual_signature(source_frame, mask)
+                delta = compare_signatures(candidate_signature, written_signature)
+                verification = {
+                    "luma_mad": round(float(delta["luma_mad"]), 4),
+                    "edge_mad": round(float(delta["edge_mad"]), 4),
+                    "changed_ratio": round(float(delta["changed_ratio"]), 5),
+                    "thresholds": {"luma": NEAR_DUP_LUMA, "edge": NEAR_DUP_EDGE, "changed": NEAR_DUP_CHANGED},
+                    "refined": bool(refinement and refinement.get("applied")),
+                }
                 full_path = out_dir / f"{name}-full.jpg"
                 thumb_path = out_dir / f"{name}-thumb.jpg"
                 _render_asset(source_frame, full_path, args.full_width, crop)
@@ -300,6 +312,7 @@ def main() -> int:
                     "actual_t": actual,
                     "triaged_t": timestamp,
                     "refinement": refinement,
+                    "verification": verification,
                     "seg_ids": candidate.get("seg_ids", []),
                     "target_ids": candidate.get("target_ids", []),
                     "full": {
