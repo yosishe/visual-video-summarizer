@@ -107,7 +107,9 @@ def proxy_policy_failure(detail: object) -> AcquisitionError | None:
     value = str(detail).lower()
     if ("proxy" in value or "tunnel connection failed" in value) and any(
             marker in value for marker in ("403", "denied", "blocked by", "network policy")):
-        return AcquisitionError("environment_blocked", "This environment's network proxy denied source access")
+        return AcquisitionError("environment_blocked",
+                                "This environment's network policy blocks the source host (proxy 403); allow "
+                                "youtube.com, *.googlevideo.com and *.ytimg.com or run on a machine with normal access")
     return None
 
 
