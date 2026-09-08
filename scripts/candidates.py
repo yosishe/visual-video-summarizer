@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path
 from statistics import median
@@ -27,11 +28,14 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from safety import atomic_write, ytdlp_command
+from acquisition import (AcquisitionError, MEDIA_TIMEOUT, canonical_hash, classify_tool_failure,
+                         file_lock, hash_file, read_cache, record_event, retry_call, run_process)
 from gates import (  # noqa: E402
     ENGINE_VERSION,
     EXIT_UNRESOLVED,
     GateError,
     StaleError,
+    canonical_source,
     describe_identity,
     engine_drift,
     identity_matches,
@@ -187,6 +191,7 @@ TOOL_HINT = install_hint("ffmpeg")
 # The cache key of the media parts the last resolve_parts() call returned, so
 # the candidate manifest can bind itself to the exact download it was cut from.
 PARTS_CACHE: dict[str, str | None] = {"key": None}
+MEDIA_CACHE_ROOT: Path | None = None
 
 
 def is_url(source: str) -> bool:
@@ -245,16 +250,16 @@ def merge_windows(windows: list[tuple[float, float]], gap: float = 0.5) -> list[
 
 def _source_identity(source: str, sections: list[tuple[float, float]], exact: bool) -> dict:
     if is_url(source):
-        source_value: dict | str = source
+        source_value: dict | str = canonical_source(source)
     else:
         local = Path(source).expanduser().resolve()
         stat = local.stat()
-        source_value = {"path": str(local), "size": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+        source_value = {"path": str(local), "size": stat.st_size, "sha256": hash_file(local)}
     return {
         "source": source_value,
         "sections": [[round(start, 3), round(end, 3)] for start, end in sections],
         "exact_sections": exact,
-        "format": "video<=720p:v2",
+        "format": "video<=720p:v3-video-only",
     }
 
 
@@ -275,10 +280,14 @@ def _load_cached_parts(parts_file: Path, expected_key: str | None) -> list[dict]
             return None
         parts = payload
     else:
+        if not isinstance(payload, dict) or not isinstance(payload.get("parts"), list):
+            return None
         if expected_key is not None and payload.get("cache_key") != expected_key:
             return None
         parts = payload.get("parts", [])
-    if parts and all(Path(part["path"]).exists() for part in parts):
+    if parts and all(isinstance(part, dict) and Path(part.get("path", "")).is_file()
+                     and not Path(part["path"]).is_symlink() and part.get("sha256")
+                     and hash_file(Path(part["path"])) == part["sha256"] for part in parts):
         normalized = []
         for part in parts:
             media = probe_media(part["path"])
@@ -296,117 +305,141 @@ def _load_cached_parts(parts_file: Path, expected_key: str | None) -> list[dict]
 
 
 def resolve_parts(
-    source: str | None,
-    work: Path,
-    sections: list[tuple[float, float]] | None = None,
-    *,
-    exact_sections: bool = False,
+    source: str | None, work: Path, sections: list[tuple[float, float]] | None = None,
+    *, exact_sections: bool = False,
 ) -> list[dict]:
-    """Resolve local/full/section media with a source-and-options cache key."""
+    """Reuse only source/options/hash-bound media; one process/fragment at a time."""
     dl_dir = work / "download"
-    dl_dir.mkdir(parents=True, exist_ok=True)
+    with file_lock(dl_dir / ".media.lock"):
+        return _resolve_parts_locked(source, work, sections or [], exact_sections=exact_sections)
+
+
+def _resolve_parts_locked(source, work, sections, *, exact_sections):
+    dl_dir = work / "download"
     parts_file = dl_dir / "parts.json"
-    sections = sections or []
     identity = _source_identity(source, sections, exact_sections) if source else None
     expected_key = _cache_key(identity) if identity else None
-    cached = _load_cached_parts(parts_file, expected_key)
-    if cached:
-        PARTS_CACHE["key"] = expected_key or _recorded_cache_key(parts_file)
-        return cached
-    if source and sections and is_url(source):
-        # A full download already on disk (the visual probe fetches one, so does
-        # a short video) is a strict superset of any section request: reuse it
-        # under its own key instead of downloading the sections again.
-        full_key = _cache_key(_source_identity(source, [], False))
-        cached = _load_cached_parts(parts_file, full_key)
+
+    def reuse(manifest, key):
+        cached = _load_cached_parts(manifest, key)
         if cached:
-            PARTS_CACHE["key"] = full_key
+            PARTS_CACHE["key"] = key or _recorded_cache_key(manifest)
+            if manifest != parts_file:
+                atomic_write(parts_file, manifest.read_text(encoding="utf-8"))
+            record_event(work, "video_download", "yt-dlp", cache_hit=True)
+        return cached
+
+    cached = reuse(parts_file, expected_key)
+    if cached:
+        return cached
+    cache_root = (MEDIA_CACHE_ROOT or dl_dir / ".cache") / "video"
+    if source and sections and is_url(source):
+        full_key = _cache_key(_source_identity(source, [], False))
+        cached = reuse(parts_file, full_key)
+        if cached:
             return cached
+        with file_lock(cache_root / (full_key + ".lock")):
+            cached = reuse(cache_root / full_key / "parts.json", full_key)
+            if cached:
+                return cached
     if source is None:
         raise SystemExit("No valid cached video parts found; rerun candidates.py with the source")
     PARTS_CACHE["key"] = expected_key
 
+    def part_for(path, start=0.0, confidence="exact"):
+        media = probe_media(path)
+        return {"path": str(path), "source_start": start, "offset": start,
+                "media_start": media["start_time"], "duration": media["duration"],
+                "frame_duration": media["frame_duration"], "mapping_confidence": confidence,
+                "sha256": hash_file(Path(path))}
+
+    def manifest_for(parts):
+        return json.dumps({"schema_version": 3, "cache_key": expected_key,
+                           "identity": identity, "parts": parts}, indent=2)
+
     if not is_url(source):
-        local = Path(source).expanduser().resolve()
-        if not local.exists():
-            raise SystemExit(f"File not found: {local}")
-        media = probe_media(local)
-        parts = [{
-            "path": str(local), "source_start": 0.0, "offset": 0.0,
-            "media_start": media["start_time"], "duration": media["duration"],
-            "frame_duration": media["frame_duration"], "mapping_confidence": "exact",
-        }]
-        atomic_write(parts_file, json.dumps({
-            "schema_version": 2, "cache_key": expected_key, "identity": identity, "parts": parts,
-        }, indent=2))
+        parts = [part_for(Path(source).expanduser().resolve())]
+        atomic_write(parts_file, manifest_for(parts))
         return parts
 
-    require_tools("yt-dlp")
-    fmt = "bv*[height<=720]+ba/b[height<=720]/bv+ba/b"
-    parts: list[dict] = []
-    prefix = expected_key[:10] if expected_key else "video"
-    if sections:
-        for index, (start, end) in enumerate(sections):
-            name = f"sec_{prefix}_{index:03d}"
-            out_tpl = str(dl_dir / f"{name}.%(ext)s")
-            print(f"[vsum] downloading section {format_time(start)}-{format_time(end)}…", file=sys.stderr)
-            cmd = [
-                *ytdlp_command([]), "-N", "8", "-f", fmt, "--merge-output-format", "mp4",
-                "--download-sections", f"*{start:.3f}-{end:.3f}",
-            ]
-            if exact_sections:
-                cmd.append("--force-keyframes-at-cuts")
-            cmd += ["--no-playlist", "--ignore-errors", "-o", out_tpl, "--", source]
-            result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
-            files = [
-                path for path in dl_dir.glob(f"{name}.*")
-                if path.suffix.lower() in (".mp4", ".mkv", ".webm", ".mov")
-            ]
-            if result.returncode != 0 or not files:
-                print(f"[vsum] section {format_time(start)}-{format_time(end)} failed", file=sys.stderr)
-                continue
-            media = probe_media(files[0])
-            if exact_sections:
-                requested = end - start
-                if abs(media["duration"] - requested) > max(0.4, media["frame_duration"] * 4):
-                    raise SystemExit(
-                        f"section {format_time(start)}-{format_time(end)}: decoded duration "
-                        f"{media['duration']:.2f}s does not match the requested {requested:.2f}s — "
-                        "the exact cut failed, so source timestamps would be untrustworthy. "
-                        "Retry, or run without --sections for a full download."
-                    )
-            parts.append({
-                "path": str(files[0]), "source_start": start, "offset": start,
-                "media_start": media["start_time"], "duration": media["duration"],
-                "frame_duration": media["frame_duration"],
-                "mapping_confidence": "exact-cut" if exact_sections else "padded-request",
-            })
+    # An audio acquisition may already be combined media. Validate its receipt
+    # and streams before reusing it; mere existence never establishes provenance.
+    if MEDIA_CACHE_ROOT:
+        audio_root = MEDIA_CACHE_ROOT
     else:
-        print("[vsum] downloading video (<=720p) via yt-dlp…", file=sys.stderr)
-        out_tpl = str(dl_dir / f"video_{prefix}.%(ext)s")
-        cmd = [
-            *ytdlp_command([]), "-N", "8", "-f", fmt, "--merge-output-format", "mp4",
-            "--no-playlist", "--ignore-errors", "-o", out_tpl, "--", source,
-        ]
-        result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)
-        files = [
-            path for path in dl_dir.glob(f"video_{prefix}.*")
-            if path.suffix.lower() in (".mp4", ".mkv", ".webm", ".mov")
-        ]
-        if result.returncode != 0 or not files:
-            raise SystemExit(f"yt-dlp did not produce a video file in {dl_dir}")
-        media = probe_media(files[0])
-        parts = [{
-            "path": str(files[0]), "source_start": 0.0, "offset": 0.0,
-            "media_start": media["start_time"], "duration": media["duration"],
-            "frame_duration": media["frame_duration"], "mapping_confidence": "exact",
-        }]
-    if not parts:
-        raise SystemExit("No video parts available after download")
-    atomic_write(parts_file, json.dumps({
-        "schema_version": 2, "cache_key": expected_key, "identity": identity, "parts": parts,
-    }, indent=2))
-    return parts
+        audio_root = work / ".cache" / "acquisition"
+    audio_key = canonical_hash({"kind": "audio", "source": canonical_source(source), "format": "ba/b"})
+    audio_path = audio_root / "audio" / (audio_key + ".media")
+    with file_lock(audio_root / "audio" / (audio_key + ".lock")):
+        receipt = read_cache(audio_path.with_suffix(".json"), audio_key)
+        if isinstance(receipt, dict) and audio_path.is_file() and not audio_path.is_symlink() \
+                and hash_file(audio_path) == receipt.get("file_sha256"):
+            result = run_process(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                                  "-show_entries", "stream=codec_type", "-of", "json", str(audio_path)],
+                                 timeout=30)
+            try:
+                has_video = result.returncode == 0 and bool(json.loads(result.stdout).get("streams"))
+            except (ValueError, TypeError):
+                has_video = False
+            if has_video:
+                parts = [part_for(audio_path)]
+                atomic_write(parts_file, manifest_for(parts))
+                record_event(work, "video_download", "yt-dlp", cache_hit=True)
+                return parts
+
+    entry = cache_root / expected_key
+    with file_lock(cache_root / (expected_key + ".lock")):
+        cached = reuse(entry / "parts.json", expected_key)
+        if cached:
+            return cached
+        entry.mkdir(parents=True, exist_ok=True)
+        require_tools("yt-dlp")
+        # Captions are sufficient for text; fetching a separate audio stream here
+        # would waste bandwidth. A combined format is the bounded fallback.
+        fmt = "bv[height<=720]/b[height<=720]"
+        parts = []
+        for index, bounds in enumerate(sections or [None]):
+            saved_part = entry / f"part_{index:03d}.json"
+            cached = _load_cached_parts(saved_part, expected_key)
+            if cached:
+                parts.extend(cached)
+                record_event(work, "video_section", "yt-dlp", cache_hit=True)
+                continue
+
+            def download():
+                with tempfile.TemporaryDirectory(prefix="download-", dir=entry) as tmp:
+                    owned = Path(tmp)
+                    command = [*ytdlp_command([]), "-f", fmt, "--merge-output-format", "mp4"]
+                    if bounds:
+                        command += ["--download-sections", f"*{bounds[0]:.3f}-{bounds[1]:.3f}"]
+                        if exact_sections:
+                            command.append("--force-keyframes-at-cuts")
+                    command += ["-o", str(owned / "video.%(ext)s"), "--", source]
+                    result = run_process(command, timeout=MEDIA_TIMEOUT)
+                    if result.returncode:
+                        raise classify_tool_failure(result.stderr or "", result.returncode)
+                    files = [path for path in owned.iterdir() if path.is_file() and not path.is_symlink()
+                             and path.suffix.lower() in (".mp4", ".mkv", ".webm", ".mov")]
+                    if len(files) != 1 or not files[0].stat().st_size:
+                        raise AcquisitionError("malformed_response", "Downloader produced incomplete video media")
+                    part = part_for(files[0], bounds[0] if bounds else 0.0,
+                                    "exact-cut" if bounds and exact_sections else "padded-request" if bounds else "exact")
+                    if bounds and exact_sections and abs(part["duration"] - (bounds[1] - bounds[0])) > max(0.4, part["frame_duration"] * 4):
+                        raise AcquisitionError("incomplete_acquisition", "Downloaded section duration does not match its source range")
+                    target = entry / f"part_{index:03d}{files[0].suffix}"
+                    os.replace(files[0], target)
+                    part["path"] = str(target)
+                    return part
+
+            part = retry_call(f"video_download:{expected_key[:16]}:{index}", download,
+                              provider="yt-dlp", work=work)
+            # Each section survives a later failure without being called complete.
+            atomic_write(saved_part, manifest_for([part]))
+            parts.append(part)
+        manifest = manifest_for(parts)
+        atomic_write(entry / "parts.json", manifest)
+        atomic_write(parts_file, manifest)
+        return parts
 
 
 def _recorded_cache_key(parts_file: Path) -> str | None:
@@ -1305,6 +1338,8 @@ def cost_estimate(
         "tier": tier,
         "candidates": len(records),
         "image_tokens_estimate": tokens,
+        "image_tokens_estimation_method": "Claude 28px patch proxy; not measured host usage",
+        "image_tokens_measured": None,
         "image_tokens_per_candidate": per_image,
         "token_formula": f"ceil(w/{IMAGE_PATCH})*ceil(h/{IMAGE_PATCH}) per image (Anthropic vision docs); one batched Read",
         "frame_dimensions": dict(dimensions),
@@ -1433,6 +1468,8 @@ def _run_visual_probe(source: str | None, work: Path, sections: list[tuple[float
         return gates_probe_record("unavailable", "no source and no cached download")
     try:
         parts = resolve_parts(source, work, sections, exact_sections=bool(sections))
+    except AcquisitionError:
+        raise
     except SystemExit as exc:
         return gates_probe_record("unavailable", f"download failed: {exc}")
     started = time.monotonic()
@@ -1497,6 +1534,7 @@ def main() -> int:
     )
     parser.add_argument("source", nargs="?", default=None, help="Video URL or local path")
     parser.add_argument("--work", required=True, help="Working directory from transcript.py")
+    parser.add_argument("--cache-dir", default=None, help="Explicit shared acquisition cache directory")
     parser.add_argument("--transcript", default=None, help="Path to transcript.json (default: <work>/transcript.json)")
     parser.add_argument("--chapters", default=None, help="Path to chapters.json with optional visual_targets")
     parser.add_argument("--tier", choices=tuple(PROFILES), default=None,
@@ -1549,6 +1587,8 @@ def main() -> int:
                              "(no probe); model = the agent's judgement (probed, refused when contradicted); "
                              "user = the user's confirmation (probed, recorded, never refused).")
     args = parser.parse_args()
+    global MEDIA_CACHE_ROOT
+    MEDIA_CACHE_ROOT = Path(args.cache_dir).expanduser().resolve() if args.cache_dir else None
     utf8_stdio()
 
     require_tools("ffmpeg", "ffprobe")
@@ -2156,4 +2196,8 @@ def _provenance_line(record: dict, segment_text: dict[str, str]) -> str:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except AcquisitionError as exc:
+        print(json.dumps({"error": exc.as_dict()}), file=sys.stderr)
+        raise SystemExit(exc.exit_code)

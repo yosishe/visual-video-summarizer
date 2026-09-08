@@ -124,7 +124,7 @@ class UploadTests(unittest.TestCase):
 
     def test_downloader_ignores_ambient_configuration(self):
         with mock.patch.object(transcript.shutil, 'which', return_value='/bin/yt-dlp'), \
-             mock.patch.object(transcript.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0)) as run:
+             mock.patch.object(transcript, 'run_process', return_value=subprocess.CompletedProcess([], 0)) as run:
             transcript._run_ytdlp(['--version'])
         command = run.call_args.args[0]
         for flag in safety.YTDLP_FLAGS:
@@ -139,7 +139,7 @@ class UploadTests(unittest.TestCase):
                     Path(template.replace('%(ext)s', 'mp4')).write_bytes(b'video')
                     return subprocess.CompletedProcess(command, 0)
                 with mock.patch.object(candidates.shutil, 'which', return_value='/bin/yt-dlp'), \
-                     mock.patch.object(candidates.subprocess, 'run', side_effect=download) as run, \
+                     mock.patch.object(candidates, 'run_process', side_effect=download) as run, \
                      mock.patch.object(candidates, 'probe_media', return_value={'start_time': 0, 'duration': 1, 'frame_duration': 0.04}), \
                      contextlib.redirect_stderr(io.StringIO()):
                     parts = candidates.resolve_parts('https://www.youtube.com/watch?v=fixture', Path(tmp), sections)
@@ -299,7 +299,7 @@ class DoctorTests(unittest.TestCase):
         run.assert_not_called()
 
     def test_local_mode_does_not_require_ytdlp_or_read_key_files(self):
-        with mock.patch.object(doctor.shutil, 'which', side_effect=lambda n: '/bin/' + n if n in {'ffmpeg', 'ffprobe'} else None), \
+        with mock.patch.object(doctor.shutil, 'which', side_effect=lambda n, **kw: '/bin/' + n if n in {'ffmpeg', 'ffprobe'} else None), \
              mock.patch.object(doctor.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, 'version\n')), \
              mock.patch.object(Path, 'read_text', side_effect=AssertionError('Must not read config')), \
              mock.patch.object(doctor.importlib.util, 'find_spec', return_value=None):

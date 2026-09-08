@@ -69,7 +69,7 @@ def main(argv: list[str]) -> int:
                 "webpage_url": "https://www.youtube.com/watch?v=fixture", "language": "en", "chapters": [],
                 "subtitles": {}, "automatic_captions": {}}
         if mode == "captions":
-            info["subtitles"] = {"en": [{"ext": "vtt", "url": "https://example.invalid/en"}]}
+            info["subtitles"] = {"en": [{"ext": "vtt", "url": os.environ.get("VSUM_SHIM_CAPTION_URL", "https://example.invalid/en")}]}
             info["automatic_captions"] = {
                 "en-orig": [{"ext": "vtt", "url": "https://example.invalid/en-orig"}],
                 "en-de": [{"ext": "vtt", "url": "https://example.invalid/en?tlang=de"}],

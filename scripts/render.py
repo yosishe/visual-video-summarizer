@@ -629,6 +629,16 @@ def _render_html(
     strings = STRINGS[lang]
     direction = "rtl" if lang == "he" else "ltr"
     video = transcript.get("video", {})
+    partial_notice = ""
+    if transcript.get("status") == "partial":
+        label = "סיכום חלקי — טווחי שמע חסרים" if lang == "he" else "PARTIAL SUMMARY — missing audio ranges"
+        ranges = []
+        for failure in transcript.get("failed_chunks") or []:
+            bounds = failure.get("range") or {}
+            ranges.append(f"{format_time(float(bounds.get('start_s', 0)))}–{format_time(float(bounds.get('end_s', 0)))}")
+        ranges_html = ", ".join(f'<bdi dir="ltr">{html.escape(value)}</bdi>' for value in ranges)
+        partial_notice = (f'<section class="partial-notice" role="note">'
+                          f'<strong>{html.escape(label)}</strong><p>{ranges_html}</p></section>')
     title = str(video.get("title") or "Video summary")
     source_url = video.get("url")
     is_link = isinstance(source_url, str) and source_url.startswith(("http://", "https://"))
@@ -702,7 +712,9 @@ def _render_html(
 <style>
 {font_css}
   :root {{ --font-stack: {FONT_STACKS[lang]}; }}
-{STYLE}</style>
+{STYLE}
+.partial-notice {{ border: 2px solid #9b3b19; padding: 1rem; margin-block: 1rem; }}
+</style>
 </head>
 <body>
 
@@ -710,6 +722,7 @@ def _render_html(
   <div class="measure">
     <div class="kicker">{html.escape(strings["kicker"])}</div>
     <h1 dir="auto">{html.escape(title)}</h1>
+    {partial_notice}
     <div class="meta">{metadata_html}</div>
     <div class="thesis"><b>{html.escape(strings["claim"])}</b> {_inline(overview)}</div>
   </div>

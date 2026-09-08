@@ -6,13 +6,37 @@
 
 *Development only — `workflow.py run` passes these flags for you; a run started by hand has no `run.json` bindings and cannot pass `verify`:*
 
-`transcript.py "<source>" --work "<work>" [--whisper groq|openai] [--no-whisper] [--langs "<yt-dlp pattern>"] [--wanted he,en] [--language xx]`
+`transcript.py "<source>" --work "<work>" [--whisper local|groq|openai] [--local-model <path>] [--no-whisper] [--cache-dir <path>] [--langs <pattern>] [--wanted he,en] [--language xx]`
 
-The caption track is chosen by provenance, not by name: a manual track in the video's own language, then a manual track in Hebrew/English, then the original-language auto-captions (`xx-orig`), then untranslated auto-captions. YouTube's machine-translated tracks are never used — the Hebrew comes from you. (YouTube keys Hebrew as `iw`; the report says `he`.) `--langs` forces a track and bypasses the ranking; the record then says truthfully whether that track is machine-translated. The report lists the creator's chapters when the video has them, prints the transcript as `seg_NNNN [MM:SS-MM:SS] text` (the `seg_id`s are the join keys for everything that follows), and a one-line **health** summary: the caption track and its provenance (manual/auto, original, machine-translated, the video's language), segment count, caption coverage of the duration, and `health ok` or `health thin` with its reasons (low coverage, a large uncaptioned gap, sparse or empty segments, a translated track, skipped transcription chunks; repetition, implausible words per minute, reordered cues and a language mismatch are noted too). Health warnings never stop the run; they tell you how much of the video the transcript actually represents, and the same line appears in `verify`.
+The controller is canonical; these direct commands are development interfaces. Its order is valid transcript/cache, then captions ranked by provenance: manual original language, manual Hebrew/English, original-language auto captions, then untranslated auto captions. YouTube uses `iw` for Hebrew; output normalizes it to `he`. `--langs` explicitly overrides ranking and records any machine translation truthfully. Caption text stays in transcript.txt/JSON; the default stage report is a concise index and health line.
 
-`transcript.json` carries `status: ok | no_transcript | source_unavailable`. Exit 6 = no usable transcript: the file is still written (with the reason under `source_detail.reason`) and every later stage refuses it. There is no frames-only path. Exit 13 = the source itself could not be fetched or read (private, removed, blocked, unreadable file): the file records `source_unavailable` with a sanitised reason and nothing is uploaded anywhere. The file also records the transcription options it was made under (`inputs`), so a later run with other options re-fetches instead of adopting it.
+Metadata is discovered once into an operation-owned directory. The selected VTT URL is fetched directly with bounded HTTP handling; there is no second downloader extraction for captions. A confirmed expired resource URL permits one recorded metadata refresh of the same track. Absent tracks permit ASR; 429, access, malformed replies and empty acquired captions stop. Failures and recovery are specified in [failures.md](failures.md).
 
-Cloud transcription is off unless the user explicitly chose `--whisper groq|openai` (audio is uploaded to that provider; keys come only from the environment or `~/.config/summarize-video/.env`; a stored key is not consent). `--no-whisper` always disables upload. A coding-agent subscription is not a transcription API key.
+Configured local transcription uses an installed `whisper-cli` and compatible multilingual GGML `.bin` model (`--local-model` or `LOCAL_WHISPER_MODEL`). `-l auto` is passed without a source-language hint; English-only `.en` models are rejected. Preflight detects files and CLI capabilities; actual model loading establishes compatibility. Never download software/models automatically. Cloud Groq/OpenAI is an explicit per-source choice even with stored credentials; `--no-whisper` disables every backend. Existing credentials are read only when that provider is selected.
+
+Transcription has at-most-ten-minute checkpoints with two-second look-back, actual encoded audio capped at 24,000,000 bytes and multipart at 25,000,000 bytes. ffmpeg transcodes and stat verifies; byte estimates alone never authorize an upload. Cache identity includes audio hash, range, engine/version, model, language and settings. Local model contents and binary/help identity are hashed. Valid chunks resume with zero ASR calls. Overlap reconciliation requires temporal and textual evidence of duplication and retains unmatched boundary speech. Failed ranges prevent completion; user-bound acceptance permits only visibly PARTIAL output.
+
+Canonical source/track/options/content hashes bind caption inventories, VTT, parsed transcripts and media. Run-local acquisition cache is `<work>/.cache/acquisition`; chunk cache defaults to `<work>/.whisper-cache`. `--cache-dir` explicitly shares these namespaces. No leftover file or legacy unhashed media manifest is adopted simply because it exists. OS advisory locks prevent competing writers and release after crashes. Completed downloaded sections survive a later section failure. Cached evidence is a snapshot; to intentionally refresh changed captions, start with a fresh cache/work directory.
+
+Frames prefer `bv[height<=720]/b[height<=720]`, so sufficient captions do not trigger a separate audio stream. Already acquired combined media is reused after source/hash/stream validation. All downloader operations use one process at a time, one fragment, no nested retries and abort-on-missing-fragment. The 120-minute guard runs before audio download/transcription and before frame processing; `--allow-long` requires the user's decision.
+
+## Tool decision matrix
+
+| Input state / next need | Select | Prerequisites and relative cost | Do not select / stop |
+|---|---|---|---|
+| Valid complete run | inspect controller state | local validation; zero acquisition/ASR calls | no repeat download, model call or image read |
+| Need text; usable cached track | validated cache | matching canonical source/options/hash | corrupt/unbound cache is a miss |
+| Need text; no validated inventory | yt-dlp metadata | permitted source, supported local runtime/EJS; one tool attempt, hidden HTTP count unknown | no batch scraping, cloud ASR before discovery |
+| Selected caption URL | bounded direct HTTP VTT | cached track identity; normally one HTTP GET | 429/access/schema failure cannot mean absent captions |
+| No usable captions; local configured | ffmpeg + whisper.cpp | compatible installed model; local CPU/GPU latency, no audio upload | no automatic model installation/download |
+| No captions; cloud explicitly chosen | selected Groq/OpenAI endpoint | user upload choice, key, actual size bound; provider charges/limits | no fallback across providers on auth/quota/errors |
+| Illustrated chapters need frames | cached media, then bounded video acquisition + ffmpeg | grounded targets, duration/budget gates; one video stream or existing combined source | no audio download solely for frames |
+| Candidate interpretation | host model: sheets then verified shortlist | exactly reported image set, two batched reads | no redundant full-frame image reads |
+| Render verified summary | static HTML/bundle | audit/grounding/pixel/localization gates | no evidence-free diagram substitution |
+| PDF requested | installed Chrome/Edge, then installed WeasyPrint | rendering gate; local process cost | HTML remains available if engines fail; PDF outstanding |
+
+These are relative costs, not measured provider prices. Source restrictions are correlated across scrapers; another scraper is not an independent recovery path. The official captions download API requires video-edit permission and therefore cannot replace arbitrary-link extraction: [YouTube documentation](https://developers.google.com/youtube/v3/docs/captions/download). Retained yt-dlp extraction is upstream-sensitive and must be permitted for the user's source; public availability alone does not grant every form of automated access.
+
 
 ## Candidates (cheap, 512px)
 

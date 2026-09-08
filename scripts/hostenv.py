@@ -7,6 +7,8 @@ Linux, macOS and Windows alike.
 from __future__ import annotations
 
 import os
+import functools
+import re
 import shutil
 import subprocess
 import sys
@@ -69,7 +71,24 @@ def run_text(command: list[str], *, timeout: float | None = None, **kwargs) -> s
     UnicodeDecodeError in the middle of a stage. The output is a str exactly as
     before, so callers parse it unchanged."""
     return subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                          timeout=timeout, **kwargs)
+                          timeout=timeout or 600, **kwargs)
+
+
+@functools.lru_cache(maxsize=8)
+def javascript_runtime(path_env: str) -> dict | None:
+    """Installed supported runtimes only; no package or remote component setup."""
+    for name, minimum in (("deno", (2, 3, 0)), ("node", (22, 0, 0))):
+        binary = shutil.which(name, path=path_env)
+        if not binary:
+            continue
+        try:
+            result = run_text([binary, "--version"], timeout=10)
+            match = re.search(r"(\d+)\.(\d+)\.(\d+)", result.stdout or "")
+            if result.returncode == 0 and match and tuple(map(int, match.groups())) >= minimum:
+                return {"name": name, "path": binary, "version": match.group(0)}
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+    return None
 
 
 def _windows_program_dirs() -> list[Path]:

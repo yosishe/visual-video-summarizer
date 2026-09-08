@@ -50,7 +50,8 @@ class TranscriptStatusTests(unittest.TestCase):
 
     def _main(self, *argv: str) -> int:
         with mock.patch.object(sys, "argv", ["transcript.py", "https://www.youtube.com/watch?v=vid123",
-                                             "--work", str(self.work), *argv]):
+                                             "--work", str(self.work), *argv]), \
+                mock.patch.object(transcript, "_fetch_caption_url", return_value=VTT.encode()):
             return transcript.main()
 
     def test_exit_6_writes_no_transcript_status_file(self):
@@ -138,8 +139,8 @@ class TranscriptStatusTests(unittest.TestCase):
         text = (self.work / "transcript.json").read_text(encoding="utf-8")
         payload = json.loads(text)
         self.assertEqual(payload["status"], "source_unavailable")
-        self.assertIn("Video unavailable", payload["source_detail"]["reason"])
-        self.assertEqual(payload["source_detail"]["yt_dlp_exit"], 1)
+        self.assertEqual(payload["acquisition_error"]["category"], "source_unavailable")
+        self.assertIn("unavailable", payload["source_detail"]["reason"].lower())
         self.assertEqual(payload["segments"], [])
         self.assertNotIn("SECRET-VALUE", text)
         self.assertNotIn("example.invalid", text)
@@ -164,7 +165,104 @@ class TranscriptStatusTests(unittest.TestCase):
             code = self._main("--langs", "en")
         self.assertEqual(code, 0)
         payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
-        self.assertEqual(payload["inputs"], {"whisper": None, "no_whisper": False, "langs": "en", "wanted": None})
+        self.assertEqual(payload["inputs"], {"whisper": None, "no_whisper": False, "langs": "en", "wanted": None,
+                                             "local_model": None})
+
+    def test_long_url_is_refused_before_caption_media_or_asr(self):
+        info = dict(INFO, duration=7201)
+        with mock.patch.object(transcript, "_discover_info", return_value=info), \
+                mock.patch.object(transcript, "_fetch_caption_url", side_effect=AssertionError("no caption fetch")), \
+                mock.patch.object(transcript, "download_audio", side_effect=AssertionError("no media")), \
+                mock.patch.object(transcript, "transcribe_video", side_effect=AssertionError("no ASR")):
+            code = self._main()
+        self.assertEqual(code, 8)
+
+    def test_partial_transcription_has_exact_ranges_and_content_fingerprint(self):
+        failure = [{"index": 1, "offset_s": 60.0, "end_s": 120.0, "error": "temporary_network"}]
+        partial = transcript.PartialTranscription(
+            [{"start": 0.0, "end": 2.0, "text": "first chunk"}], failure)
+        with mock.patch.object(transcript, "fetch_captions", return_value={
+                "info": {**INFO, "subtitles": {}, "automatic_captions": {}}, "track": None,
+                "subtitle_path": None, "segments": [], "tracks_considered": 0, "rejected_translated": 0}), \
+                mock.patch.object(transcript, "load_api_key", return_value=("groq", "secret")), \
+                mock.patch.object(transcript, "download_audio", return_value=self.work / "audio.m4a"), \
+                mock.patch.object(transcript, "transcribe_video", side_effect=partial):
+            code = self._main("--whisper", "groq")
+        self.assertEqual(code, 15)
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["status"], "partial")
+        self.assertEqual(payload["failed_chunks"], failure)
+        expected = transcript.canonical_hash({
+            "source_identity": payload["source_identity"], "inputs": payload["inputs"],
+            "segments": payload["segments"], "failed_chunks": failure,
+        })
+        self.assertEqual(payload["partial_fingerprint"], expected)
+
+    def test_caption_rate_limit_writes_acquisition_failed_and_never_starts_asr(self):
+        error = transcript.AcquisitionError("rate_limit", "source cooldown", retryable=True)
+        with mock.patch.object(transcript, "fetch_captions", side_effect=error), \
+                mock.patch.object(transcript, "download_audio", side_effect=AssertionError("no media")), \
+                mock.patch.object(transcript, "transcribe_video", side_effect=AssertionError("no ASR")):
+            code = self._main("--whisper", "groq")
+        self.assertEqual(code, 14)
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["status"], "acquisition_failed")
+        self.assertEqual(payload["acquisition_error"]["category"], "rate_limit")
+
+    def test_local_model_is_normalized_recorded_and_passed_only_for_local_mode(self):
+        configured = self.work / "models" / "ggml.bin"
+        configured.parent.mkdir(parents=True)
+        configured.write_bytes(b"model")
+        captured = {}
+
+        def fake_transcribe(*args, **kwargs):
+            captured.update(kwargs)
+            return ([{"start": 0.0, "end": 2.0, "text": "local words"}], "local")
+
+        with mock.patch.object(transcript, "fetch_captions", return_value={
+                "info": {**INFO, "subtitles": {}, "automatic_captions": {}}, "track": None,
+                "subtitle_path": None, "segments": [], "tracks_considered": 0, "rejected_translated": 0}), \
+                mock.patch.object(transcript, "configured_local_model", return_value=configured), \
+                mock.patch.object(transcript, "download_audio", return_value=self.work / "audio.m4a"), \
+                mock.patch.object(transcript, "transcribe_video", side_effect=fake_transcribe):
+            code = self._main("--whisper", "local")
+        self.assertEqual(code, 0)
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["inputs"]["local_model"], str(configured.resolve()))
+        self.assertEqual(captured["local_model"], configured.resolve())
+        self.assertNotIn("cache_dir", captured)
+        self.assertNotIn("retry_uncertain", captured)
+
+    def test_explicitly_configured_local_model_is_the_no_provider_default(self):
+        configured = self.work / "configured" / "ggml.bin"
+        configured.parent.mkdir(parents=True)
+        configured.write_bytes(b"model")
+        with mock.patch.object(transcript, "configured_local_model", return_value=configured), \
+                mock.patch.object(transcript, "fetch_captions", return_value={
+                    "info": {**INFO, "subtitles": {}, "automatic_captions": {}}, "track": None,
+                    "subtitle_path": None, "segments": [], "tracks_considered": 0, "rejected_translated": 0}), \
+                mock.patch.object(transcript, "download_audio", return_value=self.work / "audio.m4a"), \
+                mock.patch.object(transcript, "transcribe_video",
+                                  return_value=([{"start": 0, "end": 1, "text": "configured"}], "local")) as call:
+            code = self._main()
+        self.assertEqual(code, 0)
+        self.assertEqual(call.call_args.kwargs["local_model"], configured.resolve())
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["inputs"]["whisper"], "local")
+
+    def test_configured_local_model_is_not_consulted_when_captions_succeed(self):
+        with mock.patch.object(transcript, "configured_local_model",
+                               side_effect=AssertionError("must be deferred")), \
+                mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)):
+            code = self._main()
+        self.assertEqual(code, 0)
+
+    def test_competing_direct_cli_writer_is_refused_by_work_lock(self):
+        self.work.mkdir(parents=True)
+        with transcript.file_lock(self.work / ".transcript.lock"):
+            with self.assertRaises(transcript.AcquisitionError) as caught:
+                self._main()
+        self.assertEqual(caught.exception.category, "busy")
 
     def test_install_hint_replaces_brew_strings(self):
         with mock.patch.object(transcript.shutil, "which", return_value=None):

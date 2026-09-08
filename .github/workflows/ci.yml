@@ -86,7 +86,25 @@ jobs:
         run: brew install ffmpeg
       - name: Install ffmpeg (Windows)
         if: runner.os == 'Windows'
-        run: choco install ffmpeg -y --no-progress
+        shell: pwsh
+        timeout-minutes: 10
+        run: |
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            choco install ffmpeg -y --no-progress --execution-timeout=120
+            $env:PATH = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+            $ffmpeg = Get-Command ffmpeg -ErrorAction SilentlyContinue
+            $ffprobe = Get-Command ffprobe -ErrorAction SilentlyContinue
+            if ($ffmpeg -and $ffprobe) {
+              & $ffmpeg.Source -version
+              if ($LASTEXITCODE -ne 0) { throw 'ffmpeg version check failed' }
+              & $ffprobe.Source -version
+              if ($LASTEXITCODE -ne 0) { throw 'ffprobe version check failed' }
+              Split-Path $ffmpeg.Source | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+              exit 0
+            }
+            if ($attempt -lt 3) { Start-Sleep -Seconds (5 * $attempt) }
+          }
+          throw 'FFmpeg setup failed after three attempts; media tests were not run'
       - name: Show the ffmpeg that will run (blurdetect needs 5.1+)
         run: ffmpeg -version
       - name: Install Pillow (contact sheets; without it the controller reads candidates individually)

@@ -27,7 +27,9 @@ Exit codes: 0 = done or waiting for a model-authored file (see NEXT);
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
+import io
 import json
 import os
 import re
@@ -55,6 +57,8 @@ from gates import (  # noqa: E402
     health_summary,
     is_url,
     load_json,
+    partial_accepted,
+    partial_fingerprint,
     selections_binding,
     sha256_file,
     source_identity,
@@ -69,6 +73,7 @@ from gates import (  # noqa: E402
 )
 from hostenv import child_env, install_hint, python_command, utf8_stdio  # noqa: E402
 from safety import atomic_write, validate_generated_html  # noqa: E402
+from acquisition import AcquisitionError, EXIT_ACQUISITION, EXIT_PARTIAL, file_lock, run_process  # noqa: E402
 
 RUN_SCHEMA = 1
 STAGES = ("transcript", "chapters", "candidates", "shortlist", "selections", "grab", "summary", "audit", "render")
@@ -337,16 +342,45 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
         detail = (transcript.get("source_detail") or {}) if isinstance(transcript, dict) else {}
         if result.info.get("stale"):
             block(stage, "stale", "; ".join(result.info["stale"]))
+        elif status == "acquisition_failed":
+            error = transcript.get("acquisition_error") or {}
+            recovery = ("Read the recorded acquisition category and cooldown. Repair the cause before an explicit retry; "
+                        "do not switch providers after access/authentication/quota failures.")
+            if error.get("category") == "environment_blocked":
+                recovery = ("This environment's network policy denied source access. Preserve the same video URL and "
+                            "output request. Continue in a user-authorized environment that permits the source, "
+                            "or ask its operator to repair the network policy. Do not install more downloaders, "
+                            "probe alternative hosts, upload audio, or route around the denial.")
+            block(stage, "failed", error.get("message") or detail.get("reason") or "Acquisition failed",
+                  exit_code=error.get("exit_code") or EXIT_ACQUISITION,
+                  next_step=recovery)
+        elif status == "partial" and not partial_accepted(transcript):
+            block(stage, "failed", "Transcription has unfinished chunks; successful chunks are preserved",
+                  exit_code=EXIT_PARTIAL, next_step="Resume unfinished chunks with run --retry after resolving the failure, "
+                  "or obtain the user's explicit acceptance and record decide partial-transcript --by user --reason ...")
+        elif status == "too_long":
+            block(stage, "failed", "Source exceeds the 120-minute duration guard", exit_code=8,
+                  next_step="Only the user's explicit --allow-long decision permits audio acquisition/transcription.")
         elif status == "source_unavailable":
             reason = detail.get("reason") or "the source could not be fetched"
             block(stage, "failed", reason, exit_code=EXIT_SOURCE_UNAVAILABLE,
                   next_step=SOURCE_UNAVAILABLE_NEXT.format(reason=reason))
         elif status == "no_transcript":
             reason = detail.get("reason") or "no usable transcript"
-            block(stage, "failed", reason, exit_code=6, next_step=(
-                "There is no frames-only path. Options: ask the user to authorize cloud transcription "
-                "(`init --force --whisper groq|openai` — audio is uploaded to that provider), force a caption track "
-                "with `--langs`, or choose another source."))
+            if run.get("request", {}).get("no_whisper"):
+                recovery = ("There is no frames-only path. Transcription is explicitly disabled by --no-whisper; "
+                            "keep it disabled unless the user changes that choice. Use an available caption track "
+                            "or a captioned source; do not initiate transcription setup or cloud uploads.")
+            else:
+                recovery = ("There is no frames-only path. First explain the local option: an installed whisper-cli "
+                            "and compatible multilingual model can transcribe without an audio upload "
+                            "(`init --force --whisper local --local-model <existing-model>`, then `run --retry`). "
+                            "If either is missing, propose the exact local setup and request approval before installation "
+                            "or a model download. Cloud is a separate explicit choice "
+                            "(`init --force --whisper groq|openai`) with provider processing and possible charges; "
+                            "do not choose a provider merely because a key exists. --langs only selects a track "
+                            "that actually exists in the recorded inventory.")
+            block(stage, "failed", reason, exit_code=6, next_step=recovery)
         elif result.errors:
             block(stage, "invalid", "; ".join(result.errors), exit_code=EXIT_INVALID,
                   next_step="Re-run the transcript stage (`workflow.py run --retry`).")
@@ -621,6 +655,14 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
             bound = "bundle hash-bound" if result.info.get("bundle_bound") else "bundle not hash-bound (pre-1.8 manifest)"
             stage.status, stage.reason = "ok", f"{manifest.get('frames_count')} frames, {output_mode}, {bound}"
 
+    # A failed child may have produced no artifact. Preserve its stop instead of
+    # turning it back into pending and retrying on every run/status invocation.
+    for name, current in stages.items():
+        prior = _recorded(run, name)
+        if current.kind == "deterministic" and current.status == "pending" and prior.get("exit_code") \
+                and not _inputs_changed(run, current):
+            block(current, "failed", prior.get("reason") or f"{name} failed; see its local report",
+                  exit_code=prior["exit_code"], next_step="Resolve the recorded failure, then explicitly run --retry.")
     return stages
 
 
@@ -629,8 +671,8 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
 
 def _invoke(command: list[str], *, cwd: Path | None = None) -> tuple[int, str, str]:
     """Run a sibling script; tests patch this. Output is captured and echoed."""
-    completed = subprocess.run(command, cwd=str(cwd) if cwd else None, env=child_env(),
-                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+    metrics = {"VSUM_OPERATION_LOG": str(cwd / "operations.jsonl")} if cwd else None
+    completed = run_process(command, timeout=3600, cwd=str(cwd) if cwd else None, env=child_env(metrics))
     return completed.returncode, completed.stdout, completed.stderr
 
 
@@ -653,6 +695,14 @@ def stage_command(name: str, work: Path, run: dict) -> list[str]:
             cmd += ["--langs", req["langs"]]
         if req.get("wanted"):
             cmd += ["--wanted", req["wanted"]]
+        if req.get("local_model"):
+            cmd += ["--local-model", req["local_model"]]
+        if req.get("cache_dir"):
+            cmd += ["--cache-dir", req["cache_dir"]]
+        if req.get("allow_long"):
+            cmd.append("--allow-long")
+        if run.get("retry_uncertain"):
+            cmd.append("--retry-uncertain")
         return cmd
     if name == "candidates":
         cmd = [py, _script("candidates.py"), source, "--work", str(work), "--transcript", str(paths.transcript),
@@ -664,6 +714,8 @@ def stage_command(name: str, work: Path, run: dict) -> list[str]:
             cmd.append("--allow-long")
         if req.get("max_image_tokens"):
             cmd += ["--max-image-tokens", str(req["max_image_tokens"])]
+        if req.get("cache_dir"):
+            cmd += ["--cache-dir", req["cache_dir"]]
         return cmd
     if name == "grab":
         return [py, _script("grab.py"), "--work", str(work), "--spec", str(paths.selections),
@@ -699,8 +751,13 @@ def execute_stage(name: str, work: Path, run: dict, stage: Stage) -> int:
     run.setdefault("stages", {})[name] = record
     save_run(work, run)
     print(f"[workflow] {name}: running {Path(command[1]).name}", file=sys.stderr)
-    code, out, err = _invoke(command, cwd=work)
-    (paths.reports / f"{name}.md").write_text(out, encoding="utf-8")
+    try:
+        code, out, err = _invoke(command, cwd=work)
+    except AcquisitionError as exc:
+        code, out, err = exc.exit_code, "", exc.message
+        record["acquisition_error"] = exc.as_dict()
+    atomic_write(paths.reports / f"{name}.md", out)
+    atomic_write(paths.reports / f"{name}.stderr.txt", err)
     if err.strip():
         print(err.rstrip(), file=sys.stderr)
     if out.strip():
@@ -780,6 +837,21 @@ def collect_counts(work: Path, run: dict) -> dict:
         counts["shortlist_written"] = len(((candidates.get("shortlist") or {}).get("written")) or [])
         if isinstance(candidates.get("visual_probe"), dict):
             run["visual_probe"] = candidates["visual_probe"]
+    operations = work / "operations.jsonl"
+    counts.update({"tool_invocations": 0, "api_attempts": 0, "cache_hits": 0,
+                   "http_attempts": 0, "tool_invocations_scope": "acquisition executables only; excludes preflight and ffmpeg",
+                   "remote_http_requests": None, "remote_http_requests_basis": "not observed inside downloader"})
+    if operations.is_file():
+        with operations.open(encoding="utf-8") as handle:
+            for line in handle:
+                try:
+                    row = json.loads(line)
+                    counts["tool_invocations"] += int(row.get("tool_invocations", 0))
+                    counts["api_attempts"] += int(row.get("api_attempts", 0))
+                    counts["http_attempts"] += int(row.get("http_attempts", 0))
+                    counts["cache_hits"] += int(bool(row.get("cache_hit")))
+                except (ValueError, TypeError, AttributeError):
+                    continue
     return counts
 
 
@@ -790,7 +862,8 @@ def _doctor_snapshot(run: dict, checked_by: str) -> dict:
     kind = (run.get("source") or {}).get("kind")
     try:
         import doctor as doctor_module
-        result = doctor_module.check(local=(kind == "file"), pdf=bool(request(run).get("pdf")))
+        result = doctor_module.check(local=(kind == "file"), pdf=bool(request(run).get("pdf")),
+                                     local_model=request(run).get("local_model"))
     except Exception as exc:  # pragma: no cover - doctor is read-only; never crash on it
         result = {"ready": None, "error": str(exc)[:200], "checks": []}
     return {**result, "captured_at": _now(), "checked_by": checked_by}
@@ -847,6 +920,29 @@ def cmd_init(args) -> int:
         raise GateError(f"unsupported language {lang!r}; use he or en")
     previous = _json_or_none(run_path(work)) if args.force else None
     previous = previous if isinstance(previous, dict) else None
+    previous_key = source_key(((previous or {}).get("source") or {}).get("identity"))
+    same_source = bool(previous_key) and previous_key == source_key(identity)
+    old_request = ((previous or {}).get("request") or {}) if same_source else {}
+    explicit_provider = args.whisper is not None
+    defaults = {"tier": "standard", "pdf": False, "whisper": None, "no_whisper": False,
+                "langs": None, "wanted": None, "output_mode": "illustrated", "sections": None,
+                "allow_long": False, "max_image_tokens": None, "focus": None,
+                "local_model": None, "cache_dir": None}
+    for key, default in defaults.items():
+        if getattr(args, key, None) is None:
+            setattr(args, key, old_request.get(key, default))
+    if explicit_provider:
+        args.no_whisper = False
+        if args.whisper in ("groq", "openai"):
+            args.local_model = None
+    if args.lang is None and old_request.get("lang"):
+        lang = old_request["lang"]
+    if args.local_model:
+        args.local_model = str(Path(args.local_model).expanduser().resolve())
+    elif not args.no_whisper and args.whisper in (None, "local") and os.environ.get("LOCAL_WHISPER_MODEL"):
+        args.local_model = str(Path(os.environ["LOCAL_WHISPER_MODEL"]).expanduser().resolve())
+    if not args.no_whisper and not args.whisper and args.local_model:
+        args.whisper = "local"
     same_source = False
     if previous:
         previous_key = source_key((previous.get("source") or {}).get("identity"))
@@ -868,7 +964,9 @@ def cmd_init(args) -> int:
         "request": {"lang": lang, "tier": args.tier, "pdf": bool(args.pdf), "whisper": args.whisper,
                     "no_whisper": bool(args.no_whisper), "langs": args.langs, "wanted": args.wanted,
                     "output_mode": args.output_mode, "sections": args.sections, "allow_long": bool(args.allow_long),
-                    "max_image_tokens": args.max_image_tokens, "focus": args.focus},
+                    "max_image_tokens": args.max_image_tokens, "focus": args.focus,
+                    "local_model": args.local_model,
+                    "cache_dir": str(Path(args.cache_dir).expanduser().resolve()) if args.cache_dir else None},
         "visual_content": {"decision": "none" if args.output_mode == "text-only" else "illustrated",
                            "reason": "user requested a text-only summary" if args.output_mode == "text-only" else None,
                            "decided_by": "init", "decided_at": _now()},
@@ -957,13 +1055,25 @@ def _run_loop(args, work: Path, run: dict) -> int:
 def cmd_run(args) -> int:
     work = Path(args.work).expanduser().resolve()
     run = load_run(work)
-    code = _run_loop(args, work, run)
+    if getattr(args, "retry_uncertain", False) and not args.retry:
+        raise GateError("--retry-uncertain requires --retry and the user's explicit retry decision")
+    run["retry_uncertain"] = bool(getattr(args, "retry_uncertain", False))
+    if args.json:
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = _run_loop(args, work, run)
+    else:
+        code = _run_loop(args, work, run)
     if args.json:
         run = load_run(work)
         stages = assess(work, run)
         print(json.dumps({"exit_code": code, "blocker": run.get("blocker"),
                           "stages": {name: stage.status for name, stage in stages.items()},
-                          "counts": run.get("counts")}, indent=2, ensure_ascii=False))
+                           "counts": run.get("counts"), "next": (run.get("blocker") or {}).get("next"),
+                           "reports_dir": str(work / "reports"),
+                           "reference": REFERENCES.get((run.get("blocker") or {}).get("stage"),
+                                                       REFERENCES["failures"] if code else None),
+                           "verification": str(work / "verify.json") if (work / "verify.json").is_file() else None},
+                          indent=2, ensure_ascii=False))
     return code
 
 
@@ -1049,6 +1159,17 @@ def cmd_decide(args) -> int:
     if len(reason) < 20:
         raise GateError("--reason must explain in at least 20 characters why (e.g. 'talking head interview, static "
                         "camera, no slides or screen content' / 'the screencast shows the editor in chapters 3-5')")
+    if args.what == "partial-transcript":
+        transcript = _json_or_none(work / "transcript.json")
+        if args.by != "user" or not isinstance(transcript, dict) or transcript.get("status") != "partial":
+            raise GateError("Only explicit user acceptance of a recorded partial transcript is permitted")
+        transcript["partial_acceptance"] = {"by": "user", "reason": reason, "at": _now(),
+                                            "fingerprint": partial_fingerprint(transcript)}
+        atomic_write(work / "transcript.json", json.dumps(transcript, indent=2, ensure_ascii=False))
+        record_history(run, "decide partial-transcript", "transcript", 0)
+        save_run(work, run)
+        print("Recorded user acceptance of this partial transcript and its missing ranges; delivery remains labelled PARTIAL")
+        return 0
     verdict = "none" if args.what == "no-visuals" else "illustrated"
     run["visual_content"] = {"decision": verdict, "reason": reason, "decided_by": args.by, "decided_at": _now()}
     record_history(run, f"decide {args.what}", None, 0)
@@ -1178,7 +1299,11 @@ def verify_report(work: Path, run: dict) -> tuple[list[dict], int]:
 def run_verification(work: Path, run: dict, *, as_json: bool) -> int:
     rows, code = verify_report(work, run)
     paths = Paths(work, run)
-    report = {"verified_at": _now(), "complete": code == 0, "exit_code": code, "rows": rows,
+    transcript = _json_or_none(paths.transcript) or {}
+    partial = transcript.get("status") == "partial"
+    report = {"verified_at": _now(), "complete": code == 0 and not partial, "exit_code": code, "rows": rows,
+              "delivery_status": "PARTIAL" if code == 0 and partial else ("COMPLETE" if code == 0 else "INCOMPLETE"),
+              "failed_chunks": transcript.get("failed_chunks", []),
               "deliverable": str(paths.bundle) if paths.bundle else None,
               "pdf": str(paths.pdf) if request(run).get("pdf") and paths.pdf else None,
               "counts": run.get("counts"), "visual_content": run.get("visual_content"),
@@ -1196,7 +1321,7 @@ def run_verification(work: Path, run: dict, *, as_json: bool) -> int:
             print(f"       warning: {warning}")
     print()
     if code == 0:
-        print(f"COMPLETE — deliverable: {paths.bundle}" + (f" and {paths.pdf}" if report["pdf"] else ""))
+        print(f"{report['delivery_status']} — deliverable: {paths.bundle}" + (f" and {paths.pdf}" if report["pdf"] else ""))
     else:
         blocker = run.get("blocker") or {}
         print(f"INCOMPLETE (exit {code}) — {blocker.get('stage')}: {blocker.get('reason')}")
@@ -1220,16 +1345,18 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("source", help="YouTube URL or local recording")
     init.add_argument("--work", required=True)
     init.add_argument("--lang", choices=("he", "en"), default=None, help="default: SUMMARY_LANG, else he")
-    init.add_argument("--tier", choices=("standard", "high"), default="standard")
-    init.add_argument("--pdf", action="store_true")
-    init.add_argument("--whisper", choices=("groq", "openai"), default=None,
-                      help="explicit consent to upload audio to this provider when captions are missing")
-    init.add_argument("--no-whisper", action="store_true")
+    init.add_argument("--tier", choices=("standard", "high"), default=None)
+    init.add_argument("--pdf", action=argparse.BooleanOptionalAction, default=None)
+    init.add_argument("--whisper", choices=("local", "groq", "openai"), default=None,
+                      help="local runs whisper.cpp; groq/openai explicitly authorize audio upload when captions are missing")
+    init.add_argument("--no-whisper", action="store_true", default=None)
+    init.add_argument("--local-model", default=None, help="explicit compatible multilingual whisper.cpp model path")
+    init.add_argument("--cache-dir", default=None, help="opt-in shared cache; default is run-local")
     init.add_argument("--langs", default=None, help="force a yt-dlp caption pattern")
     init.add_argument("--wanted", default=None)
-    init.add_argument("--output-mode", choices=("illustrated", "text-only"), default="illustrated")
+    init.add_argument("--output-mode", choices=("illustrated", "text-only"), default=None)
     init.add_argument("--sections", default=None)
-    init.add_argument("--allow-long", action="store_true")
+    init.add_argument("--allow-long", action="store_true", default=None)
     init.add_argument("--max-image-tokens", type=int, default=None)
     init.add_argument("--out-dir", default=None, help="default: ./summary-<video id>")
     init.add_argument("--focus", default=None, help="free-text focus notes from the user (shown in NEXT)")
@@ -1242,6 +1369,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--work", required=True)
     run.add_argument("--until", choices=STAGES, default=None)
     run.add_argument("--retry", action="store_true", help="re-run a failed stage whose inputs did not change")
+    run.add_argument("--retry-uncertain", action="store_true", help="explicitly accept retrying an upload with unknown outcome")
     run.add_argument("--json", action="store_true", help="print the blocker and stage statuses as JSON at the end")
     run.set_defaults(func=cmd_run)
 
@@ -1257,7 +1385,7 @@ def build_parser() -> argparse.ArgumentParser:
     validate.set_defaults(func=cmd_validate)
 
     decide = sub.add_parser("decide", help="record an explicit visual-content decision")
-    decide.add_argument("what", choices=("no-visuals", "illustrated"),
+    decide.add_argument("what", choices=("no-visuals", "illustrated", "partial-transcript"),
                         help="no-visuals: the video has no informative visuals (probed); illustrated: revert to frames")
     decide.add_argument("--work", required=True)
     decide.add_argument("--reason", required=True)
@@ -1280,7 +1408,15 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     utf8_stdio()
     args = build_parser().parse_args(argv)
-    return args.func(args)
+    try:
+        with file_lock(Path(args.work).expanduser().resolve() / ".workflow.lock"):
+            return args.func(args)
+    except AcquisitionError as exc:
+        if getattr(args, "json", False):
+            print(json.dumps({"exit_code": exc.exit_code, "acquisition_error": exc.as_dict()}))
+        else:
+            print(exc.message, file=sys.stderr)
+        return exc.exit_code
 
 
 if __name__ == "__main__":

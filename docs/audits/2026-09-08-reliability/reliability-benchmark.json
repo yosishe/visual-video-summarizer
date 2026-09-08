@@ -1,0 +1,227 @@
+{
+  "benchmark": "deterministic_offline_reliability_decision",
+  "cost": {
+    "dollar_cost_usd": null,
+    "inference": "fewer repeated calls should reduce wasted provider work",
+    "status": "unavailable_not_measured"
+  },
+  "decision": {
+    "assertions": {
+      "baseline_caption_429_classification_lost": true,
+      "baseline_caption_429_fallback_activated": true,
+      "caption_429_classified_rate_limit": true,
+      "caption_429_no_asr_fallback": true,
+      "caption_429_no_media_fallback": true,
+      "caption_fixture_discovery_then_selected_resource": true,
+      "chunk_cache_resume_zero_calls": true,
+      "frozen_six_video_scores_unchanged": true,
+      "malformed_response_rejected": true,
+      "permanent_401_stops_after_first_chunk": true,
+      "retry_after_http_date_supported": true,
+      "transient_5xx_capped_at_three": true,
+      "unknown_upload_not_repeated": true
+    },
+    "success": true
+  },
+  "fixture": {
+    "asr_calls": 0,
+    "fixed_now_epoch": 1788825600.0,
+    "media_downloads": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "retry_after_date": "Tue, 08 Sep 2026 00:00:10 GMT",
+    "run": "2026-09-04-v15-high"
+  },
+  "identity": {
+    "baseline_sha": "b52d26811b9f8bac99e0ce217482903375a05923",
+    "current": {
+      "baseline_requested": "b52d268",
+      "dirty": true,
+      "dirty_fingerprint_sha256": "c5778e462cfc1108ce35a80765dc6d77e6b1e1f0deb479b784599fdbd335bf2b",
+      "head_sha": "b52d26811b9f8bac99e0ce217482903375a05923",
+      "status_entry_count": 31
+    }
+  },
+  "labels": {
+    "inferred": "conceptual implication only",
+    "measured": "fixture observation"
+  },
+  "limitations": [
+    "harness latency is not media wall-clock or API billing",
+    "frozen corpus replay is not a new download, ASR run, frame extraction, or quality study",
+    "no dollar cost claim is supported by this offline fixture"
+  ],
+  "quality_replay": {
+    "baseline": {
+      "elapsed_harness_s": 0.053939,
+      "measurement": "measured_frozen_corpus_replay",
+      "returncode": 0,
+      "scores_sha256": "420fc672bac9335746388258506dde01def3f9c09ada07453eec0baf59a8b263",
+      "stderr": "",
+      "video_count": 6
+    },
+    "current": {
+      "elapsed_harness_s": 0.054108,
+      "measurement": "measured_frozen_corpus_replay",
+      "returncode": 0,
+      "scores_sha256": "420fc672bac9335746388258506dde01def3f9c09ada07453eec0baf59a8b263",
+      "stderr": "",
+      "video_count": 6
+    },
+    "unchanged": true
+  },
+  "schema_version": 1,
+  "skill_size": {
+    "baseline": {
+      "estimate_method": "Unicode characters divided by 4; not tokenizer output",
+      "estimated_tokens_characters_div_4": 2611.75,
+      "measurement": "measured_static_file",
+      "unicode_characters": 10447,
+      "utf8_bytes": 10508
+    },
+    "current": {
+      "estimate_method": "Unicode characters divided by 4; not tokenizer output",
+      "estimated_tokens_characters_div_4": 2224.25,
+      "measurement": "measured_static_file",
+      "unicode_characters": 8897,
+      "utf8_bytes": 8913
+    }
+  },
+  "snapshots": {
+    "baseline": {
+      "elapsed_harness_s": 0.023543,
+      "scenarios": {
+        "caption_429_no_automatic_asr": {
+          "caption_http_attempts": 1,
+          "classification": "returned",
+          "measurement": "measured",
+          "metadata_tool_attempts": 1,
+          "note": "valid inventory followed by selected-caption HTTP 429"
+        },
+        "caption_429_pipeline_fallback": {
+          "api_key_boundary_calls": 1,
+          "asr_boundary_calls": 1,
+          "cli_returncode": 0,
+          "explicit_provider": "groq",
+          "fallback_activated": true,
+          "measurement": "measured",
+          "media_boundary_calls": 1,
+          "recorded_failure_category": null,
+          "recorded_status": "ok"
+        },
+        "chunk_cache_resume": {
+          "cache_hit": false,
+          "chunk_cache_supported": false,
+          "measurement": "measured_capability_absence",
+          "note": "baseline controller completion caching is outside this chunk-cache fixture",
+          "resume_provider_calls": null
+        },
+        "malformed_provider_response": {
+          "classification": "accepted",
+          "measurement": "measured",
+          "rejected": false,
+          "returned_segments": [
+            {
+              "end": 0.0,
+              "start": 0.0,
+              "text": "words without timestamps"
+            }
+          ]
+        },
+        "permanent_401_four_chunks": {
+          "classification": "SystemExit",
+          "measurement": "measured",
+          "planned_chunks": 4,
+          "provider_calls": 4,
+          "stopped_after_first": false
+        },
+        "retry_after_http_date": {
+          "date_supported": false,
+          "fixed_now_epoch": 1788825600.0,
+          "header": "Tue, 08 Sep 2026 00:00:10 GMT",
+          "measurement": "measured",
+          "parsed_delay_s": null
+        },
+        "transient_5xx_bounded_attempts": {
+          "bounded_at_three": false,
+          "classification": "SystemExit",
+          "measurement": "measured",
+          "provider_calls": 4
+        },
+        "unknown_upload_outcome": {
+          "classifications": [
+            "SystemExit",
+            "SystemExit"
+          ],
+          "measurement": "measured",
+          "second_invocation_zero_calls": false,
+          "two_invocations_provider_calls": 8
+        }
+      }
+    },
+    "current": {
+      "elapsed_harness_s": 0.025206,
+      "scenarios": {
+        "caption_429_no_automatic_asr": {
+          "caption_http_attempts": 1,
+          "classification": "rate_limit",
+          "measurement": "measured",
+          "metadata_tool_attempts": 1,
+          "note": "valid inventory followed by selected-caption HTTP 429"
+        },
+        "caption_429_pipeline_fallback": {
+          "api_key_boundary_calls": 0,
+          "asr_boundary_calls": 0,
+          "cli_returncode": 14,
+          "explicit_provider": "groq",
+          "fallback_activated": false,
+          "measurement": "measured",
+          "media_boundary_calls": 0,
+          "recorded_failure_category": "rate_limit",
+          "recorded_status": "acquisition_failed"
+        },
+        "chunk_cache_resume": {
+          "cache_hit": true,
+          "first_run_provider_calls": 1,
+          "measurement": "measured",
+          "resume_provider_calls": 0
+        },
+        "malformed_provider_response": {
+          "classification": "invalid_response",
+          "measurement": "measured",
+          "rejected": true,
+          "returned_segments": null
+        },
+        "permanent_401_four_chunks": {
+          "classification": "authentication",
+          "measurement": "measured",
+          "planned_chunks": 4,
+          "provider_calls": 1,
+          "stopped_after_first": true
+        },
+        "retry_after_http_date": {
+          "date_supported": true,
+          "fixed_now_epoch": 1788825600.0,
+          "header": "Tue, 08 Sep 2026 00:00:10 GMT",
+          "measurement": "measured",
+          "parsed_delay_s": 10.0
+        },
+        "transient_5xx_bounded_attempts": {
+          "bounded_at_three": true,
+          "classification": "temporary_network",
+          "measurement": "measured",
+          "provider_calls": 3
+        },
+        "unknown_upload_outcome": {
+          "classifications": [
+            "uncertain_upload",
+            "uncertain_upload"
+          ],
+          "measurement": "measured",
+          "second_invocation_zero_calls": true,
+          "two_invocations_provider_calls": 1
+        }
+      }
+    }
+  }
+}

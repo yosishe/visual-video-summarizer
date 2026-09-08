@@ -192,7 +192,8 @@ class ReliabilityIntegrationTests(unittest.TestCase):
         full_identity = candidates_module._source_identity(url, [], False)
         full_key = candidates_module._cache_key(full_identity)
         parts = [{"path": str(self.video), "source_start": 0.0, "offset": 0.0, "media_start": 0.0,
-                  "duration": 12.0, "frame_duration": 0.1, "mapping_confidence": "exact"}]
+                  "duration": 12.0, "frame_duration": 0.1, "mapping_confidence": "exact",
+                  "sha256": candidates_module.hash_file(self.video)}]
         (work / "download" / "parts.json").write_text(json.dumps({"schema_version": 2, "cache_key": full_key,
                                                                     "identity": full_identity, "parts": parts}),
                                                        encoding="utf-8")

@@ -10,10 +10,13 @@ upload path was never reached.
 from __future__ import annotations
 
 import json
+import functools
+import http.server
 import os
 import shutil
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 
@@ -44,9 +47,19 @@ class WorkflowEndToEndTests(unittest.TestCase):
         cls.video = cls.fixtures / "video.mp4"
         synthesize_fixture_video(cls.video)
         (cls.fixtures / "captions.vtt").write_text(CAPTIONS, encoding="utf-8")
+        class Handler(http.server.SimpleHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+        cls.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0),
+                         functools.partial(Handler, directory=str(cls.fixtures)))
+        cls.server_thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
+        cls.server_thread.start()
 
     @classmethod
     def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        cls.server_thread.join(timeout=5)
         cls.class_temporary.cleanup()
 
     def setUp(self):
@@ -61,6 +74,7 @@ class WorkflowEndToEndTests(unittest.TestCase):
     def _env(self, mode: str = "captions") -> dict:
         env = ytdlp_shim.install(self.root / "bin")
         env.update({"VSUM_SHIM_FIXTURE_DIR": str(self.fixtures), "VSUM_SHIM_MODE": mode,
+                    "VSUM_SHIM_CAPTION_URL": f"http://127.0.0.1:{self.server.server_port}/captions.vtt",
                     "VSUM_SHIM_DURATION": "12", "VSUM_SHIM_LOG": str(self.root / "shim.log")})
         return env
 
