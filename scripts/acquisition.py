@@ -102,9 +102,21 @@ def http_failure(status: int, headers=None, body: bytes | str = b"") -> Acquisit
     return AcquisitionError("invalid_input", f"Request rejected (HTTP {status})")
 
 
+def proxy_policy_failure(detail: object) -> AcquisitionError | None:
+    """Recognize an explicit proxy denial without exposing exception contents."""
+    value = str(detail).lower()
+    if ("proxy" in value or "tunnel connection failed" in value) and any(
+            marker in value for marker in ("403", "denied", "blocked by", "network policy")):
+        return AcquisitionError("environment_blocked", "This environment's network proxy denied source access")
+    return None
+
+
 def classify_tool_failure(stderr: str, returncode: int = 1) -> AcquisitionError:
     """Conservative recognition of downloader diagnostics; unknown errors stop."""
     value = str(stderr).lower()
+    denied = proxy_policy_failure(stderr)
+    if denied is not None:
+        return denied
     if "429" in value or "too many requests" in value:
         return AcquisitionError("rate_limit", "Source rate limit; retry only after cooldown", retryable=True,
                                 retry_after=60.0)

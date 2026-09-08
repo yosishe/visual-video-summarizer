@@ -52,7 +52,7 @@ from gates import (  # noqa: E402
 )
 from hostenv import require_tools, run_text, utf8_stdio  # noqa: E402
 from safety import atomic_write, sanitize_tool_output, ytdlp_command  # noqa: E402
-from acquisition import (  # noqa: E402
+from acquisition import (proxy_policy_failure,   # noqa: E402
     AcquisitionError,
     DISCOVERY_TIMEOUT,
     EXIT_ACQUISITION,
@@ -131,6 +131,10 @@ def _to_seconds(h: str, m: str, s: str, ms: str) -> float:
 
 def parse_vtt(path: str) -> list[dict]:
     text = Path(path).read_text(encoding="utf-8", errors="ignore")
+    return _parse_vtt_text(text)
+
+
+def _parse_vtt_text(text: str) -> list[dict]:
     lines = text.splitlines()
     segments: list[dict] = []
     i = 0
@@ -370,6 +374,9 @@ def _fetch_caption_url(url: str) -> bytes:
                 pass
         raise http_failure(exc.code, exc.headers) from exc
     except (URLError, TimeoutError, ConnectionResetError, OSError) as exc:
+        denied = proxy_policy_failure(exc)
+        if denied is not None:
+            raise denied from exc
         raise AcquisitionError("temporary_network", "Caption request failed temporarily", retryable=True) from exc
     if len(data) > 20 * 1024 * 1024:
         raise AcquisitionError("invalid_input", "Caption response exceeded the 20 MB limit")
@@ -474,6 +481,13 @@ def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str
         caption_path = cache_dir / "captions" / f"{selection_key}.vtt"
         receipt = caption_path.with_suffix(".json")
 
+        def validated_caption(content: bytes) -> tuple[str, list[dict]]:
+            text = _decode_vtt(content)
+            parsed = _parse_vtt_text(text)
+            if not parsed:
+                raise AcquisitionError("empty_response", "Caption track contained no usable speech cues")
+            return text, parsed
+
         def obtain(track: dict) -> bytes:
             entry = track.get("_entry") or {}
             track_url = entry.get("url")
@@ -487,9 +501,16 @@ def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str
             if isinstance(cached, dict) and caption_path.is_file() and not caption_path.is_symlink() \
                     and hash_file(caption_path) == cached.get("file_sha256"):
                 content = caption_path.read_bytes()
-                cache_hit = True
-                record_event(out_dir, "caption_fetch", "youtube-captions", cache_hit=True)
-            else:
+                try:
+                    caption_text, parsed_segments = validated_caption(content)
+                except AcquisitionError:
+                    # Earlier Windows writes could be hash-bound but contain
+                    # CRCRLF and no usable cues. Reacquire under the normal policy.
+                    record_event(out_dir, "caption_fetch", "youtube-captions", category="invalid_cache")
+                else:
+                    cache_hit = True
+                    record_event(out_dir, "caption_fetch", "youtube-captions", cache_hit=True)
+            if not cache_hit:
                 try:
                     content = obtain(chosen)
                 except AcquisitionError as exc:
@@ -510,27 +531,22 @@ def fetch_captions(url: str, out_dir: Path, langs: str | None, wanted: tuple[str
                     if not chosen:
                         raise AcquisitionError("malformed_response", "Caption inventory changed during signed URL refresh")
                     content = obtain(chosen)
-                caption_text = _decode_vtt(content)
+                caption_text, parsed_segments = validated_caption(content)
                 caption_path.parent.mkdir(parents=True, exist_ok=True)
                 atomic_write(caption_path, caption_text)
                 write_cache(receipt, selection_key, {"file_sha256": hash_file(caption_path), "selection": selection})
-        caption_text = _decode_vtt(content)
         caption_sha = hashlib.sha256(caption_text.encode("utf-8")).hexdigest()
         subtitle = out_dir / "selected-caption.vtt"
-        atomic_write(subtitle, caption_path.read_text(encoding="utf-8"))
+        atomic_write(subtitle, caption_text)
         transcript_key = canonical_hash({**selection, "caption_sha256": caption_sha, "parser": TRANSCRIPT_SCHEMA})
         transcript_path = cache_dir / "transcripts" / f"{transcript_key}.json"
         with file_lock(transcript_path.with_suffix(".lock")):
             cached_segments = read_cache(transcript_path, transcript_key)
-            if isinstance(cached_segments, dict) and isinstance(cached_segments.get("segments"), list):
+            if isinstance(cached_segments, dict) and isinstance(cached_segments.get("segments"), list) \
+                    and cached_segments["segments"]:
                 segments = cached_segments["segments"]
             else:
-                try:
-                    segments = parse_vtt(str(subtitle))
-                except Exception as exc:
-                    raise AcquisitionError("malformed_response", "Caption track could not be parsed") from exc
-                if not segments:
-                    raise AcquisitionError("empty_response", "Caption track contained no usable speech cues")
+                segments = parsed_segments
                 write_cache(transcript_path, transcript_key, {"segments": segments})
     return {
         "subtitle_path": str(subtitle) if subtitle else None,
@@ -736,7 +752,7 @@ def main() -> int:
                   f"{', original' if source_detail['original'] else ''}); "
                   f"{fetched['rejected_translated']} machine-translated tracks ignored", file=sys.stderr)
         else:
-            failure_reason = "no caption track was available (machine translations are never used)"
+            failure_reason = "no eligible caption track was found in the downloader inventory"
         duration = float(info.get("duration") or 0)
     else:
         local = Path(args.source).expanduser().resolve()
@@ -850,9 +866,11 @@ def main() -> int:
     if unavailable_reason or acquisition_failure or too_long:
         pass  # the reason is the source, not the transcription policy
     elif not segments and not args.whisper and not args.no_whisper:
-        failure_reason = f"{failure_reason or 'no captions'}; cloud transcription was not authorized"
-        print("[vsum] cloud transcription is off. To upload audio, explicitly choose "
-              "--whisper groq or --whisper openai; a stored key alone is not consent.", file=sys.stderr)
+        failure_reason = f"{failure_reason or 'no captions'}; local transcription is not configured; cloud transcription was not authorized"
+        print("[vsum] local transcription can use installed whisper-cli and an explicitly configured multilingual model "
+              "(--whisper local --local-model <path>). Missing software/model downloads require approval. "
+              "Cloud upload is a separate explicit --whisper groq|openai choice; a stored key is not consent.",
+              file=sys.stderr)
     elif not segments and args.no_whisper:
         failure_reason = f"{failure_reason or 'no captions'}; --no-whisper disables transcription"
 
@@ -982,7 +1000,9 @@ def main() -> int:
               "refuses it.")
         return finish(EXIT_SOURCE_UNAVAILABLE)
     print(f"- **Transcript:** none available — {source_detail.get('reason')}. "
-          "Choose --whisper groq|openai with its key to allow audio upload, or supply a captioned source. "
+          + ("Transcription is disabled by --no-whisper. " if args.no_whisper else
+             "Use installed local transcription with --whisper local --local-model <path>; request approval for "
+             "missing local setup. Cloud --whisper groq|openai is a separate explicit upload choice. ") +
           "`transcript.json` records `status: no_transcript`; every later stage refuses it.")
     return finish(EXIT_NO_TRANSCRIPT)
 

@@ -47,7 +47,9 @@ def atomic_write(path: Path, text: str) -> None:
         raise SystemExit(f"Refusing output symlink: {path.name}")
     temporary = None
     try:
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+        # Preserve existing line endings: Windows translation would turn CRLF
+        # caption responses into CRCRLF and separate timestamps from cue text.
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n", dir=path.parent,
                                          prefix=f".{path.name}.", suffix=".tmp", delete=False) as stream:
             temporary = Path(stream.name)
             stream.write(text)

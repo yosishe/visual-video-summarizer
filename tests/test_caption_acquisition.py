@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import tempfile
+import json
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -10,6 +11,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 import acquisition
+import safety
 import transcript
 
 
@@ -23,6 +25,34 @@ INFO = {
 
 
 class CaptionAcquisitionTests(unittest.TestCase):
+    def test_crlf_captions_survive_windows_text_writes_and_cache_reuse(self):
+        content = VTT.replace("\n", "\r\n").encode("utf-8")
+        temporary_file = tempfile.NamedTemporaryFile
+
+        def windows_text_file(*args, **kwargs):
+            # Reproduce Windows' default newline translation on every CI host.
+            # An explicit newline policy in atomic_write must take precedence.
+            if kwargs.get("mode") == "w":
+                kwargs.setdefault("newline", "\r\n")
+            return temporary_file(*args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with mock.patch.object(transcript, "_discover_info", return_value=INFO), \
+                    mock.patch.object(transcript, "_fetch_caption_url", return_value=content) as fetch, \
+                    mock.patch.object(safety.tempfile, "NamedTemporaryFile", side_effect=windows_text_file):
+                first = transcript.fetch_captions("https://youtu.be/abcdefghijk", root / "one", None,
+                                                  cache_dir=root / "cache")
+                second = transcript.fetch_captions("https://youtu.be/abcdefghijk", root / "two", None,
+                                                   cache_dir=root / "cache")
+            expected = [{"start": 0.0, "end": 1.0, "text": "hello"}]
+            self.assertEqual(first["segments"], expected)
+            self.assertEqual(second["segments"], expected)
+            self.assertTrue(second["cache_hit"])
+            fetch.assert_called_once()
+            cached_vtt = next((root / "cache" / "captions").glob("*.vtt"))
+            self.assertEqual(cached_vtt.read_bytes(), content)
+
     def test_ranked_track_url_is_fetched_directly_after_one_discovery(self):
         with tempfile.TemporaryDirectory() as tmp:
             discover = mock.Mock(return_value=INFO)
@@ -62,6 +92,19 @@ class CaptionAcquisitionTests(unittest.TestCase):
                                           Path(tmp) / "run", None, cache_dir=Path(tmp) / "cache")
         self.assertEqual(caught.exception.category, "rate_limit")
 
+    def test_caption_proxy_policy_denial_stops_without_retry_or_refresh(self):
+        denied = transcript.URLError(OSError("Tunnel connection failed: 403 Forbidden"))
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(transcript, "_discover_info", return_value=INFO) as discover, \
+                mock.patch.object(transcript, "urlopen", side_effect=denied) as fetch, \
+                mock.patch.object(acquisition.time, "sleep"):
+            with self.assertRaises(acquisition.AcquisitionError) as caught:
+                transcript.fetch_captions("https://youtu.be/abcdefghijk", Path(tmp) / "run", None)
+        self.assertEqual(caught.exception.category, "environment_blocked")
+        self.assertFalse(caught.exception.retryable)
+        fetch.assert_called_once()
+        discover.assert_called_once()
+
     def test_empty_valid_vtt_is_empty_response_not_absent_captions(self):
         with tempfile.TemporaryDirectory() as tmp, \
                 mock.patch.object(transcript, "_discover_info", return_value=INFO), \
@@ -69,7 +112,29 @@ class CaptionAcquisitionTests(unittest.TestCase):
             with self.assertRaises(acquisition.AcquisitionError) as caught:
                 transcript.fetch_captions("https://www.youtube.com/watch?v=abcdefghijk",
                                           Path(tmp) / "run", None, cache_dir=Path(tmp) / "cache")
+            self.assertEqual(list((Path(tmp) / "cache" / "captions").glob("*.json")), [])
         self.assertEqual(caught.exception.category, "empty_response")
+
+    def test_old_hash_bound_windows_corruption_is_reacquired_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            cache = root / "cache"
+            with mock.patch.object(transcript, "_discover_info", return_value=INFO), \
+                    mock.patch.object(transcript, "_fetch_caption_url", return_value=VTT.encode()) as fetch:
+                transcript.fetch_captions("https://youtu.be/abcdefghijk", root / "first", None, cache_dir=cache)
+                caption = next((cache / "captions").glob("*.vtt"))
+                receipt = caption.with_suffix(".json")
+                data = json.loads(receipt.read_text())
+                caption.write_bytes(VTT.replace("\n", "\r\r\n").encode())
+                data["payload"]["file_sha256"] = acquisition.hash_file(caption)
+                acquisition.write_cache(receipt, data["key"], data["payload"])
+                second = transcript.fetch_captions("https://youtu.be/abcdefghijk", root / "second", None,
+                                                  cache_dir=cache)
+                third = transcript.fetch_captions("https://youtu.be/abcdefghijk", root / "third", None,
+                                                 cache_dir=cache)
+                self.assertEqual(fetch.call_count, 2)
+                self.assertEqual(second["segments"][0]["text"], "hello")
+                self.assertTrue(third["cache_hit"])
 
     def test_inventory_schema_rejects_bad_duration_and_track_table(self):
         for bad in ({**INFO, "duration": float("nan")}, {**INFO, "subtitles": []},
@@ -83,6 +148,7 @@ class CaptionAcquisitionTests(unittest.TestCase):
         result = __import__("subprocess").CompletedProcess([], 0,
             '{"format":{"duration":"1"},"streams":[{"codec_type":"audio"}]}', "")
         with mock.patch.object(transcript, "run_process", return_value=result) as run, \
+                mock.patch.object(transcript, "require_tools"), \
                 mock.patch.object(transcript, "run_text", side_effect=AssertionError("unbounded helper")):
             self.assertTrue(transcript.probe("video.mp4")["has_audio"])
         self.assertGreater(run.call_args.kwargs["timeout"], 0)

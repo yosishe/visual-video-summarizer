@@ -121,7 +121,13 @@ Use a short, captioned lecture first. No Groq/OpenAI transcription key is needed
 
 ### Videos without captions and local recordings
 
-The built-in fallback uploads extracted audio to the provider you explicitly select:
+Some videos have no downloadable captions. Local transcription can handle them without a provider audio upload when `whisper-cli` and a compatible multilingual GGML model are installed and configured:
+
+```text
+python scripts/workflow.py init "<YouTube URL>" --work "<work>" --whisper local --local-model "<existing-model.bin>"
+```
+
+If local setup is missing, the agent should explain that option first and request approval for the exact software/model download. A subscription to Codex or Claude does not include a local ASR model or a separate transcription API key. Cloud transcription remains an optional provider choice:
 
 ```text
 /summarize-video /absolute/path/to/lecture.mp4 --lang en --whisper groq
@@ -131,6 +137,8 @@ The built-in fallback uploads extracted audio to the provider you explicitly sel
 Only choose one after accepting that provider's audio processing and any charges. Configure its matching `GROQ_API_KEY` or `OPENAI_API_KEY` in your environment or in `~/.config/summarize-video/.env` (owner-only permissions: `chmod 600` on macOS/Linux; on Windows keep it under your user profile and restrict it to your account). Do not paste keys into the agent conversation. The skill does not read another skill's credentials or a project's `.env`.
 
 `--no-whisper` disables this fallback and takes precedence if both flags are supplied. Without captions or authorized transcription, the pipeline stops with exit 6; it does not invent a frames-only transcript. Existing installations that relied on automatic upload must now select a provider explicitly.
+
+For Claude Code on the web or another managed cloud environment, check its supplied source-network policy before installing dependencies. A policy denial requires an operator-approved environment change or a permitted local session with the same URL and request. Installing tools, switching downloaders, or choosing an ASR provider cannot repair that network denial. A passing doctor only establishes local tool readiness; its version and skill path identify the copy actually being run.
 
 ## How it works
 

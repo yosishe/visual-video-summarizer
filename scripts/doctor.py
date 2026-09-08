@@ -13,6 +13,7 @@ from pathlib import Path
 
 from hostenv import find_chrome, install_hint, javascript_runtime, platform_key, python_command, run_text, utf8_stdio  # noqa: E402
 from safety import YTDLP_FLAGS, ytdlp_command  # noqa: E402
+from gates import ENGINE_VERSION  # noqa: E402
 
 
 def check(local: bool = False, pdf: bool = False, local_model: str | None = None) -> dict:
@@ -71,6 +72,8 @@ def check(local: bool = False, pdf: bool = False, local_model: str | None = None
     config = Path.home() / ".config" / "summarize-video" / ".env"
     return {
         "ready": all(r["available"] for r in rows if r["required"]), "checks": rows,
+        "readiness_scope": "local_tools_only", "source_access": "not_checked",
+        "engine_version": ENGINE_VERSION, "skill_dir": str(Path(__file__).resolve().parent.parent),
         "platform": platform_key(), "python_command": python_command(),
         "cloud_transcription": "off unless --whisper groq|openai is explicitly selected",
         "model_privacy": "Your agent provider processes the transcript and selected images under its own settings.",
@@ -93,7 +96,8 @@ def main() -> int:
     if args.json:
         print(json.dumps(result, indent=2))
     else:
-        print("Ready" if result["ready"] else "Missing required dependency")
+        print("Local tools ready; source access is not checked" if result["ready"] else "Missing required dependency")
+        print(f"Skill: {result['engine_version']} at {result['skill_dir']}")
         for row in result["checks"]:
             status = "OK" if row["available"] else ("MISSING" if row["required"] else "optional")
             print(f"- {row['name']}: {status}" + (f" ({row['version']})" if row.get("version") else ""))

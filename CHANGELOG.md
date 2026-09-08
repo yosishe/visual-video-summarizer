@@ -4,6 +4,8 @@
 
 Acquisition reliability and resumable transcription redesign from `b52d268`.
 
+- Reported-run repair (2026-09-09): preserve caption bytes on Windows, validate cues before caching, and recover old hash-bound but unusable caption caches. Explicit proxy-policy denials stop once in both downloader discovery and direct caption requests. Missing captions explain local transcription setup before any cloud option; disabled transcription stays disabled. Preflight now records the loaded skill version/path and distinguishes local tool readiness from source access. Native CLI fixtures and dependency-free fast tests work without Unix shebang or ffprobe assumptions.
+
 - Shared typed failures, three-attempt transient recovery, Retry-After seconds/date support, persistent cooldowns, finite acquisition deadlines and child cancellation. Downloader internal retries are disabled; one fragment is acquired at a time and missing fragments abort.
 - Caption discovery is reused and the selected URL is fetched directly. Expired resource URLs permit one recorded metadata refresh; access restrictions do not activate another scraper or cloud transcription. Caches bind canonical source, selected track/options and content hashes; optional `--cache-dir` shares entries under OS locks. Combined media is reused, and frame-only acquisition prefers video without a separate audio stream.
 - Installed multilingual whisper.cpp via `--whisper local --local-model` or `LOCAL_WHISPER_MODEL`. No install/model download is automatic. Cloud provider selection remains explicit. Per-chunk atomic checkpoints, actual encoded upload limits, overlapping chunk reconciliation, permanent-provider stops and uncertain-upload receipts protect recovery.

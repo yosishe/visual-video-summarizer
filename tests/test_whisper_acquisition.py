@@ -18,6 +18,11 @@ import acquisition  # noqa: E402
 import whisper  # noqa: E402
 
 
+def _run_python_cli_fixture(command, **kwargs):
+    """Run the fake CLI as a real subprocess without relying on Unix shebangs."""
+    return acquisition.run_process([sys.executable, *command], **kwargs)
+
+
 class WhisperAcquisitionTests(unittest.TestCase):
     def test_malformed_segments_and_untimed_text_are_rejected(self):
         bad = [
@@ -188,18 +193,17 @@ class WhisperAcquisitionTests(unittest.TestCase):
             self.assertEqual(calls, {"a.mp3": 1, "b.mp3": 2})
 
     def test_installed_whisper_cli_json_is_normalized(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(whisper, "run_process", side_effect=_run_python_cli_fixture):
             root = Path(tmp)
             binary = root / "whisper-cli"
             binary.write_text(
-                "#!/usr/bin/env python3\n"
                 "import json,sys\n"
                 "if '--help' in sys.argv:\n print('whisper.cpp help 1.2.3')\n raise SystemExit(0)\n"
                 "base=sys.argv[sys.argv.index('-of')+1]\n"
                 "json.dump(sys.argv,open(base+'.args.json','w'))\n"
                 "json.dump({'transcription':[{'offsets':{'from':250,'to':1250},'text':' hello '}]},open(base+'.json','w'))\n",
                 encoding="utf-8")
-            binary.chmod(0o755)
             model = root / "ggml-large-v3.bin"
             model.write_bytes(b"lmgg" + (51865).to_bytes(4, "little") + b"fixture")
             wav = root / "audio.wav"
@@ -211,16 +215,16 @@ class WhisperAcquisitionTests(unittest.TestCase):
             self.assertEqual(segments, [{"start": 0.25, "end": 1.25, "text": "hello"}])
 
     def test_local_cli_defaults_to_language_auto_and_fingerprints_binary(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(whisper, "run_process", side_effect=_run_python_cli_fixture):
             root = Path(tmp)
             binary = root / "whisper-cli"
             binary.write_text(
-                "#!/usr/bin/env python3\nimport json,sys\n"
+                "import json,sys\n"
                 "if '--help' in sys.argv:\n print('bounded help')\n raise SystemExit(0)\n"
                 "base=sys.argv[sys.argv.index('-of')+1]\njson.dump(sys.argv,open(base+'.args.json','w'))\n"
                 "json.dump({'segments':[{'start':0,'end':1,'text':'ok'}]},open(base+'.json','w'))\n",
                 encoding="utf-8")
-            binary.chmod(0o755)
             model = root / "ggml-large-v3.bin"
             model.write_bytes(b"lmgg" + (51865).to_bytes(4, "little") + b"fixture")
             wav = root / "audio.wav"

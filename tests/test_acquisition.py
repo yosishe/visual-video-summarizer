@@ -67,6 +67,14 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(a.classify_tool_failure("PO Token needed").category, "access_restricted")
         self.assertFalse(a.classify_tool_failure("strange failure").retryable)
 
+    def test_proxy_policy_denial_is_distinct_from_youtube_access_restriction(self):
+        for message in ("Tunnel connection failed: 403 Forbidden",
+                        "HTTPS proxy denied access by network policy"):
+            error = a.classify_tool_failure(message)
+            self.assertEqual(error.category, "environment_blocked")
+            self.assertFalse(error.retryable)
+        self.assertEqual(a.classify_tool_failure("HTTP Error 403: Forbidden").category, "access_restricted")
+
     def test_success_and_failure_attempt_metrics(self):
         with tempfile.TemporaryDirectory() as tmp:
             call = mock.Mock(side_effect=[a.http_failure(503), {"ok": True}])

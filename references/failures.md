@@ -1,5 +1,12 @@
 # Failure modes and exit codes
 
+## Reported-run recovery
+
+- No caption tracks: distinguish the downloader's empty inventory from a failed request. With no configured backend, explain local `whisper-cli` plus a compatible multilingual model first; request approval before downloading missing software/models. Cloud is a separate explicit choice, not the default suggested provider. Respect `--no-whisper` and do not suggest uploading when it is set.
+- Explicit proxy/tunnel policy denial: `environment_blocked` identifies the execution environment, not a deleted video. Preserve the same URL and requested output for a permitted environment or operator-approved policy repair. Do not install more downloaders, try unrelated hosts or switch transcription providers.
+- Windows caption caches written by the earlier implementation may contain doubled carriage returns. Validated acquisition now rejects unusable cached cues and reacquires the selected track under the normal bounded policy; no manual receipt editing is needed.
+- Record the doctor-reported engine version and skill directory when debugging. An installed copy does not automatically follow a repository branch. Local tool readiness and a stopped run do not establish successful summary delivery.
+
 `workflow.py run` propagates the failing stage's exit code and prints a `NEXT` block; `workflow.py status --work "<work>"` shows every stage. Never work around a gate: the codes below are the workflow refusing to claim something it cannot prove.
 
 | Exit | Meaning | What to do |

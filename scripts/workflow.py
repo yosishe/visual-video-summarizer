@@ -344,10 +344,16 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
             block(stage, "stale", "; ".join(result.info["stale"]))
         elif status == "acquisition_failed":
             error = transcript.get("acquisition_error") or {}
+            recovery = ("Read the recorded acquisition category and cooldown. Repair the cause before an explicit retry; "
+                        "do not switch providers after access/authentication/quota failures.")
+            if error.get("category") == "environment_blocked":
+                recovery = ("This environment's network policy denied source access. Preserve the same video URL and "
+                            "output request. Continue in a user-authorized environment that permits the source, "
+                            "or ask its operator to repair the network policy. Do not install more downloaders, "
+                            "probe alternative hosts, upload audio, or route around the denial.")
             block(stage, "failed", error.get("message") or detail.get("reason") or "Acquisition failed",
                   exit_code=error.get("exit_code") or EXIT_ACQUISITION,
-                  next_step="Read the recorded acquisition category and cooldown. Repair the cause before an explicit retry; "
-                            "do not switch providers after access/authentication/quota failures.")
+                  next_step=recovery)
         elif status == "partial" and not partial_accepted(transcript):
             block(stage, "failed", "Transcription has unfinished chunks; successful chunks are preserved",
                   exit_code=EXIT_PARTIAL, next_step="Resume unfinished chunks with run --retry after resolving the failure, "
@@ -361,10 +367,20 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
                   next_step=SOURCE_UNAVAILABLE_NEXT.format(reason=reason))
         elif status == "no_transcript":
             reason = detail.get("reason") or "no usable transcript"
-            block(stage, "failed", reason, exit_code=6, next_step=(
-                "There is no frames-only path. Options: ask the user to authorize cloud transcription "
-                "(`init --force --whisper groq|openai` — audio is uploaded to that provider), force a caption track "
-                "with `--langs`, or choose another source."))
+            if run.get("request", {}).get("no_whisper"):
+                recovery = ("There is no frames-only path. Transcription is explicitly disabled by --no-whisper; "
+                            "keep it disabled unless the user changes that choice. Use an available caption track "
+                            "or a captioned source; do not initiate transcription setup or cloud uploads.")
+            else:
+                recovery = ("There is no frames-only path. First explain the local option: an installed whisper-cli "
+                            "and compatible multilingual model can transcribe without an audio upload "
+                            "(`init --force --whisper local --local-model <existing-model>`, then `run --retry`). "
+                            "If either is missing, propose the exact local setup and request approval before installation "
+                            "or a model download. Cloud is a separate explicit choice "
+                            "(`init --force --whisper groq|openai`) with provider processing and possible charges; "
+                            "do not choose a provider merely because a key exists. --langs only selects a track "
+                            "that actually exists in the recorded inventory.")
+            block(stage, "failed", reason, exit_code=6, next_step=recovery)
         elif result.errors:
             block(stage, "invalid", "; ".join(result.errors), exit_code=EXIT_INVALID,
                   next_step="Re-run the transcript stage (`workflow.py run --retry`).")
@@ -1332,7 +1348,7 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--tier", choices=("standard", "high"), default=None)
     init.add_argument("--pdf", action=argparse.BooleanOptionalAction, default=None)
     init.add_argument("--whisper", choices=("local", "groq", "openai"), default=None,
-                      help="explicit consent to upload audio to this provider when captions are missing")
+                      help="local runs whisper.cpp; groq/openai explicitly authorize audio upload when captions are missing")
     init.add_argument("--no-whisper", action="store_true", default=None)
     init.add_argument("--local-model", default=None, help="explicit compatible multilingual whisper.cpp model path")
     init.add_argument("--cache-dir", default=None, help="opt-in shared cache; default is run-local")

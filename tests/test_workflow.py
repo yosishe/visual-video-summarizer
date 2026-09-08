@@ -380,6 +380,39 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.wf("run", "--retry"), 6)
         self.assertEqual(self.fake.calls, ["transcript.py", "transcript.py"])
 
+    def test_missing_captions_explains_local_setup_before_cloud_choice(self):
+        self.fake.captions = False
+        self.init()
+        self.assertEqual(self.wf("run"), 6)
+        next_step = self.run_json()["blocker"]["next"]
+        self.assertIn("--whisper local", next_step)
+        self.assertIn("--local-model", next_step)
+        self.assertLess(next_step.index("--whisper local"), next_step.index("--whisper groq|openai"))
+        self.assertIn("approval", next_step)
+        self.assertEqual(self.fake.calls, ["transcript.py"])
+
+    def test_disabled_transcription_does_not_recommend_cloud_upload(self):
+        self.fake.captions = False
+        self.init("--no-whisper")
+        self.assertEqual(self.wf("run"), 6)
+        next_step = self.run_json()["blocker"]["next"]
+        self.assertIn("disabled", next_step)
+        self.assertNotIn("--whisper groq|openai", next_step)
+
+    def test_proxy_policy_failure_recommends_environment_repair(self):
+        self.init()
+        self.wf("run")
+        payload = json.loads((self.work / "transcript.json").read_text())
+        payload.update(status="acquisition_failed", segments=[], source=None,
+                       acquisition_error={"category": "environment_blocked", "exit_code": 14,
+                                          "message": "Environment proxy denied source access"})
+        self.write("transcript.json", payload)
+        self.assertEqual(self.wf("run"), 14)
+        next_step = self.run_json()["blocker"]["next"]
+        self.assertIn("environment", next_step)
+        self.assertIn("network policy", next_step)
+        self.assertNotIn("another source", next_step)
+
     def test_illustrated_intent_with_all_false_chapters_is_invalid(self):
         self.init()
         self.wf("run")
