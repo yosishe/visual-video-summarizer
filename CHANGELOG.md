@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.9.0 — 2026-09-08
+
+Acquisition reliability and resumable transcription redesign from `b52d268`.
+
+- Shared typed failures, three-attempt transient recovery, Retry-After seconds/date support, persistent cooldowns, finite acquisition deadlines and child cancellation. Downloader internal retries are disabled; one fragment is acquired at a time and missing fragments abort.
+- Caption discovery is reused and the selected URL is fetched directly. Expired resource URLs permit one recorded metadata refresh; access restrictions do not activate another scraper or cloud transcription. Caches bind canonical source, selected track/options and content hashes; optional `--cache-dir` shares entries under OS locks. Combined media is reused, and frame-only acquisition prefers video without a separate audio stream.
+- Installed multilingual whisper.cpp via `--whisper local --local-model` or `LOCAL_WHISPER_MODEL`. No install/model download is automatic. Cloud provider selection remains explicit. Per-chunk atomic checkpoints, actual encoded upload limits, overlapping chunk reconciliation, permanent-provider stops and uncertain-upload receipts protect recovery.
+- Incomplete transcription exits 15. Exact-gap user acceptance permits visibly PARTIAL delivery with `complete: false`; all existing evidence gates still apply. Acquisition failures/deferred retries exit 14; existing exit codes remain.
+- `run --json` emits one compact result and retains full reports on disk. Omitted same-source options survive reconfiguration; upload authorization does not transfer to a different source. Missing PDF dependencies permit HTML but leave PDF outstanding.
+- Preflight checks supported installed Deno/Node versions and EJS visibility. Image cost metadata identifies the Claude patch proxy as an estimate. Windows CI retries setup at most three times and verifies ffmpeg/ffprobe immediately.
+- Decision fixtures cover cache reuse/corruption, zero-call completion, rate limits, provider failures, uncertainty, response/chunk limits, local model/CLI behavior, partial delivery and boundaries. Local ASR quality and live provider cost require separately available models/audio/provider authorization; deterministic fixtures do not establish them.
+
 ## 1.8.0 — 2026-09-06
 
 Second reliability release. Baseline audited at `c56e2fcea38e6923a557bc51dc42bb3a95426bf9` (1.7.0, 215 tests green). The 1.7 controller gated every stage, but three mechanisms still let an incomplete or mis-ordered run look complete: the inputs record in `run.json` was overwritten on every call (so a `stale` verdict lived exactly one `status`), `init --force` reset it, and nothing compared what an artifact *said* it was made for (source, options, engine, language) with what the run now asked for. Eight silent successes were reproduced on the 1.7 controller with fakes — a different video accepted after `init --force`, a standard-tier pool delivered under a high-tier request, a no-visuals decision contradicted by chapters that need frames, an engine upgrade invalidating nothing, a foreign bundle passing `verify` — and are now refused by code.

@@ -1,237 +1,182 @@
 #!/usr/bin/env python3
-"""Transcribe a video via Groq or OpenAI Whisper API.
-
-Strategy: extract audio (mono 16kHz mp3, tiny payload), upload only to the explicitly selected
-provider. Returns segments in the same shape as transcribe.parse_vtt so
-the rest of the pipeline (filter_range, format_transcript) doesn't care where
-the transcript came from.
-
-Pure stdlib — no `pip install groq` or `pip install openai` needed.
-"""
+"""Bounded remote or installed whisper.cpp transcription."""
 from __future__ import annotations
 
-import io
-import json
-import math
-import mimetypes
-import os
-import shutil
-import ssl
-import subprocess
-import sys
-import time
-import urllib.error
-import uuid
+import io, json, math, mimetypes, os, re, shutil, ssl, sys, time, urllib.error, uuid
 from pathlib import Path
-from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler
+from urllib.request import HTTPRedirectHandler, HTTPSHandler, Request, build_opener
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from hostenv import require_tools, run_text  # noqa: E402
-
+from acquisition import (AcquisitionError, DISCOVERY_TIMEOUT, MEDIA_TIMEOUT, UPLOAD_TIMEOUT, canonical_hash,
+    file_lock, hash_file, http_failure, read_cache, record_event, retry_call,
+    run_process, write_cache)  # noqa: E402
+from hostenv import require_tools  # noqa: E402
+from safety import atomic_write  # noqa: E402
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
 GROQ_MODEL = "whisper-large-v3"
-
 OPENAI_ENDPOINT = "https://api.openai.com/v1/audio/transcriptions"
 OPENAI_MODEL = "whisper-1"
+MAX_AUDIO_BYTES = 24_000_000
+MAX_MULTIPART_BYTES = 25_000_000
+MAX_UPLOAD_BYTES = MAX_AUDIO_BYTES
+MAX_CHUNK_SECONDS = 600.0
+LOCAL_EXTRACTION = "pcm_s16le-16000hz-mono"
+REMOTE_EXTRACTION = "mp3-64k-16000hz-mono"
+FATAL_PROVIDER_CATEGORIES = {"authentication", "authorization", "quota_exceeded", "uncertain_upload"}
+MAX_RESPONSE_BYTES = 10_000_000
 
-# Both Groq's free tier and OpenAI whisper-1 cap uploads at 25 MB. We target a
-# margin under that so multipart framing overhead never pushes a chunk over.
-MAX_UPLOAD_BYTES = 24 * 1024 * 1024
+
+def plan_chunks(total_seconds: float, total_bytes: int,
+                max_bytes: int = MAX_AUDIO_BYTES) -> list[tuple[float, float]]:
+    if not math.isfinite(total_seconds) or total_seconds < 0 or total_bytes < 0 or max_bytes <= 0:
+        raise AcquisitionError("invalid_input", "Invalid audio duration or size")
+    # Leave room for a two-second look-back at every boundary while keeping
+    # each real checkpoint request at or below ten minutes.
+    stride = MAX_CHUNK_SECONDS - 2.0
+    count = max(1, math.ceil(total_bytes / max_bytes),
+                math.ceil(total_seconds / stride) if total_seconds else 1)
+    size = total_seconds / count
+    return [(round(i * size, 3), round(total_seconds - i * size if i == count - 1 else size, 3))
+            for i in range(count)]
 
 
-def plan_chunks(
-    total_seconds: float,
-    total_bytes: int,
-    max_bytes: int = MAX_UPLOAD_BYTES,
-) -> list[tuple[float, float]]:
-    """Split a duration into contiguous (offset, duration) chunks under max_bytes.
-
-    Size scales linearly with duration (constant-bitrate mono mp3), so an even
-    time split yields evenly-sized chunks. Returns a single full-length chunk
-    when the audio already fits.
-    """
-    if total_bytes <= max_bytes or total_seconds <= 0:
-        return [(0.0, total_seconds)]
-
-    n = math.ceil(total_bytes / max_bytes)
-    chunk = total_seconds / n
-    plan: list[tuple[float, float]] = []
-    for i in range(n):
-        offset = i * chunk
-        # The last chunk absorbs any rounding remainder so durations sum exactly.
-        duration = (total_seconds - offset) if i == n - 1 else chunk
-        plan.append((round(offset, 3), round(duration, 3)))
-    return plan
+def _dotenv_value(path: Path, name: str) -> str | None:
+    if not path.is_file() or path.is_symlink(): return None
+    try:
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line: continue
+            key, _, value = line.partition("=")
+            if key.strip() == name:
+                value = value.strip()
+                if len(value) >= 2 and value[0] in "\"'" and value[-1] == value[0]: value = value[1:-1]
+                return value or None
+    except OSError: pass
+    return None
 
 
 def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, None]:
-    """Return (backend, api_key). Prefers Groq, falls back to OpenAI.
-
-    If `preferred` is "groq" or "openai", only that backend's key is considered.
-    """
-    def _from_env(name: str) -> str | None:
-        value = os.environ.get(name)
-        return value.strip() if value else None
-
-    def _from_dotenv(path: Path, name: str) -> str | None:
-        if not path.exists():
-            return None
-        try:
-            for line in path.read_text(encoding="utf-8").splitlines():
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                key, _, value = line.partition("=")
-                if key.strip() != name:
-                    continue
-                value = value.strip()
-                if len(value) >= 2 and value[0] in ('"', "'") and value[-1] == value[0]:
-                    value = value[1:-1]
-                return value or None
-        except OSError:
-            return None
-        return None
-
-    # Only this skill's own config home is read. Deliberately NOT the current directory's
-    # .env — a skill run inside an unrelated project must never silently pick
-    # up (and transmit audio with) that project's API keys.
-    dotenv_paths = [
-        Path.home() / ".config" / "summarize-video" / ".env",
-    ]
-
     candidates = (("GROQ_API_KEY", "groq"), ("OPENAI_API_KEY", "openai"))
-    if preferred is not None:
-        candidates = tuple(c for c in candidates if c[1] == preferred)
-
-    for key_name, backend in candidates:
-        value = _from_env(key_name)
-        if not value:
-            for candidate in dotenv_paths:
-                value = _from_dotenv(candidate, key_name)
-                if value:
-                    break
-        if value:
-            return backend, value
-
+    if preferred is not None: candidates = tuple(x for x in candidates if x[1] == preferred)
+    config = Path.home() / ".config" / "summarize-video" / ".env"
+    for name, backend in candidates:
+        value = (os.environ.get(name) or "").strip() or _dotenv_value(config, name)
+        if value: return backend, value
     return None, None
 
 
-def extract_audio(video_path: str, out_path: Path) -> Path:
-    """Extract mono 16kHz 64kbps mp3 — ~480 kB/min, fits any Whisper limit."""
-    require_tools("ffmpeg")
+def configured_local_model() -> Path | None:
+    """Resolve LOCAL_WHISPER_MODEL only; never inspect credential files."""
+    value = (os.environ.get("LOCAL_WHISPER_MODEL") or "").strip()
+    return validate_local_model(Path(value).expanduser()) if value else None
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        "ffmpeg",
-        "-hide_banner",
-        "-loglevel", "error",
-        "-y",
-        "-i", str(Path(video_path).resolve()),
-        "-vn",
-        "-acodec", "libmp3lame",
-        "-ar", "16000",
-        "-ac", "1",
-        "-b:a", "64k",
-        str(out_path.resolve()),
-    ]
-    result = run_text(cmd)
-    if result.returncode != 0:
-        raise SystemExit(f"ffmpeg audio extraction failed: {result.stderr.strip()}")
-    if not out_path.exists() or out_path.stat().st_size == 0:
-        raise SystemExit("ffmpeg produced no audio — video may have no audio track")
+
+def validate_local_model(path: Path) -> Path:
+    if path.is_symlink():
+        raise AcquisitionError("invalid_input", "Configured local Whisper model must not be a symlink")
+    resolved = path.resolve()
+    if not resolved.is_file() or resolved.stat().st_size == 0:
+        raise AcquisitionError("dependency", "Configured local Whisper model is missing or invalid")
+    name = resolved.name.lower()
+    if re.search(r"(?:^|[.-])en(?:[.-]|$)", name):
+        raise AcquisitionError("invalid_input", "A multilingual GGML Whisper model is required; .en models are incompatible")
+    if resolved.suffix.lower() != ".bin":
+        raise AcquisitionError("invalid_input", "Configured local model must be a GGML .bin model")
+    try:
+        with resolved.open("rb") as stream: header = stream.read(8)
+    except OSError as exc: raise AcquisitionError("dependency", "Configured local Whisper model is unreadable") from exc
+    magic = header[:4]
+    if len(header) != 8 or magic not in {b"ggml", b"lmgg"}:
+        raise AcquisitionError("invalid_input", "Configured local model does not have a recognized GGML header")
+    n_vocab = int.from_bytes(header[4:8], "little" if magic == b"lmgg" else "big")
+    if not 51865 <= n_vocab <= 100000:
+        raise AcquisitionError("invalid_input", "A compatible multilingual Whisper vocabulary is required")
+    return resolved
+
+
+def _local_binary() -> Path:
+    found = shutil.which("whisper-cli") or shutil.which("whisper.cpp")
+    if not found: raise AcquisitionError("dependency", "whisper.cpp whisper-cli is not installed")
+    return Path(found).resolve()
+
+
+def _binary_version(binary: Path) -> str:
+    """Fingerprint the executable plus bounded help; --version is not portable."""
+    result = run_process([str(binary), "--help"], timeout=15)
+    text = ((result.stdout or "") + "\n" + (result.stderr or ""))[:64_000]
+    if result.returncode != 0 or ("usage" not in text.casefold() and "help" not in text.casefold()):
+        raise AcquisitionError("dependency", "Unable to identify the installed whisper.cpp CLI")
+    lines = text.splitlines()
+    stable_help = "\n".join(lines[next((i for i, line in enumerate(lines) if "usage" in line.casefold()), 0):])
+    return canonical_hash({"binary_sha256": hash_file(binary), "help_fingerprint": canonical_hash(stable_help)})
+
+
+def extract_audio(video_path: str, out_path: Path) -> Path:
+    require_tools("ffmpeg"); out_path.parent.mkdir(parents=True, exist_ok=True)
+    result = run_process(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i",
+        str(Path(video_path).resolve()), "-vn", "-acodec", "libmp3lame", "-ar", "16000",
+        "-ac", "1", "-b:a", "64k", str(out_path.resolve())], timeout=MEDIA_TIMEOUT)
+    if result.returncode != 0 or not out_path.is_file() or out_path.stat().st_size == 0:
+        raise AcquisitionError("invalid_input", "ffmpeg audio extraction failed or produced no audio")
+    return out_path
+
+
+def extract_local_wav(video_path: str, out_path: Path) -> Path:
+    require_tools("ffmpeg"); out_path.parent.mkdir(parents=True, exist_ok=True)
+    result = run_process(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i",
+        str(Path(video_path).resolve()), "-vn", "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le",
+        str(out_path.resolve())], timeout=MEDIA_TIMEOUT)
+    if result.returncode != 0 or not out_path.is_file() or out_path.stat().st_size <= 44:
+        raise AcquisitionError("invalid_input", "Failed to extract 16 kHz 16-bit mono WAV audio")
     return out_path
 
 
 def audio_duration(audio_path: Path) -> float:
-    """Return the duration of an audio file in seconds via ffprobe."""
     require_tools("ffprobe")
-
-    result = run_text(
-        [
-            "ffprobe",
-            "-v", "quiet",
-            "-print_format", "json",
-            "-show_format",
-            str(audio_path.resolve()),
-        ],
-    )
-    if result.returncode != 0:
-        raise SystemExit(f"ffprobe failed: {result.stderr.strip()}")
-    fmt = json.loads(result.stdout or "{}").get("format", {})
-    return float(fmt.get("duration") or 0.0)
+    result = run_process(["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format",
+                          str(audio_path.resolve())], timeout=DISCOVERY_TIMEOUT)
+    try: duration = float(json.loads(result.stdout or "{}")["format"]["duration"])
+    except (ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        raise AcquisitionError("invalid_input", "Audio duration is unavailable") from exc
+    if result.returncode != 0 or not math.isfinite(duration) or duration <= 0:
+        raise AcquisitionError("invalid_input", "Audio duration is unavailable")
+    return duration
 
 
-def split_audio(
-    full_audio: Path,
-    work_dir: Path,
-    plan: list[tuple[float, float]],
-) -> list[tuple[Path, float]]:
-    """Slice full_audio into per-plan chunk files, returning (path, offset) pairs.
-
-    Uses stream copy (`-c copy`) so there is no re-encode and no quality loss;
-    mp3 frame boundaries are close enough for transcription's purposes.
-    """
-    require_tools("ffmpeg")
-
-    work_dir.mkdir(parents=True, exist_ok=True)
-    chunks: list[tuple[Path, float]] = []
-    for index, (offset, duration) in enumerate(plan):
-        out_path = work_dir / f"chunk_{index:03d}.mp3"
-        cmd = [
-            "ffmpeg",
-            "-hide_banner",
-            "-loglevel", "error",
-            "-y",
-            "-ss", f"{offset:.3f}",
-            "-i", str(full_audio.resolve()),
-            "-t", f"{duration:.3f}",
-            "-c", "copy",
-            str(out_path.resolve()),
-        ]
-        result = run_text(cmd)
-        if result.returncode != 0 or not out_path.exists() or out_path.stat().st_size == 0:
-            raise SystemExit(
-                f"ffmpeg failed to split audio chunk {index + 1}: {result.stderr.strip()}"
-            )
-        chunks.append((out_path, offset))
+def split_audio(full_audio: Path, work_dir: Path, plan: list[tuple[float, float]]) -> list[tuple[Path, float, float]]:
+    require_tools("ffmpeg"); work_dir.mkdir(parents=True, exist_ok=True)
+    pending, chunks, index = list(plan), [], 0
+    while pending:
+        offset, duration = pending.pop(0)
+        actual_offset = max(0.0, offset - (2.0 if offset else 0.0))
+        duration += offset - actual_offset
+        offset = actual_offset
+        out = work_dir / f"chunk_{index:04d}.mp3"
+        result = run_process(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-ss", f"{offset:.3f}",
+            "-i", str(full_audio.resolve()), "-t", f"{duration:.3f}", "-vn", "-ar", "16000", "-ac", "1",
+            "-b:a", "64k", str(out.resolve())], timeout=MEDIA_TIMEOUT)
+        if result.returncode != 0 or not out.is_file() or out.stat().st_size == 0:
+            raise AcquisitionError("invalid_input", f"Failed to create audio chunk {index + 1}")
+        if out.stat().st_size > MAX_AUDIO_BYTES:
+            out.unlink(missing_ok=True)
+            if duration <= 1: raise AcquisitionError("invalid_input", "Audio chunk cannot fit the upload limit")
+            half = duration / 2; pending[0:0] = [(offset, half), (offset + half, duration - half)]; continue
+        chunks.append((out, offset, duration)); index += 1
     return chunks
 
 
 def _build_multipart(fields: dict[str, str], file_path: Path) -> tuple[bytes, str]:
-    """Assemble a multipart/form-data body the Whisper APIs accept.
-
-    Whisper's multipart upload is small and predictable — doing it by hand
-    keeps us on pure stdlib instead of pulling requests/groq/openai SDKs.
-    """
-    boundary = f"----WatchBoundary{uuid.uuid4().hex}"
-    eol = b"\r\n"
-    buf = io.BytesIO()
-
+    boundary, eol, stream = f"----WatchBoundary{uuid.uuid4().hex}", b"\r\n", io.BytesIO()
     for name, value in fields.items():
-        buf.write(f"--{boundary}".encode()); buf.write(eol)
-        buf.write(f'Content-Disposition: form-data; name="{name}"'.encode()); buf.write(eol)
-        buf.write(eol)
-        buf.write(str(value).encode()); buf.write(eol)
-
-    mimetype = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
-    buf.write(f"--{boundary}".encode()); buf.write(eol)
-    buf.write(
-        f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"'.encode()
-    )
-    buf.write(eol)
-    buf.write(f"Content-Type: {mimetype}".encode()); buf.write(eol)
-    buf.write(eol)
-    buf.write(file_path.read_bytes())
-    buf.write(eol)
-    buf.write(f"--{boundary}--".encode()); buf.write(eol)
-
-    return buf.getvalue(), boundary
-
-
-MAX_ATTEMPTS = 4       # initial + 3 retries
-MAX_429_RETRIES = 2
-RETRY_BASE_DELAY = 2.0
+        stream.write(f"--{boundary}".encode() + eol)
+        stream.write(f'Content-Disposition: form-data; name="{name}"'.encode() + eol + eol + str(value).encode() + eol)
+    mime = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+    stream.write(f"--{boundary}".encode() + eol)
+    stream.write(f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"'.encode() + eol)
+    stream.write(f"Content-Type: {mime}".encode() + eol + eol + file_path.read_bytes() + eol)
+    stream.write(f"--{boundary}--".encode() + eol)
+    return stream.getvalue(), boundary
 
 
 class NoUploadRedirects(HTTPRedirectHandler):
@@ -240,257 +185,328 @@ class NoUploadRedirects(HTTPRedirectHandler):
 
 
 def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path,
-                  language: str | None = None) -> dict:
+                  language: str | None = None, work: Path | None = None,
+                  retry_uncertain: bool = False) -> dict:
     if endpoint not in {GROQ_ENDPOINT, OPENAI_ENDPOINT}:
-        raise SystemExit("Unapproved transcription endpoint")
-    fields = {
-        "model": model,
-        "response_format": "verbose_json",
-        "temperature": "0",
-    }
-    if language:
-        # A known source language (YouTube metadata, --language) stops Whisper
-        # drifting between Hebrew and English on mixed audio.
-        fields["language"] = language
+        raise AcquisitionError("invalid_input", "Unapproved transcription endpoint")
+    audio_path = Path(audio_path)
+    if not audio_path.is_file() or audio_path.stat().st_size > MAX_AUDIO_BYTES:
+        raise AcquisitionError("invalid_input", "Audio exceeds the 24,000,000-byte audio limit")
+    work = Path(work) if work else audio_path.parent / ".upload-receipts"
+    lock_key = canonical_hash([endpoint, model, language, hash_file(audio_path)])
+    with file_lock(work / "upload-locks" / f"{lock_key}.lock"):
+        return _post_whisper_locked(endpoint, api_key, model, audio_path, language, work, retry_uncertain)
+
+
+def _post_whisper_locked(endpoint: str, api_key: str, model: str, audio_path: Path,
+                         language: str | None, work: Path, retry_uncertain: bool) -> dict:
+    if endpoint not in {GROQ_ENDPOINT, OPENAI_ENDPOINT}:
+        raise AcquisitionError("invalid_input", "Unapproved transcription endpoint")
+    audio_path = Path(audio_path)
+    if not audio_path.is_file() or audio_path.stat().st_size > MAX_AUDIO_BYTES:
+        raise AcquisitionError("invalid_input", "Audio exceeds the 24,000,000-byte audio limit")
+    fields = {"model": model, "response_format": "verbose_json", "temperature": "0"}
+    if language: fields["language"] = language
     body, boundary = _build_multipart(fields, audio_path)
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": f"multipart/form-data; boundary={boundary}",
-        # Groq sits behind Cloudflare — the default `Python-urllib/3.x` UA
-        # trips WAF rule 1010 (403) before auth even runs. Any non-default
-        # UA clears it; we identify honestly.
-        "User-Agent": "summarize-video-skill/1.0 (+claude-code; python-urllib)",
-    }
-
+    if len(body) > MAX_MULTIPART_BYTES:
+        raise AcquisitionError("invalid_input", "Upload multipart body exceeds the 25,000,000-byte limit")
+    provider = "groq" if endpoint == GROQ_ENDPOINT else "openai"
+    opkey = canonical_hash([endpoint, model, language, hash_file(audio_path)])
+    response_path = work / "provider-responses" / f"{opkey}.json"
+    cached = read_cache(response_path, opkey)
+    if isinstance(cached, dict):
+        _segments_from_response(cached)
+        record_event(work, "whisper-upload", provider, cache_hit=True)
+        return cached
+    pending = Path(work) / "uncertain" / f"{opkey}.json" if work else None
+    if pending and pending.exists():
+        if not retry_uncertain:
+            raise AcquisitionError("uncertain_upload", "A prior upload may have succeeded; use --retry-uncertain explicitly", uncertain=True)
+        pending.unlink(missing_ok=True)
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": f"multipart/form-data; boundary={boundary}",
+               "User-Agent": "summarize-video-skill/2.0 (python-urllib)"}
     opener = build_opener(HTTPSHandler(context=ssl.create_default_context()), NoUploadRedirects())
-    rate_limit_hits = 0
-    last_exc: Exception | None = None
 
-    for attempt in range(MAX_ATTEMPTS):
-        request = Request(endpoint, data=body, headers=headers, method="POST")
+    def send() -> dict:
+        if pending:
+            pending.parent.mkdir(parents=True, exist_ok=True)
+            atomic_write(pending, json.dumps({"state": "request_started", "key": opkey}))
         try:
-            with opener.open(request, timeout=300) as response:
-                payload = response.read().decode("utf-8", errors="replace")
+            with opener.open(Request(endpoint, data=body, headers=headers, method="POST"), timeout=UPLOAD_TIMEOUT) as response:
+                raw = response.read(MAX_RESPONSE_BYTES + 1)
         except urllib.error.HTTPError as exc:
-            # Provider bodies may echo credentials or private content.
-            last_exc = exc
-
-            # 4xx other than 429 are client errors — no retry will fix them.
-            if 300 <= exc.code < 500 and exc.code != 429:
-                raise SystemExit(f"Whisper request failed: HTTP {exc.code}")
-
-            if exc.code == 429:
-                rate_limit_hits += 1
-                if rate_limit_hits >= MAX_429_RETRIES:
-                    raise SystemExit(f"Whisper request failed: HTTP {exc.code}")
-                delay = _retry_after(exc) or RETRY_BASE_DELAY * (2 ** attempt) + 1
-            else:
-                delay = RETRY_BASE_DELAY * (2 ** attempt)
-
-            if attempt < MAX_ATTEMPTS - 1:
-                print(
-                    f"[vsum] whisper HTTP {exc.code} — retrying in {delay:.1f}s "
-                    f"(attempt {attempt + 2}/{MAX_ATTEMPTS})",
-                    file=sys.stderr,
-                )
-                time.sleep(delay)
-            continue
+            if pending: pending.unlink(missing_ok=True)
+            try: error_body = exc.read(65536)
+            except Exception: error_body = b""
+            finally: exc.close()
+            raise http_failure(exc.code, exc.headers, error_body) from exc
         except (urllib.error.URLError, TimeoutError, ConnectionResetError, OSError) as exc:
-            last_exc = exc
-            if attempt < MAX_ATTEMPTS - 1:
-                delay = RETRY_BASE_DELAY * (attempt + 1)
-                print(
-                    f"[vsum] whisper network error ({type(exc).__name__}) — "
-                    f"retrying in {delay:.1f}s (attempt {attempt + 2}/{MAX_ATTEMPTS})",
-                    file=sys.stderr,
-                )
-                time.sleep(delay)
-            continue
-
+            raise AcquisitionError("uncertain_upload", "Upload response was lost; retry requires explicit authorization", uncertain=True) from exc
+        if len(raw) > MAX_RESPONSE_BYTES:
+            raise AcquisitionError("invalid_response", "Whisper response body exceeds the safety limit", uncertain=True)
+        try: data = json.loads(raw)
+        except (json.JSONDecodeError, UnicodeError) as exc:
+            raise AcquisitionError("invalid_response", "Whisper returned a non-JSON response", uncertain=True) from exc
         try:
-            return json.loads(payload)
-        except json.JSONDecodeError as exc:
-            raise SystemExit("Whisper returned a non-JSON response") from exc
-
-    raise SystemExit(
-        f"Whisper request failed after {MAX_ATTEMPTS} attempts ({type(last_exc).__name__})"
-    )
+            normalized = {"segments": _segments_from_response(data)}
+            if isinstance(data.get("language"), str): normalized["language"] = data["language"]
+            write_cache(response_path, opkey, normalized)
+        except (AcquisitionError, OSError) as exc:
+            raise AcquisitionError("invalid_response", "Whisper response could not be validated and checkpointed", uncertain=True) from exc
+        if pending: pending.unlink(missing_ok=True)
+        return normalized
+    return retry_call("whisper-upload", send, provider=provider, work=work)
 
 
 def _retry_after(exc: urllib.error.HTTPError) -> float | None:
-    header = exc.headers.get("Retry-After") if getattr(exc, "headers", None) else None
-    if not header:
-        return None
-    try:
-        return float(header)
-    except ValueError:
-        return None
+    from acquisition import retry_after
+    return retry_after(exc.headers)
+
+
+def _segments_from_response(data: dict, *, max_duration: float | None = None) -> list[dict]:
+    if not isinstance(data, dict) or not isinstance(data.get("segments"), list):
+        raise AcquisitionError("invalid_response", "Whisper response has no timed segments")
+    output = []
+    for value in data["segments"]:
+        if not isinstance(value, dict): raise AcquisitionError("invalid_response", "Whisper returned a malformed segment")
+        try: start, end, text = float(value["start"]), float(value["end"]), value["text"]
+        except (KeyError, TypeError, ValueError) as exc:
+            raise AcquisitionError("invalid_response", "Whisper returned invalid timestamps") from exc
+        if not isinstance(text, str) or not math.isfinite(start) or not math.isfinite(end) or start < 0 or end <= start:
+            raise AcquisitionError("invalid_response", "Whisper returned invalid timestamps or text")
+        if max_duration is not None and end > max_duration + 1e-6:
+            raise AcquisitionError("invalid_response", "Whisper timestamp exceeds the encoded chunk duration")
+        if text.strip(): output.append({"start": round(start, 3), "end": round(end, 3), "text": text.strip()})
+    return output
 
 
 def shift_segments(segments: list[dict], offset_seconds: float) -> list[dict]:
-    """Return a copy of segments with start/end shifted by offset_seconds.
-
-    Each chunk is transcribed in isolation, so Whisper returns 0-based timestamps
-    per chunk; shifting by the chunk's offset stitches them into source time.
-    """
-    if offset_seconds == 0:
-        return segments
-    return [
-        {
-            "start": round(seg["start"] + offset_seconds, 2),
-            "end": round(seg["end"] + offset_seconds, 2),
-            "text": seg["text"],
-        }
-        for seg in segments
-    ]
+    return [{"start": round(s["start"] + offset_seconds, 3), "end": round(s["end"] + offset_seconds, 3),
+             "text": s["text"]} for s in segments]
 
 
-def _segments_from_response(data: dict) -> list[dict]:
-    """Convert Whisper verbose_json into our {start, end, text} segment format."""
-    out: list[dict] = []
-    for seg in data.get("segments") or []:
-        text = (seg.get("text") or "").strip()
-        if not text:
-            continue
-        out.append({
-            "start": round(float(seg.get("start") or 0.0), 2),
-            "end": round(float(seg.get("end") or 0.0), 2),
-            "text": text,
-        })
-
-    if not out:
-        full = (data.get("text") or "").strip()
-        if full:
-            out.append({"start": 0.0, "end": 0.0, "text": full})
-
-    return out
+def _tokens(text: str) -> list[str]: return re.findall(r"\w+", text.casefold(), flags=re.UNICODE)
 
 
-# Every skipped chunk is recorded here so transcript.json can say where the
-# transcript has holes; reset by transcribe_video().
+def merge_segments(existing: list[dict], incoming: list[dict], *, overlap_start: float, overlap_end: float) -> list[dict]:
+    result, prior = list(existing), [s for s in existing if s["end"] >= overlap_start and s["start"] <= overlap_end]
+    for segment in incoming:
+        duplicate = False
+        if segment["start"] <= overlap_end and segment["end"] >= overlap_start:
+            current = _tokens(segment["text"])
+            for old in prior:
+                if min(segment["end"], old["end"]) <= max(segment["start"], old["start"]):
+                    continue  # Repeated words at distinct times are distinct speech.
+                previous = _tokens(old["text"])
+                if current and (current == previous or (len(current) >= 2 and len(previous) >= len(current) and
+                    any(previous[i:i+len(current)] == current for i in range(len(previous)-len(current)+1)))):
+                    duplicate = True; break
+        if not duplicate: result.append(segment)
+    return sorted(result, key=lambda s: (s["start"], s["end"]))
+
+
 CHUNK_FAILURES: list[dict] = []
-
-
-def transcribe_chunks(
-    chunks: list[tuple[Path, float]],
-    transcribe_one,
-) -> list[dict]:
-    """Transcribe each chunk, shift its segments by the chunk offset, concatenate.
-
-    A chunk that fails after its own retries is logged, recorded in
-    CHUNK_FAILURES and skipped so one bad slice doesn't discard the whole
-    transcript. Raises only if every chunk fails.
-    """
-    segments: list[dict] = []
-    failures = 0
-    for index, (path, offset) in enumerate(chunks):
-        try:
-            chunk_segments = transcribe_one(path)
-        except SystemExit as exc:
-            failures += 1
-            CHUNK_FAILURES.append({"index": index, "offset_s": round(float(offset), 3), "error": str(exc)[:200]})
-            print(
-                f"[vsum] chunk {index + 1}/{len(chunks)} failed — skipping ({exc})",
-                file=sys.stderr,
-            )
-            continue
-        segments.extend(shift_segments(chunk_segments, offset))
-        print(
-            f"[vsum] chunk {index + 1}/{len(chunks)} → {len(chunk_segments)} segments",
-            file=sys.stderr,
-        )
-
-    if failures == len(chunks):
-        raise SystemExit("Whisper failed on every audio chunk")
-    return segments
-
-
 DETECTED_LANGUAGE: dict[str, str | None] = {"value": None}
 
 
-def _transcribe_file(backend: str, api_key: str, audio_path: Path,
-                     language: str | None = None) -> list[dict]:
-    """Upload one audio file and return its 0-based segments."""
-    if backend == "groq":
-        response = _post_whisper(GROQ_ENDPOINT, api_key, GROQ_MODEL, audio_path, language)
-    elif backend == "openai":
-        response = _post_whisper(OPENAI_ENDPOINT, api_key, OPENAI_MODEL, audio_path, language)
-    else:
-        raise SystemExit(f"Unknown whisper backend: {backend}")
+class PartialTranscription(SystemExit):
+    def __init__(self, segments: list[dict], failures: list[dict]):
+        self.segments, self.failures = segments, failures
+        super().__init__("Transcription is partial; one or more bounded audio ranges failed")
+
+
+def transcribe_chunks(chunks, transcribe_one) -> list[dict]:
+    chunk_list = list(chunks)
+    segments, failures, previous_end = [], [], 0.0
+    legacy_unbounded = bool(chunk_list) and all(len(item) == 2 for item in chunk_list)
+    for index, item in enumerate(chunk_list):
+        path, offset = item[0], float(item[1]); duration = float(item[2]) if len(item) > 2 else None
+        try:
+            local = transcribe_one(path)
+            if not local: raise AcquisitionError("empty_response", "Whisper returned no timed speech for this audio range")
+        except AcquisitionError as exc:
+            end = offset + duration if duration is not None else offset
+            failure = ({"index": index, "offset_s": round(offset, 3), "error": str(exc)[:200]}
+                       if legacy_unbounded else
+                       {"index": index, "offset_s": round(offset, 3), "range": {"start_s": round(offset, 3), "end_s": round(end, 3)},
+                        "status": exc.category, "error": str(exc)[:200]})
+            failures.append(failure); CHUNK_FAILURES.append(failure)
+            if exc.category in FATAL_PROVIDER_CATEGORIES or exc.uncertain or not legacy_unbounded:
+                if not legacy_unbounded:
+                    for later_index, later in enumerate(chunk_list[index + 1:], index + 1):
+                        later_offset, later_duration = float(later[1]), float(later[2])
+                        unattempted = {"index": later_index, "offset_s": round(later_offset, 3),
+                            "range": {"start_s": round(later_offset, 3), "end_s": round(later_offset + later_duration, 3)},
+                            "status": "not_attempted", "error": "Not attempted after transcription paused"}
+                        failures.append(unattempted); CHUNK_FAILURES.append(unattempted)
+                    if segments:
+                        raise PartialTranscription(segments, failures) from exc
+                raise
+            continue
+        except SystemExit as exc:
+            end = offset + duration if duration is not None else offset
+            failure = ({"index": index, "offset_s": round(offset, 3), "error": str(exc)[:200]}
+                       if legacy_unbounded else
+                       {"index": index, "offset_s": round(offset, 3), "range": {"start_s": round(offset, 3), "end_s": round(end, 3)},
+                        "status": "unknown", "error": str(exc)[:200]})
+            failures.append(failure); CHUNK_FAILURES.append(failure); continue
+        shifted = shift_segments(local, offset)
+        segments = merge_segments(segments, shifted, overlap_start=offset, overlap_end=previous_end) if segments and offset < previous_end else segments + shifted
+        previous_end = max(previous_end, offset + duration if duration is not None else max(s["end"] for s in shifted))
+    if failures and not legacy_unbounded:
+        if not segments: raise AcquisitionError("transcription_failed", "Whisper failed on every audio chunk")
+        raise PartialTranscription(segments, failures)
+    if failures and not segments:
+        raise AcquisitionError("transcription_failed", "Whisper failed on every audio chunk")
+    return segments
+
+
+def cached_chunk(audio_path: Path, cache_dir: Path, identity: dict, transcribe) -> list[dict]:
+    full = {**identity, "source_audio_sha256": hash_file(audio_path)}; key = canonical_hash(full)
+    receipt = Path(cache_dir) / "whisper" / f"{key}.json"
+    try: max_duration = float(identity["end"]) - float(identity["start"])
+    except (KeyError, TypeError, ValueError):
+        raise AcquisitionError("invalid_input", "Chunk cache identity requires finite bounds")
+    if not math.isfinite(max_duration) or max_duration <= 0:
+        raise AcquisitionError("invalid_input", "Chunk cache identity requires finite bounds")
+    with file_lock(receipt.with_suffix(".lock")):
+        cached = read_cache(receipt, key)
+        if isinstance(cached, dict) and cached.get("identity") == full:
+            segments = _segments_from_response({"segments": cached.get("segments")}, max_duration=max_duration)
+            record_event(cache_dir, "whisper-chunk", str(identity.get("engine")), cache_hit=True); return segments
+        segments = _segments_from_response({"segments": transcribe()}, max_duration=max_duration)
+        write_cache(receipt, key, {"identity": full, "segments": segments})
+        record_event(cache_dir, "whisper-chunk", str(identity.get("engine")), cache_hit=False); return segments
+
+
+def _transcribe_file(backend: str, api_key: str, audio_path: Path, language: str | None = None,
+                     *, work: Path | None = None, retry_uncertain: bool = False) -> list[dict]:
+    endpoint, model = ((GROQ_ENDPOINT, GROQ_MODEL) if backend == "groq" else (OPENAI_ENDPOINT, OPENAI_MODEL))
+    response = _post_whisper(endpoint, api_key, model, audio_path, language, work, retry_uncertain)
     detected = response.get("language")
-    if detected and not DETECTED_LANGUAGE["value"]:
-        DETECTED_LANGUAGE["value"] = str(detected)
+    if isinstance(detected, str) and detected and not DETECTED_LANGUAGE["value"]: DETECTED_LANGUAGE["value"] = detected
     return _segments_from_response(response)
 
 
-def transcribe_video(
-    video_path: str,
-    audio_out: Path,
-    backend: str | None = None,
-    api_key: str | None = None,
-    language: str | None = None,
-) -> tuple[list[dict], str]:
-    """Run the full flow: extract audio → upload → parse segments.
+def _local_json_segments(data: dict) -> list[dict]:
+    values = data.get("transcription") if isinstance(data, dict) else None
+    if not isinstance(values, list): return _segments_from_response(data)
+    normalized = []
+    for item in values:
+        offsets = item.get("offsets", {}) if isinstance(item, dict) else {}
+        try:
+            normalized.append({"start": float(offsets.get("from")) / 1000, "end": float(offsets.get("to")) / 1000,
+                               "text": item.get("text") if isinstance(item, dict) else None})
+        except (TypeError, ValueError) as exc:
+            raise AcquisitionError("invalid_response", "whisper.cpp returned invalid timestamp offsets") from exc
+    return _segments_from_response({"segments": normalized})
 
-    Returns (segments, backend_used). Raises SystemExit on any failure.
-    `language` (ISO 639-1) is passed to Whisper when known; the language the
-    service reports back is left in `DETECTED_LANGUAGE["value"]`.
-    """
-    DETECTED_LANGUAGE["value"] = None
-    CHUNK_FAILURES.clear()
+
+def _split_local_wav(full_audio: Path, work_dir: Path,
+                     plan: list[tuple[float, float]]) -> list[tuple[Path, float, float]]:
+    require_tools("ffmpeg"); work_dir.mkdir(parents=True, exist_ok=True)
+    chunks = []
+    for index, (offset, duration) in enumerate(plan):
+        actual_offset = max(0.0, offset - (2.0 if offset else 0.0))
+        duration += offset - actual_offset
+        out = work_dir / f"local_{index:04d}.wav"
+        result = run_process(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-ss", f"{actual_offset:.3f}",
+            "-i", str(full_audio), "-t", f"{duration:.3f}", "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le",
+            str(out)], timeout=MEDIA_TIMEOUT)
+        if result.returncode != 0 or not out.is_file() or out.stat().st_size <= 44:
+            raise AcquisitionError("invalid_input", f"Failed to create local audio chunk {index + 1}")
+        chunks.append((out, actual_offset, duration))
+    return chunks
+
+
+def _transcribe_local_video(video_path: str, audio_out: Path, model: Path,
+                            language: str | None, cache_dir: Path | None, allow_long: bool = False) -> list[dict]:
+    binary, wav = _local_binary(), extract_local_wav(video_path, audio_out.with_suffix(".wav"))
+    version, model_fingerprint, duration = _binary_version(binary), hash_file(model), audio_duration(wav)
+    _duration_guard(duration, allow_long)
+    plan = plan_chunks(duration, 0)
+    chunks = [(wav, 0.0, duration)] if len(plan) == 1 else _split_local_wav(wav, audio_out.parent / "local-chunks", plan)
+    positions = {id(path): (offset, length) for path, offset, length in chunks}
+    def transcribe_one(path: Path):
+        offset, length = positions[id(path)]
+        output_base = audio_out.parent / f"whisper-local-{canonical_hash([hash_file(path), offset])[:12]}"
+        command = [str(binary), "-m", str(model), "-f", str(path), "-oj", "-of", str(output_base)]
+        command += ["-l", language or "auto"]
+        def invoke():
+            output_json = output_base.with_suffix(".json")
+            if output_json.is_symlink():
+                raise AcquisitionError("invalid_input", "Refusing a symlinked whisper.cpp output")
+            output_json.unlink(missing_ok=True)
+            started = time.monotonic()
+            record_event(cache_dir, "whisper-local", "whisper.cpp", category="started", tool_invocations=1)
+            try:
+                result = run_process(command, timeout=MEDIA_TIMEOUT)
+            except AcquisitionError as exc:
+                record_event(cache_dir, "whisper-local", "whisper.cpp", category=exc.category,
+                             elapsed_s=round(time.monotonic() - started, 4))
+                raise
+            if result.returncode != 0:
+                record_event(cache_dir, "whisper-local", "whisper.cpp", category="dependency",
+                             elapsed_s=round(time.monotonic() - started, 4))
+                raise AcquisitionError("dependency", "whisper.cpp transcription failed")
+            try: data = json.loads(output_json.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                record_event(cache_dir, "whisper-local", "whisper.cpp", category="invalid_response",
+                             elapsed_s=round(time.monotonic() - started, 4))
+                raise AcquisitionError("invalid_response", "whisper.cpp produced no valid JSON timestamps") from exc
+            segments = _local_json_segments(data)
+            record_event(cache_dir, "whisper-local", "whisper.cpp", category="ok",
+                         elapsed_s=round(time.monotonic() - started, 4))
+            return segments
+        identity = {"engine": "whisper.cpp", "model": model_fingerprint, "version": version, "language": language or "auto",
+                    "extraction": LOCAL_EXTRACTION, "start": round(offset, 3), "end": round(offset + length, 3)}
+        return cached_chunk(path, cache_dir, identity, invoke) if cache_dir else invoke()
+    return transcribe_chunks(chunks, transcribe_one)
+
+
+def _duration_guard(duration: float, allow_long: bool) -> None:
+    if duration > 7200 and not allow_long:
+        error = AcquisitionError("duration_limit", "Audio exceeds the 120-minute guard; explicit --allow-long required")
+        error.exit_code = 8
+        raise error
+
+
+def transcribe_video(video_path: str, audio_out: Path, backend: str | None = None, api_key: str | None = None,
+                     language: str | None = None, local_model: Path | str | None = None,
+                     cache_dir: Path | None = None, retry_uncertain: bool = False,
+                     allow_long: bool = False) -> tuple[list[dict], str]:
+    DETECTED_LANGUAGE["value"] = None; CHUNK_FAILURES.clear()
+    cache_dir = Path(cache_dir) if cache_dir is not None else Path(audio_out).parent / ".whisper-cache"
+    if backend == "local" or local_model is not None:
+        model = validate_local_model(Path(local_model).expanduser()) if local_model is not None else configured_local_model()
+        if model is None: raise AcquisitionError("dependency", "Local Whisper requires LOCAL_WHISPER_MODEL or --local-model")
+        segments = _transcribe_local_video(video_path, Path(audio_out), model, language, cache_dir, allow_long)
+        if not segments: raise AcquisitionError("empty_response", "Local Whisper returned no timed speech")
+        return segments, "local"
     if backend not in {"groq", "openai"}:
-        raise SystemExit("Explicit transcription provider required: groq or openai")
-    if api_key is None:
-        _, api_key = load_api_key(backend)
-
-    if not backend or not api_key:
-        raise SystemExit(
-            "No Whisper API key available. Set GROQ_API_KEY (preferred) or OPENAI_API_KEY "
-            "in the environment, or put a `GROQ_API_KEY=...` line in "
-            "~/.config/summarize-video/.env (chmod 600)."
-        )
-
-    print(f"[vsum] extracting audio for Whisper ({backend})…", file=sys.stderr)
-    audio_path = extract_audio(video_path, audio_out)
-    audio_bytes = audio_path.stat().st_size
-
-    def transcribe_one(path: Path) -> list[dict]:
-        return _transcribe_file(backend, api_key, path, language)
-
-    if audio_bytes <= MAX_UPLOAD_BYTES:
-        print(
-            f"[vsum] audio: {audio_bytes / 1024:.0f} kB — uploading to {backend} Whisper…",
-            file=sys.stderr,
-        )
-        segments = transcribe_one(audio_path)
-    else:
-        duration = audio_duration(audio_path)
-        plan = plan_chunks(duration, audio_bytes, MAX_UPLOAD_BYTES)
-        print(
-            f"[vsum] audio: {audio_bytes / (1024 * 1024):.0f} MB exceeds "
-            f"{MAX_UPLOAD_BYTES // (1024 * 1024)} MB — splitting into {len(plan)} chunks…",
-            file=sys.stderr,
-        )
-        chunks = split_audio(audio_path, audio_out.parent / "chunks", plan)
-        segments = transcribe_chunks(chunks, transcribe_one)
-
-    if not segments:
-        raise SystemExit("Whisper returned no transcript segments")
-
-    print(f"[vsum] transcribed {len(segments)} segments via {backend}", file=sys.stderr)
+        raise AcquisitionError("invalid_input", "Explicit transcription provider required: groq, openai, or local")
+    if api_key is None: _, api_key = load_api_key(backend)
+    if not api_key: raise AcquisitionError("authentication", "No API key is available for the selected Whisper provider")
+    audio_path = extract_audio(video_path, Path(audio_out)); duration = audio_duration(audio_path)
+    _duration_guard(duration, allow_long)
+    plan = plan_chunks(duration, audio_path.stat().st_size)
+    chunks = [(audio_path, 0.0, duration)] if len(plan) == 1 and audio_path.stat().st_size <= MAX_AUDIO_BYTES else split_audio(audio_path, Path(audio_out).parent / "chunks", plan)
+    model = GROQ_MODEL if backend == "groq" else OPENAI_MODEL
+    position = {id(path): (offset, length) for path, offset, length in chunks}
+    def callback(path: Path):
+        offset, length = position[id(path)]
+        identity = {"engine": backend, "model": model, "version": "openai-audio-v1", "language": language,
+                    "extraction": REMOTE_EXTRACTION, "start": round(offset, 3), "end": round(offset + length, 3)}
+        call = lambda: _transcribe_file(backend, api_key, path, language, work=cache_dir, retry_uncertain=retry_uncertain)
+        return cached_chunk(path, cache_dir, identity, call) if cache_dir else call()
+    segments = transcribe_chunks(chunks, callback)
+    if not segments: raise AcquisitionError("empty_response", "Whisper returned no transcript segments")
     return segments, backend
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("usage: whisper.py <video-path> [<audio-out.mp3>] [--backend groq|openai]", file=sys.stderr)
-        raise SystemExit(2)
-
-    video = sys.argv[1]
-    audio_out = Path(sys.argv[2]) if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else Path("audio.mp3")
-    backend_override = None
-    if "--backend" in sys.argv:
-        backend_override = sys.argv[sys.argv.index("--backend") + 1]
-
-    segments, backend = transcribe_video(video, audio_out, backend=backend_override)
-    print(json.dumps({"backend": backend, "segments": segments}, indent=2))
+    if len(sys.argv) < 2: raise SystemExit("usage: whisper.py <video-path> [audio-out.mp3] --backend groq|openai|local")
+    video = sys.argv[1]; audio = Path(sys.argv[2]) if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else Path("audio.mp3")
+    selected = sys.argv[sys.argv.index("--backend") + 1] if "--backend" in sys.argv else None
+    result, used = transcribe_video(video, audio, backend=selected)
+    print(json.dumps({"backend": used, "segments": result}, ensure_ascii=False, indent=2))

@@ -1,0 +1,75 @@
+{
+  "date": "2026-09-08",
+  "baseline": "b52d26811b9f8bac99e0ce217482903375a05923",
+  "branch": "codex/visual-video-reliability",
+  "checkout": "/Users/26yos/Documents/Codex/2026-09-08/this-is-the-skill-to-improve/work/visual-video-summarizer",
+  "source_fingerprint_sha256": "c5778e462cfc1108ce35a80765dc6d77e6b1e1f0deb479b784599fdbd335bf2b",
+  "changed_files": 31,
+  "full_suite": {
+    "tests": 350,
+    "elapsed_seconds": 36.893,
+    "status": "PASS",
+    "log_sha256": "d0793128d9bc771f7d36525daa5d9c33fc8be9e4dc10f8ffbd1f64886f9f2db0"
+  },
+  "baseline_suite": {
+    "tests": 285,
+    "elapsed_seconds": 30.346,
+    "status": "PASS"
+  },
+  "independent_review": {
+    "status": "PASS",
+    "scope": "reviewed acquisition/transcription reliability",
+    "focused_tests": 91
+  },
+  "benchmark": {
+    "assertions_passed": 13,
+    "assertions_total": 13,
+    "frozen_videos": 6,
+    "scores_unchanged": true
+  },
+  "patch": {
+    "path": "/Users/26yos/Documents/Codex/2026-09-08/this-is-the-skill-to-improve/outputs/reliability-redesign.patch",
+    "sha256": "b31bb449d7e0391c7cf64664cf7840ef7de1885571df1e571fd8da54fcacf4e0",
+    "bytes": 306517,
+    "baseline_apply_check": "PASS",
+    "applied_files_match_source": 31
+  },
+  "compileall": "PASS",
+  "diff_whitespace_check": "PASS",
+  "system_skill_validator": "NOT_RUN: PyYAML missing in task and bundled Python; no installation performed",
+  "audit_checks": {
+    "numbered_sections": 20,
+    "mermaid_diagrams": 2,
+    "embedded_files_exact": [
+      "SKILL.md",
+      "references/engine.md",
+      "references/failures.md",
+      "references/contracts.md",
+      "references/tokens.md"
+    ]
+  },
+  "issue": "https://github.com/yosishe/visual-video-summarizer/issues/16",
+  "publication": {
+    "status": "BLOCKED",
+    "new_commit": null,
+    "pull_request": null,
+    "reason": "Automatic approval review: approval required by policy, but AskForApproval is set to Never"
+  },
+  "redesign_ci": {
+    "status": "NOT_RUN",
+    "reason": "Commit/publication blocked",
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ]
+  },
+  "not_measured": [
+    "live Hebrew/English ASR quality",
+    "live cloud provider behavior or billing",
+    "new six-video end-to-end quality",
+    "completed-task cost and latency",
+    "host billed tokens",
+    "hidden downloader HTTP requests"
+  ]
+}

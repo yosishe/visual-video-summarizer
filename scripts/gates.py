@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 
-ENGINE_VERSION = "1.8.0"
+ENGINE_VERSION = "1.9.0"
 
 EXIT_UNRESOLVED = 9           # required visual coverage unresolved
 EXIT_INVALID = 10             # a model-authored or upstream artifact is structurally invalid
@@ -26,7 +26,7 @@ EXIT_SOURCE_UNAVAILABLE = 13  # the source could not be fetched (private, remove
 
 # The request options each artifact records so a changed request is a stale artifact,
 # not a silently adopted one.
-TRANSCRIPT_OPTION_KEYS = ("whisper", "no_whisper", "langs", "wanted")
+TRANSCRIPT_OPTION_KEYS = ("whisper", "no_whisper", "langs", "wanted", "local_model")
 CANDIDATE_OPTION_KEYS = ("tier", "sections", "max_image_tokens", "allow_long")
 
 TARGET_KINDS = {"state", "action_result", "diagram", "slide"}
@@ -437,6 +437,19 @@ def transcript_health(segments: list[dict], duration: float | None, *, source: o
     }
 
 
+def partial_fingerprint(payload: dict) -> str:
+    """Acceptance applies only to these exact words, source, settings and gaps."""
+    return canonical_sha256({key: payload.get(key) for key in
+                             ("source_identity", "inputs", "segments", "failed_chunks")})
+
+
+def partial_accepted(payload: dict) -> bool:
+    acceptance = payload.get("partial_acceptance")
+    return bool(isinstance(acceptance, dict) and acceptance.get("by") == "user"
+                and str(acceptance.get("reason") or "").strip()
+                and acceptance.get("fingerprint") == partial_fingerprint(payload))
+
+
 def validate_transcript(payload: object, *, expected_identity: object = None,
                         expected_options: dict | None = None) -> GateResult:
     """Structure, status and — when the caller says what it expects — provenance:
@@ -466,7 +479,9 @@ def validate_transcript(payload: object, *, expected_identity: object = None,
     result.info["stale"] = stale
     result.errors.extend(stale)
     status = payload.get("status")
-    if status is not None and status != "ok":
+    if status == "partial" and partial_accepted(payload):
+        result.warnings.append("PARTIAL transcript: the user accepted the recorded missing ranges")
+    elif status is not None and status != "ok":
         detail = ""
         source_detail = payload.get("source_detail") or {}
         if isinstance(source_detail, dict) and source_detail.get("reason"):

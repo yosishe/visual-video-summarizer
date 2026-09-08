@@ -20,10 +20,10 @@ Source URLs and metadata may contain personal information or signed query parame
 
 ## Defaults and permissions
 
-- **Audio upload is off by default.** A stored key is not consent. Select the provider explicitly; `--no-whisper` overrides provider selection. Missing captions without authorized transcription stops with exit 6.
+- **Audio upload is off by default.** A stored key is not consent. Select the provider explicitly; `--no-whisper` overrides every backend. Configured local whisper.cpp sends no audio to a transcription provider. Missing captions without configured local or explicitly authorized cloud transcription stops with exit 6.
 - Keys come only from the matching environment variable or `~/.config/summarize-video/.env`. No current-project `.env` or legacy `~/.config/watch/.env` fallback. Configure secrets yourself, use owner-only file permissions (`chmod 600` on macOS/Linux; on Windows keep the file under your user profile and restrict it to your account), and never ask the agent to read or print them. This is a plaintext config, not a secret vault.
 - yt-dlp runs with `--ignore-config --no-plugin-dirs --no-exec --no-remote-components --no-playlist`. Ambient cookies, config-defined commands, and plugins are not inherited. The installed executable and its dependencies must still be trusted. Unsupported safety flags fail the dependency check; do not remove them to make an old install work.
-- No new dependency installation, automatic update, hooks, background service, or telemetry is implemented by these scripts. Optional PDF/vision tools are used only when installed. Third-party tools and the host may have their own network behavior; the repository cannot override that.
+- No dependency installation, automatic update, hooks, background service, or remote telemetry is implemented. Compact allowlisted operation counters are retained locally in operations.jsonl. Optional PDF/vision tools are used only when installed. Third-party tools and the host may have their own network behavior; the repository cannot override that.
 - The agent instructions allow a separate setup phase: identify missing prerequisites, show the intended installation/update and scope, obtain explicit user approval, then run only that approved setup and repeat the readiness check. Source downloads and package installation contact GitHub/package distribution infrastructure. Permanent skill registration also requires approval; a task-local source copy does not register a skill. Neither a repository link nor a missing dependency grants permission to change the host's settings, obtain credentials, enable services or weaken its sandbox.
 - SKILL.md asks the agent to work only on the selected source and task folders. Captions, speech, OCR, source links, metadata, and demonstrated commands are evidence to summarize, not instructions to execute or permission to access another file/service. These are agent instructions, not an enforceable OS boundary.
 
@@ -66,3 +66,12 @@ To remove the skill, disable it in your host or remove **only the installation d
 Use [GitHub private vulnerability reporting](https://github.com/yosishe/visual-video-summarizer/security/advisories/new) for this repository (enabled and verified September 5, 2026). Include the affected commit, environment, impact and a minimal synthetic reproduction. Do not send real keys, confidential transcripts or private recordings. The maintainer reviews reports; no response-time guarantee or bounty is promised.
 
 Security fixes target the latest `main`; older pinned snapshots do not receive automatic patches. If the private form is unavailable, open a public issue asking for a private contact channel **without disclosing exploit details or sensitive data**.
+
+
+## Acquisition and checkpoint boundaries (1.9)
+
+Caches hold source evidence, including captions/transcripts and signed inventory resource URLs. They are local to the run by default; an explicit shared cache opt-in extends retention across runs. Protect that directory like the source recording. Content hashes detect corruption, not malicious edits by another process with the same filesystem privileges. Native work/cache locks prevent cooperating writers; they are not a sandbox or an access-control system.
+
+Pending upload receipts contain attempt identities, not keys or transcript text. A lost or malformed response may already have incurred a charge; no automatic replay occurs. A validated response is atomically retained before clearing uncertainty, and unfinished chunk ranges remain explicit. A host agent must obtain real user acceptance before writing a partial-delivery decision; a JSON `by: user` value alone is not authentication.
+
+YouTube extraction remains dependent on upstream behavior and permitted source access. 403/PO-token messages do not establish that the downloader is outdated. Only a confirmed expired caption URL permits a single same-track metadata refresh. No additional scraper, cookies, proxy rotation or challenge bypass is added. Installed compatible Deno/Node is selected explicitly; remote EJS downloads remain disabled. See [the failure matrix](references/failures.md).

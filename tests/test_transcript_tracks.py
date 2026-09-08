@@ -59,40 +59,47 @@ class TrackRankingTests(unittest.TestCase):
 
 
 class FetchCaptionsTests(unittest.TestCase):
-    """yt-dlp's --sub-langs is a regex: a bare `en` also downloads `en-de`
-    (a translation). The ranked key must be anchored and the exact file chosen."""
+    """Selection resolves to one URL in the finite discovered inventory."""
 
     def _fake_ytdlp(self, out: Path, calls: list, keys: tuple[str, ...]):
         def fake(args: list[str]) -> int:
             calls.append(list(args))
+            target = Path(args[args.index("-o") + 1]).parent
+            target.mkdir(parents=True, exist_ok=True)
             if "--write-info-json" in args:
-                info = {"id": "x", "language": "en",
+                info = {"id": "x", "duration": 1, "language": "en",
                         "subtitles": {"en": _entries()},
                         "automatic_captions": {"en-orig": _entries(), "en-de": _entries(translated=True)}}
-                (out / "video.info.json").write_text(json.dumps(info), encoding="utf-8")
+                (target / "video.info.json").write_text(json.dumps(info), encoding="utf-8")
             else:
                 for key in keys:
-                    (out / f"video.{key}.vtt").write_text("WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nhi\n", encoding="utf-8")
+                    (target / f"video.{key}.vtt").write_text("WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nhi\n", encoding="utf-8")
             return 0
         return fake
 
-    def test_ranked_key_is_anchored_and_the_exact_file_is_used(self):
+    def test_ranked_key_fetches_only_its_inventory_url(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
             calls: list = []
-            with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(out, calls, ("en-de", "en-en", "en"))):
-                result = transcript.fetch_captions("https://www.youtube.com/watch?v=x", out, None)
-            sub_args = calls[1]
-            self.assertEqual(sub_args[sub_args.index("--sub-langs") + 1], "^en$")
+            fetch = mock.Mock(return_value=b"WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nhi\n")
+            with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(out, calls, ())), \
+                    mock.patch.object(transcript, "_fetch_caption_url", fetch):
+                result = transcript.fetch_captions("https://www.youtube.com/watch?v=x", out, None,
+                                                   cache_dir=out / "cache")
+            self.assertEqual(len(calls), 1)
+            fetch.assert_called_once_with("https://www.youtube.com/api/timedtext?v=x&lang=en")
             self.assertEqual(result["track"]["key"], "en")
-            self.assertTrue(result["subtitle_path"].endswith("video.en.vtt"))
+            self.assertTrue(result["subtitle_path"].endswith("selected-caption.vtt"))
 
     def test_explicit_pattern_prefers_the_shortest_track_name(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
             calls: list = []
-            with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(out, calls, ("en-de", "en-orig", "en"))):
-                result = transcript.fetch_captions("https://www.youtube.com/watch?v=x", out, "en.*")
+            with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(out, calls, ())), \
+                    mock.patch.object(transcript, "_fetch_caption_url",
+                                      return_value=b"WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nhi\n"):
+                result = transcript.fetch_captions("https://www.youtube.com/watch?v=x", out, "en.*",
+                                                   cache_dir=out / "cache")
             self.assertEqual(result["track"]["key"], "en")
             self.assertEqual(result["track"]["kind"], "manual")
 

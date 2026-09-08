@@ -506,15 +506,17 @@ class WorkflowTests(unittest.TestCase):
 
     def test_engine_minor_upgrade_marks_deterministic_stages_stale(self):
         self.complete()
-        with mock.patch.object(gates, "ENGINE_VERSION", "1.9.0"), mock.patch.object(workflow, "ENGINE_VERSION", "1.9.0"):
+        before = gates.ENGINE_VERSION
+        after = before.split(".")[0] + "." + str(int(before.split(".")[1]) + 1) + ".0"
+        with mock.patch.object(gates, "ENGINE_VERSION", after), mock.patch.object(workflow, "ENGINE_VERSION", after):
             self.assertEqual(self.wf("status"), 0)
             run = self.run_json()
-            self.assertEqual(run["engine_version"], "1.9.0")
-            self.assertTrue(run["history"][-1]["command"].startswith("engine 1.8.0 -> 1.9.0"))
+            self.assertEqual(run["engine_version"], after)
+            self.assertTrue(run["history"][-1]["command"].startswith(f"engine {before} -> {after}"))
             self.assertEqual(run["stages"]["transcript"]["status"], "ok")
-            self.assertTrue(any("1.9.0" in w for w in run["stages"]["transcript"]["warnings"]))
+            self.assertTrue(any(after in w for w in run["stages"]["transcript"]["warnings"]))
             self.assertEqual(run["stages"]["candidates"]["status"], "stale")
-            self.assertIn("1.9.0", run["stages"]["candidates"]["reason"])
+            self.assertIn(after, run["stages"]["candidates"]["reason"])
             self.assertEqual(self.wf("verify"), 11)
 
     def test_bundle_hash_is_bound_and_a_foreign_bundle_fails_verify(self):
@@ -718,6 +720,81 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(report["visual_probe"]["verdict"], "contradicts")
         self.assertTrue(any("user override" in w for w in report["rows"][0]["warnings"]))
 
+
+    def test_run_json_is_one_object_with_reference_and_reports(self):
+        self.init()
+        code, out, _ = self.wf_out("run", "--json")
+        result = json.loads(out)
+        self.assertEqual(code, 0)
+        self.assertEqual(result["reference"], "references/chapters.md")
+        self.assertEqual(result["stages"]["chapters"], "awaiting_model")
+        self.assertTrue((Path(result["reports_dir"]) / "transcript.md").is_file())
+        self.assertNotIn("# transcript report", out)
+
+    def test_reconfiguration_preserves_omitted_options(self):
+        self.init("--pdf", "--whisper", "openai", "--wanted", "he,en")
+        self.wf("init", "https://www.youtube.com/watch?v=vid", "--force", "--tier", "high")
+        request = self.run_json()["request"]
+        self.assertEqual((request["lang"], request["pdf"], request["whisper"], request["wanted"]),
+                         ("en", True, "openai", "he,en"))
+        self.wf("init", "https://www.youtube.com/watch?v=vid", "--force", "--no-pdf")
+        self.assertFalse(self.run_json()["request"]["pdf"])
+
+    def test_failed_child_without_artifact_is_not_called_again(self):
+        self.init()
+        with mock.patch.object(workflow, "_invoke", return_value=(14, "", "rate limited")) as invoke:
+            self.assertEqual(self.wf("run"), 14)
+            self.assertEqual(self.wf("run"), 14)
+            self.assertEqual(invoke.call_count, 1)
+            self.assertEqual(self.wf("run", "--retry"), 14)
+            self.assertEqual(invoke.call_count, 2)
+
+    def test_partial_transcript_requires_bound_user_acceptance(self):
+        self.init()
+        self.wf("run")
+        partial = json.loads((self.work / "transcript.json").read_text())
+        partial.update(status="partial", failed_chunks=[{"range": {"start_s": 4, "end_s": 6}, "status": "temporary_network"}])
+        self.write("transcript.json", partial)
+        self.assertEqual(self.wf("run"), 15)
+        self.assertNotEqual(self.wf("verify"), 0)
+        self.assertNotEqual(self.wf("decide", "partial-transcript", "--reason", "accept the known missing range"), 0)
+        self.assertEqual(self.wf("decide", "partial-transcript", "--by", "user", "--reason", "accept the known missing range"), 0)
+        self.assertEqual(self.wf("run"), 0)
+        accepted = json.loads((self.work / "transcript.json").read_text())
+        self.assertTrue(gates.partial_accepted(accepted))
+        accepted["failed_chunks"][0]["range"]["end_s"] = 8
+        self.write("transcript.json", accepted)
+        self.assertEqual(self.wf("run"), 15)
+
+    def test_completed_run_json_makes_zero_child_calls(self):
+        self.complete()
+        self.fake.calls.clear()
+        code, out, _ = self.wf_out("run", "--json")
+        self.assertEqual(code, 0)
+        self.assertIsNone(json.loads(out)["blocker"])
+        self.assertEqual(self.fake.calls, [])
+
+    def test_uncertain_retry_requires_explicit_retry_flag(self):
+        self.init()
+        self.assertNotEqual(self.wf("run", "--retry-uncertain"), 0)
+        self.assertEqual(self.fake.calls, [])
+
+
+    def test_new_source_does_not_inherit_upload_authorization(self):
+        self.init("--whisper", "groq")
+        self.wf("init", "https://youtu.be/other", "--force")
+        self.assertIsNone(self.run_json()["request"]["whisper"])
+
+    def test_configured_local_request_has_stable_backend_binding(self):
+        with mock.patch.dict(os.environ, {"LOCAL_WHISPER_MODEL": str(self.root / "ggml-small.bin")}):
+            self.init()
+            self.assertEqual(self.run_json()["request"]["whisper"], "local")
+            self.wf("init", "https://www.youtube.com/watch?v=vid", "--force", "--whisper", "local")
+            self.assertEqual(self.run_json()["request"]["local_model"], str((self.root / "ggml-small.bin").resolve()))
+            self.assertEqual(self.run_json()["request"]["local_model"], str((self.root / "ggml-small.bin").resolve()))
+        self.wf("init", "https://www.youtube.com/watch?v=vid", "--force", "--whisper", "openai")
+        self.assertEqual(self.run_json()["request"]["whisper"], "openai")
+        self.assertIsNone(self.run_json()["request"]["local_model"])
 
 if __name__ == "__main__":
     unittest.main()

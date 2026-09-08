@@ -9,14 +9,21 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 YTDLP_FLAGS = ("--ignore-config", "--no-plugin-dirs", "--no-exec",
-               "--no-remote-components", "--no-playlist")
+               "--no-remote-components", "--no-playlist", "--retries", "0",
+               "--fragment-retries", "0", "--extractor-retries", "0", "--file-access-retries", "0",
+               "--concurrent-fragments", "1", "--abort-on-unavailable-fragments", "--socket-timeout", "30")
 CSP = ("default-src 'none'; script-src 'none'; object-src 'none'; base-uri 'none'; "
        "form-action 'none'; frame-src 'none'; connect-src 'none'; "
        "img-src 'self' data:; font-src data:; style-src 'unsafe-inline'")
 
 
 def ytdlp_command(args: list[str]) -> list[str]:
-    return ["yt-dlp", *YTDLP_FLAGS, *args]
+    from hostenv import javascript_runtime
+    runtime = javascript_runtime(os.environ.get("PATH", ""))
+    runtime_args = ["--no-js-runtimes"]
+    if runtime:
+        runtime_args += ["--js-runtimes", f"{runtime['name']}:{runtime['path']}"]
+    return ["yt-dlp", *YTDLP_FLAGS, *runtime_args, *args]
 
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
