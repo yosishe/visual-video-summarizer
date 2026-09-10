@@ -3,7 +3,8 @@
 ## Reported-run recovery
 
 - No caption tracks: distinguish the downloader's empty inventory from a failed request. With no configured backend, check registration and known existing model paths first. Unconfigured does not mean missing. Register a known compatible local model with `workflow.py configure-local --local-model <path>`; request approval only for software/model downloads actually needed. Cloud is a separate explicit choice, not the default suggested provider. Respect `--no-whisper` and do not suggest uploading when it is set.
-- Explicit proxy/tunnel policy denial: `environment_blocked` identifies the execution environment, not a deleted video. Preserve the same URL and requested output for a permitted environment or operator-approved policy repair. Do not install more downloaders, try unrelated hosts or switch transcription providers.
+- Explicit proxy/tunnel policy denial: `environment_blocked` identifies the execution environment, not a deleted video. Preserve the same URL and requested output and name the two fixes: allow `youtube.com`, `*.youtube.com`, `*.googlevideo.com` and `*.ytimg.com` in the environment's network settings (a new session picks it up), or run the same request in a local agent session. Do not install more downloaders, try unrelated hosts or switch transcription providers.
+- Missing tools are installed for the current user before the first stage (`bootstrap.py`, recorded under `setup` in `run.json`). A `NEXT (preflight, blocked)` after that names the setup error (`setup: ffmpeg: …`) and the platform hint; the remaining options are `bootstrap.py --system` (host package manager, needs the user's approval) or a manual install. Do not retry the same failed setup without a change.
 - Windows caption caches written by the earlier implementation may contain doubled carriage returns. Validated acquisition now rejects unusable cached cues and reacquires the selected track under the normal bounded policy; no manual receipt editing is needed.
 - Record the doctor-reported engine version and skill directory when debugging. An installed copy does not automatically follow a repository branch. Local tool readiness and a stopped run do not establish successful summary delivery.
 
@@ -12,7 +13,7 @@
 | Exit | Meaning | What to do |
 |---|---|---|
 | 0 | done, or waiting for a model-authored file (`NEXT` says which) | author it, run again |
-| 1 | a tool problem: **preflight** found a required tool missing (`NEXT (preflight, blocked)` with an install `hint`), or any other script error (message on stderr) | propose the hinted install, ask the user, then run again |
+| 1 | a tool problem: **preflight** found a required tool missing after the user-level setup ran (`NEXT (preflight, blocked)` with the `setup:` error and an install `hint`), or any other script error (message on stderr) | read the setup error; a system-wide install (`bootstrap.py --system` or the hint) needs the user's approval; then run again |
 | 2 | `grab.py`/`shortlist.py`: an extraction failure, unsafe name/crop, or a frame that failed the pixel gate | fix the named selection or drop the id |
 | 3 | `grab.py`: two selections render the same picture | keep the more complete one, fix `selections.json` |
 | 4 | `render.py --pdf`: no PDF engine (Chrome/Edge/WeasyPrint) | deliver the HTML; tell the user a PDF needs an installed engine |

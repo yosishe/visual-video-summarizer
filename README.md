@@ -65,7 +65,7 @@ The extraction engine is an **agent skill**: the scripts handle media and eviden
 
 ### 1. Review and install
 
-Read [SKILL.md](SKILL.md) and [SECURITY.md](SECURITY.md) before running; the [scripts](scripts/) are reviewable and each prints `--help`. For a one-off task, clone into a fresh folder under your chosen workspace. This downloads source without registering a skill or starting a service; it does not install dependencies. Do not overwrite an existing copy.
+Read [SKILL.md](SKILL.md) and [SECURITY.md](SECURITY.md) before running; the [scripts](scripts/) are reviewable and each prints `--help`. For a one-off task, clone into a fresh folder under your chosen workspace. This downloads source without registering a skill or starting a service. Do not overwrite an existing copy.
 
 ```bash
 git clone https://github.com/yosishe/visual-video-summarizer.git visual-video-summarizer
@@ -85,26 +85,24 @@ For reproducible installations, review a particular commit in GitHub and check o
 
 Paths and invocation conventions checked against the linked official documentation on 2026-09-05. Resolve `~` using the host's actual user directory. Every command is a single Python line (written as `python` below; use `python3` on macOS/Linux where `python` is absent); no shell-specific syntax is required. The fast test job runs on Linux, macOS and Windows; the media job runs the full suite on Linux; a portability job runs the controller end to end with a real ffmpeg and a fake `yt-dlp` on macOS and Windows. This project has not verified the complete pipeline with every host agent. Skill discovery and terminal/network/image access are separate checks. For one-off use, ask the agent to read `SKILL.md` from the actual clone path instead of assuming a slash command exists.
 
-### 2. Check your tools
+### 2. Tools: installed for you
 
-Required: **Python 3.10+, ffmpeg/ffprobe, and a current yt-dlp** for URLs. Local recordings do not need yt-dlp. The core Python scripts use the standard library; optional enhancements are listed below.
-
-```bash
-python scripts/doctor.py
-# Machine-readable readiness, including an installed PDF engine:
-python scripts/doctor.py --pdf --json
-```
-
-The doctor checks installed executable versions and config-file metadata. It does not install packages, read keys, download a video, or upload audio. A missing tool is printed with a platform-appropriate install hint (also under `hint` in `--json`). A successful check confirms prerequisites, not that a particular remote video is accessible.
-
-If dependencies are missing, the agent identifies the missing tools and proposes the hinted setup command. Approve that concrete installation once; the agent can then run it, rerun the doctor, and continue with the same video URL. Do not bypass host permissions or install optional tools by default. You can also install the tools yourself, for example:
+Required: **Python 3.10+**. Everything else — **ffmpeg/ffprobe, yt-dlp and Pillow** — is installed for the current user by the skill itself the first time `workflow.py init` (or `run`) finds it missing. Local recordings do not need yt-dlp.
 
 ```bash
-brew install python ffmpeg yt-dlp                              # macOS (Homebrew)
-winget install Python.Python.3.12 Gyan.FFmpeg yt-dlp.yt-dlp    # Windows (or the choco/scoop equivalents)
+python scripts/doctor.py            # what is installed (read-only)
+python scripts/bootstrap.py         # install what is missing, for this user only
+python scripts/doctor.py --fix      # the same, then re-check
 ```
 
-On Linux, use your distribution's packages for Python and ffmpeg and the [official yt-dlp installation instructions](https://github.com/yt-dlp/yt-dlp#installation). YouTube extraction may also need the supported JavaScript runtime/components described by yt-dlp. This skill disables remote component downloads and ambient yt-dlp configuration; install necessary components explicitly.
+What the setup does, and does not do:
+
+- **One directory, no admin rights.** Everything lands in `~/.cache/summarize-video` (Linux/macOS), `%LOCALAPPDATA%\summarize-video` (Windows) or `SUMMARIZE_VIDEO_HOME`: `bin/` holds ffmpeg, ffprobe and a native `yt-dlp` launcher; `site/<interpreter>/` holds yt-dlp and Pillow installed with `pip --target`. No `sudo`, no system package manager, no PATH or shell-profile edits — the scripts add the directory to their own PATH. Delete the directory to remove all of it; `receipt.json` inside lists what was installed, from where, with hashes.
+- **Verified downloads.** ffmpeg 8.0 static builds come from one pinned commit of [zackees/ffmpeg_bins](https://github.com/zackees/ffmpeg_bins) (the binaries behind the `static-ffmpeg` PyPI project) for Linux x86_64/arm64, macOS Intel/Apple Silicon and Windows x64; the download's size and SHA-256 must match the values in `scripts/bootstrap.py` or nothing is installed. Python packages come from PyPI as wheels only.
+- **The package manager is opt-in.** `bootstrap.py --system` (or `doctor.py --fix --system`) may use apt/dnf/apk/pacman, Homebrew or winget for ffmpeg when the user-level download fails; the controller never passes it, so a system-wide change stays a decision the user makes.
+- **Off switch.** `workflow.py init --no-setup` or `SUMMARIZE_VIDEO_NO_SETUP=1` leaves installation entirely to you; the readiness check then prints a platform hint per missing tool (also under `hint` in `doctor.py --json`).
+
+Network for the setup: `pypi.org`/`files.pythonhosted.org` and `github.com` (redirecting to `media.githubusercontent.com`). A managed cloud environment that blocks YouTube blocks the *video*, not the setup: allow `youtube.com`, `*.youtube.com`, `*.googlevideo.com` and `*.ytimg.com` there, or run in a local agent session. YouTube extraction may also need the supported JavaScript runtime/components described by yt-dlp; this skill disables remote component downloads and ambient yt-dlp configuration.
 
 ### 3. Make your first summary
 
@@ -191,7 +189,8 @@ The repository adds no telemetry, background service, auto-updater, or permissio
 
 | Symptom | Next step |
 |---|---|
-| Doctor reports a missing or incompatible dependency | Install/update that tool explicitly, then rerun the doctor. |
+| Doctor reports a missing or incompatible dependency | `workflow.py init` installs missing tools for your user automatically; by hand: `python scripts/bootstrap.py` (or `doctor.py --fix`). If that fails, `bootstrap.py --system` uses the package manager, or install the tool yourself, then rerun the doctor. |
+| Network policy blocks YouTube in a managed cloud environment (exit 14, `environment_blocked`) | Nothing to install: allow `youtube.com`, `*.youtube.com`, `*.googlevideo.com` and `*.ytimg.com` in the environment's network settings and start a new session, or run the same request in a local agent session. |
 | YouTube HTTP 403 / PO Token / JavaScript challenge error | Check current yt-dlp requirements and source access restrictions. Updating alone may not fix every video. Cookies/logins and remote component downloads are not enabled automatically. |
 | No transcript / exit 6 | Choose a captioned source, or explicitly authorize a configured `--whisper` provider. Local files use the same opt-in fallback. `transcript.json` records `status: no_transcript` and the reason. |
 | Unresolved chapter/target (exit 9) or audit failure (exit 5) | Correct the cited segments or frame selection. Inspect the report; do not bypass the audit to claim completion. |

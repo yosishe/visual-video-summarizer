@@ -19,6 +19,10 @@ and every artifact records what it was made for (source, options, engine,
 upstream hashes), so a stage whose inputs changed is `stale` and re-runs; a
 model-authored artifact is gated before anything downstream runs.
 
+A missing tool is installed for the current user before the first stage
+(`bootstrap.py`: ffmpeg/ffprobe, yt-dlp, Pillow into one user-owned directory,
+no admin rights); `init --no-setup` or SUMMARIZE_VIDEO_NO_SETUP=1 turns that off.
+
 Exit codes: 0 = done or waiting for a model-authored file (see NEXT);
 1 = a tool problem (preflight); 6/7/8/9 = the failing stage's own code;
 10 = an artifact is invalid; 11 = a stale binding; 12 = delivery incomplete
@@ -71,7 +75,7 @@ from gates import (  # noqa: E402
     validate_summary,
     validate_transcript,
 )
-from hostenv import child_env, install_hint, python_command, utf8_stdio  # noqa: E402
+from hostenv import activate_managed_tools, child_env, install_hint, managed_home, python_command, utf8_stdio  # noqa: E402
 from safety import atomic_write, validate_generated_html  # noqa: E402
 from acquisition import AcquisitionError, EXIT_ACQUISITION, EXIT_PARTIAL, file_lock, run_process  # noqa: E402
 import whisper as whisper_module  # noqa: E402
@@ -348,10 +352,12 @@ def assess(work: Path, run: dict) -> dict[str, Stage]:
             recovery = ("Read the recorded acquisition category and cooldown. Repair the cause before an explicit retry; "
                         "do not switch providers after access/authentication/quota failures.")
             if error.get("category") == "environment_blocked":
-                recovery = ("This environment's network policy denied source access. Preserve the same video URL and "
-                            "output request. Continue in a user-authorized environment that permits the source, "
-                            "or ask its operator to repair the network policy. Do not install more downloaders, "
-                            "probe alternative hosts, upload audio, or route around the denial.")
+                recovery = ("This environment's network policy denied source access (the proxy answered 403; the "
+                            "video itself is not known to be unavailable). Preserve the same video URL and output "
+                            "request. Either allow youtube.com, *.youtube.com, *.googlevideo.com and *.ytimg.com in "
+                            "the environment's network settings and start a new session, or continue on a machine "
+                            "with normal access (a local agent session). Do not install more downloaders, probe "
+                            "alternative hosts, upload audio, or route around the denial.")
             block(stage, "failed", error.get("message") or detail.get("reason") or "Acquisition failed",
                   exit_code=error.get("exit_code") or EXIT_ACQUISITION,
                   next_step=recovery)
@@ -877,26 +883,71 @@ def _missing_tools(snapshot: dict) -> list[dict]:
     return [row for row in snapshot.get("checks") or [] if row.get("required") and not row.get("available")]
 
 
+def setup_disabled(run: dict) -> bool:
+    """`init --no-setup` (recorded in run.json) or SUMMARIZE_VIDEO_NO_SETUP=1 keeps the controller from installing."""
+    return bool(request(run).get("no_setup")) or os.environ.get("SUMMARIZE_VIDEO_NO_SETUP", "") not in ("", "0")
+
+
+def attempt_setup(run: dict, checked_by: str) -> dict:
+    """Install the missing tools for this user (bootstrap.py), record the receipt, re-snapshot the doctor.
+
+    User-level only: one directory under `managed_home()`, no administrator
+    rights, no system package manager (that stays behind `bootstrap.py --system`
+    for the user to run). A failed step is recorded and reported, never retried
+    in a loop: the next `run` tries again only if the tool is still missing."""
+    missing = ", ".join(row["name"] for row in _missing_tools(run.get("doctor") or {})) or "required tools"
+    print(f"[workflow] installing missing tools for this user (no admin rights) into {managed_home()}: {missing}",
+          file=sys.stderr)
+    kind = (run.get("source") or {}).get("kind")
+    try:
+        import bootstrap
+        result = bootstrap.run(local=(kind == "file"), pdf=bool(request(run).get("pdf")))
+    except Exception as exc:  # pragma: no cover - a crash in setup must not hide the tool problem
+        result = {"ready": False, "installed": [], "errors": [{"step": "setup", "message": str(exc)[:200]}]}
+    run["setup"] = {"attempted_at": _now(), "by": checked_by, "managed_home": str(managed_home()),
+                    "installed": [{"step": r.get("step"), "method": r.get("method"), "version": r.get("version")}
+                                  for r in result.get("installed") or []],
+                    "errors": list(result.get("errors") or []), "ready": bool(result.get("ready"))}
+    activate_managed_tools()
+    run["doctor"] = _doctor_snapshot(run, checked_by)
+    return run["setup"]
+
+
+def _setup_errors(run: dict) -> list[str]:
+    return [f"{e.get('step')}: {e.get('message')}" for e in (run.get("setup") or {}).get("errors") or []]
+
+
 def preflight(work: Path, run: dict) -> bool:
     """Before the first stage executes: the tools the run needs must exist.
-    A missing tool is a clear stop with the platform install hint, never a
+    A missing tool is installed for this user first (`attempt_setup`); what is
+    still missing afterwards is a clear stop with the install hint, never a
     traceback three stages later. Re-checks only while the snapshot is not ready."""
     if (run.get("doctor") or {}).get("ready") is True:
         return True
     run["doctor"] = _doctor_snapshot(run, "preflight")
+    if not run["doctor"].get("ready") and _missing_tools(run["doctor"]) and not setup_disabled(run):
+        attempt_setup(run, "preflight")
     if run["doctor"].get("ready"):
         save_run(work, run)
         return True
     missing = _missing_tools(run["doctor"])
     names = ", ".join(row["name"] for row in missing) or (run["doctor"].get("error") or "readiness check failed")
     hints = [row.get("hint") or install_hint(row["name"]) for row in missing]
+    errors = _setup_errors(run)
     print()
     print(f"NEXT (preflight, blocked): missing required tools: {names}")
+    for error in errors:
+        print(f"  setup: {error}")
     for hint in hints:
         print(f"  hint: {hint}")
-    print("  Ask the user before installing anything; then run again.")
+    if setup_disabled(run):
+        print("  Automatic setup is off (--no-setup / SUMMARIZE_VIDEO_NO_SETUP); install the tool, then run again.")
+    else:
+        print("  The user-level setup could not install it; a system-wide install needs the user's approval "
+              "(`bootstrap.py --system` or the hint above). Then run again.")
     run["blocker"] = {"stage": "preflight", "status": "blocked", "exit_code": 1,
-                      "reason": f"missing required tools: {names}", "next": " ".join(hints)}
+                      "reason": f"missing required tools: {names}" + (f" (setup: {'; '.join(errors)})" if errors else ""),
+                      "next": " ".join(hints)}
     record_history(run, "preflight", None, 1)
     save_run(work, run)
     return False
@@ -934,7 +985,7 @@ def cmd_init(args) -> int:
     defaults = {"tier": "standard", "pdf": False, "whisper": None, "no_whisper": False,
                 "langs": None, "wanted": None, "output_mode": "illustrated", "sections": None,
                 "allow_long": False, "max_image_tokens": None, "focus": None,
-                "local_model": None, "cache_dir": None}
+                "local_model": None, "cache_dir": None, "no_setup": False}
     for key, default in defaults.items():
         if getattr(args, key, None) is None:
             setattr(args, key, old_request.get(key, default))
@@ -987,6 +1038,7 @@ def cmd_init(args) -> int:
                     "output_mode": args.output_mode, "sections": args.sections, "allow_long": bool(args.allow_long),
                     "max_image_tokens": args.max_image_tokens, "focus": args.focus,
                     "local_model": args.local_model, "local_model_source": local_model_source,
+                    "no_setup": bool(args.no_setup),
                     "cache_dir": str(Path(args.cache_dir).expanduser().resolve()) if args.cache_dir else None},
         "visual_content": {"decision": "none" if args.output_mode == "text-only" else "illustrated",
                            "reason": "user requested a text-only summary" if args.output_mode == "text-only" else None,
@@ -1004,11 +1056,16 @@ def cmd_init(args) -> int:
               f"{previous_decision.get('decision')} — {previous_decision.get('reason')}; revert with "
               "`decide illustrated --reason \"...\"` or `decide no-visuals --reason \"...\"`", file=sys.stderr)
     run["doctor"] = _doctor_snapshot(run, "init")
+    if not run["doctor"].get("ready") and _missing_tools(run["doctor"]) and not setup_disabled(run):
+        attempt_setup(run, "init")
     if not run["doctor"].get("ready"):
         missing = _missing_tools(run["doctor"])
         names = ", ".join(row["name"] for row in missing) or "readiness check failed"
-        print(f"[workflow] warning: missing required tools: {names} — ask the user before installing",
+        print(f"[workflow] warning: missing required tools: {names}"
+              + (" — automatic setup is off" if setup_disabled(run) else " — the user-level setup could not install them"),
               file=sys.stderr)
+        for error in _setup_errors(run):
+            print(f"  setup: {error}", file=sys.stderr)
         for row in missing:
             print(f"  hint: {row.get('hint') or install_hint(row['name'])}", file=sys.stderr)
     record_history(run, "init --force" if args.force else "init", None, 0)
@@ -1387,6 +1444,8 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--max-image-tokens", type=int, default=None)
     init.add_argument("--out-dir", default=None, help="default: ./summary-<video id>")
     init.add_argument("--focus", default=None, help="free-text focus notes from the user (shown in NEXT)")
+    init.add_argument("--no-setup", action="store_true", default=None,
+                      help="never install missing tools automatically (SUMMARIZE_VIDEO_NO_SETUP=1 does the same)")
     init.add_argument("--force", action="store_true",
                       help="re-record the request for the SAME source (options may change; stage bindings are kept, "
                            "so only what depends on a changed option re-runs); a different source needs a fresh work dir")
@@ -1440,6 +1499,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     utf8_stdio()
+    activate_managed_tools()
     args = build_parser().parse_args(argv)
     try:
         if hasattr(args, "work"):

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Read-only readiness check. No installs, network requests, or key-file reads."""
+"""Read-only readiness check. No installs, network requests, or key-file reads.
+
+`--fix` is the one exception: it hands over to `bootstrap.py`, which installs
+the missing tools for this user only (see that script), then re-checks."""
 from __future__ import annotations
 
 import argparse
@@ -11,7 +14,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from hostenv import find_chrome, install_hint, javascript_runtime, platform_key, python_command, run_text, utf8_stdio  # noqa: E402
+from hostenv import (  # noqa: E402
+    activate_managed_tools, find_chrome, install_hint, javascript_runtime, managed_bin_dir, managed_home,
+    managed_site_dir, platform_key, python_command, run_text, utf8_stdio,
+)
 from safety import YTDLP_FLAGS, ytdlp_command  # noqa: E402
 from gates import ENGINE_VERSION  # noqa: E402
 from acquisition import AcquisitionError  # noqa: E402
@@ -21,6 +27,7 @@ import whisper as whisper_module  # noqa: E402
 def check(local: bool = False, pdf: bool = False, local_model: str | None = None,
           whisper_backend: str | None = None, no_whisper: bool = False,
           local_model_source: str | None = None) -> dict:
+    activate_managed_tools()  # the user-level tools bootstrap.py installed count like any other
     rows = [{"name": "Python", "required": True, "available": sys.version_info >= (3, 10),
              "version": sys.version.split()[0]}]
     for name in ("ffmpeg", "ffprobe", "yt-dlp"):
@@ -93,6 +100,12 @@ def check(local: bool = False, pdf: bool = False, local_model: str | None = None
                           "No model download or credential read occurs here.")})
     rows.append({"name": "Pillow", "required": False, "available": bool(importlib.util.find_spec("PIL")),
                  "note": "Optional: contact sheets need it; without it every candidate is read individually."})
+    home = managed_home()
+    rows.append({"name": "user-level tools", "required": False,
+                 "available": managed_bin_dir().is_dir() or managed_site_dir().is_dir(), "path": str(home),
+                 "note": "scripts/bootstrap.py installs yt-dlp, Pillow and ffmpeg/ffprobe here for this user only "
+                         "(no admin rights); workflow.py runs it when a tool is missing. Delete the directory to "
+                         "remove them."})
     rows.append({"name": "workflow", "required": False,
                  "available": (Path(__file__).resolve().parent / "workflow.py").is_file(),
                  "note": "scripts/workflow.py is the canonical entry point (init → run → verify)."})
@@ -107,6 +120,7 @@ def check(local: bool = False, pdf: bool = False, local_model: str | None = None
         "config_present": config.is_file(),
         "config_permissions_private": (config.stat().st_mode & 0o077 == 0) if config.is_file() and os.name == "posix" else None,
         "ytdlp_safety_flags": list(YTDLP_FLAGS),
+        "managed_home": str(home),
         "scope": "Checks local executable versions and config-file metadata only; no install, upload, or credential read.",
     }
 
@@ -117,8 +131,15 @@ def main() -> int:
     parser.add_argument("--pdf", action="store_true", help="Check requested PDF support; HTML may proceed if unavailable")
     parser.add_argument("--local-model", default=None)
     parser.add_argument("--json", action="store_true", help="Machine-readable result")
+    parser.add_argument("--fix", action="store_true",
+                        help="Install missing tools for this user with bootstrap.py (no admin rights), then re-check")
+    parser.add_argument("--system", action="store_true",
+                        help="With --fix: allow the host package manager for ffmpeg if the user-level download fails")
     args = parser.parse_args()
     utf8_stdio()
+    if args.fix:
+        import bootstrap
+        bootstrap.run(local=args.local, pdf=args.pdf, system=args.system)
     result = check(args.local, args.pdf, args.local_model)
     if args.json:
         print(json.dumps(result, indent=2))

@@ -2,7 +2,9 @@
 
 Nothing here installs, downloads or changes settings. The functions only look at
 the running platform so that error messages and discovery paths are correct on
-Linux, macOS and Windows alike.
+Linux, macOS and Windows alike. The one directory this module knows about is the
+user-level tool directory that `bootstrap.py` fills (`managed_home()`); the
+helpers here only make its contents visible to the running process.
 """
 from __future__ import annotations
 
@@ -12,7 +14,10 @@ import re
 import shutil
 import subprocess
 import sys
+import sysconfig
 from pathlib import Path
+
+MANAGED_HOME_ENV = "SUMMARIZE_VIDEO_HOME"
 
 TOOL_PACKAGES = {
     "ffmpeg": {"darwin": "brew install ffmpeg", "linux": "apt install ffmpeg (or your distribution's package)",
@@ -33,12 +38,20 @@ def platform_key() -> str:
 
 
 def install_hint(tool: str) -> str:
-    """One platform-appropriate sentence; the agent must still ask before installing."""
+    """One platform-appropriate sentence naming the two ways to get the tool.
+
+    The first is the user-level setup in this repository (`scripts/bootstrap.py`
+    installs into `managed_home()` without administrator rights; `workflow.py`
+    runs it automatically). The second is the host's package manager, which
+    changes the system and therefore still needs the user's approval."""
     table = TOOL_PACKAGES.get(tool, {})
     suggestion = table.get(platform_key())
+    setup = (f"run `{python_command()} \"{Path(__file__).resolve().parent / 'bootstrap.py'}\"` "
+             "(user-level, no admin rights)")
     if suggestion:
-        return f"Install {tool} with your package manager, e.g. `{suggestion}`, after the user approves."
-    return f"Install {tool} from its official release after the user approves."
+        return (f"Install {tool}: {setup}, or with your package manager, e.g. `{suggestion}`, "
+                "after the user approves.")
+    return f"Install {tool}: {setup}, or from its official release after the user approves."
 
 
 def python_command() -> str:
@@ -46,8 +59,74 @@ def python_command() -> str:
     return "python" if platform_key() == "win32" else "python3"
 
 
+# ----------------------------------------------------------------------------- managed tools
+
+
+def managed_home() -> Path:
+    """The one user-owned directory `bootstrap.py` writes to; delete it to remove everything.
+
+    `SUMMARIZE_VIDEO_HOME` overrides the default (`%LOCALAPPDATA%\\summarize-video` on
+    Windows, `$XDG_CACHE_HOME/summarize-video` or `~/.cache/summarize-video` elsewhere).
+    Nothing is created by asking for the path."""
+    override = os.environ.get(MANAGED_HOME_ENV)
+    if override:
+        return Path(override).expanduser()
+    if platform_key() == "win32":
+        base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
+        return Path(base) / "summarize-video"
+    base = os.environ.get("XDG_CACHE_HOME") or str(Path.home() / ".cache")
+    return Path(base) / "summarize-video"
+
+
+def managed_bin_dir() -> Path:
+    """Executables the bootstrap placed for this user: ffmpeg, ffprobe and the yt-dlp launcher."""
+    return managed_home() / "bin"
+
+
+def interpreter_tag() -> str:
+    """One directory name per interpreter build, so a Python upgrade never loads a stale compiled wheel."""
+    tag = getattr(sys.implementation, "cache_tag", None) or f"python-{sys.version_info[0]}{sys.version_info[1]}"
+    platform = sysconfig.get_platform().replace(".", "_").replace("-", "_")
+    return f"{tag}-{platform}"
+
+
+def managed_site_dir() -> Path:
+    """Python packages the bootstrap installed for this exact interpreter (yt-dlp, Pillow)."""
+    return managed_home() / "site" / interpreter_tag()
+
+
+def _prepend_path(env: dict, key: str, entry: str) -> None:
+    current = env.get(key, "")
+    parts = [p for p in current.split(os.pathsep) if p] if current else []
+    if entry not in parts:
+        env[key] = os.pathsep.join([entry, *parts])
+
+
+def activate_managed_tools(env: dict | None = None) -> dict:
+    """Make the user-level tools visible: managed `bin` on PATH, managed `site` on PYTHONPATH/sys.path.
+
+    Only directories that already exist are added, nothing is installed and no
+    network is touched. Without an `env` the running process is updated
+    (`os.environ` and `sys.path`); with one, that mapping is updated and
+    returned, which is how `child_env` passes the tools on to the stage scripts."""
+    target = os.environ if env is None else env
+    bin_dir, site = managed_bin_dir(), managed_site_dir()
+    if bin_dir.is_dir():
+        _prepend_path(target, "PATH", str(bin_dir))
+    if site.is_dir():
+        _prepend_path(target, "PYTHONPATH", str(site))
+        if env is None and str(site) not in sys.path:
+            # After the interpreter's own packages: a system Pillow keeps winning in-process.
+            sys.path.append(str(site))
+    return target
+
+
 def missing_tools(*names: str) -> list[str]:
-    """The subset of `names` that PATH does not resolve (no version check, no network)."""
+    """The subset of `names` that PATH does not resolve (no version check, no network).
+
+    The user-level tool directory is activated first, so a stage script started
+    on its own finds the same ffmpeg the workflow controller found."""
+    activate_managed_tools()
     return [name for name in names if shutil.which(name) is None]
 
 
@@ -162,6 +241,7 @@ def child_env(extra: dict[str, str] | None = None) -> dict[str, str]:
     env = os.environ.copy()
     env.setdefault("PYTHONUTF8", "1")
     env.setdefault("PYTHONIOENCODING", "utf-8")
+    activate_managed_tools(env)
     if extra:
         env.update(extra)
     return env

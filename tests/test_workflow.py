@@ -237,11 +237,16 @@ class WorkflowTests(unittest.TestCase):
         # The readiness check must not depend on the host (the fast CI job has no ffmpeg).
         self.doctor = mock.patch("doctor.check", return_value=dict(READY_DOCTOR))
         self.doctor.start()
+        # A simulated missing tool must never trigger the real user-level install (tests/test_bootstrap.py
+        # covers the automatic setup with a fake bootstrap).
+        self.no_setup = mock.patch.dict(os.environ, {"SUMMARIZE_VIDEO_NO_SETUP": "1"})
+        self.no_setup.start()
         self.cwd = os.getcwd()
         os.chdir(self.root)
 
     def tearDown(self):
         os.chdir(self.cwd)
+        self.no_setup.stop()
         self.model_config.stop()
         self.doctor.stop()
         self.patcher.stop()
@@ -663,6 +668,7 @@ class WorkflowTests(unittest.TestCase):
             self.assertIn("NEXT (preflight, blocked)", out)
             self.assertIn("ffmpeg", out)
             self.assertIn("after the user approves", out)
+            self.assertIn("Automatic setup is off", out)
             self.assertEqual(self.fake.calls, [])
             self.assertEqual(self.wf("verify"), 12)
             report = json.loads((self.work / "verify.json").read_text(encoding="utf-8"))
