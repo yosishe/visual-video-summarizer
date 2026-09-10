@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.1 — 2026-09-10
+
+Local Whisper persistence integrated with the 1.10.0 user-level setup and environment-denial release.
+
+- Existing compatible multilingual Whisper models can be registered once with `workflow.py configure-local --local-model <path>` and reused by later runs. Selection precedence is explicit path, environment, then registration; `--no-whisper` and explicit cloud providers do not inspect the local registry.
+- Read-only preflight distinguishes an unconfigured model from a missing or invalid registration. Registration is atomic, locked, separate from credentials, and never installs software, downloads a model, or uploads audio.
+- Caption acquisition remains first. A missing or stale registered model is validated only when local fallback runs, so successful captions and valid transcript caches continue normally.
+- Same-source `init --force` preserves an omitted `--no-setup` choice, while explicit transcription selections retain the documented disable and cloud precedence.
+
 ## 1.10.0 — 2026-09-09
 
 Zero-setup release. A non-technical user's first run in a fresh Claude Code cloud session stopped twice before the first stage: ffmpeg, ffprobe, yt-dlp and Pillow were missing and the agent had to negotiate `apt`/`pip` installs by hand, and the environment's egress policy answered 403 to `www.youtube.com`, which the 1.8 transcript stage still reported as "the video is private, removed or blocked". Both are now handled by code.

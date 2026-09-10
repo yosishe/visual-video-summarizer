@@ -119,7 +119,13 @@ Use a short, captioned lecture first. No Groq/OpenAI transcription key is needed
 
 ### Videos without captions and local recordings
 
-Some videos have no downloadable captions. Local transcription can handle them without a provider audio upload when `whisper-cli` and a compatible multilingual GGML model are installed and configured:
+Some videos have no downloadable captions. Local transcription can handle them without a provider audio upload when `whisper-cli` and a compatible multilingual GGML model are installed. If the doctor says the model is unconfigured, first reuse an existing compatible model from your local setup; that status does not mean you need to download another model. Register its path once:
+
+```bash
+python scripts/workflow.py configure-local --local-model "<existing-model.bin>"
+```
+
+Subsequent default runs use that registration when captions are absent. The registration stores only a local path in `~/.config/summarize-video/local-model.json`, separately from credentials. `--no-whisper` still disables transcription; a named cloud provider remains a separate explicit choice. For one run, select a model directly:
 
 ```text
 python scripts/workflow.py init "<YouTube URL>" --work "<work>" --whisper local --local-model "<existing-model.bin>"

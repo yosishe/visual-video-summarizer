@@ -75,7 +75,9 @@ class WorkflowEndToEndTests(unittest.TestCase):
         env = ytdlp_shim.install(self.root / "bin")
         env.update({"VSUM_SHIM_FIXTURE_DIR": str(self.fixtures), "VSUM_SHIM_MODE": mode,
                     "VSUM_SHIM_CAPTION_URL": f"http://127.0.0.1:{self.server.server_port}/captions.vtt",
-                    "VSUM_SHIM_DURATION": "12", "VSUM_SHIM_LOG": str(self.root / "shim.log")})
+                    "VSUM_SHIM_DURATION": "12", "VSUM_SHIM_LOG": str(self.root / "shim.log"),
+                    "VSUM_LOCAL_MODEL_CONFIG": str(self.root / "unconfigured-local-model.json")})
+        env.pop("LOCAL_WHISPER_MODEL", None)
         return env
 
     def _wf(self, env: dict, *argv):

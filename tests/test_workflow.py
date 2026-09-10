@@ -86,7 +86,8 @@ class FakeScripts:
         payload["engine_version"] = gates.ENGINE_VERSION
         payload["source_identity"] = gates.canonical_source(command[2])
         payload["inputs"] = {"whisper": _arg(command, "--whisper"), "no_whisper": "--no-whisper" in command,
-                             "langs": _arg(command, "--langs"), "wanted": _arg(command, "--wanted")}
+                             "langs": _arg(command, "--langs"), "wanted": _arg(command, "--wanted"),
+                             "local_model": _arg(command, "--local-model")}
         code = 0
         if self.source_unavailable:
             payload = {**payload, "status": "source_unavailable", "segments": [], "source": None,
@@ -227,6 +228,9 @@ class WorkflowTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(prefix="vsum-wf-")
         self.root = Path(self.temporary.name)
         self.work = self.root / "work"
+        self.model_config = mock.patch.dict(
+            os.environ, {"VSUM_LOCAL_MODEL_CONFIG": str(self.root / "local-model.json")})
+        self.model_config.start()
         self.fake = FakeScripts()
         self.patcher = mock.patch.object(workflow, "_invoke", self.fake)
         self.patcher.start()
@@ -243,6 +247,7 @@ class WorkflowTests(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.cwd)
         self.no_setup.stop()
+        self.model_config.stop()
         self.doctor.stop()
         self.patcher.stop()
         self.temporary.cleanup()
@@ -403,6 +408,20 @@ class WorkflowTests(unittest.TestCase):
         next_step = self.run_json()["blocker"]["next"]
         self.assertIn("disabled", next_step)
         self.assertNotIn("--whisper groq|openai", next_step)
+
+    def test_explicit_disable_wins_over_every_explicit_provider_without_model_or_key_lookup(self):
+        with mock.patch.object(workflow.whisper_module, "local_model_candidate",
+                               side_effect=AssertionError("registry read")), \
+                mock.patch.object(workflow.whisper_module, "load_api_key",
+                                  side_effect=AssertionError("key read")):
+            for provider in ("local", "groq", "openai"):
+                with self.subTest(provider=provider):
+                    self.work = self.root / f"work-disabled-{provider}"
+                    self.assertEqual(self.init("--no-whisper", "--whisper", provider), 0)
+                    request = self.run_json()["request"]
+                    self.assertTrue(request["no_whisper"])
+                    self.assertIsNone(request["whisper"])
+                    self.assertIsNone(request["local_model"])
 
     def test_proxy_policy_failure_recommends_environment_repair(self):
         self.init()
@@ -825,6 +844,8 @@ class WorkflowTests(unittest.TestCase):
         self.assertIsNone(self.run_json()["request"]["whisper"])
 
     def test_configured_local_request_has_stable_backend_binding(self):
+        model = self.root / "ggml-small.bin"
+        model.write_bytes(b"lmgg" + (51865).to_bytes(4, "little") + b"fixture")
         with mock.patch.dict(os.environ, {"LOCAL_WHISPER_MODEL": str(self.root / "ggml-small.bin")}):
             self.init()
             self.assertEqual(self.run_json()["request"]["whisper"], "local")
@@ -834,6 +855,28 @@ class WorkflowTests(unittest.TestCase):
         self.wf("init", "https://www.youtube.com/watch?v=vid", "--force", "--whisper", "openai")
         self.assertEqual(self.run_json()["request"]["whisper"], "openai")
         self.assertIsNone(self.run_json()["request"]["local_model"])
+
+    def test_explicit_provider_overrides_only_inherited_disable(self):
+        self.assertEqual(self.init("--no-whisper"), 0)
+        self.assertEqual(self.init("--force", "--whisper", "groq"), 0)
+        request = self.run_json()["request"]
+        self.assertFalse(request["no_whisper"])
+        self.assertEqual(request["whisper"], "groq")
+
+    def test_stale_registered_model_does_not_block_caption_or_cached_transcript(self):
+        config = Path(os.environ["VSUM_LOCAL_MODEL_CONFIG"])
+        config.write_text(json.dumps({"schema_version": 1,
+                                      "model_path": str(self.root / "ggml-missing.bin")}), encoding="utf-8")
+        self.assertEqual(self.init(), 0)
+        request = self.run_json()["request"]
+        self.assertEqual(request["whisper"], "local")
+        self.assertEqual(request["local_model_source"], "registered")
+        self.assertEqual(self.wf("run"), 0)
+        self.assertEqual(self.fake.calls, ["transcript.py"])
+        self.assertEqual(self.init("--force"), 0)
+        self.assertEqual(self.run_json()["stages"]["transcript"]["status"], "ok")
+        self.assertEqual(self.wf("run"), 0)
+        self.assertEqual(self.fake.calls, ["transcript.py"])
 
 if __name__ == "__main__":
     unittest.main()

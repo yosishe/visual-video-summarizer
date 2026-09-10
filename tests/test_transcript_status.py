@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -27,8 +28,12 @@ class TranscriptStatusTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="vsum-ts-")
         self.work = Path(self.temporary.name) / "work"
+        self.model_config = mock.patch.dict(
+            os.environ, {"VSUM_LOCAL_MODEL_CONFIG": str(self.work.parent / "local-model.json")})
+        self.model_config.start()
 
     def tearDown(self):
+        self.model_config.stop()
         self.temporary.cleanup()
 
     def _fake_ytdlp(self, captions: bool):
@@ -212,7 +217,7 @@ class TranscriptStatusTests(unittest.TestCase):
     def test_local_model_is_normalized_recorded_and_passed_only_for_local_mode(self):
         configured = self.work / "models" / "ggml.bin"
         configured.parent.mkdir(parents=True)
-        configured.write_bytes(b"model")
+        configured.write_bytes(b"lmgg" + (51865).to_bytes(4, "little") + b"fixture")
         captured = {}
 
         def fake_transcribe(*args, **kwargs):
@@ -222,7 +227,7 @@ class TranscriptStatusTests(unittest.TestCase):
         with mock.patch.object(transcript, "fetch_captions", return_value={
                 "info": {**INFO, "subtitles": {}, "automatic_captions": {}}, "track": None,
                 "subtitle_path": None, "segments": [], "tracks_considered": 0, "rejected_translated": 0}), \
-                mock.patch.object(transcript, "configured_local_model", return_value=configured), \
+                mock.patch.object(transcript, "local_model_candidate", return_value=(configured, "registered")), \
                 mock.patch.object(transcript, "download_audio", return_value=self.work / "audio.m4a"), \
                 mock.patch.object(transcript, "transcribe_video", side_effect=fake_transcribe):
             code = self._main("--whisper", "local")
@@ -233,11 +238,27 @@ class TranscriptStatusTests(unittest.TestCase):
         self.assertNotIn("cache_dir", captured)
         self.assertNotIn("retry_uncertain", captured)
 
+    def test_explicit_local_model_activates_local_fallback_without_whisper_flag(self):
+        configured = self.work / "models" / "ggml.bin"
+        configured.parent.mkdir(parents=True)
+        configured.write_bytes(b"lmgg" + (51865).to_bytes(4, "little") + b"fixture")
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=False)), \
+                mock.patch.object(transcript, "download_audio", return_value=self.work / "audio.m4a"), \
+                mock.patch.object(transcript, "transcribe_video",
+                                  return_value=([{"start": 0, "end": 1, "text": "explicit"}], "local")) as call:
+            code = self._main("--local-model", str(configured))
+        self.assertEqual(code, 0)
+        self.assertEqual(call.call_args.kwargs["backend"], "local")
+        self.assertEqual(call.call_args.kwargs["local_model"], configured.resolve())
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["inputs"]["whisper"], "local")
+        self.assertEqual(payload["inputs"]["local_model"], str(configured.resolve()))
+
     def test_explicitly_configured_local_model_is_the_no_provider_default(self):
         configured = self.work / "configured" / "ggml.bin"
         configured.parent.mkdir(parents=True)
-        configured.write_bytes(b"model")
-        with mock.patch.object(transcript, "configured_local_model", return_value=configured), \
+        configured.write_bytes(b"lmgg" + (51865).to_bytes(4, "little") + b"fixture")
+        with mock.patch.object(transcript, "local_model_candidate", return_value=(configured, "registered")), \
                 mock.patch.object(transcript, "fetch_captions", return_value={
                     "info": {**INFO, "subtitles": {}, "automatic_captions": {}}, "track": None,
                     "subtitle_path": None, "segments": [], "tracks_considered": 0, "rejected_translated": 0}), \
@@ -251,11 +272,56 @@ class TranscriptStatusTests(unittest.TestCase):
         self.assertEqual(payload["inputs"]["whisper"], "local")
 
     def test_configured_local_model_is_not_consulted_when_captions_succeed(self):
-        with mock.patch.object(transcript, "configured_local_model",
+        with mock.patch.object(transcript, "local_model_candidate",
                                side_effect=AssertionError("must be deferred")), \
                 mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)):
             code = self._main()
         self.assertEqual(code, 0)
+
+    def test_caption_success_preserves_symlink_leaf_as_request_binding(self):
+        target = self.work.parent / "ggml-target.bin"
+        target.write_bytes(b"model")
+        linked = self.work.parent / "ggml-linked.bin"
+        linked.symlink_to(target)
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=True)), \
+                mock.patch.object(transcript, "transcribe_video") as inference:
+            code = self._main("--whisper", "local", "--local-model", str(linked))
+        self.assertEqual(code, 0)
+        inference.assert_not_called()
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["inputs"]["local_model"], str(whisper.canonical_local_model_binding(linked)))
+
+    def test_no_captions_rejects_symlinked_model_before_download_or_inference(self):
+        target = self.work.parent / "ggml-target.bin"
+        target.write_bytes(b"model")
+        linked = self.work.parent / "ggml-linked.bin"
+        linked.symlink_to(target)
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=False)), \
+                mock.patch.object(transcript, "download_audio") as download, \
+                mock.patch.object(transcript, "transcribe_video") as inference:
+            code = self._main("--whisper", "local", "--local-model", str(linked))
+        self.assertEqual(code, 14)
+        download.assert_not_called()
+        inference.assert_not_called()
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["inputs"]["local_model"], str(whisper.canonical_local_model_binding(linked)))
+        self.assertEqual(payload["acquisition_error"]["category"], "invalid_input")
+
+    def test_missing_registered_model_writes_structured_failure_before_download(self):
+        config = Path(os.environ["VSUM_LOCAL_MODEL_CONFIG"])
+        config.write_text(json.dumps({"schema_version": 1,
+                                      "model_path": str(self.work.parent / "ggml-missing.bin")}), encoding="utf-8")
+        with mock.patch.object(transcript, "_run_ytdlp", self._fake_ytdlp(captions=False)), \
+                mock.patch.object(transcript, "download_audio") as download, \
+                mock.patch.object(transcript, "transcribe_video") as inference:
+            code = self._main()
+        self.assertEqual(code, 14)
+        download.assert_not_called()
+        inference.assert_not_called()
+        payload = json.loads((self.work / "transcript.json").read_text(encoding="utf-8"))
+        self.assertEqual(payload["status"], "acquisition_failed")
+        self.assertEqual(payload["acquisition_error"]["category"], "dependency")
+        self.assertTrue(payload["inputs"]["local_model"].endswith("ggml-missing.bin"))
 
     def test_competing_direct_cli_writer_is_refused_by_work_lock(self):
         self.work.mkdir(parents=True)

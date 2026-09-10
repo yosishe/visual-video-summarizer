@@ -25,6 +25,8 @@ LOCAL_EXTRACTION = "pcm_s16le-16000hz-mono"
 REMOTE_EXTRACTION = "mp3-64k-16000hz-mono"
 FATAL_PROVIDER_CATEGORIES = {"authentication", "authorization", "quota_exceeded", "uncertain_upload"}
 MAX_RESPONSE_BYTES = 10_000_000
+LOCAL_MODEL_CONFIG_ENV = "VSUM_LOCAL_MODEL_CONFIG"
+LOCAL_MODEL_CONFIG_SCHEMA = 1
 
 
 def plan_chunks(total_seconds: float, total_bytes: int,
@@ -66,10 +68,106 @@ def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, 
     return None, None
 
 
+def local_model_config_path() -> Path:
+    override = (os.environ.get(LOCAL_MODEL_CONFIG_ENV) or "").strip()
+    path = (Path(override).expanduser() if override else
+            Path.home() / ".config" / "summarize-video" / "local-model.json")
+    path = Path(os.path.abspath(path))
+    # `/tmp` and `/var` are fixed system aliases into `/private` on macOS.
+    # Normalize those aliases before rejecting user-controlled symlinks.
+    if sys.platform == "darwin":
+        for alias in (Path("/tmp"), Path("/var")):
+            if path == alias or alias in path.parents:
+                path = Path("/private") / path.relative_to("/")
+                break
+    return path
+
+
+def _validate_registry_path(path: Path) -> None:
+    """Reject existing symlinks anywhere in the registry or lock path."""
+    absolute = Path(os.path.abspath(path))
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        if current.is_symlink():
+            raise AcquisitionError("invalid_input", "Local model registry path must not contain a symlink")
+
+
+def registered_local_model_path() -> Path | None:
+    """Read only the bounded, non-secret local-model registry."""
+    config = local_model_config_path()
+    _validate_registry_path(config)
+    if not config.exists():
+        return None
+    if not config.is_file():
+        raise AcquisitionError("invalid_input", "Registered local model config is not a regular file")
+    try:
+        if config.stat().st_size > 64_000:
+            raise AcquisitionError("invalid_input", "Registered local model config is too large")
+        payload = json.loads(config.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise AcquisitionError("invalid_input", "Registered local model config is unreadable or invalid JSON") from exc
+    if not isinstance(payload, dict) or payload.get("schema_version") != LOCAL_MODEL_CONFIG_SCHEMA or \
+            set(payload) != {"schema_version", "model_path"} or \
+            not isinstance(payload.get("model_path"), str) or not payload["model_path"].strip():
+        raise AcquisitionError("invalid_input", "Registered local model config has an invalid schema")
+    return Path(payload["model_path"]).expanduser()
+
+
+def registered_local_model() -> Path | None:
+    candidate = registered_local_model_path()
+    return validate_local_model(candidate) if candidate is not None else None
+
+
+def local_model_candidate(explicit: Path | str | None = None) -> tuple[Path | None, str]:
+    """Select a configured path by precedence without validating the model file."""
+    if explicit is not None and str(explicit).strip():
+        return Path(explicit).expanduser(), "explicit"
+    environment = (os.environ.get("LOCAL_WHISPER_MODEL") or "").strip()
+    if environment:
+        return Path(environment).expanduser(), "environment"
+    registered = registered_local_model_path()
+    return (registered, "registered") if registered is not None else (None, "unconfigured")
+
+
+def canonical_local_model_binding(path: Path | str) -> Path:
+    """Canonicalize the parent while preserving the requested leaf identity."""
+    expanded = Path(path).expanduser()
+    return expanded.parent.resolve() / expanded.name
+
+
+def resolve_local_model(explicit: Path | str | None = None) -> tuple[Path | None, str]:
+    """Resolve explicit > environment > registry without reading credentials."""
+    candidate, source = local_model_candidate(explicit)
+    return (validate_local_model(candidate), source) if candidate is not None else (None, source)
+
+
 def configured_local_model() -> Path | None:
-    """Resolve LOCAL_WHISPER_MODEL only; never inspect credential files."""
-    value = (os.environ.get("LOCAL_WHISPER_MODEL") or "").strip()
-    return validate_local_model(Path(value).expanduser()) if value else None
+    """Resolve environment or registered local model; never inspect credentials."""
+    return resolve_local_model()[0]
+
+
+def register_local_model(path: Path | str) -> Path:
+    """Validate local execution and atomically persist a non-secret model path."""
+    model = validate_local_model(Path(path).expanduser())
+    _local_binary()  # shutil.which verifies an installed executable; execution is fingerprinted at transcription time.
+    config = local_model_config_path()
+    _validate_registry_path(config)
+    try:
+        config.parent.mkdir(parents=True, exist_ok=True)
+        _validate_registry_path(config)
+        lock = config.with_suffix(config.suffix + ".lock")
+        _validate_registry_path(lock)
+        with file_lock(lock):
+            _validate_registry_path(config)
+            _validate_registry_path(lock)
+            atomic_write(config, json.dumps({"schema_version": LOCAL_MODEL_CONFIG_SCHEMA,
+                                             "model_path": str(model)}, indent=2) + "\n")
+    except AcquisitionError:
+        raise
+    except (OSError, SystemExit) as exc:
+        raise AcquisitionError("dependency", "Could not save the registered local model config") from exc
+    return model
 
 
 def validate_local_model(path: Path) -> Path:
