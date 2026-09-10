@@ -14,9 +14,13 @@ from pathlib import Path
 from hostenv import find_chrome, install_hint, javascript_runtime, platform_key, python_command, run_text, utf8_stdio  # noqa: E402
 from safety import YTDLP_FLAGS, ytdlp_command  # noqa: E402
 from gates import ENGINE_VERSION  # noqa: E402
+from acquisition import AcquisitionError  # noqa: E402
+import whisper as whisper_module  # noqa: E402
 
 
-def check(local: bool = False, pdf: bool = False, local_model: str | None = None) -> dict:
+def check(local: bool = False, pdf: bool = False, local_model: str | None = None,
+          whisper_backend: str | None = None, no_whisper: bool = False,
+          local_model_source: str | None = None) -> dict:
     rows = [{"name": "Python", "required": True, "available": sys.version_info >= (3, 10),
              "version": sys.version.split()[0]}]
     for name in ("ffmpeg", "ffprobe", "yt-dlp"):
@@ -55,15 +59,38 @@ def check(local: bool = False, pdf: bool = False, local_model: str | None = None
     rows.append({"name": "yt-dlp EJS", "required": False, "available": ejs,
                  "note": "Detected in this Python environment only; packaged yt-dlp may bundle EJS separately. "
                          "Source acquisition reports a missing capability without bypassing restrictions."})
-    model = local_model or os.environ.get("LOCAL_WHISPER_MODEL")
     binary = shutil.which("whisper-cli")
-    model_path = Path(model).expanduser() if model else None
-    valid_model = bool(model_path and model_path.is_file() and model_path.suffix == ".bin"
-                       and ".en" not in model_path.name and model_path.stat().st_size > 1024 * 1024)
-    rows.append({"name": "local transcription", "required": False, "available": bool(binary and valid_model),
-                 "path": binary, "model_configured": bool(model),
-                 "note": "Optional whisper.cpp needs whisper-cli and a configured compatible multilingual GGML model. "
-                         "Model execution validates compatibility; no model download or credential read occurs here."})
+    model_path = None
+    model_source = "not_inspected"
+    model_status = "not_inspected"
+    model_error = None
+    inspect_model = not no_whisper and whisper_backend not in ("groq", "openai")
+    if inspect_model:
+        if local_model:
+            model_source = "explicit"
+        elif (os.environ.get("LOCAL_WHISPER_MODEL") or "").strip():
+            model_source = "environment"
+        else:
+            model_source = "registered"
+        try:
+            candidate, selected_source = whisper_module.local_model_candidate(local_model)
+            model_path = str(candidate) if candidate else None
+            model_source = local_model_source or selected_source
+            if candidate is None:
+                model_status = "unconfigured"
+            else:
+                model_path = str(whisper_module.validate_local_model(candidate))
+                model_status = "valid"
+        except (AcquisitionError, OSError) as exc:
+            model_error = getattr(exc, "message", str(exc))[:200]
+            model_status = "missing" if "missing" in model_error.casefold() else "invalid"
+    rows.append({"name": "local transcription", "required": False,
+                 "available": bool(binary and model_status == "valid"), "path": binary,
+                 "model_path": model_path, "model_source": model_source, "model_status": model_status,
+                 "model_configured": model_status in ("valid", "missing", "invalid"),
+                 "note": (model_error or
+                          "Optional whisper.cpp uses an installed whisper-cli and a compatible multilingual GGML model. "
+                          "No model download or credential read occurs here.")})
     rows.append({"name": "Pillow", "required": False, "available": bool(importlib.util.find_spec("PIL")),
                  "note": "Optional: contact sheets need it; without it every candidate is read individually."})
     rows.append({"name": "workflow", "required": False,

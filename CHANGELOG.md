@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.1 — 2026-09-09
+
+- Existing local Whisper models can be registered once with `workflow.py configure-local --local-model <path>` and reused by later runs. Precedence remains explicit path, environment, then registration; disabled transcription and an explicit cloud provider retain their choices.
+- Read-only preflight distinguishes an unconfigured model from a missing or invalid one. Agent instructions check known existing local setup before proposing another download. Model registration is atomic, locked, separate from credential files and never installs software or uploads audio.
+- An explicitly disabled transcription choice wins over a simultaneous provider flag. Missing fallback models do not block caption or transcript-cache success, and registration rejects symlinked registry or lock paths.
+- Regression verification uses the actual reported no-caption video with an existing multilingual model. Evidence and quality limitations are recorded separately from mocked adapter tests.
+
 ## 1.9.0 — 2026-09-08
 
 Acquisition reliability and resumable transcription redesign from `b52d268`.

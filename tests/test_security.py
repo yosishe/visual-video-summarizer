@@ -33,7 +33,11 @@ class UploadTests(unittest.TestCase):
                 source.touch()
                 with mock.patch.object(sys, 'argv', ['transcript', str(source), '--work', str(root), *flags]), \
                      mock.patch.object(transcript, 'probe', return_value={'duration': 20, 'has_audio': True}), \
-                     mock.patch.dict(os.environ, {'GROQ_API_KEY': 'SYNTHETIC_SECRET'}), \
+                     mock.patch.dict(os.environ, {
+                         'GROQ_API_KEY': 'SYNTHETIC_SECRET',
+                         'LOCAL_WHISPER_MODEL': '',
+                         'VSUM_LOCAL_MODEL_CONFIG': str(root / 'unconfigured-local-model.json'),
+                     }), \
                      mock.patch.object(transcript, 'load_api_key') as keys, \
                      mock.patch.object(transcript, 'transcribe_video') as upload, \
                      contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
@@ -271,6 +275,16 @@ class FileBoundaryTests(unittest.TestCase):
 
 
 class DoctorTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix="vsum-doctor-")
+        self.model_config = mock.patch.dict(
+            os.environ, {"VSUM_LOCAL_MODEL_CONFIG": str(Path(self.temporary.name) / "local-model.json")})
+        self.model_config.start()
+
+    def tearDown(self):
+        self.model_config.stop()
+        self.temporary.cleanup()
+
     def test_missing_dependencies_produce_actionable_json_without_installing(self):
         with mock.patch.object(doctor.shutil, 'which', return_value=None), \
              mock.patch.object(doctor.importlib.util, 'find_spec', return_value=None), \

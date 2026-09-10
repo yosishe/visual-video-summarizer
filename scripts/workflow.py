@@ -74,6 +74,7 @@ from gates import (  # noqa: E402
 from hostenv import child_env, install_hint, python_command, utf8_stdio  # noqa: E402
 from safety import atomic_write, validate_generated_html  # noqa: E402
 from acquisition import AcquisitionError, EXIT_ACQUISITION, EXIT_PARTIAL, file_lock, run_process  # noqa: E402
+import whisper as whisper_module  # noqa: E402
 
 RUN_SCHEMA = 1
 STAGES = ("transcript", "chapters", "candidates", "shortlist", "selections", "grab", "summary", "audit", "render")
@@ -863,7 +864,10 @@ def _doctor_snapshot(run: dict, checked_by: str) -> dict:
     try:
         import doctor as doctor_module
         result = doctor_module.check(local=(kind == "file"), pdf=bool(request(run).get("pdf")),
-                                     local_model=request(run).get("local_model"))
+                                     local_model=request(run).get("local_model"),
+                                     whisper_backend=request(run).get("whisper"),
+                                     no_whisper=bool(request(run).get("no_whisper")),
+                                     local_model_source=request(run).get("local_model_source"))
     except Exception as exc:  # pragma: no cover - doctor is read-only; never crash on it
         result = {"ready": None, "error": str(exc)[:200], "checks": []}
     return {**result, "captured_at": _now(), "checked_by": checked_by}
@@ -924,6 +928,9 @@ def cmd_init(args) -> int:
     same_source = bool(previous_key) and previous_key == source_key(identity)
     old_request = ((previous or {}).get("request") or {}) if same_source else {}
     explicit_provider = args.whisper is not None
+    explicit_no_whisper = args.no_whisper is True
+    explicit_local_model = args.local_model is not None
+    local_model_source = None
     defaults = {"tier": "standard", "pdf": False, "whisper": None, "no_whisper": False,
                 "langs": None, "wanted": None, "output_mode": "illustrated", "sections": None,
                 "allow_long": False, "max_image_tokens": None, "focus": None,
@@ -931,16 +938,30 @@ def cmd_init(args) -> int:
     for key, default in defaults.items():
         if getattr(args, key, None) is None:
             setattr(args, key, old_request.get(key, default))
-    if explicit_provider:
+    if explicit_no_whisper:
+        args.no_whisper = True
+        args.whisper = None
+        args.local_model = None
+    elif explicit_provider:
         args.no_whisper = False
         if args.whisper in ("groq", "openai"):
             args.local_model = None
     if args.lang is None and old_request.get("lang"):
         lang = old_request["lang"]
-    if args.local_model:
-        args.local_model = str(Path(args.local_model).expanduser().resolve())
-    elif not args.no_whisper and args.whisper in (None, "local") and os.environ.get("LOCAL_WHISPER_MODEL"):
-        args.local_model = str(Path(os.environ["LOCAL_WHISPER_MODEL"]).expanduser().resolve())
+    if args.no_whisper:
+        args.whisper = None
+        args.local_model = None
+        local_model_source = "not_inspected"
+    elif args.whisper in (None, "local"):
+        selected_model, local_model_source = whisper_module.local_model_candidate(args.local_model)
+        if args.local_model and not explicit_local_model:
+            local_model_source = old_request.get("local_model_source") or "bound"
+        # Canonicalize the parent for stable bindings while preserving the
+        # leaf itself so a symlinked model is still rejected at local fallback.
+        args.local_model = (str(whisper_module.canonical_local_model_binding(selected_model))
+                            if selected_model else None)
+    else:
+        local_model_source = "not_inspected"
     if not args.no_whisper and not args.whisper and args.local_model:
         args.whisper = "local"
     same_source = False
@@ -965,7 +986,7 @@ def cmd_init(args) -> int:
                     "no_whisper": bool(args.no_whisper), "langs": args.langs, "wanted": args.wanted,
                     "output_mode": args.output_mode, "sections": args.sections, "allow_long": bool(args.allow_long),
                     "max_image_tokens": args.max_image_tokens, "focus": args.focus,
-                    "local_model": args.local_model,
+                    "local_model": args.local_model, "local_model_source": local_model_source,
                     "cache_dir": str(Path(args.cache_dir).expanduser().resolve()) if args.cache_dir else None},
         "visual_content": {"decision": "none" if args.output_mode == "text-only" else "illustrated",
                            "reason": "user requested a text-only summary" if args.output_mode == "text-only" else None,
@@ -995,6 +1016,12 @@ def cmd_init(args) -> int:
     print(f"Initialized {run_path(work)} (lang={lang}, tier={args.tier}, pdf={bool(args.pdf)}, "
           f"visual content: {run['visual_content']['decision']})")
     print(f"Next: {python_command()} \"{Path(__file__).resolve()}\" run --work \"{work}\"")
+    return 0
+
+
+def cmd_configure_local(args) -> int:
+    model = whisper_module.register_local_model(args.local_model)
+    print(f"Registered local Whisper model: {model}")
     return 0
 
 
@@ -1365,6 +1392,12 @@ def build_parser() -> argparse.ArgumentParser:
                            "so only what depends on a changed option re-runs); a different source needs a fresh work dir")
     init.set_defaults(func=cmd_init)
 
+    configure = sub.add_parser("configure-local", help="validate and register an existing local Whisper model")
+    configure.add_argument("--local-model", required=True,
+                           help="existing compatible multilingual GGML .bin path; saved in the local model registry. "
+                                "VSUM_LOCAL_MODEL_CONFIG overrides the registry path for isolated environments")
+    configure.set_defaults(func=cmd_configure_local)
+
     run = sub.add_parser("run", help="execute deterministic stages until a model-authored file is needed")
     run.add_argument("--work", required=True)
     run.add_argument("--until", choices=STAGES, default=None)
@@ -1409,8 +1442,10 @@ def main(argv: list[str] | None = None) -> int:
     utf8_stdio()
     args = build_parser().parse_args(argv)
     try:
-        with file_lock(Path(args.work).expanduser().resolve() / ".workflow.lock"):
-            return args.func(args)
+        if hasattr(args, "work"):
+            with file_lock(Path(args.work).expanduser().resolve() / ".workflow.lock"):
+                return args.func(args)
+        return args.func(args)
     except AcquisitionError as exc:
         if getattr(args, "json", False):
             print(json.dumps({"exit_code": exc.exit_code, "acquisition_error": exc.as_dict()}))

@@ -3,7 +3,7 @@ name: summarize-video
 description: Creates illustrated, source-linked study notes from YouTube URLs or local recordings in Hebrew or English. Use for lectures, tutorials, screencasts and demos. A deterministic controller runs acquisition, original-frame extraction, verification and HTML/PDF delivery, then names the next file the agent must author. Supports bounded recovery, validated caches and configured local whisper.cpp. Cloud transcription requires explicit provider selection. Works in the user's Codex, Claude Code or Antigravity; sessions without execution tools get a copy-ready handoff.
 license: MIT
 metadata:
-  version: "1.9.0"
+  version: "1.9.1"
   homepage: https://github.com/yosishe/visual-video-summarizer
   repository: https://github.com/yosishe/visual-video-summarizer
   author: yosishe
@@ -20,7 +20,7 @@ Use the controller loop. You author the interpretation; the repository checks wh
 - In a managed/cloud session, read its supplied network policy before proposing dependency installation. A known denial for the selected source is an environment blocker: preserve the URL and output request for a permitted local environment, or explain the operator's policy change. Root access is not installation approval. Do not scan other hosts or install another downloader after a denial.
 - Without execution/image-review tools, follow [CHAT-PROMPT.txt](CHAT-PROMPT.txt). If it is unavailable, give a copy-ready message containing this repository, the source URL, requested language/output and the need for local execution. Do not substitute a transcript-only answer for an illustrated request.
 - Derive options from the user's request: Hebrew → `--lang he` (default), English → `--lang en`, high quality → `--tier high`, PDF → `--pdf`, explicitly text only → `--output-mode text-only`. `SUMMARY_LANG` can set the default.
-- Cloud uploads require an explicit `--whisper groq` or `--whisper openai` choice for this source; credentials never authorize them. A configured multilingual local model (`--local-model` or `LOCAL_WHISPER_MODEL`) permits local fallback. `--no-whisper` disables every transcription backend. The user must approve installations, model downloads, duration/budget overrides, uncertain-upload retries and partial delivery. Reuse approval already given for the same action.
+- Cloud uploads require an explicit `--whisper groq` or `--whisper openai` choice for this source; credentials never authorize them. A configured multilingual local model (`--local-model`, `LOCAL_WHISPER_MODEL`, or the registered local model) permits local fallback. `--no-whisper` disables every transcription backend. The user must approve installations, model downloads, duration/budget overrides, uncertain-upload retries and partial delivery. Reuse approval already given for the same action.
 
 ## Setup and controller
 
@@ -31,7 +31,9 @@ python scripts/workflow.py init "<source>" --work "<work>" [--lang he|en] [--tie
 python scripts/workflow.py run --work "<work>" --json
 ```
 
-Add `--whisper local --local-model <existing-compatible-model>` for explicit local selection, or the explicitly chosen cloud provider. Run-local caches are the default; `--cache-dir <directory>` explicitly shares validated acquisition/chunk results across runs. Work and cache locks reject competing writers.
+Before proposing a model download, distinguish unconfigured from missing. Check doctor and known paths from the user's setup; never recursively scan unrelated personal folders. Register a compatible existing model once with `python scripts/workflow.py configure-local --local-model <path>`. This stores only a non-secret path; later runs reuse it without a download or upload.
+
+Add `--whisper local --local-model <existing-compatible-model>` for a run-specific selection, or the explicitly chosen cloud provider. Run-local caches are the default; `--cache-dir <directory>` explicitly shares validated acquisition/chunk results across runs. Work and cache locks reject competing writers.
 
 `init` records source and options. `init --force` preserves omitted options for the same canonical source; changing a tier cannot reset language, PDF or transcription. Different sources need fresh work directories once artifacts exist. `--no-pdf` explicitly removes a PDF request.
 
@@ -43,7 +45,7 @@ Add `--whisper local --local-model <existing-compatible-model>` for explicit loc
 
 Acquisition order is valid cache → ranked captions → configured local transcription. A named cloud provider is an explicit alternate choice. Absent captions permit fallback; rate limits, quota, access, authentication and malformed replies do not. The code owns retries: at most three attempts per eligible operation, exponential jitter, at most 60 seconds waiting, one downloader/fragment. Never add agent retries around it. Details and tool choices: [references/engine.md](references/engine.md).
 
-If no eligible caption track and no local model are available, explain the local option first. Propose one concrete setup for an installed `whisper-cli` and compatible multilingual model, with approval for any missing software/model download. Then offer named cloud transcription as an optional separate choice with upload/cost implications. Do not assume OpenAI is preferred, and do not ask for an API key merely because captions are absent. `--no-whisper` means keep all transcription disabled. `--langs` cannot create a track absent from the inventory.
+When captions are absent, resolve existing local setup first. If software or a model is truly missing, propose one concrete setup and request approval for the needed installation/download. Cloud is a separate provider choice with upload/cost implications; never infer a preferred provider from keys. Preserve `--no-whisper`. `--langs` can only select a track present in the inventory.
 
 ## Author the evidence
 

@@ -76,6 +76,12 @@ DETECTED_LANGUAGE = whisper_module.DETECTED_LANGUAGE
 load_api_key = whisper_module.load_api_key
 transcribe_video = whisper_module.transcribe_video
 configured_local_model = getattr(whisper_module, "configured_local_model", lambda: None)
+local_model_candidate = getattr(whisper_module, "local_model_candidate",
+                                lambda: (configured_local_model(), "configured"))
+canonical_local_model_binding = getattr(
+    whisper_module, "canonical_local_model_binding",
+    lambda path: Path(path).expanduser().parent.resolve() / Path(path).expanduser().name)
+validate_local_model = getattr(whisper_module, "validate_local_model", lambda path: Path(path))
 
 
 class PartialTranscription(SystemExit):
@@ -674,7 +680,9 @@ def main() -> int:
     args = ap.parse_args()
     utf8_stdio()
 
-    selected_model = Path(args.local_model).expanduser().resolve() if args.local_model else None
+    # This is the request binding, not yet an execution path. Caption success
+    # must preserve the leaf (including a symlink leaf) without inspecting it.
+    selected_model = canonical_local_model_binding(args.local_model) if args.local_model else None
 
     work = Path(args.work).expanduser().resolve() if args.work else Path(
         tempfile.mkdtemp(prefix="vsum-"))
@@ -788,25 +796,30 @@ def main() -> int:
     # A configured local model is considered only after captions and their
     # caches are exhausted, so a stale model path cannot break caption success.
     if not segments and not unavailable_reason and not acquisition_failure and not too_long \
-            and not args.no_whisper and args.whisper is None:
-        configured = selected_model or configured_local_model()
-        if configured is not None:
-            selected_model = Path(configured).expanduser().resolve()
-            args.whisper = "local"
+            and not args.no_whisper and args.whisper in (None, "local"):
+        try:
+            if selected_model is None:
+                configured, _configured_source = local_model_candidate()
+                if configured is not None:
+                    selected_model = canonical_local_model_binding(configured)
+            if selected_model is not None and args.whisper is None:
+                args.whisper = "local"
+        except AcquisitionError as exc:
+            acquisition_failure = exc
+            failure_reason = exc.message
 
     whisper_report: dict | None = None
     if unavailable_reason or acquisition_failure or too_long:
         pass  # an unreadable source is never uploaded anywhere
     elif not segments and not args.no_whisper and args.whisper:
-        selected_model = selected_model or (configured_local_model() if args.whisper == "local" else None)
-        if selected_model is not None:
-            selected_model = Path(selected_model).expanduser().resolve()
         backend, api_key = (("local", None) if args.whisper == "local" else load_api_key(args.whisper))
         if backend and (api_key or backend == "local"):
+            execution_model = None
             try:
-                if backend == "local" and (selected_model is None or selected_model.is_symlink()
-                                           or not selected_model.is_file()):
-                    raise AcquisitionError("dependency", "Configured local Whisper model is unavailable")
+                if backend == "local":
+                    if selected_model is None:
+                        raise AcquisitionError("dependency", "Configured local Whisper model is unavailable")
+                    execution_model = validate_local_model(selected_model)
                 media = (download_audio(args.source, dl_dir, cache_dir=cache_dir)
                          if url_source else Path(args.source).expanduser().resolve())
             except AcquisitionError as exc:
@@ -817,8 +830,8 @@ def main() -> int:
                 if media is None:
                     raise acquisition_failure  # type: ignore[misc]
                 transcribe_kwargs = {"backend": backend, "api_key": api_key, "language": hint}
-                if selected_model is not None:
-                    transcribe_kwargs["local_model"] = selected_model
+                if execution_model is not None:
+                    transcribe_kwargs["local_model"] = execution_model
                 if args.cache_dir:
                     transcribe_kwargs["cache_dir"] = cache_dir
                 if args.retry_uncertain:

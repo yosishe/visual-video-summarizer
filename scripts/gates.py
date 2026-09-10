@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 
-ENGINE_VERSION = "1.9.0"
+ENGINE_VERSION = "1.9.1"
 
 EXIT_UNRESOLVED = 9           # required visual coverage unresolved
 EXIT_INVALID = 10             # a model-authored or upstream artifact is structurally invalid
