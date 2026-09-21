@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from acquisition import (AcquisitionError, DISCOVERY_TIMEOUT, MEDIA_TIMEOUT, UPLOAD_TIMEOUT, canonical_hash,
     file_lock, hash_file, http_failure, read_cache, record_event, retry_call,
     run_process, write_cache)  # noqa: E402
-from hostenv import require_tools  # noqa: E402
+from hostenv import require_tools, user_config_dir  # noqa: E402
 from safety import atomic_write  # noqa: E402
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
@@ -61,17 +61,21 @@ def _dotenv_value(path: Path, name: str) -> str | None:
 def load_api_key(preferred: str | None = None) -> tuple[str, str] | tuple[None, None]:
     candidates = (("GROQ_API_KEY", "groq"), ("OPENAI_API_KEY", "openai"))
     if preferred is not None: candidates = tuple(x for x in candidates if x[1] == preferred)
-    config = Path.home() / ".config" / "summarize-video" / ".env"
+    config_dir = user_config_dir()
+    config = config_dir / ".env" if config_dir else None
     for name, backend in candidates:
-        value = (os.environ.get(name) or "").strip() or _dotenv_value(config, name)
+        value = (os.environ.get(name) or "").strip() or (config and _dotenv_value(config, name))
         if value: return backend, value
     return None, None
 
 
 def local_model_config_path() -> Path:
     override = (os.environ.get(LOCAL_MODEL_CONFIG_ENV) or "").strip()
-    path = (Path(override).expanduser() if override else
-            Path.home() / ".config" / "summarize-video" / "local-model.json")
+    config_dir = user_config_dir()
+    if not override and config_dir is None:
+        raise AcquisitionError("no home directory on this host: set SUMMARIZE_VIDEO_HOME or "
+                               f"{LOCAL_MODEL_CONFIG_ENV} to register a local model", "dependency")
+    path = (Path(override).expanduser() if override else config_dir / "local-model.json")
     path = Path(os.path.abspath(path))
     # `/tmp` and `/var` are fixed system aliases into `/private` on macOS.
     # Normalize those aliases before rejecting user-controlled symlinks.

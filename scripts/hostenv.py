@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import sysconfig
+import tempfile
 from pathlib import Path
 
 MANAGED_HOME_ENV = "SUMMARIZE_VIDEO_HOME"
@@ -62,20 +63,48 @@ def python_command() -> str:
 # ----------------------------------------------------------------------------- managed tools
 
 
+def user_home() -> Path | None:
+    """The account's home directory, or `None` when the host cannot name one.
+
+    `Path.home()` is partial: it raises `RuntimeError` on a Windows account with
+    no `USERPROFILE`/`HOMEDRIVE` and on a POSIX account with no `HOME` and no
+    passwd entry -- service accounts, stripped containers, `runas /env:no`. A
+    read-only lookup must not raise, so absence is a value here."""
+    try:
+        return Path.home()
+    except RuntimeError:
+        return None
+
+
+def user_config_dir() -> Path | None:
+    """`~/.config/summarize-video`, or `None` when there is no home.
+
+    No home means no configuration. It deliberately does not fall back to a
+    shared directory: an API key must never be read from a location a second
+    account on the same host could write."""
+    home = user_home()
+    return home / ".config" / "summarize-video" if home else None
+
+
 def managed_home() -> Path:
     """The one user-owned directory `bootstrap.py` writes to; delete it to remove everything.
 
     `SUMMARIZE_VIDEO_HOME` overrides the default (`%LOCALAPPDATA%\\summarize-video` on
     Windows, `$XDG_CACHE_HOME/summarize-video` or `~/.cache/summarize-video` elsewhere).
-    Nothing is created by asking for the path."""
+    Nothing is created by asking for the path.
+
+    With no home and no override the tools go to a temporary directory: still
+    this user only and still no admin rights, just disposable. `doctor` and
+    `bootstrap` both print the path, so the downgrade is never silent."""
     override = os.environ.get(MANAGED_HOME_ENV)
     if override:
         return Path(override).expanduser()
+    home = user_home()
     if platform_key() == "win32":
-        base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
-        return Path(base) / "summarize-video"
-    base = os.environ.get("XDG_CACHE_HOME") or str(Path.home() / ".cache")
-    return Path(base) / "summarize-video"
+        base = os.environ.get("LOCALAPPDATA") or (home and str(home / "AppData" / "Local"))
+    else:
+        base = os.environ.get("XDG_CACHE_HOME") or (home and str(home / ".cache"))
+    return Path(base or tempfile.gettempdir()) / "summarize-video"
 
 
 def managed_bin_dir() -> Path:
