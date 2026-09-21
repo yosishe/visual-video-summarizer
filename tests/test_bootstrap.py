@@ -500,8 +500,12 @@ class NoHomeHostTests(unittest.TestCase):
                   "pathlib.Path.home = classmethod(lambda cls: (_ for _ in ()).throw("
                   "RuntimeError('Could not determine home directory.')));"
                   "import render, candidates, whisper, doctor, workflow; print('imported')")
+        # Inherit the real environment: the patch above is what creates the
+        # no-home condition, and a stripped environment cannot start CPython on
+        # Windows at all (`SystemRoot` is required to seed hash randomization).
+        child = {**os.environ, "PYTHONUTF8": "1"}
         proc = subprocess.run([sys.executable, "-c", script, str(ROOT / "scripts")],
-                              capture_output=True, text=True, env={"PYTHONUTF8": "1", "PATH": os.environ.get("PATH", "")})
+                              capture_output=True, text=True, env=child)
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("imported", proc.stdout)
 
