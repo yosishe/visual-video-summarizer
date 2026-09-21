@@ -3,7 +3,7 @@ name: summarize-video
 description: Creates illustrated, source-linked study notes from YouTube URLs or local recordings in Hebrew or English. Use for lectures, tutorials, screencasts and demos. A deterministic controller installs its own tools for the current user when they are missing (ffmpeg, yt-dlp, Pillow; no admin rights), runs acquisition, original-frame extraction, verification and HTML/PDF delivery, then names the next file the agent must author. Supports bounded recovery, validated caches and configured local whisper.cpp. Cloud transcription requires explicit provider selection. Works in the user's Codex, Claude Code or Antigravity; sessions without execution tools get a copy-ready handoff.
 license: MIT
 metadata:
-  version: "1.10.1"
+  version: "1.10.2"
   homepage: https://github.com/yosishe/visual-video-summarizer
   repository: https://github.com/yosishe/visual-video-summarizer
   author: yosishe

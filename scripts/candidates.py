@@ -49,7 +49,7 @@ from gates import (  # noqa: E402
     validate_chapters,
     validate_transcript,
 )
-from hostenv import install_hint, python_command, require_tools, run_text, utf8_stdio  # noqa: E402
+from hostenv import install_hint, python_command, require_tools, run_text, user_config_dir, utf8_stdio  # noqa: E402
 
 from frame_utils import (  # noqa: E402
     chapter_for_time,
@@ -137,7 +137,7 @@ SHORTLIST_MAX = 30
 MAX_DURATION_SECONDS = 120 * 60
 EXIT_OVER_BUDGET = 7
 EXIT_TOO_LONG = 8
-CONFIG_ENV = Path.home() / ".config" / "summarize-video" / ".env"
+CONFIG_ENV = (user_config_dir() or Path()) / ".env"
 
 
 def config_value(key: str) -> str | None:

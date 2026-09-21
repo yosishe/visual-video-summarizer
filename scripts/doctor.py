@@ -16,7 +16,7 @@ from pathlib import Path
 
 from hostenv import (  # noqa: E402
     activate_managed_tools, find_chrome, install_hint, javascript_runtime, managed_bin_dir, managed_home,
-    managed_site_dir, platform_key, python_command, run_text, utf8_stdio,
+    managed_site_dir, platform_key, python_command, run_text, user_config_dir, utf8_stdio,
 )
 from safety import YTDLP_FLAGS, ytdlp_command  # noqa: E402
 from gates import ENGINE_VERSION  # noqa: E402
@@ -109,7 +109,8 @@ def check(local: bool = False, pdf: bool = False, local_model: str | None = None
     rows.append({"name": "workflow", "required": False,
                  "available": (Path(__file__).resolve().parent / "workflow.py").is_file(),
                  "note": "scripts/workflow.py is the canonical entry point (init → run → verify)."})
-    config = Path.home() / ".config" / "summarize-video" / ".env"
+    config_dir = user_config_dir()
+    config = config_dir / ".env" if config_dir else None
     return {
         "ready": all(r["available"] for r in rows if r["required"]), "checks": rows,
         "readiness_scope": "local_tools_only", "source_access": "not_checked",
@@ -117,8 +118,8 @@ def check(local: bool = False, pdf: bool = False, local_model: str | None = None
         "platform": platform_key(), "python_command": python_command(),
         "cloud_transcription": "off unless --whisper groq|openai is explicitly selected",
         "model_privacy": "Your agent provider processes the transcript and selected images under its own settings.",
-        "config_present": config.is_file(),
-        "config_permissions_private": (config.stat().st_mode & 0o077 == 0) if config.is_file() and os.name == "posix" else None,
+        "config_present": bool(config and config.is_file()),
+        "config_permissions_private": (config.stat().st_mode & 0o077 == 0) if config and config.is_file() and os.name == "posix" else None,
         "ytdlp_safety_flags": list(YTDLP_FLAGS),
         "managed_home": str(home),
         "scope": "Checks local executable versions and config-file metadata only; no install, upload, or credential read.",

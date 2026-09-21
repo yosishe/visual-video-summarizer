@@ -50,7 +50,7 @@ from gates import (  # noqa: E402
     validate_transcript,
 )
 from gates import describe_identity, engine_drift, identity_matches  # noqa: E402
-from hostenv import chrome_candidates, find_chrome, run_text, utf8_stdio  # noqa: E402
+from hostenv import chrome_candidates, find_chrome, run_text, user_config_dir, utf8_stdio  # noqa: E402
 from safety import CSP, asset_file, atomic_write, validate_generated_html  # noqa: E402
 
 MANIFEST_SCHEMA = 3
@@ -61,7 +61,7 @@ LANGS = {"he", "en"}
 OUTPUT_MODES = ("illustrated", "text-only")
 CHROME_CANDIDATES = tuple(chrome_candidates())
 FONT_DIR = SCRIPT_DIR / "fonts"
-CONFIG_ENV = Path.home() / ".config" / "summarize-video" / ".env"
+CONFIG_ENV = (user_config_dir() or Path()) / ".env"
 INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 
 STRINGS = {

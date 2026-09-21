@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.2 — 2026-09-21
+
+A host that cannot name a home directory now degrades instead of crashing. `pathlib.Path.home()` is partial — it raises `RuntimeError` on a Windows account with no `USERPROFILE`/`HOMEDRIVE` and on a POSIX account with no `HOME` and no passwd entry (service accounts, stripped containers, `runas /env:no`) — and six call sites used it unguarded, two of them at module import time. On Windows this surfaced as `RuntimeError: Could not determine home directory.` raised from inside `doctor.check()`, the one command whose job is to say what is wrong; it also made `render.py` and `candidates.py` unimportable.
+
+- `hostenv.user_home()` returns the home directory or `None`, and `hostenv.user_config_dir()` returns `~/.config/summarize-video` or `None`. Absence is a value, so a read-only lookup never raises.
+- `managed_home()` falls back to the temporary directory when there is no home and no `SUMMARIZE_VIDEO_HOME`: still this user only, still no admin rights, just disposable. `doctor` and `bootstrap` both print the path, so the downgrade is never silent.
+- **Credentials do not fall back.** No home means no configuration: `load_api_key` and the `.env` lookups report absent rather than read from a shared directory a second account on the same host could write to. Registering a local model without a home now fails with a named `dependency` error pointing at `SUMMARIZE_VIDEO_HOME`/`VSUM_LOCAL_MODEL_CONFIG` instead of a traceback.
+- **Tests: 403 → 407.** `NoHomeHostTests` covers the four behaviours above and asserts every stage module still imports, in a fresh interpreter rather than by reloading modules in the test process.
+
 ## 1.10.1 — 2026-09-10
 
 Local Whisper persistence integrated with the 1.10.0 user-level setup and environment-denial release.

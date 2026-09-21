@@ -457,3 +457,55 @@ class WorkflowSetupTests(ManagedHome):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NoHomeHostTests(unittest.TestCase):
+    """A host that cannot name a home directory must degrade, not crash.
+
+    `Path.home()` is partial: it raises `RuntimeError` on a Windows account with
+    no `USERPROFILE`/`HOMEDRIVE` and on a POSIX account with no `HOME` and no
+    passwd entry (service accounts, stripped containers, `runas /env:no`). A
+    read-only lookup that raises turns `doctor` -- the one command whose job is
+    to say what is wrong -- into an opaque traceback."""
+
+    def setUp(self):
+        self.no_home = mock.patch.object(
+            Path, "home", side_effect=RuntimeError("Could not determine home directory."))
+        self.no_home.start()
+        self.env = mock.patch.dict(os.environ, {}, clear=True)
+        self.env.start()
+
+    def tearDown(self):
+        self.env.stop()
+        self.no_home.stop()
+
+    def test_managed_home_still_answers_a_user_scoped_path(self):
+        home = hostenv.managed_home()
+        self.assertEqual(home.name, "summarize-video")
+        self.assertFalse(home.exists())  # asking for the path never creates it
+
+    def test_doctor_reports_instead_of_raising(self):
+        with mock.patch.object(doctor.shutil, "which", return_value=None):
+            result = doctor.check()
+        self.assertFalse(result["config_present"])
+        row = next(r for r in result["checks"] if r["name"] == "user-level tools")
+        self.assertFalse(row["available"])
+
+    def test_every_stage_module_still_imports(self):
+        """In a fresh interpreter: `render` and `candidates` build a config path at import time.
+
+        Run out of process rather than reloading modules in this one -- a reload
+        rebinds globals other tests already hold references to."""
+        script = ("import pathlib, sys; sys.path.insert(0, sys.argv[1]);"
+                  "pathlib.Path.home = classmethod(lambda cls: (_ for _ in ()).throw("
+                  "RuntimeError('Could not determine home directory.')));"
+                  "import render, candidates, whisper, doctor, workflow; print('imported')")
+        proc = subprocess.run([sys.executable, "-c", script, str(ROOT / "scripts")],
+                              capture_output=True, text=True, env={"PYTHONUTF8": "1", "PATH": os.environ.get("PATH", "")})
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("imported", proc.stdout)
+
+    def test_credentials_are_absent_rather_than_read_from_a_shared_location(self):
+        import whisper as whisper_module
+        self.assertIsNone(hostenv.user_config_dir())
+        self.assertEqual(whisper_module.load_api_key("groq"), (None, None))
