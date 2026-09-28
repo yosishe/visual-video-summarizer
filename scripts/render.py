@@ -15,6 +15,9 @@ TIME = re.compile(r"\[(\d{1,2}(?::\d{2}){1,2})\]")
 LEAD_TIME = re.compile(r"^\[(\d{1,2}(?::\d{2}){1,2})\]\s*")
 CODE = re.compile(r"(`[^`\n]+`)")
 BOLD = re.compile(r"\*\*(.+?)\*\*")
+# A quoted run with Latin letters and no Hebrew ("Hello! How are you?"): isolated, or the bidi
+# algorithm moves its closing punctuation and quote marks to the wrong side in a Hebrew line.
+QUOTED_LATIN = re.compile(r'"(?=[^"\u0590-\u05FF]*[A-Za-z])[^"\u0590-\u05FF]*"')
 URL = re.compile(r"https?://[^\s<>\"'\]]+")
 HEBREW = re.compile(r"[֐-׿]")
 LATIN = re.compile(r"[A-Za-z]")
@@ -61,7 +64,7 @@ font-size:1.25rem;line-height:1.85;color:var(--ink)}
 .toc li{break-inside:avoid;margin-block-end:.35rem}
 .toc a{color:inherit;text-decoration:none}
 .toc a:hover{text-decoration:underline}
-.toc .t{margin-inline-start:.45rem;color:var(--muted);font:.78rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.toc .t{color:var(--muted);font:.78rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 h2{font-size:1.8rem;line-height:1.35;font-weight:800;margin:4.5rem 0 1rem}
 h3{font-size:1.3rem;line-height:1.4;font-weight:700;margin:2.5rem 0 .6rem}
 p{margin:0 0 1.15rem}
@@ -77,12 +80,11 @@ pre code{background:none;padding:0;font-size:inherit}
 border:1px solid currentColor;border-radius:3px;padding:.2em .38em;vertical-align:.15em;unicode-bidi:isolate;
 white-space:nowrap}
 a.ts:hover{background:var(--accent);color:var(--paper)}
-h2 .ts{margin-inline-end:.6rem;vertical-align:.35em}
+h2 .ts{vertical-align:.35em}
 figure{margin-block:2.4rem;margin-inline:calc(50% - min(var(--wide),100vw - 2.5rem) / 2)}
 figure img{display:block;inline-size:100%;block-size:auto;border-radius:4px;background:var(--wash);cursor:zoom-in}
 figcaption{max-inline-size:var(--measure);margin:.75rem auto 0;padding-inline:1.25rem;color:var(--muted);
 font-size:.95rem;line-height:1.75}
-figcaption .ts{margin-inline-end:.5rem}
 footer{padding-block:2.5rem 4rem;color:var(--muted);font-size:.9rem;border-block-start:1px solid var(--rule)}
 #zoom{position:fixed;inset:0;display:grid;place-items:center;padding:2vmin;background:rgb(18 19 21/.92);
 cursor:zoom-out;z-index:9}
@@ -168,6 +170,7 @@ def inline(text: str, link) -> str:
             out.append(f'<code dir="ltr">{html.escape(part[1:-1])}</code>')
             continue
         part = html.escape(part, quote=False)
+        part = QUOTED_LATIN.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', part)  # before any attribute exists
         part = BOLD.sub(r"<strong>\1</strong>", part)
         part = URL.sub(_url, part)
         out.append(TIME.sub(lambda m: stamp(m.group(1), link), part))
@@ -211,9 +214,9 @@ def _meta_line(meta: dict, s: dict) -> str:
         bits.append(f'<a href="{html.escape(meta["url"])}">{s["watch"]}</a>')
     bits.append(f'<bdi dir="auto">{html.escape(meta.get("title") or "")}</bdi>')
     if meta.get("uploader"):
-        bits.append(f'{s["by"]} <bdi dir="auto">{html.escape(meta["uploader"])}</bdi>')
+        bits.append(f'{s["by"]}\u00a0<bdi dir="auto">{html.escape(meta["uploader"])}</bdi>')
     if meta.get("duration"):
-        bits.append(f'{s["length"]} <bdi dir="ltr">{fmt_time(meta["duration"])}</bdi>')
+        bits.append(f'{s["length"]}\u00a0<bdi dir="ltr">{fmt_time(meta["duration"])}</bdi>')
     t = meta.get("transcript") or {}
     how = {"captions": s["auto"] if t.get("auto") else s["manual"], "whisper": s["whisper"],
            "file": s["file"]}.get(t.get("method"))
@@ -232,7 +235,7 @@ def _body(blocks: list[dict], times: dict, folder: Path, link) -> tuple[list, li
             lead = LEAD_TIME.match(b["text"])
             name = b["text"][lead.end():] if lead else b["text"]
             toc.append((len(toc) + 1, name, lead.group(1) if lead else None))
-            chip = stamp(lead.group(1), link) if lead else ""
+            chip = stamp(lead.group(1), link) + " " if lead else ""  # a space: margins flip on dir="ltr" chips
             parts.append(f'<h2 id="s{len(toc)}">{chip}{inline(name, link)}</h2>')
         elif kind == "h3":
             parts.append(f"<h3>{inline(b['text'], link)}</h3>")
@@ -258,7 +261,7 @@ def _body(blocks: list[dict], times: dict, folder: Path, link) -> tuple[list, li
             data = base64.b64encode((folder / f"{b['id']}.jpg").read_bytes()).decode()
             alt = html.escape(re.sub(r"[`*]", "", b["text"]))
             parts.append(f'<figure><img src="data:image/jpeg;base64,{data}" alt="{alt}"><figcaption>'
-                         f'{stamp(fmt_time(times[b["id"]]), link)}{inline(b["text"], link)}</figcaption></figure>')
+                         f'{stamp(fmt_time(times[b["id"]]), link)} {inline(b["text"], link)}</figcaption></figure>')
     if toc:
         parts.insert(toc_at, toc)
     return parts, toc
@@ -286,7 +289,7 @@ def build(notes: str, meta: dict, frames: list[dict], folder: Path) -> tuple[str
     parts, toc = _body([b for b in blocks if b["kind"] != "title"], times, folder, link)
     if toc:
         items = "".join(f'<li><a href="#s{i}">{inline(name, None)}</a>'
-                        + (f'<span class="t" dir="ltr">{t}</span>' if t else "") + "</li>" for i, name, t in toc)
+                        + (f' <span class="t" dir="ltr">{t}</span>' if t else "") + "</li>" for i, name, t in toc)
         nav = f'<nav class="toc" aria-label="{s["toc"]}"><p class="toc-title">{s["toc"]}</p><ol>{items}</ol></nav>'
         parts = [nav if isinstance(p, list) else p for p in parts]
     today = datetime.date.today()

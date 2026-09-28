@@ -64,6 +64,12 @@ class Inline(unittest.TestCase):
         self.assertIn('href="https://www.youtube.com/watch?v=abcdefghijk&amp;t=754s"', render.inline("[12:34]", link))
         self.assertEqual(render.inline("[1:02:03]", None), '<span class="ts" dir="ltr">1:02:03</span>')
 
+    def test_quoted_latin_is_isolated_so_its_punctuation_stays_put(self):
+        self.assertEqual(render.inline('ענה "Hello! How are you?" והמשיך', None),
+                         'ענה <bdi dir="ltr">"Hello! How are you?"</bdi> והמשיך')
+        self.assertEqual(render.inline('שלב ה"חשיבה" וצה"ל', None), 'שלב ה"חשיבה" וצה"ל')
+        self.assertIn('<a href="https://x.com/a" dir="ltr">', render.inline('"see https://x.com/a"', None))
+
     def test_url_keeps_trailing_period_outside(self):
         self.assertEqual(render.inline("see https://x.com/a.", None),
                          'see <a href="https://x.com/a" dir="ltr">https://x.com/a</a>.')
@@ -96,6 +102,10 @@ class Build(unittest.TestCase):
         self.assertIn("&amp;t=135s", page)
         self.assertNotIn("<script>alert", page)
         self.assertIn("echo [99:99]", page)
+        self.assertIn('dir="ltr">02:15</a> מה זה טוקן</h2>', page)  # a space, not a margin on the wrong side
+        self.assertIn('>מה זה טוקן</a> <span class="t" dir="ltr">02:15</span>', page)
+        self.assertIn('dir="ltr">02:15</a> התרשים המלא', page)
+        self.assertIn("אורך\u00a0<bdi", page)  # the label never wraps away from its value
 
     def test_english_page_and_bidi_marks(self):
         with tempfile.TemporaryDirectory() as tmp:
