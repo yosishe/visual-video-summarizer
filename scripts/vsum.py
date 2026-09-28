@@ -41,18 +41,47 @@ def _transcript(args, meta: dict, info: dict, work: Path) -> tuple[list, dict]:
                                  meta["duration"])
 
 
+def _frames(args, meta: dict, work: Path) -> list[dict]:
+    video = source.media(meta, work)
+    meta["duration"] = meta["duration"] or source.duration(video)
+    if not source.has_video(video):
+        print("No picture track: the summary will have no frames.")
+        return []
+    print("Scanning the video for screens that held still…", flush=True)
+    cap = args.max_frames or frames.default_cap(meta["duration"])
+    picked = frames.extract(video, frames.pick(frames.scan(video), cap), work / "frames")
+    frames.sheets(picked, work / "frames", work / "sheets")
+    return picked
+
+
+def _request(args, meta: dict) -> dict:
+    """What this run was asked for; a work folder serves one source, and changed options redo their stage."""
+    if meta["kind"] == "file":
+        identity = f"{meta['path']} ({Path(meta['path']).stat().st_size} bytes)"
+    else:
+        identity = meta["url"]
+    captions = str(Path(args.captions).expanduser().resolve()) if args.captions else None
+    return {"source": identity, "captions": captions, "lang_audio": args.lang_audio,
+            "max_frames": args.max_frames, "no_frames": args.no_frames}
+
+
 def prepare(args) -> int:
     meta, info = source.probe(args.source)
     work = Path(args.out or f"vsum-{meta['id']}").resolve()
+    request = meta["request"] = _request(args, meta)
+    saved = _load(work / "source.json") or {}
+    if work.is_dir() and any(work.iterdir()) and not saved:
+        raise VsumError(f"{work} is not a summarize-video folder and is not empty; choose a new or empty --out.")
+    before = saved.get("request") or {}
+    if saved and before.get("source", request["source"]) != request["source"]:
+        raise VsumError(f"{work} holds another video (\"{saved.get('title')}\"); choose another --out.")
     if args.fresh:
-        for name in ("transcript.md", "frames.json", "source.json"):
+        for name in ("transcript.md", "frames.json"):
             (work / name).unlink(missing_ok=True)
-        for name in ("frames", "sheets", "captions"):
-            shutil.rmtree(work / name, ignore_errors=True)
     work.mkdir(parents=True, exist_ok=True)
     print(f"Work folder: {work}", flush=True)
-    saved = _load(work / "source.json") or {}
-    if (work / "transcript.md").is_file() and saved.get("transcript"):
+    same = [before.get(k) == request[k] for k in ("captions", "lang_audio", "max_frames", "no_frames")]
+    if (work / "transcript.md").is_file() and saved.get("transcript") and all(same[:2]):
         meta["transcript"] = saved["transcript"]
         meta["duration"] = meta["duration"] or saved.get("duration") or 0
         print("Transcript: reusing transcript.md")
@@ -60,22 +89,14 @@ def prepare(args) -> int:
         segments, meta["transcript"] = _transcript(args, meta, info, work)
         (work / "transcript.md").write_text(transcript.markdown(meta, segments), encoding="utf-8")
         print(f"Transcript: {transcript.describe(meta['transcript'])}", flush=True)
-    picked = _load(work / "frames.json")
+    _save(work / "source.json", meta)  # a later failure keeps the transcript
+    picked = _load(work / "frames.json") if all(same[2:]) else None
     if picked is not None:
         print(f"Frames: reusing {len(picked)} candidates")
-    elif args.no_frames:
-        picked = []
     else:
-        video = source.media(meta, work)
-        meta["duration"] = meta["duration"] or source.duration(video)
-        if source.has_video(video):
-            print("Scanning the video for screens that held still…", flush=True)
-            cap = args.max_frames or frames.default_cap(meta["duration"])
-            picked = frames.extract(video, frames.pick(frames.scan(video), cap), work / "frames")
-            frames.sheets(picked, work / "frames", work / "sheets")
-        else:
-            picked = []
-            print("No picture track: the summary will have no frames.")
+        for name in ("frames", "sheets"):
+            shutil.rmtree(work / name, ignore_errors=True)
+        picked = [] if args.no_frames else _frames(args, meta, work)
         _save(work / "frames.json", picked)
     _save(work / "source.json", meta)
     sheets = sorted((work / "sheets").glob("sheet-*.jpg"))

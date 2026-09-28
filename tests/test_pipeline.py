@@ -78,6 +78,35 @@ class Pipeline(unittest.TestCase):
             self.assertEqual(again.returncode, 0, again.stderr)
             self.assertIn("reusing", again.stdout)
 
+    def test_a_work_folder_belongs_to_one_video_and_one_set_of_options(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            video, work = talk(Path(tmp)), Path(tmp, "work")
+            self.assertEqual(vsum("prepare", str(video), "--out", str(work)).returncode, 0)
+
+            other = Path(tmp, "other")
+            other.mkdir()
+            second = talk(other)
+            done = vsum("prepare", str(second), "--out", str(work))
+            self.assertEqual(done.returncode, 1)
+            self.assertIn("holds another video", done.stderr)
+
+            Path(tmp, "better.vtt").write_text(CAPTIONS.replace("first slide", "opening slide"), encoding="utf-8")
+            done = vsum("prepare", str(video), "--out", str(work), "--captions", str(Path(tmp, "better.vtt")),
+                        "--max-frames", "1")
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertIn("opening slide", (work / "transcript.md").read_text())
+            self.assertEqual(len(json.loads((work / "frames.json").read_text())), 1)
+
+    def test_out_never_takes_over_a_folder_it_did_not_create(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            video, mine = talk(Path(tmp)), Path(tmp, "mine")
+            (mine / "frames").mkdir(parents=True)
+            (mine / "frames" / "holiday.jpg").write_bytes(b"x")
+            done = vsum("prepare", str(video), "--out", str(mine), "--fresh")
+            self.assertEqual(done.returncode, 1)
+            self.assertIn("not a summarize-video folder", done.stderr)
+            self.assertTrue((mine / "frames" / "holiday.jpg").is_file())
+
     def test_missing_file_stops_with_one_line(self):
         done = vsum("prepare", "/no/such/talk.mp4")
         self.assertEqual(done.returncode, 1)
