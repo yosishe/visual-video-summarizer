@@ -34,7 +34,9 @@ around it with cookies, logins, other downloaders or cloud transcription. Rerunn
 
 ## 2. Read, then write `notes.md`
 
-1. Read `transcript.md` to the end. Speakers often correct themselves late.
+1. Read `transcript.md` to the end. Speakers often correct themselves late. Automatic captions and
+   whisper misspell names ("Cloud Code" for Claude Code, a speaker's surname): take the spelling from
+   the title, the uploader and the slides.
 2. Look at every contact sheet in one message. Open a single `frames/Fnn.jpg` only to read small text.
 3. Write `<work>/notes.md` in the summary language: Hebrew unless the user asked for another.
 
