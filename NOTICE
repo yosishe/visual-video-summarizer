@@ -1,0 +1,15 @@
+visual-video-summarizer
+Copyright (c) 2026 Yosi (yosishe)
+Licensed under the MIT License (see LICENSE).
+
+Third-party notices
+
+- Frank Ruhl Libre typeface, Copyright 2015 The Frank Ruhl Libre Project Authors
+  (https://github.com/fontef/frankruhllibre), SIL Open Font License 1.1.
+  scripts/fonts/FrankRuhlLibre-hebrew.woff2 is the Hebrew subset served by Google Fonts;
+  the license text is in scripts/fonts/OFL.txt.
+
+Version 2 is new code. Ideas carried over from version 1 (caption ranking, rolling-caption
+overlap stripping, contact sheets with burned-in ids, settled-state frames with an overlay mask)
+were themselves informed by bradautomates/claude-video (MIT), CZX2244/dsh-bilibili and
+ConflictHQ/PlanOpticon (MIT); no code from those projects remains.
