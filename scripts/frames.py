@@ -1,9 +1,9 @@
 """The pictures: every screen state that held still, saved full size, and contact sheets to pick from."""
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageFilter, ImageStat
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageStat
 
-from common import run
+from common import fmt_time, run
 
 W, H = 64, 36         # scan size; one sample per second
 MOVING = 10           # a pixel moved between two samples when it changed by more than this
@@ -14,6 +14,7 @@ MIN_HELD = 3          # seconds a state must hold to count
 BLANK = 8.0           # pixel spread under this: a blank frame
 SAME = 5.0            # mean change under this: the same picture as one already kept
 GAP = 120             # seconds without a candidate before one is added
+TILE, BAR, COLS, ROWS = (320, 180), 26, 4, 4  # contact sheet layout
 
 
 def scan(video: Path) -> list[Image.Image]:
@@ -90,3 +91,50 @@ def pick(samples: list[Image.Image], cap: int) -> list[dict]:
 def default_cap(duration: float) -> int:
     """16 candidates per 10 minutes, between 32 and 96 (two to six contact sheets)."""
     return max(32, min(96, round(16 * duration / 600)))
+
+
+def extract(video: Path, picks: list[dict], folder: Path) -> list[dict]:
+    """Full-size JPEGs F01.jpg… (at most 1280 px wide); returns [{id, t, held}]."""
+    folder.mkdir(parents=True, exist_ok=True)
+    made = []
+    for chosen in picks:
+        fid = f"F{len(made) + 1:02d}"
+        path = folder / f"{fid}.jpg"
+        for t in (chosen["t"], max(0.0, chosen["t"] - 1)):  # a seek to the very end can land past the last frame
+            run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1",
+                 "-vf", "scale='min(1280,iw)':-2", "-q:v", "3", str(path)], f"frame {fid}")
+            if path.is_file():
+                made.append({"id": fid, "t": t, "held": chosen["held"]})
+                break
+    return made
+
+
+def _font(size: int = 20):
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:  # Pillow < 10.1
+        return ImageFont.load_default()
+
+
+def sheets(made: list[dict], folder: Path, out: Path) -> list[Path]:
+    """4×4 grids of the candidates, 'F07 · 12:34' burned under each tile."""
+    out.mkdir(parents=True, exist_ok=True)
+    font, per, paths = _font(), COLS * ROWS, []
+    for start in range(0, len(made), per):
+        page = made[start:start + per]
+        rows = -(-len(page) // COLS)
+        sheet = Image.new("RGB", (COLS * TILE[0], rows * (TILE[1] + BAR)), (255, 255, 255))
+        draw = ImageDraw.Draw(sheet)
+        for n, frame in enumerate(page):
+            x, y = (n % COLS) * TILE[0], (n // COLS) * (TILE[1] + BAR)
+            with Image.open(folder / f"{frame['id']}.jpg") as image:
+                tile = image.convert("RGB")
+            tile.thumbnail(TILE)
+            sheet.paste(tile, (x + (TILE[0] - tile.width) // 2, y + (TILE[1] - tile.height) // 2))
+            draw.rectangle([x, y + TILE[1], x + TILE[0] - 1, y + TILE[1] + BAR - 1], fill=(0, 0, 0))
+            draw.text((x + 8, y + TILE[1] + 2), f"{frame['id']} · {fmt_time(frame['t'])}", fill=(255, 255, 255),
+                      font=font)
+        path = out / f"sheet-{start // per + 1:02d}.jpg"
+        sheet.save(path, quality=85)
+        paths.append(path)
+    return paths

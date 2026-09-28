@@ -1,5 +1,8 @@
 import random
+import shutil
+import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -60,6 +63,26 @@ class Pick(unittest.TestCase):
         self.assertEqual(frames.default_cap(600), 32)
         self.assertEqual(frames.default_cap(1800), 48)
         self.assertEqual(frames.default_cap(7200), 96)
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+class Files(unittest.TestCase):
+    def test_extract_and_sheets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            video = Path(tmp, "v.mp4")
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i",
+                            "testsrc=s=640x360:d=20:r=10", str(video)], check=True)
+            picks = [{"t": float(t), "held": 3} for t in range(0, 20)]
+            made = frames.extract(video, picks, Path(tmp, "frames"))
+            self.assertEqual([f["id"] for f in made[:2]], ["F01", "F02"])
+            self.assertTrue(Path(tmp, "frames", "F20.jpg").is_file())
+            with Image.open(Path(tmp, "frames", "F01.jpg")) as im:
+                self.assertEqual(im.size, (640, 360))
+            paths = frames.sheets(made, Path(tmp, "frames"), Path(tmp, "sheets"))
+            self.assertEqual([p.name for p in paths], ["sheet-01.jpg", "sheet-02.jpg"])
+            with Image.open(paths[0]) as first, Image.open(paths[1]) as second:
+                self.assertEqual(first.size, (4 * 320, 4 * (180 + 26)))
+                self.assertEqual(second.size, (4 * 320, 1 * (180 + 26)))
 
 
 if __name__ == "__main__":
