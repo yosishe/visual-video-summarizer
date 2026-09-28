@@ -34,7 +34,7 @@ render   →  summary.html (+ summary.pdf)                                  (scr
 - **Transcript:** manual captions in the original language first, then automatic captions (never a
   machine translation), then local [whisper.cpp](https://github.com/ggml-org/whisper.cpp). The spoken
   language is detected mid-video, not from a silent intro.
-- **Pictures:** a 1-fps scan finds every screen that held still for three seconds and keeps its last
+- **Pictures:** a 1-fps scan finds the screens that held still for three seconds and keeps each one's last
   moment (the fully built slide). Blank screens and revisits are dropped, a webcam overlay is ignored,
   and a long stretch with no still screen still gets a picture. Candidates are saved full size and shown
   to the agent as 4×4 contact sheets with the id burned in, so the frame it chooses is the frame you get.
@@ -56,9 +56,10 @@ Needs Python 3.10+, [Pillow](https://pypi.org/project/pillow/) and ffmpeg; yt-dl
 brew install ffmpeg yt-dlp pillow
 ```
 
-(Elsewhere: your package manager, or `pip install pillow yt-dlp` in the Python you run the scripts with.)
+`brew install pillow` serves Homebrew's `python3`; for another Python use `python3 -m pip install pillow`.
+On Linux or Windows use the package manager, or `pip install pillow yt-dlp`, for the Python that runs the scripts.
 
-For videos without captions: `brew install whisper-cpp`, download a multilingual model such as
+For videos without captions (transcribed locally in 10-minute parts; an interrupted run resumes): `brew install whisper-cpp`, download a multilingual model such as
 `ggml-large-v3-turbo.bin` from [whisper.cpp's models](https://huggingface.co/ggerganov/whisper.cpp), and set
 `VSUM_WHISPER_MODEL` to its path. PDF output uses Chrome, Chromium or Edge if one is installed. Nothing is
 installed automatically.

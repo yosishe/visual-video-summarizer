@@ -19,7 +19,7 @@ python3 "<skill>/scripts/vsum.py" prepare "<url or file>"
 ```
 
 It gets the transcript (captions; with none, local `whisper-cli`, nothing uploaded), downloads the
-video (≤720p), finds every screen that held still — slides, code, diagrams, results — saves each full
+video (≤720p), finds the screens that held still — slides, code, diagrams, results — saves each full
 size as `frames/F01.jpg…` and builds contact sheets `sheets/sheet-01.jpg…` with the id burned under
 every tile. Its last lines name the work folder (default `./vsum-<id>`) and what to read.
 

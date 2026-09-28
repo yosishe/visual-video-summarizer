@@ -92,8 +92,11 @@ python3 scripts/vsum.py render DIR [--pdf]
   DIR/summary.html (+ DIR/summary.pdf)
 ```
 
-`prepare` is resumable by plain file existence: an existing transcript, video or
-frame set in DIR is reused; `--fresh` redoes everything. `--no-frames` makes a
+`prepare` is resumable: an existing transcript, video, whisper part or frame set in
+DIR is reused. `source.json` records the request; a different source stops with a
+message, changed transcript options (`--captions`, `--lang-audio`) redo the transcript,
+changed frame options redo the frames, and a non-empty folder without `source.json` is
+refused. `--fresh` redoes everything for the same source. `--no-frames` makes a
 text-only run (only when the user accepts one, e.g. the video download is blocked).
 
 ## Transcript
@@ -123,7 +126,7 @@ The header lists title, duration, transcript source and the creator's chapters.
 3. Overlay: blocks that change in a large share of consecutive pairs (a webcam, a ticker) are
    ignored when they cover under ~35 % of the frame.
 4. Change: two samples differ when the mean change is ≥ 3 grey levels or at least ten blocks changed
-   by ≥ 20 (text; a mouse pointer moves fewer). Consecutive samples with no change form a run; a run
+   by ≥ 12 (text; a mouse pointer moves fewer). Consecutive samples with no change form a run; a run
    held ≥3 s is a settled state; its candidate is the run's last sample (the fully built slide).
 5. Drop near-uniform states (pixel spread < 4: blank or fading frames); drop a state that does not
    differ from an earlier kept state (a revisit). Calibrated on tuY2ChJIx48, where different white
