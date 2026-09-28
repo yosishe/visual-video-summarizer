@@ -180,3 +180,72 @@ def markdown(meta: dict, segments) -> str:
     for start, text in paragraphs(segments):
         lines += [f"[{fmt_time(start)}] {text}", ""]
     return "\n".join(lines)
+
+
+DETECTED = re.compile(r"auto-detected language:\s*([a-z]{2,3})")
+
+
+def _registration() -> Path | None:
+    """v1 stored the local model path here; reuse it."""
+    try:
+        return Path.home() / ".config" / "summarize-video" / "local-model.json"
+    except RuntimeError:  # no home directory
+        return None
+
+
+def whisper_model() -> str:
+    choices = [os.environ.get("VSUM_WHISPER_MODEL")]
+    registration = _registration()
+    if registration and registration.is_file():
+        try:
+            choices.append(json.loads(registration.read_text(encoding="utf-8")).get("model_path"))
+        except (OSError, ValueError, AttributeError):
+            pass
+    for choice in choices:
+        if choice and Path(choice).expanduser().is_file():
+            return str(Path(choice).expanduser())
+    raise VsumError(
+        "the video has no captions and no local whisper model is set. Download a multilingual ggml model "
+        "(e.g. ggml-large-v3-turbo.bin from https://huggingface.co/ggerganov/whisper.cpp), set "
+        "VSUM_WHISPER_MODEL to its path and run again, or pass --captions with a subtitle file.")
+
+
+def parse_whisper(data: dict) -> list[tuple[float, float, str]]:
+    segments = []
+    for item in data.get("transcription", []):
+        words = str(item.get("text", "")).split()
+        if words:
+            offsets = item.get("offsets", {})
+            segments.append((offsets.get("from", 0) / 1000, offsets.get("to", 0) / 1000, " ".join(words)))
+    return segments
+
+
+def detected_language(output: str) -> str | None:
+    match = DETECTED.search(output)
+    return base_lang(match.group(1)) if match else None
+
+
+def transcribe(media: Path, work: Path, language: str | None, duration: float) -> tuple[list, dict]:
+    """Local whisper over the whole file. Without a known language, detect it on 30 s taken at 20 %
+    of the video: a silent or musical intro misleads detection."""
+    need("whisper-cli")
+    model = whisper_model()
+    wav = work / "audio.wav"
+    run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(media), "-vn", "-ac", "1", "-ar", "16000", str(wav)],
+        "audio extraction")
+    lang = base_lang(language)
+    if not lang:
+        clip = work / "clip.wav"
+        run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{duration * 0.2:.1f}", "-t", "30", "-i", str(wav),
+             str(clip)], "audio clip")
+        proc = run(["whisper-cli", "-m", model, "-f", str(clip), "-l", "auto", "-dl"], "language detection")
+        clip.unlink(missing_ok=True)
+        lang = detected_language(proc.stderr + proc.stdout) or "auto"
+    out = work / "whisper"
+    run(["whisper-cli", "-m", model, "-f", str(wav), "-l", lang, "-oj", "-of", str(out), "-np"],
+        "local transcription")
+    wav.unlink(missing_ok=True)
+    segments = parse_whisper(json.loads(out.with_suffix(".json").read_text(encoding="utf-8")))
+    if not segments:
+        raise VsumError("local transcription found no speech in this video.")
+    return segments, {"method": "whisper", "model": Path(model).name, "language": lang}

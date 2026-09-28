@@ -1,10 +1,14 @@
+import json
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from common import fmt_time, parse_time  # noqa: E402
+from common import VsumError, fmt_time, parse_time  # noqa: E402
 import transcript  # noqa: E402
 
 # YouTube auto-captions: every cue repeats the previous line, echo cues hold a line of one space.
@@ -92,6 +96,38 @@ class Paragraphs(unittest.TestCase):
         self.assertIn("- Transcript: automatic captions, track en-orig", text)
         self.assertIn("- Words: 5", text)
         self.assertIn("[00:00] Hello there. Tokens cost money.", text)
+
+
+class Whisper(unittest.TestCase):
+    def test_parse_json(self):
+        data = {"transcription": [{"offsets": {"from": 0, "to": 2500}, "text": " שלום  עולם "},
+                                  {"offsets": {"from": 2500, "to": 3000}, "text": " "}]}
+        self.assertEqual(transcript.parse_whisper(data), [(0.0, 2.5, "שלום עולם")])
+
+    def test_detected_language(self):
+        self.assertEqual(transcript.detected_language("x auto-detected language: he (p = 0.99)"), "he")
+        self.assertIsNone(transcript.detected_language("nothing here"))
+
+    def test_model_from_environment(self):
+        with tempfile.NamedTemporaryFile(suffix=".bin") as model, \
+                mock.patch.dict(os.environ, {"VSUM_WHISPER_MODEL": model.name}):
+            self.assertEqual(transcript.whisper_model(), model.name)
+
+    def test_model_from_v1_registration(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            model = Path(tmp, "ggml.bin")
+            model.write_bytes(b"x")
+            registration = Path(tmp, "local-model.json")
+            registration.write_text(json.dumps({"model_path": str(model)}))
+            with mock.patch.dict(os.environ, {"VSUM_WHISPER_MODEL": ""}), \
+                    mock.patch.object(transcript, "_registration", return_value=registration):
+                self.assertEqual(transcript.whisper_model(), str(model))
+
+    def test_no_model_says_what_to_do(self):
+        with mock.patch.dict(os.environ, {"VSUM_WHISPER_MODEL": ""}), \
+                mock.patch.object(transcript, "_registration", return_value=None):
+            with self.assertRaisesRegex(VsumError, "VSUM_WHISPER_MODEL"):
+                transcript.whisper_model()
 
 
 class Times(unittest.TestCase):
