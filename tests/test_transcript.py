@@ -79,6 +79,10 @@ class Paragraphs(unittest.TestCase):
         segments = [(i * 10.0, i * 10.0 + 10, f"words {i}") for i in range(8)]
         self.assertEqual([p[0] for p in transcript.paragraphs(segments)], [0.0, 60.0])
 
+    def test_sentence_ending_inside_an_auto_caption_cue_counts(self):
+        segments = [(i * 10.0, i * 10.0 + 10, f"end of one. start of {i}") for i in range(7)]
+        self.assertEqual([p[0] for p in transcript.paragraphs(segments)], [0.0, 30.0, 60.0])
+
     def test_markdown_header_and_lines(self):
         meta = {"title": "Talk", "url": "https://youtu.be/x", "duration": 75,
                 "chapters": [{"t": 0, "title": "Intro"}, {"t": 33, "title": "Tokens"}],

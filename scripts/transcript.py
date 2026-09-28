@@ -13,7 +13,7 @@ INLINE_TIME = re.compile(r"<\d{2}:\d{2}:\d{2}\.\d{3}>")
 TAG = re.compile(r"<[^>]*>")
 WORD = re.compile(r"[\w'׳״]+")  # geresh and gershayim are word-internal in Hebrew
 LEGACY = {"iw": "he", "in": "id", "jw": "jv"}
-SENTENCE_END = (".", "?", "!", "…", ":")
+SENTENCE_END = re.compile(r"[.?!…:](\s|$)")  # auto-caption cues often end a sentence mid-cue
 
 
 def base_lang(code: str | None) -> str | None:
@@ -151,7 +151,7 @@ def paragraphs(segments, target: float = 30.0, limit: float = 60.0) -> list[tupl
         start = seg_start if start is None else start
         words.append(text)
         span = seg_end - start
-        if span >= limit or (span >= target and text.endswith(SENTENCE_END)):
+        if span >= limit or (span >= target and SENTENCE_END.search(text)):
             out.append((start, " ".join(words)))
             words, start = [], None
     if words:
