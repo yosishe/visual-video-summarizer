@@ -6,9 +6,10 @@ import shutil
 import sys
 from pathlib import Path
 
+if sys.version_info < (3, 10):
+    sys.exit("Stopped: summarize-video needs Python 3.10 or newer (this is " + sys.version.split()[0] + ").")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import frames  # noqa: E402
 import render  # noqa: E402
 import source  # noqa: E402
 import transcript  # noqa: E402
@@ -42,6 +43,11 @@ def _transcript(args, meta: dict, info: dict, work: Path) -> tuple[list, dict]:
 
 
 def _frames(args, meta: dict, work: Path) -> list[dict]:
+    try:
+        import frames
+    except ImportError:
+        raise VsumError("Pillow is not installed (install: brew install pillow, or pip install pillow in the "
+                        "Python that runs this script), then run again.") from None
     video = source.media(meta, work)
     meta["duration"] = meta["duration"] or source.duration(video)
     if not source.has_video(video):
@@ -133,7 +139,10 @@ def render_cmd(args) -> int:
     print(f"Summary: {out}")
     if args.pdf:
         pdf = work / "summary.pdf"
-        print(f"PDF: {pdf}" if render.pdf(out, pdf) else "PDF: no Chrome, Chromium or Edge found; the HTML is complete.")
+        if not render.browser():
+            print("PDF: no Chrome, Chromium or Edge found; the HTML is complete.")
+        else:
+            print(f"PDF: {pdf}" if render.pdf(out, pdf) else "PDF: the browser could not print it; the HTML is complete.")
     return 0
 
 
@@ -149,7 +158,7 @@ def main(argv=None) -> int:
     p.add_argument("--captions", help="a .vtt or .srt file to use as the transcript")
     p.add_argument("--lang-audio", help="spoken language for whisper, e.g. he or en (default: detected)")
     p.add_argument("--max-frames", type=int, help="most candidate frames (default: 24 per 10 minutes, 48 to 96)")
-    p.add_argument("--no-frames", action="store_true", help="text only: skip the video download and frames")
+    p.add_argument("--no-frames", action="store_true", help="text only: no frames (a video without captions is still downloaded for its audio)")
     p.add_argument("--fresh", action="store_true", help="redo every step instead of reusing earlier results")
     r = sub.add_parser("render", help="notes.md → summary.html")
     r.add_argument("work", help="the folder prepare created")

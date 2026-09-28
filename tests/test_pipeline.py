@@ -107,6 +107,21 @@ class Pipeline(unittest.TestCase):
             self.assertIn("not a summarize-video folder", done.stderr)
             self.assertTrue((mine / "frames" / "holiday.jpg").is_file())
 
+    def test_render_needs_no_pillow_and_prepare_says_how_to_get_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            video, work = talk(Path(tmp)), Path(tmp, "work")
+            self.assertEqual(vsum("prepare", str(video), "--out", str(work)).returncode, 0)
+            (work / "notes.md").write_text("# סיכום\n\n## [00:00] פרק\nטקסט.\n", encoding="utf-8")
+            blocked = ("import runpy, sys; sys.modules['PIL'] = None; sys.argv = ['vsum'] + sys.argv[1:]; "
+                       f"runpy.run_path({str(VSUM)!r}, run_name='__main__')")
+            done = subprocess.run([sys.executable, "-c", blocked, "render", str(work)], capture_output=True, text=True)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            done = subprocess.run([sys.executable, "-c", blocked, "prepare", str(video), "--out", str(work), "--fresh"],
+                                  capture_output=True, text=True)
+            self.assertEqual(done.returncode, 1)
+            self.assertIn("Pillow", done.stderr)
+            self.assertNotIn("Traceback", done.stderr)
+
     def test_missing_file_stops_with_one_line(self):
         done = vsum("prepare", "/no/such/talk.mp4")
         self.assertEqual(done.returncode, 1)
