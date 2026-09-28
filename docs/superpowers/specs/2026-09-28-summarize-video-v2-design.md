@@ -118,15 +118,16 @@ The header lists title, duration, transcript source and the creator's chapters.
 
 1. Media: local file as is; URL → yt-dlp best ≤720p, H.264 preferred, merged with
    audio (one download serves whisper and frames).
-2. Scan: ffmpeg decodes 1 fps at 64×36 gray into memory (raw pipe).
-3. Overlay mask: pixels that change in a large share of consecutive pairs
-   (a talking-head PiP, a ticker) are excluded from comparisons when they cover
-   under ~35 % of the frame.
-4. States: consecutive samples whose masked mean absolute difference is below a
-   small threshold form a run; a run held ≥3 s is a settled state; its candidate is
-   the run's last sample (the fully built slide).
-5. Drop near-uniform (blank) states; drop a state that differs from an earlier kept state
-   by less than the stillness threshold (a revisit).
+2. Scan: ffmpeg decodes 1 fps at 128×72 grey into memory (raw pipe). Samples are compared in
+   4×4-pixel blocks (a 32×18 grid).
+3. Overlay: blocks that change in a large share of consecutive pairs (a webcam, a ticker) are
+   ignored when they cover under ~35 % of the frame.
+4. Change: two samples differ when the mean change is ≥ 3 grey levels or at least ten blocks changed
+   by ≥ 20 (text; a mouse pointer moves fewer). Consecutive samples with no change form a run; a run
+   held ≥3 s is a settled state; its candidate is the run's last sample (the fully built slide).
+5. Drop near-uniform states (pixel spread < 4: blank or fading frames); drop a state that does not
+   differ from an earlier kept state (a revisit). Calibrated on tuY2ChJIx48, where different white
+   slides differed by only 1-2 grey levels on average and had a pixel spread of 7-8.
 6. Coverage: any gap longer than 120 s without a candidate gets its calmest sample
    (talking heads and continuous demos still get pictures).
 7. Cap: default 24 per 10 minutes, between 48 and 96; over the cap keep the states

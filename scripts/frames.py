@@ -1,19 +1,23 @@
 """The pictures: every screen state that held still, saved full size, and contact sheets to pick from."""
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageStat
+from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageStat
 
 from common import fmt_time, run
 
-W, H = 64, 36         # scan size; one sample per second
-MOVING = 10           # a pixel moved between two samples when it changed by more than this
-OVERLAY_SHARE = 0.30  # pixels moving in more than this share of pairs form an overlay (webcam, ticker)
-OVERLAY_MAX = 0.35    # the overlay is masked only while it covers less than this share of the frame
-STILL = 3.0           # mean change under this: the screen held still, or two samples show the same
-                      # picture (a revisit). At 64×36, dark code screens that differ only in their
-                      # text are 3 to 5 apart, so no looser threshold is safe.
+# Samples are compared block by block (4×4 pixels of a 128×72 grey scan, a 32×18 grid). Measured on
+# a screencast and a conference talk (nKSk_TiR8YA, tuY2ChJIx48): two different white slides with
+# small text differ by only 1-2 grey levels on average, while a moving mouse pointer changes a few
+# blocks a lot. So a change is either broad (the mean) or wide enough to be text (ten blocks).
+W, H, BLOCK = 128, 72, 4
+GRID = (W // BLOCK, H // BLOCK)
+MOVING = 8            # a block moved between two samples when its mean changed by more than this
+OVERLAY_SHARE = 0.30  # blocks moving in more than this share of pairs are an overlay (webcam, ticker)
+OVERLAY_MAX = 0.35    # the overlay is ignored only while it covers less than this share of the frame
+STILL = 3.0           # a mean change of this much is a new picture...
+LOCAL, LOCAL_BLOCKS = 20, 10  # ...and so are ten blocks that changed by 20 (a pointer moves fewer)
 MIN_HELD = 3          # seconds a state must hold to count
-BLANK = 8.0           # pixel spread under this: a blank frame
+BLANK = 4.0           # pixel spread under this: a blank or fading frame (sparse white slides are 7 to 8)
 GAP = 120             # seconds without a candidate before one is added
 TILE, BAR, COLS, ROWS = (320, 180), 26, 4, 4  # contact sheet layout
 
@@ -26,36 +30,44 @@ def scan(video: Path) -> list[Image.Image]:
     return [Image.frombytes("L", (W, H), data[i:i + size]) for i in range(0, len(data) - size + 1, size)]
 
 
-def overlay_mask(samples: list[Image.Image]) -> Image.Image:
-    """255 where samples are compared; 0 over a small overlay that never stops moving."""
-    everything = Image.new("L", (W, H), 255)
+def _blocks(a: Image.Image, b: Image.Image) -> bytes:
+    """Mean absolute difference of every block."""
+    return ImageChops.difference(a, b).resize(GRID, Image.BOX).tobytes()
+
+
+def overlay(samples: list[Image.Image]) -> set[int]:
+    """Blocks that never stop moving (a webcam, a ticker); every comparison ignores them."""
     if len(samples) < 3:
-        return everything
+        return set()
     step = max(1, (len(samples) - 1) // 1000)
     pairs = range(0, len(samples) - 1, step)
-    counts = [0] * (W * H)
+    counts = [0] * (GRID[0] * GRID[1])
     for p in pairs:
-        moved = ImageChops.difference(samples[p], samples[p + 1]).point(lambda v: 255 if v > MOVING else 0)
-        for i, value in enumerate(moved.tobytes()):
-            if value:
-                counts[i] += 1
-    limit = OVERLAY_SHARE * len(pairs)
-    hot = Image.new("L", (W, H))
-    hot.putdata([255 if c > limit else 0 for c in counts])
-    hot = hot.filter(ImageFilter.MaxFilter(3))
-    share = sum(1 for v in hot.tobytes() if v) / (W * H)
-    return everything if share == 0 or share > OVERLAY_MAX else ImageChops.invert(hot)
+        for j, value in enumerate(_blocks(samples[p], samples[p + 1])):
+            if value > MOVING:
+                counts[j] += 1
+    busy = {j for j, count in enumerate(counts) if count > OVERLAY_SHARE * len(pairs)}
+    return busy if len(busy) <= OVERLAY_MAX * len(counts) else set()
 
 
-def difference(a: Image.Image, b: Image.Image, mask: Image.Image) -> float:
-    return ImageStat.Stat(ImageChops.difference(a, b), mask).mean[0]
+def changed(a: Image.Image, b: Image.Image, busy: set[int]) -> bool:
+    values = [v for j, v in enumerate(_blocks(a, b)) if j not in busy]
+    return sum(values) / len(values) >= STILL or sum(v >= LOCAL for v in values) >= LOCAL_BLOCKS
 
 
-def settled(samples: list[Image.Image], mask: Image.Image) -> list[tuple[int, int]]:
+def _mask(busy: set[int]) -> Image.Image:
+    mask = Image.new("L", (W, H), 255)
+    for j in busy:
+        y, x = divmod(j, GRID[0])
+        mask.paste(0, (x * BLOCK, y * BLOCK, (x + 1) * BLOCK, (y + 1) * BLOCK))
+    return mask
+
+
+def settled(samples: list[Image.Image], busy: set[int]) -> list[tuple[int, int]]:
     """(first, last) second of every run in which the screen held still for MIN_HELD seconds."""
     runs, first = [], 0
     for i in range(1, len(samples) + 1):
-        if i == len(samples) or difference(samples[i - 1], samples[i], mask) >= STILL:
+        if i == len(samples) or changed(samples[i - 1], samples[i], busy):
             if i - first >= MIN_HELD:
                 runs.append((first, i - 1))
             first = i
@@ -67,21 +79,24 @@ def pick(samples: list[Image.Image], cap: int) -> list[dict]:
     built slide), plus the calmest second of any stretch longer than GAP without one."""
     if not samples:
         return []
-    mask = overlay_mask(samples)
+    busy = overlay(samples)
+    mask = _mask(busy)
     kept = []  # (second, seconds held)
 
     def novel(i: int) -> bool:
         return (ImageStat.Stat(samples[i], mask).stddev[0] >= BLANK
-                and all(difference(samples[i], samples[k], mask) >= STILL for k, _ in kept))
+                and all(changed(samples[i], samples[k], busy) for k, _ in kept))
 
-    for first, last in settled(samples, mask):
+    def motion(i: int) -> float:
+        return ImageStat.Stat(ImageChops.difference(samples[i], samples[min(i + 1, len(samples) - 1)]), mask).mean[0]
+
+    for first, last in settled(samples, busy):
         if novel(last):
             kept.append((last, last - first + 1))
     bounds = [-1] + sorted(k for k, _ in kept) + [len(samples)]
     for a, b in zip(bounds, bounds[1:]):
         for centre in range(a + GAP, b, GAP):
-            window = range(max(a + 1, centre - 15), min(b, centre + 15))
-            calmest = min(window, key=lambda i: difference(samples[i], samples[min(i + 1, len(samples) - 1)], mask))
+            calmest = min(range(max(a + 1, centre - 15), min(b, centre + 15)), key=motion)
             if novel(calmest):
                 kept.append((calmest, 1))
     if len(kept) > cap:

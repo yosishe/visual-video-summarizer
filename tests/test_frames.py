@@ -25,6 +25,21 @@ B = slide((34, 4, 60, 30))
 BLANK = Image.new("L", (W, H), 128)
 
 
+def screen(rows, background, ink, cursor=None):
+    """A 1280×720 slide or editor with lines of small text (2 px strokes in 50 px words), scaled to
+    the scan size the way ffmpeg's area filter does. Calibrated on the talk tuY2ChJIx48: at 64×36
+    two different white slides differed by 1.2-2.2 grey levels and had a pixel spread of 7-8."""
+    image = Image.new("L", (1280, 720), background)
+    draw = ImageDraw.Draw(image)
+    for row in rows:
+        for word in range(100, 800, 90):
+            for stroke in range(word, word + 50, 9):
+                draw.rectangle((stroke, row, stroke + 1, row + 20), fill=ink)
+    if cursor:
+        draw.rectangle((cursor[0], cursor[1], cursor[0] + 12, cursor[1] + 18), fill=255)
+    return image.resize((W, H), Image.BOX)
+
+
 def noise(rng, base=BLANK, box=(0, 0, W, H)):
     """`base` with random pixels inside `box` (a webcam, or a whole moving frame)."""
     x0, y0, x1, y1 = box
@@ -40,13 +55,17 @@ class Pick(unittest.TestCase):
         self.assertEqual(frames.pick(samples, 32), [{"t": 9.0, "held": 10}, {"t": 24.0, "held": 10}])
 
     def test_dark_code_screens_that_differ_only_in_text_are_both_kept(self):
-        def code(rows):
-            image = Image.new("L", (W, H), 30)
-            for row in rows:
-                ImageDraw.Draw(image).line((4, row, 40, row), fill=90)
-            return image
-        samples = [code((5, 9))] * 10 + [code((7, 11))] * 10
+        samples = [screen((100, 140, 180), 30, 170)] * 10 + [screen((100, 160, 200), 30, 170)] * 10
         self.assertEqual([p["t"] for p in frames.pick(samples, 32)], [9.0, 19.0])
+
+    def test_white_slides_that_differ_only_in_small_text_are_both_kept(self):
+        """A conference template: white slides with the same title and a few lines of body text."""
+        samples = [screen((100, 300, 360), 245, 60)] * 10 + [screen((100, 330, 390), 245, 60)] * 10
+        self.assertEqual([p["t"] for p in frames.pick(samples, 32)], [9.0, 19.0])
+
+    def test_a_moving_cursor_does_not_end_a_settled_screen(self):
+        samples = [screen((100, 140, 180), 30, 170, cursor=(300 + 40 * i, 400)) for i in range(20)]
+        self.assertEqual(len(frames.pick(samples, 32)), 1)
 
     def test_cap_keeps_the_states_held_longest(self):
         samples = [A] * 10 + [B] * 6
@@ -56,9 +75,10 @@ class Pick(unittest.TestCase):
         rng = random.Random(0)
         webcam = (W - 16, H - 12, W, H)
         samples = [noise(rng, A, webcam) for _ in range(20)]
-        mask = frames.overlay_mask(samples)
-        self.assertEqual(mask.getpixel((W - 5, H - 5)), 0)
-        self.assertEqual(mask.getpixel((5, 5)), 255)
+        overlay = frames.overlay(samples)
+        grid = W // frames.BLOCK
+        self.assertIn(((H - 5) // frames.BLOCK) * grid + (W - 5) // frames.BLOCK, overlay)
+        self.assertNotIn(0, overlay)
         self.assertEqual(len(frames.pick(samples, 32)), 1)
 
     def test_long_stretch_without_a_settled_screen_gets_pictures(self):
