@@ -1,10 +1,12 @@
 """The words of the video: captions when the source has them, local whisper otherwise."""
 import html
 import json
+import math
 import os
 import re
 from pathlib import Path
 
+import source
 from common import VsumError, fmt_time, need, run
 
 YTDLP = ["yt-dlp", "--ignore-config", "--no-playlist"]
@@ -14,6 +16,7 @@ TAG = re.compile(r"<[^>]*>")
 WORD = re.compile(r"[\w'׳״]+")  # geresh and gershayim are word-internal in Hebrew
 LEGACY = {"iw": "he", "in": "id", "jw": "jv"}
 SENTENCE_END = re.compile(r"[.?!…:](\s|$)")  # auto-caption cues often end a sentence mid-cue
+CHUNK = 600  # seconds of audio per whisper run
 
 
 def base_lang(code: str | None) -> str | None:
@@ -226,13 +229,18 @@ def detected_language(output: str) -> str | None:
 
 
 def transcribe(media: Path, work: Path, language: str | None, duration: float) -> tuple[list, dict]:
-    """Local whisper over the whole file. Without a known language, detect it on 30 s taken at 20 %
-    of the video: a silent or musical intro misleads detection."""
+    """Local whisper in CHUNK-second parts, each saved as it finishes: a run stopped by an agent's
+    command time limit resumes at the first unfinished part. Without a known language, detect it on
+    30 s taken at 20 % of the video, since a silent or musical intro misleads detection."""
     need("whisper-cli")
     model = whisper_model()
     wav = work / "audio.wav"
-    run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(media), "-vn", "-ac", "1", "-ar", "16000", str(wav)],
-        "audio extraction")
+    if not wav.is_file():
+        partial = work / "audio.partial.wav"
+        run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(media), "-vn", "-ac", "1", "-ar", "16000", str(partial)],
+            "audio extraction")
+        partial.replace(wav)
+    duration = duration or source.duration(wav)
     lang = base_lang(language)
     if not lang:
         clip = work / "clip.wav"
@@ -241,11 +249,24 @@ def transcribe(media: Path, work: Path, language: str | None, duration: float) -
         proc = run(["whisper-cli", "-m", model, "-f", str(clip), "-l", "auto", "-dl"], "language detection")
         clip.unlink(missing_ok=True)
         lang = detected_language(proc.stderr + proc.stdout) or "auto"
-    out = work / "whisper"
-    run(["whisper-cli", "-m", model, "-f", str(wav), "-l", lang, "-oj", "-of", str(out), "-np"],
-        "local transcription")
-    wav.unlink(missing_ok=True)
-    segments = parse_whisper(json.loads(out.with_suffix(".json").read_text(encoding="utf-8")))
+    parts = work / f"whisper-{Path(model).stem}-{lang}"
+    parts.mkdir(exist_ok=True)
+    segments = []
+    for start in range(0, max(1, math.ceil(duration)), CHUNK):
+        done = parts / f"{start:06d}.json"
+        if not done.is_file():
+            print(f"Transcribing {fmt_time(start)} to {fmt_time(min(start + CHUNK, duration))} "
+                  f"of {fmt_time(duration)}…", flush=True)
+            clip = parts / "clip.wav"
+            run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(start), "-t", str(CHUNK), "-i", str(wav),
+                 str(clip)], "audio clip")
+            run(["whisper-cli", "-m", model, "-f", str(clip), "-l", lang, "-oj", "-of", str(parts / "part"), "-np"],
+                "local transcription")
+            (parts / "part.json").replace(done)
+            clip.unlink(missing_ok=True)
+        segments += [(s + start, e + start, text)
+                     for s, e, text in parse_whisper(json.loads(done.read_text(encoding="utf-8")))]
     if not segments:
         raise VsumError("local transcription found no speech in this video.")
+    wav.unlink(missing_ok=True)
     return segments, {"method": "whisper", "model": Path(model).name, "language": lang}

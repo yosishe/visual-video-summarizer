@@ -27,10 +27,13 @@ Options: `--out DIR` · `--captions file.vtt|.srt` (e.g. a Zoom transcript) · `
 (the spoken language, if whisper guessed wrong) · `--max-frames N` · `--fresh` (redo) ·
 `--no-frames` (text only — use it only when the user accepts a summary without pictures).
 
-Without captions it transcribes locally, roughly a tenth of the video's length on Apple Silicon: tell
-the user in one line and wait. If it stops, the message says what is missing and how to fix it (an
-install command, a model path, a private or blocked video). Pass that on in one sentence. Do not work
-around it with cookies, logins, other downloaders or cloud transcription. Rerunning reuses finished steps.
+Without captions it transcribes locally in 10-minute parts, printing each one, at roughly a tenth of
+the video's length on Apple Silicon: tell the user in one line. Give the command your longest time
+limit or run it in the background; if a time limit still stops it, run the same command again — every
+finished step and transcription part is kept. If it stops with a message, that message says what is
+missing and how to fix it (an install command, a model path, a private or blocked video). Pass that on
+in one sentence. Do not work around it with cookies, logins, other downloaders or cloud transcription.
+A work folder belongs to one video; rerunning with changed options redoes only what they affect.
 
 ## 2. Read, then write `notes.md`
 

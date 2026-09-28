@@ -104,8 +104,8 @@ text-only run (only when the user accepts one, e.g. the video download is blocke
 3. No usable track → local whisper, automatically: ffmpeg → 16 kHz mono WAV;
    language = `--lang-audio`, else the source's metadata language, else
    `whisper-cli -dl` on a 30 s clip taken at 20 % of the duration (not the silent
-   start); then one `whisper-cli -l <lang> -oj` pass over the whole file (whisper.cpp
-   windows long audio itself). Model: `VSUM_WHISPER_MODEL`, else the v1 registration
+   start); then `whisper-cli -l <lang> -oj` over 10-minute parts, each saved as it finishes,
+   so a run stopped by an agent's command time limit resumes instead of starting over. Model: `VSUM_WHISPER_MODEL`, else the v1 registration
    `~/.config/summarize-video/local-model.json`, else a clear message.
 4. Nothing works → one message: which of captions/whisper/model is missing and how
    to add it.

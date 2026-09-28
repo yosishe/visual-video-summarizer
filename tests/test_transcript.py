@@ -1,5 +1,7 @@
 import json
 import os
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -128,6 +130,47 @@ class Whisper(unittest.TestCase):
                 mock.patch.object(transcript, "_registration", return_value=None):
             with self.assertRaisesRegex(VsumError, "VSUM_WHISPER_MODEL"):
                 transcript.whisper_model()
+
+
+FAKE_WHISPER = """#!/usr/bin/env python3
+import json, os, sys
+args = sys.argv[1:]
+if "-dl" in args:
+    print("auto-detected language: en (p = 0.99)", file=sys.stderr)
+    sys.exit(0)
+log = os.environ["FAKE_WHISPER_LOG"]
+with open(log, "a") as f:
+    f.write("run\\n")
+runs = sum(1 for _ in open(log))
+if runs == int(os.environ.get("FAKE_WHISPER_FAIL_AT", "0")):
+    sys.exit(3)
+with open(args[args.index("-of") + 1] + ".json", "w") as out:
+    json.dump({"transcription": [{"offsets": {"from": 0, "to": 1000}, "text": f" part {runs}"}]}, out)
+"""
+
+
+@unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")
+class WhisperParts(unittest.TestCase):
+    def test_a_stopped_transcription_resumes_at_the_first_unfinished_part(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            (tmp / "bin").mkdir()
+            fake = tmp / "bin" / "whisper-cli"
+            fake.write_text(FAKE_WHISPER)
+            fake.chmod(0o755)
+            (tmp / "model.bin").write_bytes(b"x")
+            media = tmp / "talk.wav"
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i",
+                            "anullsrc=r=16000:cl=mono", "-t", "12", str(media)], check=True)
+            env = {"PATH": f"{tmp / 'bin'}{os.pathsep}{os.environ['PATH']}", "VSUM_WHISPER_MODEL": str(tmp / "model.bin"),
+                   "FAKE_WHISPER_LOG": str(tmp / "runs.log"), "FAKE_WHISPER_FAIL_AT": "2"}
+            with mock.patch.dict(os.environ, env), mock.patch.object(transcript, "CHUNK", 5):
+                with self.assertRaises(VsumError):
+                    transcript.transcribe(media, tmp, "en", 12.0)
+                os.environ["FAKE_WHISPER_FAIL_AT"] = "0"
+                segments, info = transcript.transcribe(media, tmp, "en", 12.0)
+            self.assertEqual(segments, [(0.0, 1.0, "part 1"), (5.0, 6.0, "part 3"), (10.0, 11.0, "part 4")])
+            self.assertEqual(info["language"], "en")
 
 
 class Times(unittest.TestCase):
