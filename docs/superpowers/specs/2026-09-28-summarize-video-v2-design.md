@@ -125,8 +125,8 @@ The header lists title, duration, transcript source and the creator's chapters.
 4. States: consecutive samples whose masked mean absolute difference is below a
    small threshold form a run; a run held ≥3 s is a settled state; its candidate is
    the run's last sample (the fully built slide).
-5. Drop near-uniform (blank) states; drop a state equal to any earlier kept state
-   (revisit).
+5. Drop near-uniform (blank) states; drop a state that differs from an earlier kept state
+   by less than the stillness threshold (a revisit).
 6. Coverage: any gap longer than 120 s without a candidate gets its calmest sample
    (talking heads and continuous demos still get pictures).
 7. Cap: default 24 per 10 minutes, between 48 and 96; over the cap keep the states

@@ -9,10 +9,11 @@ W, H = 64, 36         # scan size; one sample per second
 MOVING = 10           # a pixel moved between two samples when it changed by more than this
 OVERLAY_SHARE = 0.30  # pixels moving in more than this share of pairs form an overlay (webcam, ticker)
 OVERLAY_MAX = 0.35    # the overlay is masked only while it covers less than this share of the frame
-STILL = 3.0           # mean change under this: the screen held still
+STILL = 3.0           # mean change under this: the screen held still, or two samples show the same
+                      # picture (a revisit). At 64×36, dark code screens that differ only in their
+                      # text are 3 to 5 apart, so no looser threshold is safe.
 MIN_HELD = 3          # seconds a state must hold to count
 BLANK = 8.0           # pixel spread under this: a blank frame
-SAME = 5.0            # mean change under this: the same picture as one already kept
 GAP = 120             # seconds without a candidate before one is added
 TILE, BAR, COLS, ROWS = (320, 180), 26, 4, 4  # contact sheet layout
 
@@ -71,7 +72,7 @@ def pick(samples: list[Image.Image], cap: int) -> list[dict]:
 
     def novel(i: int) -> bool:
         return (ImageStat.Stat(samples[i], mask).stddev[0] >= BLANK
-                and all(difference(samples[i], samples[k], mask) >= SAME for k, _ in kept))
+                and all(difference(samples[i], samples[k], mask) >= STILL for k, _ in kept))
 
     for first, last in settled(samples, mask):
         if novel(last):

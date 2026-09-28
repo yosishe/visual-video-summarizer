@@ -39,6 +39,15 @@ class Pick(unittest.TestCase):
         samples = [A] * 10 + [BLANK] * 5 + [B] * 10 + [A] * 10
         self.assertEqual(frames.pick(samples, 32), [{"t": 9.0, "held": 10}, {"t": 24.0, "held": 10}])
 
+    def test_dark_code_screens_that_differ_only_in_text_are_both_kept(self):
+        def code(rows):
+            image = Image.new("L", (W, H), 30)
+            for row in rows:
+                ImageDraw.Draw(image).line((4, row, 40, row), fill=90)
+            return image
+        samples = [code((5, 9))] * 10 + [code((7, 11))] * 10
+        self.assertEqual([p["t"] for p in frames.pick(samples, 32)], [9.0, 19.0])
+
     def test_cap_keeps_the_states_held_longest(self):
         samples = [A] * 10 + [B] * 6
         self.assertEqual(frames.pick(samples, 1), [{"t": 9.0, "held": 10}])
