@@ -18,6 +18,7 @@ BOLD = re.compile(r"\*\*(.+?)\*\*")
 # A quoted run with Latin letters and no Hebrew ("Hello! How are you?"): isolated, or the bidi
 # algorithm moves its closing punctuation and quote marks to the wrong side in a Hebrew line.
 QUOTED_LATIN = re.compile(r'"(?=[^"\u0590-\u05FF]*[A-Za-z])[^"\u0590-\u05FF]*"')
+SYMBOL_NAME = re.compile(r"(?<![\w/.:=?&#-])[A-Za-z][A-Za-z0-9]*[+#]+(?![\w+#])")  # C++, C#: same problem
 URL = re.compile(r"https?://[^\s<>\"'\]]+")
 HEBREW = re.compile(r"[֐-׿]")
 LATIN = re.compile(r"[A-Za-z]")
@@ -171,6 +172,7 @@ def inline(text: str, link) -> str:
             continue
         part = html.escape(part, quote=False)
         part = QUOTED_LATIN.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', part)  # before any attribute exists
+        part = SYMBOL_NAME.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', part)
         part = BOLD.sub(r"<strong>\1</strong>", part)
         part = URL.sub(_url, part)
         out.append(TIME.sub(lambda m: stamp(m.group(1), link), part))

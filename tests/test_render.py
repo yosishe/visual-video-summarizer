@@ -70,6 +70,12 @@ class Inline(unittest.TestCase):
         self.assertEqual(render.inline('שלב ה"חשיבה" וצה"ל', None), 'שלב ה"חשיבה" וצה"ל')
         self.assertIn('<a href="https://x.com/a" dir="ltr">', render.inline('"see https://x.com/a"', None))
 
+    def test_names_ending_in_symbols_are_isolated(self):
+        self.assertEqual(render.inline("בוועדה של C++, ובשפת C# גם כן", None),
+                         'בוועדה של <bdi dir="ltr">C++</bdi>, ובשפת <bdi dir="ltr">C#</bdi> גם כן')
+        self.assertEqual(render.inline("https://x.com/page#top", None),
+                         '<a href="https://x.com/page#top" dir="ltr">https://x.com/page#top</a>')
+
     def test_url_keeps_trailing_period_outside(self):
         self.assertEqual(render.inline("see https://x.com/a.", None),
                          'see <a href="https://x.com/a" dir="ltr">https://x.com/a</a>.')
