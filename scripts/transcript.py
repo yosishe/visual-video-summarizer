@@ -40,9 +40,11 @@ def parse_captions(text: str) -> list[tuple[float, float, str]]:
         if not match:
             continue
         body = []
-        while i < len(lines) and lines[i] != "":
+        while i < len(lines) and lines[i] != "" and not CUE.search(lines[i]):  # blank line or next cue ends it
             body.append(lines[i])
             i += 1
+        if i < len(lines) and CUE.search(lines[i]) and body and body[-1].strip().isdigit():
+            body.pop()  # the next SRT cue's number, when separator lines hold spaces
         g = match.groups()
         cues.append((_seconds(*g[:4]), _seconds(*g[4:]), body))
     rolling = any(INLINE_TIME.search(line) for _, _, body in cues for line in body)
@@ -88,7 +90,9 @@ def rank_tracks(info: dict) -> list[tuple[str, bool]]:
 
     manual original · manual he/en · automatic original · automatic he/en · other manual · other automatic
     """
-    original = base_lang(info.get("language"))
+    auto_keys = (info.get("automatic_captions") or {}).keys()
+    original = base_lang(info.get("language")) or next(
+        (base_lang(key[:-5]) for key in auto_keys if key.endswith("-orig")), None)
     rows = []
     for auto, table in ((False, info.get("subtitles") or {}), (True, info.get("automatic_captions") or {})):
         for key, formats in table.items():

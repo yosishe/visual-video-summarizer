@@ -57,6 +57,14 @@ class Captions(unittest.TestCase):
     def test_overlapping_cues_are_stripped(self):
         self.assertEqual(transcript.parse_captions(OVERLAP)[1][2], "and how they cost money")
 
+    def test_whitespace_only_separator_lines(self):
+        srt = "1\n00:00:01,000 --> 00:00:03,000\nHello there\n \n2\n00:00:04,000 --> 00:00:06,000\nGeneral Kenobi\n"
+        self.assertEqual(transcript.parse_captions(srt), [(1.0, 3.0, "Hello there"), (4.0, 6.0, "General Kenobi")])
+
+    def test_an_orig_track_reveals_the_original_language(self):
+        info = {"subtitles": {"en": vtt(), "iw": vtt()}, "automatic_captions": {"iw-orig": vtt()}}
+        self.assertEqual(transcript.rank_tracks(info), [("iw", False), ("en", False), ("iw-orig", True)])
+
     def test_rank_prefers_original_and_drops_translations(self):
         info = {"language": "en-US", "subtitles": {"de": vtt()},
                 "automatic_captions": {"en-orig": vtt(), "en": vtt(), "iw": vtt("u&tlang=iw"),
