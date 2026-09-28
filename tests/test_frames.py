@@ -100,8 +100,8 @@ class Pick(unittest.TestCase):
 
     def test_default_cap(self):
         self.assertEqual(frames.default_cap(600), 48)
-        self.assertEqual(frames.default_cap(2400), 96)
-        self.assertEqual(frames.default_cap(7200), 96)
+        self.assertEqual(frames.default_cap(2839), 142)
+        self.assertEqual(frames.default_cap(7200), 160)
 
 
 @unittest.skipUnless(shutil.which("ffmpeg"), "needs ffmpeg")

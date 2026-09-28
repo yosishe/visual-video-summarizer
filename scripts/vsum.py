@@ -157,7 +157,7 @@ def main(argv=None) -> int:
     p.add_argument("--out", help="work folder (default: ./vsum-<id>)")
     p.add_argument("--captions", help="a .vtt or .srt file to use as the transcript")
     p.add_argument("--lang-audio", help="spoken language for whisper, e.g. he or en (default: detected)")
-    p.add_argument("--max-frames", type=int, help="most candidate frames (default: 24 per 10 minutes, 48 to 96)")
+    p.add_argument("--max-frames", type=int, help="most candidate frames (default: 30 per 10 minutes, 48 to 160)")
     p.add_argument("--no-frames", action="store_true", help="text only: no frames (a video without captions is still downloaded for its audio)")
     p.add_argument("--fresh", action="store_true", help="redo every step instead of reusing earlier results")
     r = sub.add_parser("render", help="notes.md → summary.html")

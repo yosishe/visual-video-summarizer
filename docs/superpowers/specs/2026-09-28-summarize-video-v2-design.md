@@ -133,7 +133,7 @@ The header lists title, duration, transcript source and the creator's chapters.
    slides differed by only 1-2 grey levels on average and had a pixel spread of 7-8.
 6. Coverage: any gap longer than 120 s without a candidate gets its calmest sample
    (talking heads and continuous demos still get pictures).
-7. Cap: default 24 per 10 minutes, between 48 and 96; over the cap keep the states
+7. Cap: default 30 per 10 minutes, between 48 and 160; over the cap keep the states
    held longest, then restore time order.
 8. Extract each candidate at full size with an ffmpeg seek; write sheets with Pillow.
 
