@@ -49,8 +49,13 @@ class Parse(unittest.TestCase):
         self.assertEqual(blocks[3]["items"], ["נקודה ראשונה עם `tiktoken` שממשיכה בשורה שנייה."])
         self.assertEqual(blocks[6]["id"], "F01")
 
+    def test_headings_need_a_space_and_a_second_title_becomes_a_chapter(self):
+        kinds = [b["kind"] for b in render.parse("# a\n\n#1 is a hashtag\n\n# b\n")]
+        self.assertEqual(kinds, ["title", "p", "h2"])
+
     def test_short_frame_ids_are_normalised(self):
         self.assertEqual(render.parse("![F7](x)")[0]["id"], "F07")
+        self.assertEqual(render.parse("![f07](x)")[0]["id"], "F07")
 
 
 class Inline(unittest.TestCase):
@@ -76,6 +81,19 @@ class Inline(unittest.TestCase):
         self.assertEqual(render.inline("https://x.com/page#top", None),
                          '<a href="https://x.com/page#top" dir="ltr">https://x.com/page#top</a>')
 
+    def test_bold_may_contain_code(self):
+        self.assertEqual(render.inline("**הכלי `yt-dlp` מוריד**", None),
+                         '<strong>הכלי <code dir="ltr">yt-dlp</code> מוריד</strong>')
+
+    def test_hebrew_prefix_before_a_symbol_name(self):
+        self.assertEqual(render.inline("ו-C# גם", None), 'ו-<bdi dir="ltr">C#</bdi> גם')
+
+    def test_urls_in_parentheses_and_angle_brackets(self):
+        self.assertEqual(render.inline("(ראו https://a.com/x)", None),
+                         '(ראו <a href="https://a.com/x" dir="ltr">https://a.com/x</a>)')
+        self.assertEqual(render.inline("<https://a.com/x?a=1&b=2>", None),
+                         '&lt;<a href="https://a.com/x?a=1&amp;b=2" dir="ltr">https://a.com/x?a=1&amp;b=2</a>&gt;')
+
     def test_url_keeps_trailing_period_outside(self):
         self.assertEqual(render.inline("see https://x.com/a.", None),
                          'see <a href="https://x.com/a" dir="ltr">https://x.com/a</a>.')
@@ -90,6 +108,19 @@ class Check(unittest.TestCase):
         self.assertIn("line 5: F01 needs a caption: ![F01](what it shows and why it is here)", errors)
         self.assertIn("line 6: F01 is already used on line 5", warnings)
         self.assertTrue(any("niqqud" in w for w in warnings))
+
+    def test_times_inside_code_are_code(self):
+        errors, _ = render.check(render.parse("# t\n\n## a\n`lst[10:20]` ו-\n"), {}, 60)
+        self.assertEqual(errors, [])
+
+    def test_an_impossible_time_is_an_error(self):
+        errors, _ = render.check(render.parse("# t\n\n## [02:75] a\n"), {}, 600)
+        self.assertEqual(errors, ["line 3: [02:75] is not a time (mm:ss or h:mm:ss)"])
+
+    def test_markdown_links_and_open_code_blocks(self):
+        errors, warnings = render.check(render.parse("# t\n\n## a\n[שם](https://x.com)\n```\nopen\n"), {}, 60)
+        self.assertIn("line 5: a ``` code block is never closed", errors)
+        self.assertIn("line 4: write links as bare URLs; [text](url) is shown as typed", warnings)
 
     def test_chapters_required(self):
         errors, _ = render.check(render.parse("# only a title\n\ntext"), {}, 60)
@@ -121,6 +152,17 @@ class Build(unittest.TestCase):
         self.assertIn('<html lang="en" dir="ltr">', page)
         self.assertNotIn("‏", page)
         self.assertTrue(warnings)
+
+    def test_bom_code_and_policy(self):
+        notes = "\ufeff# כותרת עברית\n\n## פרק\nטקסט קצר.\n\n```\n" + "some_english_code(x)\n" * 40 + "```\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            page, errors, _ = render.build(notes, YT, [], frame_dir(tmp))
+        self.assertEqual(errors, [])
+        self.assertIn("<title>כותרת עברית</title>", page)
+        self.assertIn('<html lang="he" dir="rtl">', page)
+        self.assertIn("<h1>", page)
+        self.assertIn("script-src 'sha256-", page)
+        self.assertNotIn("unsafe-inline", page)
 
     def test_missing_frame_file_is_an_error(self):
         with tempfile.TemporaryDirectory() as tmp:

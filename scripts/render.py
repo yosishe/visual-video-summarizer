@@ -1,6 +1,7 @@
 """notes.md → one self-contained HTML page; a PDF through Chrome, Chromium or Edge when asked."""
 import base64
 import datetime
+import hashlib
 import html
 import re
 import shutil
@@ -10,20 +11,24 @@ from pathlib import Path
 from common import fmt_time, parse_time
 
 FONT = Path(__file__).resolve().parent / "fonts" / "FrankRuhlLibre-hebrew.woff2"
-FIGURE = re.compile(r"^!\[F(\d+)\]\((.*)\)$")
+FIGURE = re.compile(r"^!\[[Ff](\d+)\]\((.*)\)$")
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
 TIME = re.compile(r"\[(\d{1,2}(?::\d{2}){1,2})\]")
 LEAD_TIME = re.compile(r"^\[(\d{1,2}(?::\d{2}){1,2})\]\s*")
-CODE = re.compile(r"(`[^`\n]+`)")
+CODE = re.compile(r"`[^`\n]+`")
+FENCED = re.compile(r"^```.*?^```", re.M | re.S)
 BOLD = re.compile(r"\*\*(.+?)\*\*")
 # A quoted run with Latin letters and no Hebrew ("Hello! How are you?"): isolated, or the bidi
 # algorithm moves its closing punctuation and quote marks to the wrong side in a Hebrew line.
-QUOTED_LATIN = re.compile(r'"(?=[^"\u0590-\u05FF]*[A-Za-z])[^"\u0590-\u05FF]*"')
-SYMBOL_NAME = re.compile(r"(?<![\w/.:=?&#-])[A-Za-z][A-Za-z0-9]*[+#]+(?![\w+#])")  # C++, C#: same problem
+QUOTED_LATIN = re.compile(r'"(?=[^"֐-׿]*[A-Za-z])[^"֐-׿]*"')
+SYMBOL_NAME = re.compile(r"(?<![\w/.:=?&#+])[A-Za-z][A-Za-z0-9]*[+#]+(?![\w+#])")  # C++, ו-C#: same problem
 URL = re.compile(r"https?://[^\s<>\"'\]]+")
-HEBREW = re.compile(r"[֐-׿]")
-LATIN = re.compile(r"[A-Za-z]")
-NIQQUD = re.compile(r"[֑-ׇֽֿׁׂׅׄ]")
-BIDI = re.compile(r"[‎‏‪-‮⁦-⁩]")
+MD_LINK = re.compile(r"\]\(https?://")
+KEPT = re.compile("\x00(\\d+)\x00")
+HEBREW = re.compile("[֐-׿]")
+LATIN = re.compile("[A-Za-z]")
+NIQQUD = re.compile("[֑-ׇֽֿׁׂׅׄ]")
+BIDI = re.compile("[‎‏‪-‮⁦-⁩]")
 LISTS = {"ul": re.compile(r"^[-*]\s+"), "ol": re.compile(r"^\d+[.)]\s+"), "quote": re.compile(r"^>\s?")}
 BROWSERS = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
             "/Applications/Chromium.app/Contents/MacOS/Chromium",
@@ -104,7 +109,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')z.hidden=true});"""
 
 
 def _block_start(line: str) -> bool:
-    return line.startswith(("#", "```")) or bool(FIGURE.match(line)) or any(p.match(line) for p in LISTS.values())
+    return (line.startswith("```") or bool(HEADING.match(line)) or bool(FIGURE.match(line))
+            or any(p.match(line) for p in LISTS.values()))
 
 
 def parse(text: str) -> list[dict]:
@@ -120,15 +126,17 @@ def parse(text: str) -> list[dict]:
             while i < len(lines) and not lines[i].strip().startswith("```"):
                 body.append(lines[i])
                 i += 1
-            blocks.append({"kind": "code", "text": "\n".join(body), "line": number})
+            blocks.append({"kind": "code", "text": "\n".join(body), "line": number, "open": i >= len(lines)})
             i += 1
         elif FIGURE.match(line):
             num, caption = FIGURE.match(line).groups()
             blocks.append({"kind": "figure", "id": f"F{int(num):02d}", "text": caption.strip(), "line": number})
             i += 1
-        elif line.startswith("#"):
-            level = len(line) - len(line.lstrip("#"))
-            blocks.append({"kind": {1: "title", 2: "h2"}.get(level, "h3"), "text": line[level:].strip(), "line": number})
+        elif HEADING.match(line):
+            hashes, text = HEADING.match(line).groups()
+            titled = any(b["kind"] == "title" for b in blocks)
+            kind = "title" if len(hashes) == 1 and not titled else "h2" if len(hashes) <= 2 else "h3"
+            blocks.append({"kind": kind, "text": text.strip(), "line": number})
             i += 1
         else:
             kind = next((k for k, p in LISTS.items() if p.match(line)), None)
@@ -158,25 +166,33 @@ def stamp(label: str, link) -> str:
     return f'<span class="ts" dir="ltr">{label}</span>'
 
 
-def _url(match) -> str:
-    url = match.group(0).rstrip(".,;:!?")
-    return f'<a href="{url}" dir="ltr">{url}</a>{match.group(0)[len(url):]}'
+def _link(url: str) -> tuple[str, str]:
+    """(url, tail): trailing punctuation and an unbalanced closing parenthesis stay outside the link."""
+    tail = ""
+    while url and (url[-1] in ".,;:!?" or (url[-1] == ")" and url.count("(") < url.count(")"))):
+        url, tail = url[:-1], url[-1] + tail
+    return url, tail
 
 
 def inline(text: str, link) -> str:
     """Escaped text with `code`, **bold**, bare URLs and [mm:ss] links to the source."""
-    out = []
-    for part in CODE.split(text):
-        if len(part) > 2 and part.startswith("`") and part.endswith("`"):
-            out.append(f'<code dir="ltr">{html.escape(part[1:-1])}</code>')
-            continue
-        part = html.escape(part, quote=False)
-        part = QUOTED_LATIN.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', part)  # before any attribute exists
-        part = SYMBOL_NAME.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', part)
-        part = BOLD.sub(r"<strong>\1</strong>", part)
-        part = URL.sub(_url, part)
-        out.append(TIME.sub(lambda m: stamp(m.group(1), link), part))
-    return "".join(out)
+    kept = []
+
+    def keep(snippet: str) -> str:
+        kept.append(snippet)
+        return f"\x00{len(kept) - 1}\x00"
+
+    def url(match) -> str:
+        address, tail = _link(match.group(0))
+        return keep(f'<a href="{html.escape(address)}" dir="ltr">{html.escape(address)}</a>') + tail
+
+    text = CODE.sub(lambda m: keep(f'<code dir="ltr">{html.escape(m.group(0)[1:-1])}</code>'), text)
+    text = html.escape(URL.sub(url, text), quote=False)
+    text = QUOTED_LATIN.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', text)
+    text = SYMBOL_NAME.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', text)
+    text = BOLD.sub(r"<strong>\1</strong>", text)
+    text = TIME.sub(lambda m: stamp(m.group(1), link), text)
+    return KEPT.sub(lambda m: kept[int(m.group(1))], text)
 
 
 def check(blocks: list[dict], times: dict, duration: float) -> tuple[list[str], list[str]]:
@@ -186,6 +202,8 @@ def check(blocks: list[dict], times: dict, duration: float) -> tuple[list[str], 
     for b in blocks:
         n = b["line"]
         if b["kind"] == "code":
+            if b.get("open"):
+                errors.append(f"line {n}: a ``` code block is never closed")
             continue
         if b["kind"] == "figure":
             if b["id"] not in times:
@@ -196,9 +214,14 @@ def check(blocks: list[dict], times: dict, duration: float) -> tuple[list[str], 
                 warnings.append(f"line {n}: {b['id']} is already used on line {used[b['id']]}")
             used.setdefault(b["id"], n)
         for text in b.get("items") or [b.get("text", "")]:
+            text = CODE.sub("", text)
             for m in TIME.finditer(text):
-                if duration and parse_time(m.group(1)) > duration + 5:
+                if any(int(part) > 59 for part in m.group(1).split(":")[1:]):
+                    errors.append(f"line {n}: [{m.group(1)}] is not a time (mm:ss or h:mm:ss)")
+                elif duration and parse_time(m.group(1)) > duration + 5:
                     errors.append(f"line {n}: [{m.group(1)}] is after the end of the video ({fmt_time(duration)})")
+            if MD_LINK.search(text):
+                warnings.append(f"line {n}: write links as bare URLs; [text](url) is shown as typed")
             if NIQQUD.search(text):
                 warnings.append(f"line {n}: niqqud; write Hebrew without vowel points")
     return errors, warnings
@@ -272,6 +295,7 @@ def _body(blocks: list[dict], times: dict, folder: Path, link) -> tuple[list, li
 def build(notes: str, meta: dict, frames: list[dict], folder: Path) -> tuple[str, list[str], list[str]]:
     """(html, errors, warnings); html is empty while there are errors."""
     warnings = []
+    notes = notes.lstrip("\ufeff")
     if BIDI.search(notes):
         notes = BIDI.sub("", notes)
         warnings.append("removed invisible direction marks; the page isolates directions itself")
@@ -284,7 +308,8 @@ def build(notes: str, meta: dict, frames: list[dict], folder: Path) -> tuple[str
     errors += [f"{fid}.jpg is missing from {folder}; run prepare again" for fid in missing]
     if errors:
         return "", errors, warnings
-    hebrew, latin = len(HEBREW.findall(notes)), len(LATIN.findall(notes))
+    prose = CODE.sub("", FENCED.sub("", notes))
+    hebrew, latin = len(HEBREW.findall(prose)), len(LATIN.findall(prose))
     lang = "he" if hebrew > 0.3 * (hebrew + latin) else "en"
     s, link = STRINGS[lang], _source_link(meta)
     title = next((b["text"] for b in blocks if b["kind"] == "title"), meta.get("title") or "")
@@ -303,16 +328,23 @@ def build(notes: str, meta: dict, frames: list[dict], folder: Path) -> tuple[str
                 f'src:url(data:font/woff2;base64,{data}) format("woff2");'
                 "unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}")
     direction = "rtl" if lang == "he" else "ltr"
+    style = font + CSS
+    policy = (f"default-src 'none'; img-src data:; font-src data:; style-src '{_digest(style)}'; "
+              f"script-src '{_digest(SCRIPT)}'")
     page = (f'<!doctype html>\n<html lang="{lang}" dir="{direction}">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-            '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; '
-            'font-src data:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'">\n'
-            f"<title>{html.escape(title)}</title>\n<style>{font}{CSS}</style>\n</head>\n<body>\n"
-            f'<header class="masthead"><h1 dir="auto">{inline(title, None)}</h1>'
+            f'<meta http-equiv="Content-Security-Policy" content="{policy}">\n'
+            f"<title>{html.escape(title)}</title>\n<style>{style}</style>\n</head>\n<body>\n"
+            f'<header class="masthead"><h1>{inline(title, None)}</h1>'
             f'<p class="meta">{_meta_line(meta, s)}</p></header>\n<main>\n' + "\n".join(parts)
             + f'\n</main>\n<footer>{s["footer"].format(date=date)}</footer>\n'
             f'<div id="zoom" hidden><img alt=""></div>\n<script>{SCRIPT}</script>\n</body>\n</html>\n')
     return page, [], warnings
+
+
+def _digest(content: str) -> str:
+    """CSP source for one inline <style> or <script>: only these exact bytes may run."""
+    return "sha256-" + base64.b64encode(hashlib.sha256(content.encode("utf-8")).digest()).decode()
 
 
 def browser() -> str | None:
