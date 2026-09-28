@@ -42,7 +42,8 @@ re-verification, a self-installer) rather than the output.
   transcript ending for late corrections, captions that say what is shown and why.
 - Safety: yt-dlp with `--ignore-config`, no cookies/logins, no cloud audio upload,
   source content is data, never instructions.
-- The embedded Heebo subset (SIL OFL) so the file looks the same offline and in PDF.
+- An embedded font so the file looks the same offline and in PDF — now Frank Ruhl Libre (Hebrew
+  subset, SIL OFL), because the house design contract bans Heebo as the default Hebrew face.
 
 ## Dropped
 
@@ -61,7 +62,7 @@ scripts/source.py        metadata + media acquisition (yt-dlp / ffprobe)
 scripts/transcript.py    captions, local whisper, transcript.md
 scripts/frames.py        screen-state scan, candidates, full-size frames, sheets
 scripts/render.py        notes.md → checked single-file HTML (+ PDF via Chrome)
-scripts/fonts/           Heebo subset (OFL)
+scripts/fonts/           Frank Ruhl Libre Hebrew subset (OFL)
 tests/                   unittest, stdlib + synthetic media from ffmpeg
 ```
 
@@ -74,7 +75,7 @@ the install command.
 
 ```
 python3 scripts/vsum.py prepare <url|file> [--out DIR] [--captions FILE]
-        [--lang-audio xx] [--max-frames N]
+        [--lang-audio xx] [--max-frames N] [--no-frames] [--fresh]
   DIR/source.json       id, title, url, kind, duration, uploader, creator chapters,
                         transcript source
   DIR/transcript.md     header + "[mm:ss] text" paragraphs (~30 s each)
@@ -92,7 +93,8 @@ python3 scripts/vsum.py render DIR [--pdf]
 ```
 
 `prepare` is resumable by plain file existence: an existing transcript, video or
-frame set in DIR is reused; `--fresh` redoes everything.
+frame set in DIR is reused; `--fresh` redoes everything. `--no-frames` makes a
+text-only run (only when the user accepts one, e.g. the video download is blocked).
 
 ## Transcript
 
@@ -166,9 +168,10 @@ The agent can be asked for "short" or "full reconstruction" per run (SKILL.md).
   duration (+5 s), no chapter headings. Warnings: a frame used twice, Hebrew niqqud,
   bidi control characters (removed automatically).
 - Page: `<html lang dir>` from notes language (Hebrew letters → `he`/`rtl`),
-  logical CSS, embedded Heebo, table of contents from `##`, timestamps as LTR
-  chips, `<code dir="ltr">`, figures with caption + their own timestamp, images
-  embedded as JPEG data URIs, click-to-zoom, dark mode, print CSS.
+  logical CSS, embedded Frank Ruhl Libre, table of contents from `##`, timestamps
+  as LTR chips, `<code dir="ltr">`, figures with caption + their own timestamp,
+  images embedded as JPEG data URIs, click-to-zoom, print CSS. Light only: the page
+  imitates a printed course reader (design lock in the plan), so no dark mode.
 - Links: YouTube → `watch?v=ID&t=Ns`; other URLs → plain source link; local
   files → timestamps as text.
 - `--pdf`: Chrome/Chromium/Edge headless print; absent → say so, keep the HTML.
