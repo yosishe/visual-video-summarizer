@@ -5,7 +5,6 @@ import html
 import re
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
 from common import fmt_time, parse_time
@@ -324,8 +323,11 @@ def pdf(page: Path, out: Path) -> bool:
     if not chrome:
         return False
     out.unlink(missing_ok=True)
-    with tempfile.TemporaryDirectory() as profile:
-        subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-first-run", f"--user-data-dir={profile}",
-                        "--no-pdf-header-footer", f"--print-to-pdf={out}", page.resolve().as_uri()],
-                       capture_output=True, timeout=300)
+    # Headless mode already uses a throwaway profile; an explicit fresh --user-data-dir makes
+    # Chrome 153 on macOS print the file and then never exit.
+    try:
+        subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-first-run", "--no-pdf-header-footer",
+                        f"--print-to-pdf={out}", page.resolve().as_uri()], capture_output=True, timeout=120)
+    except subprocess.TimeoutExpired:
+        pass  # the file may be complete even if the browser lingers
     return out.is_file() and out.stat().st_size > 0

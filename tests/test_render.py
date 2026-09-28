@@ -1,5 +1,6 @@
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 
@@ -110,6 +111,19 @@ class Build(unittest.TestCase):
             _, errors, _ = render.build("# t\n\n## a\n![F02](x)\n", YT, [{"id": "F02", "t": 1.0, "held": 3}],
                                         frame_dir(tmp))
         self.assertTrue(errors and "F02.jpg is missing" in errors[0], errors)
+
+
+@unittest.skipUnless(render.browser(), "needs Chrome, Chromium or Edge")
+class Pdf(unittest.TestCase):
+    def test_pdf_is_printed_and_the_browser_exits(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            page, out = Path(tmp, "page.html"), Path(tmp, "page.pdf")
+            page.write_text("<!doctype html><p>שלום</p>", encoding="utf-8")
+            result = {}
+            worker = threading.Thread(target=lambda: result.setdefault("ok", render.pdf(page, out)), daemon=True)
+            worker.start()
+            worker.join(60)
+            self.assertTrue(result.get("ok"), "pdf() did not return a printed file within 60 s")
 
 
 if __name__ == "__main__":
