@@ -67,6 +67,16 @@ class Pick(unittest.TestCase):
         samples = [screen((100, 140, 180), 30, 170, cursor=(300 + 40 * i, 400)) for i in range(20)]
         self.assertEqual(len(frames.pick(samples, 32)), 1)
 
+    def test_a_deck_of_forty_slides_keeps_every_slide(self):
+        deck = [screen((100, 160 + 48 * (k % 5), 420 + 36 * (k // 5)), 245, 60) for k in range(40)]
+        samples = [slide for slide in deck for _ in range(6)]
+        self.assertEqual([p["t"] for p in frames.pick(samples, 96)], [6.0 * k + 5 for k in range(40)])
+
+    def test_a_slide_built_line_by_line_keeps_its_complete_state(self):
+        stages = [(100,), (100, 300), (100, 300, 360), (100, 300, 360, 420), (200, 500)]
+        samples = [screen(rows, 245, 60) for rows in stages for _ in range(5)]
+        self.assertIn(19.0, [p["t"] for p in frames.pick(samples, 32)])
+
     def test_cap_keeps_the_states_held_longest(self):
         samples = [A] * 10 + [B] * 6
         self.assertEqual(frames.pick(samples, 1), [{"t": 9.0, "held": 10}])
@@ -107,6 +117,10 @@ class Files(unittest.TestCase):
             self.assertTrue(Path(tmp, "frames", "F20.jpg").is_file())
             with Image.open(Path(tmp, "frames", "F01.jpg")) as im:
                 self.assertEqual(im.size, (640, 360))
+            stale = Path(tmp, "frames", "F01.jpg")
+            self.assertEqual(frames.extract(video, [{"t": 100.0, "held": 3}], Path(tmp, "frames")), [])
+            self.assertFalse(stale.exists())  # a seek past the end never passes off an old file as new
+            made = frames.extract(video, picks, Path(tmp, "frames"))
             paths = frames.sheets(made, Path(tmp, "frames"), Path(tmp, "sheets"))
             self.assertEqual([p.name for p in paths], ["sheet-01.jpg", "sheet-02.jpg"])
             with Image.open(paths[0]) as first, Image.open(paths[1]) as second:

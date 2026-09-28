@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageStat
 
-from common import fmt_time, run
+from common import VsumError, fmt_time, run
 
 # Samples are compared block by block (4×4 pixels of a 128×72 grey scan, a 32×18 grid). Measured on
 # a screencast and a conference talk (nKSk_TiR8YA, tuY2ChJIx48): two different white slides with
@@ -15,7 +15,8 @@ MOVING = 8            # a block moved between two samples when its mean changed 
 OVERLAY_SHARE = 0.30  # blocks moving in more than this share of pairs are an overlay (webcam, ticker)
 OVERLAY_MAX = 0.35    # the overlay is ignored only while it covers less than this share of the frame
 STILL = 3.0           # a mean change of this much is a new picture...
-LOCAL, LOCAL_BLOCKS = 20, 10  # ...and so are ten blocks that changed by 20 (a pointer moves fewer)
+LOCAL, LOCAL_BLOCKS = 12, 10  # ...and so are ten blocks that changed by 12 (a pointer moves fewer; one
+                              # line of small text on a white slide changes 10 to 22 per block)
 MIN_HELD = 3          # seconds a state must hold to count
 BLANK = 4.0           # pixel spread under this: a blank or fading frame (sparse white slides are 7 to 8)
 GAP = 120             # seconds without a candidate before one is added
@@ -118,8 +119,12 @@ def extract(video: Path, picks: list[dict], folder: Path) -> list[dict]:
         fid = f"F{len(made) + 1:02d}"
         path = folder / f"{fid}.jpg"
         for t in (chosen["t"], max(0.0, chosen["t"] - 1)):  # a seek to the very end can land past the last frame
-            run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1",
-                 "-vf", "scale='min(1280,iw)':-2", "-q:v", "3", str(path)], f"frame {fid}")
+            path.unlink(missing_ok=True)  # never pass off a file from an interrupted run as this frame
+            try:
+                run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1",
+                     "-vf", "scale='min(1280,iw)':-2", "-q:v", "3", str(path)], f"frame {fid}")
+            except VsumError:
+                continue
             if path.is_file():
                 made.append({"id": fid, "t": t, "held": chosen["held"]})
                 break

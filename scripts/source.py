@@ -27,6 +27,10 @@ def probe(text: str) -> tuple[dict, dict]:
     if is_url(text):
         need("yt-dlp")
         info = json.loads(run(YTDLP + ["-J", text], "reading the video page").stdout)
+        if info.get("_type") == "playlist":
+            raise VsumError("this link is a playlist; give the link of one video from it.")
+        if info.get("is_live"):
+            raise VsumError("this is a live stream; summarize it once it has ended and been saved.")
         url = info.get("webpage_url") or text
         vid = youtube_id(url)
         meta = {"kind": "youtube" if vid else "url", "url": url, "path": None,
@@ -53,7 +57,9 @@ def duration(path: Path) -> float:
 
 
 def has_video(path: Path) -> bool:
-    return bool(_ffprobe(path, "-select_streams", "v", "-show_entries", "stream=codec_type").get("streams"))
+    """A real picture track; the cover art of an audio file does not count."""
+    streams = _ffprobe(path, "-select_streams", "v", "-show_entries", "stream_disposition=attached_pic").get("streams")
+    return any(not (s.get("disposition") or {}).get("attached_pic") for s in streams or [])
 
 
 def media(meta: dict, work: Path) -> Path:
