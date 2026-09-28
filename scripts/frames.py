@@ -89,8 +89,9 @@ def pick(samples: list[Image.Image], cap: int) -> list[dict]:
 
 
 def default_cap(duration: float) -> int:
-    """16 candidates per 10 minutes, between 32 and 96 (two to six contact sheets)."""
-    return max(32, min(96, round(16 * duration / 600)))
+    """24 candidates per 10 minutes, between 48 and 96 (three to six contact sheets, about 1,300
+    image tokens each): a dense screencast holds a new screen every 15-20 seconds."""
+    return max(48, min(96, round(24 * duration / 600)))
 
 
 def extract(video: Path, picks: list[dict], folder: Path) -> list[dict]:

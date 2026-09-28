@@ -60,8 +60,8 @@ class Pick(unittest.TestCase):
         self.assertTrue(104 <= picked[0]["t"] <= 134 and 224 <= picked[1]["t"] <= 254, picked)
 
     def test_default_cap(self):
-        self.assertEqual(frames.default_cap(600), 32)
-        self.assertEqual(frames.default_cap(1800), 48)
+        self.assertEqual(frames.default_cap(600), 48)
+        self.assertEqual(frames.default_cap(2400), 96)
         self.assertEqual(frames.default_cap(7200), 96)
 
 
