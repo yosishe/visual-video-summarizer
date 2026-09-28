@@ -1,1001 +1,370 @@
-#!/usr/bin/env python3
-"""Validate summary evidence and deterministically render manifest.json + HTML.
-
-Output language is a document property (`--lang he|en`, default from
-summary.json, then `SUMMARY_LANG`, then `en`): Hebrew documents are rendered
-right-to-left per W3C bidi guidance — `dir` on <html>, logical CSS, every
-opposite-direction run (timestamps, code, English terms in backticks) tightly
-isolated — with a subset of the Heebo typeface embedded so the file renders the
-same offline. A deterministic audit (`audit_summary.py`) gates rendering: a
-number, identifier or URL in the summary that the cited transcript segments do
-not contain is an error, not a warning.
-"""
-from __future__ import annotations
-
-import argparse
+"""notes.md → one self-contained HTML page; a PDF through Chrome, Chromium or Edge when asked."""
 import base64
+import datetime
 import hashlib
 import html
-import json
-import os
 import re
 import shutil
 import subprocess
-import sys
-import tempfile
-from collections import Counter
 from pathlib import Path
-from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-SCRIPT_DIR = Path(__file__).parent.resolve()
-sys.path.insert(0, str(SCRIPT_DIR))
+from common import fmt_time, parse_time
 
-import datetime as _dt  # noqa: E402
-
-from audit_summary import HEBREW_RE, audit_inputs, brief_items, run_audit  # noqa: E402
-from bundle import bundle as bundle_summary  # noqa: E402
-from frame_utils import chapter_for_time, format_time  # noqa: E402
-from gates import (  # noqa: E402
-    ENGINE_VERSION,
-    GateError,
-    StaleError,
-    UnresolvedError,
-    candidates_digest,
-    canonical_sha256,
-    selections_binding,
-    sha256_file,
-    validate_assets,
-    validate_chapters,
-    validate_selections,
-    validate_transcript,
-)
-from gates import describe_identity, engine_drift, identity_matches  # noqa: E402
-from hostenv import chrome_candidates, find_chrome, run_text, user_config_dir, utf8_stdio  # noqa: E402
-from safety import CSP, asset_file, atomic_write, validate_generated_html  # noqa: E402
-
-MANIFEST_SCHEMA = 3
-ROLES = {"evidence", "illustration"}
-NOVELTY = {"new_state", "build_stage", "reprise"}
-BLOCK_KINDS = {"prose", "code", "quote"}
-LANGS = {"he", "en"}
-OUTPUT_MODES = ("illustrated", "text-only")
-CHROME_CANDIDATES = tuple(chrome_candidates())
-FONT_DIR = SCRIPT_DIR / "fonts"
-CONFIG_ENV = (user_config_dir() or Path()) / ".env"
-INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
+FONT = Path(__file__).resolve().parent / "fonts" / "FrankRuhlLibre-hebrew.woff2"
+FIGURE = re.compile(r"^!\[[Ff](\d+)\]\((.*)\)$")
+HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
+TIME = re.compile(r"\[(\d{1,2}(?::\d{2}){1,2})\]")
+LEAD_TIME = re.compile(r"^\[(\d{1,2}(?::\d{2}){1,2})\]\s*")
+CODE = re.compile(r"`[^`\n]+`")
+FENCED = re.compile(r"^```.*?^```", re.M | re.S)
+BOLD = re.compile(r"\*\*(.+?)\*\*")
+# A quoted run with Latin letters and no Hebrew ("Hello! How are you?"): isolated, or the bidi
+# algorithm moves its closing punctuation and quote marks to the wrong side in a Hebrew line.
+QUOTED_LATIN = re.compile(r'"(?=[^"֐-׿]*[A-Za-z])[^"֐-׿]*"')
+SYMBOL_NAME = re.compile(r"(?<![\w/.:=?&#+])[A-Za-z][A-Za-z0-9]*[+#]+(?![\w+#])")  # C++, ו-C#: same problem
+URL = re.compile(r"https?://[^\s<>\"'\]]+")
+MD_LINK = re.compile(r"\]\(https?://")
+KEPT = re.compile("\x00(\\d+)\x00")
+HEBREW = re.compile("[֐-׿]")
+LATIN = re.compile("[A-Za-z]")
+NIQQUD = re.compile("[֑-ׇֽֿׁׂׅׄ]")
+BIDI = re.compile("[‎‏‪-‮⁦-⁩]")
+LISTS = {"ul": re.compile(r"^[-*]\s+"), "ol": re.compile(r"^\d+[.)]\s+"), "quote": re.compile(r"^>\s?")}
+BROWSERS = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+            "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "microsoft-edge", "msedge"]
 
 STRINGS = {
-    "en": {
-        "kicker": "Visual video summary",
-        "title_suffix": "Visual Summary",
-        "claim": "The claim in one line:",
-        "brief": "Short summary",
-        "main_points": "Main points",
-        "takeaways": "Takeaways",
-        "brief_sources": "Source timestamps",
-        "chapters": "Chapters",
-        "watch": "Watch the source video",
-        "transcript": "transcript: {source}",
-        "frames": "{n} frames selected",
-        "frames_of": "{n} frames selected from {m} candidates",
-        "footer": "Summary generated from the video's transcript and {n} selected frames",
-        "source": "source:",
-        "provenance": "frame provenance in",
-        "look_at": "Look at:",
-    },
-    "he": {
-        "kicker": "סיכום חזותי של סרטון",
-        "title_suffix": "סיכום חזותי",
-        "claim": "הטענה במשפט אחד:",
-        "brief": "סיכום קצר",
-        "main_points": "עיקרי הדברים",
-        "takeaways": "תובנות ומסקנות",
-        "brief_sources": "זמנים במקור",
-        "chapters": "פרקים",
-        "watch": "לצפייה בסרטון המקורי",
-        "transcript": "מקור התמליל: {source}",
-        "frames": "{n} פריימים נבחרו",
-        "frames_of": "{n} פריימים נבחרו מתוך {m} מועמדים",
-        "footer": "הסיכום נוצר מהתמליל של הסרטון ומ-{n} פריימים נבחרים",
-        "source": "מקור:",
-        "provenance": "מקור הפריימים מתועד ב-",
-        "look_at": "שימו לב:",
-    },
+    "he": {"toc": "תוכן העניינים", "watch": "לצפייה בסרטון", "by": "מאת", "length": "אורך",
+           "transcript": "מקור התמליל", "manual": "כתוביות ידניות", "auto": "כתוביות אוטומטיות",
+           "whisper": "תמלול מקומי", "file": "קובץ כתוביות",
+           "footer": "הופק בתאריך {date} באמצעות הכלי <bdi>summarize-video</bdi>, מתוך התמליל והפריימים של הסרטון."},
+    "en": {"toc": "Contents", "watch": "Watch the video", "by": "by", "length": "Length",
+           "transcript": "Transcript", "manual": "manual captions", "auto": "automatic captions",
+           "whisper": "local transcription", "file": "subtitle file",
+           "footer": "Written from the video's transcript and frames with summarize-video on {date}."},
 }
 
-
-def _load_json(path: Path) -> object:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError as exc:
-        raise SystemExit(f"Missing required file: {path}") from exc
-    except json.JSONDecodeError as exc:
-        raise SystemExit(f"Invalid JSON in {path}: {exc}") from exc
-
-
-def canonical_json_sha256(payload: object) -> str:
-    return canonical_sha256(payload)
-
-
-def _env_lang() -> str | None:
-    value = os.environ.get("SUMMARY_LANG")
-    if value:
-        return value.strip().lower()
-    try:
-        for line in CONFIG_ENV.read_text(encoding="utf-8").splitlines():
-            key, _, raw = line.partition("=")
-            if key.strip() == "SUMMARY_LANG" and raw.strip():
-                return raw.strip().strip("'\"").lower()
-    except OSError:
-        pass
-    return None
-
-
-def resolve_lang(cli: str | None, summary_payload: dict) -> str:
-    """CLI flag → summary.json `lang` → SUMMARY_LANG (env or the skill's .env) → en."""
-    for value in (cli, summary_payload.get("lang"), _env_lang()):
-        if value:
-            value = str(value).lower()
-            if value not in LANGS:
-                raise SystemExit(f"unsupported output language {value!r}; use one of {sorted(LANGS)}")
-            return value
-    return "en"
-
-
-def _timestamp_url(source_url: str | None, timestamp: float) -> str | None:
-    if not source_url or not source_url.startswith(("http://", "https://")):
-        return None
-    parsed = urlparse(source_url)
-    host = (parsed.hostname or "").lower()
-    if parsed.username or parsed.password or not (
-            host == "youtube.com" or host.endswith(".youtube.com") or host == "youtu.be"):
-        return None
-    query = dict(parse_qsl(parsed.query, keep_blank_values=True))
-    query["t"] = str(int(round(timestamp)))
-    return urlunparse(parsed._replace(query=urlencode(query)))
-
-
-def _inline(text: str) -> str:
-    """Escape, then turn `backticks` into LTR-isolated code — the only markup
-    the model may emit. Everything else stays literal."""
-    escaped = html.escape(text)
-    return INLINE_CODE_RE.sub(lambda m: f'<code dir="ltr">{m.group(1)}</code>', escaped)
-
-
-def _normalized_summary(summary_payload: dict, chapters: list[dict], lang: str) -> dict[str, dict]:
-    rows = summary_payload.get("chapters", [])
-    if not isinstance(rows, list):
-        raise SystemExit("summary.json chapters must be an array")
-    by_id = {str(row.get("chapter_id")): row for row in rows}
-    normalized: dict[str, dict] = {}
-    for chapter in chapters:
-        chapter_id = chapter["chapter_id"]
-        row = by_id.get(chapter_id)
-        if row is None:
-            raise SystemExit(f"summary.json is missing chapter {chapter_id}")
-        blocks = row.get("blocks")
-        if not isinstance(blocks, list) or not blocks:
-            raise SystemExit(f"summary chapter {chapter_id} needs non-empty blocks[]")
-        normalized_blocks = []
-        for index, block in enumerate(blocks):
-            text = str(block.get("text") or "").strip()
-            seg_ids = [str(seg_id) for seg_id in block.get("seg_ids", [])]
-            kind = str(block.get("kind") or "prose")
-            if not text or not seg_ids:
-                raise SystemExit(f"{chapter_id} block {index} needs text and seg_ids")
-            if kind not in BLOCK_KINDS:
-                raise SystemExit(f"{chapter_id} block {index}: unknown kind {kind!r} (prose|code|quote)")
-            if lang == "he" and kind == "prose" and not HEBREW_RE.search(text):
-                raise SystemExit(f"{chapter_id} block {index}: a Hebrew document needs Hebrew prose here")
-            normalized_blocks.append({
-                "block_id": str(block.get("block_id") or f"{chapter_id}_b{index + 1:02d}"),
-                "kind": kind,
-                "lang": str(block.get("lang") or "") or None,
-                "text": text,
-                "seg_ids": seg_ids,
-            })
-        normalized[chapter_id] = {
-            "chapter_id": chapter_id,
-            "title": str(row.get("title") or chapter.get("title") or chapter_id),
-            "blocks": normalized_blocks,
-            "key_points": [str(point) for point in row.get("key_points", []) if str(point).strip()],
-        }
-    return normalized
-
-
-def _caption_fields(selection: dict) -> dict:
-    """`caption` is a string (legacy) or {shows, why, look_at}. Returns the
-    parts with `shows` always present."""
-    raw = selection.get("caption")
-    if isinstance(raw, dict):
-        shows = str(raw.get("shows") or "").strip()
-        why = str(raw.get("why") or "").strip()
-        look = str(raw.get("look_at") or "").strip()
-        return {"shows": shows, "why": why or None, "look_at": look or None}
-    return {"shows": str(raw or "").strip(), "why": None, "look_at": None}
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1 << 16), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _validate(
-    transcript: dict,
-    chapters: list[dict],
-    candidate_payload: dict,
-    selections: list[dict],
-    assets_payload: dict,
-    summary_payload: dict,
-    lang: str = "en",
-) -> tuple[dict[str, dict], list[dict], dict[str, dict]]:
-    if assets_payload.get("duplicate_pairs"):
-        raise SystemExit("assets-manifest.json contains hard duplicate selections")
-    if assets_payload.get("failures"):
-        raise SystemExit("assets-manifest.json contains extraction failures")
-    if len(selections) > 20:
-        raise SystemExit("HTML frame budget exceeded: more than 20 selections")
-    # The assets must have been grabbed for THIS selections.json from THIS
-    # candidate pool; older manifests without the bindings only warn.
-    recorded_selections = assets_payload.get("selections_binding_sha256") or assets_payload.get("selections_sha256")
-    if assets_payload.get("selections_binding_sha256"):
-        if recorded_selections != selections_binding(selections):
-            raise StaleError("the selected frames (ids, names or crops) changed after grab — re-run grab.py")
-    elif recorded_selections and recorded_selections != canonical_sha256(selections):
-        raise StaleError("assets were grabbed from a different selections.json — re-run grab.py")
-    recorded_candidates = assets_payload.get("candidates_sha256")
-    if recorded_candidates and recorded_candidates != candidates_digest(candidate_payload):
-        raise StaleError("assets were grabbed from a different candidates.json — re-run grab.py")
-    if selections and not (recorded_selections and recorded_candidates):
-        print("[vsum] warning: assets-manifest.json predates input binding; staleness cannot be verified",
-              file=sys.stderr)
-    chapter_map = {chapter["chapter_id"]: chapter for chapter in chapters}
-    segment_ids = {str(segment["seg_id"]) for segment in transcript.get("segments", [])}
-    candidates = {
-        str(candidate.get("candidate_id") or candidate.get("frame_id")): candidate
-        for candidate in candidate_payload.get("candidates", [])
-    }
-    assets = {str(asset["candidate_id"]): asset for asset in assets_payload.get("assets", [])}
-    summaries = _normalized_summary(summary_payload, chapters, lang)
-    # coverage_report only marks a chapter unresolved when it needs frames, so
-    # every unresolved row is required (the old `.get("needs_frames", False)`
-    # re-check silently disabled this gate whenever the key was omitted).
-    coverage = candidate_payload.get("coverage", {})
-    unresolved_required = sorted(
-        {row["chapter_id"] for row in coverage.get("chapters", []) if row.get("status") == "unresolved"}
-        | {f"target {row['target_id']}" for row in coverage.get("targets", []) if row.get("status") == "unresolved"}
-    )
-    if unresolved_required:
-        raise UnresolvedError(
-            "Required visual chapters/targets remain unresolved: " + ", ".join(unresolved_required)
-            + " — fix chapters.json or re-run candidates.py (--tier high); do not render around it"
-        )
-    for chapter_id, summary in summaries.items():
-        for block in summary["blocks"]:
-            unknown = [seg_id for seg_id in block["seg_ids"] if seg_id not in segment_ids]
-            if unknown:
-                raise SystemExit(f"{chapter_id}: summary block has unknown segments {unknown}")
-    counts = Counter(str(selection.get("chapter_id")) for selection in selections)
-    overfull = [chapter_id for chapter_id, count in counts.items() if count > 3]
-    if overfull:
-        raise SystemExit("Per-chapter frame budget exceeded: " + ", ".join(overfull))
-
-    normalized: list[dict] = []
-    for index, selection in enumerate(selections):
-        candidate_id = str(selection.get("candidate_id") or "")
-        candidate = candidates.get(candidate_id)
-        asset = assets.get(candidate_id)
-        if candidate is None or asset is None:
-            raise SystemExit(f"selection {index} has no candidate/assets pair: {candidate_id!r}")
-        chapter_id = str(selection.get("chapter_id") or candidate.get("chapter_id") or "")
-        chapter = chapter_map.get(chapter_id)
-        if chapter is None:
-            raise SystemExit(f"{candidate_id}: unknown chapter {chapter_id!r}")
-        # The caption time is the time of the pixels that were WRITTEN — the
-        # asset's — which grab-time refinement may have moved off the triaged
-        # candidate's time. Both must sit inside the selection's chapter.
-        triaged_t = float(candidate["actual_t"])
-        timestamp = float(asset.get("actual_t", triaged_t))
-        for label, value in (("candidate", triaged_t), ("asset", timestamp)):
-            owning = chapter_for_time(chapters, value)
-            if owning is None or owning["chapter_id"] != chapter_id:
-                raise SystemExit(
-                    f"{candidate_id}: {label} t={value:.3f} belongs to "
-                    f"{owning['chapter_id'] if owning else 'no chapter'}, not {chapter_id}"
-                )
-        role = str(selection.get("role") or "")
-        name = str(selection.get("name") or "").strip()
-        caption = _caption_fields(selection)
-        alt = str(selection.get("alt") or "").strip()
-        anchors = [str(seg_id) for seg_id in selection.get("anchor_seg_ids", [])]
-        if role not in ROLES or not name or not caption["shows"] or not alt or not anchors:
-            raise SystemExit(f"{candidate_id}: name, role, caption, alt and anchor_seg_ids are required")
-        novelty = str(selection.get("novelty") or "new_state")
-        if novelty not in NOVELTY:
-            raise SystemExit(f"{candidate_id}: novelty must be one of {sorted(NOVELTY)}")
-        if novelty == "build_stage" and not caption["why"]:
-            raise SystemExit(f"{candidate_id}: a build_stage frame must say in caption.why what the stage adds")
-        if lang == "he" and not HEBREW_RE.search(caption["shows"]):
-            raise SystemExit(f"{candidate_id}: Hebrew document — caption must be Hebrew")
-        if len(alt) > 160:
-            raise SystemExit(f"{candidate_id}: alt text over 160 characters")
-        unknown_segments = [seg_id for seg_id in anchors if seg_id not in segment_ids]
-        if unknown_segments:
-            raise SystemExit(f"{candidate_id}: unknown anchor segments {unknown_segments}")
-        # Anchors must sit inside what the engine knows the frame illustrates:
-        # its own segments plus any engine-derived alignment (`aligned_seg_ids`).
-        allowed = set(candidate.get("seg_ids", [])) | set(candidate.get("aligned_seg_ids", []))
-        if allowed and not allowed.intersection(anchors):
-            raise SystemExit(f"{candidate_id}: anchor_seg_ids do not overlap candidate provenance")
-        block_index = next(
-            (
-                block_index for block_index, block in enumerate(summaries[chapter_id]["blocks"])
-                if set(block["seg_ids"]).intersection(anchors)
-            ),
-            None,
-        )
-        if block_index is None:
-            raise SystemExit(f"{candidate_id}: no summary block overlaps anchor_seg_ids")
-        for variant in ("full", "thumb"):
-            path = Path(asset[variant]["path"])
-            if not path.exists():
-                raise SystemExit(f"{candidate_id}: missing asset {path}")
-            expected = asset[variant].get("sha256")
-            if expected and _sha256(path) != expected:
-                raise SystemExit(f"{candidate_id}: asset {path.name} does not match its recorded sha256")
-        normalized.append({
-            **selection,
-            "candidate_id": candidate_id,
-            "chapter_id": chapter_id,
-            "role": role,
-            "novelty": novelty,
-            "caption": caption,
-            "alt": alt,
-            "anchor_seg_ids": anchors,
-            "actual_t": timestamp,
-            "triaged_t": float(asset.get("triaged_t", triaged_t)),
-            "refinement": asset.get("refinement"),
-            "requested_t": candidate.get("requested_t"),
-            "seg_ids": candidate.get("seg_ids", []),
-            "target_ids": candidate.get("target_ids", []),
-            "family_id": candidate.get("family_id"),
-            "selection_reasons": candidate.get("reasons", []),
-            "quality": candidate.get("quality", {}),
-            "asset": asset,
-            "block_index": block_index,
-        })
-    return summaries, normalized, assets
-
-
-STYLE = """
-  :root {
-    --ink: #1c1e21; --muted: #6b7280; --accent: #b3372c; --accent-soft: #f6e8e6;
-    --line: #e5e2dc; --bg: #faf9f7; --card: #ffffff;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 17px/1.65 var(--font-stack); }
-  header.hero { border-block-end: 3px solid var(--ink); background: var(--card); padding: 3.5rem 1.5rem 2.5rem; }
-  .measure { max-inline-size: 46rem; margin-inline: auto; }
-  .kicker { text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; color: var(--accent); font-weight: 700; }
-  [dir=rtl] .kicker { text-transform: none; letter-spacing: 0; }
-  h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.15; margin: .4rem 0 .8rem; }
-  .meta { color: var(--muted); font-size: .92rem; }
-  .meta a { color: var(--accent); }
-  .thesis { margin-block-start: 1.4rem; padding: 1rem 1.2rem; background: var(--accent-soft);
-            border-inline-start: 4px solid var(--accent); font-size: 1.02rem; }
-  nav.toc { margin: 2rem auto 0; max-inline-size: 46rem; }
-  nav.toc ol { columns: 2; gap: 2rem; padding-inline-start: 1.2rem; margin: .4rem 0 0; font-size: .92rem; }
-  nav.toc li { margin: .25rem 0; break-inside: avoid; }
-  nav.toc a { color: var(--ink); text-decoration: none; border-block-end: 1px solid var(--line); }
-  nav.toc a:hover { color: var(--accent); border-color: var(--accent); }
-  main { padding: 1rem 1.5rem 4rem; }
-  section.brief { max-inline-size: 46rem; margin: 2rem auto 0; }
-  .brief h3 { font-size: 1.05rem; margin-block: 1.2rem .4rem; }
-  .brief ul { padding-inline-start: 1.3rem; margin-block: .4rem; }
-  .brief li { margin-block: .55rem; }
-  .brief-sources { font-size: .8em; color: var(--muted); unicode-bidi: isolate; }
-  .brief-source { display: inline-block; white-space: nowrap; }
-  .brief-sources a { color: inherit; text-decoration: none; border-block-end: 1px dotted var(--muted); }
-  section.chapter { max-inline-size: 46rem; margin: 3rem auto 0; padding-block-start: 2.4rem; border-block-start: 1px solid var(--line); }
-  .ch-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
-  .ch-num { font-weight: 800; color: var(--accent); font-size: .95rem; letter-spacing: .06em; }
-  h2 { font-size: 1.35rem; margin: 0; line-height: 1.3; }
-  .range { color: var(--muted); font-size: .85rem; white-space: nowrap; direction: ltr; unicode-bidi: isolate; }
-  .range a { color: var(--muted); text-decoration: none; border-block-end: 1px dotted var(--muted); }
-  .range a:hover { color: var(--accent); border-color: var(--accent); }
-  p { margin: .9rem 0; }
-  code, pre { direction: ltr; unicode-bidi: isolate; font-family: "Menlo", "SF Mono", Consolas, var(--font-stack), monospace; }
-  code { font-size: .92em; background: #f0eeea; padding: .05em .3em; border-radius: 4px; }
-  pre { text-align: left; overflow-x: auto; background: #1f2328; color: #e6edf3; padding: .9rem 1rem; border-radius: 8px; font-size: .88rem; line-height: 1.5; }
-  pre code { background: none; padding: 0; color: inherit; }
-  blockquote { margin: .9rem 0; padding-inline-start: 1rem; border-inline-start: 3px solid var(--line); color: var(--muted); font-style: italic; }
-  figure { margin: 1.6rem 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-           padding: .7rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-  figure a { display: block; }
-  figure img { inline-size: 100%; block-size: auto; display: block; border-radius: 6px; }
-  figcaption { font-size: .87rem; color: var(--muted); padding: .65rem .3rem .1rem; }
-  figcaption b { color: var(--accent); }
-  figcaption b a { color: var(--accent); text-decoration: none; }
-  figcaption b a:hover { text-decoration: underline; }
-  figcaption .why { display: block; margin-block-start: .25rem; color: var(--ink); }
-  figcaption .look { display: block; margin-block-start: .15rem; }
-  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .duo figure { margin: 1.6rem 0 0; }
-  ul.key-points { margin: 1rem 0 0; padding-inline-start: 1.2rem; color: var(--muted); font-size: .95rem; }
-  @media (max-width: 640px) { .duo { grid-template-columns: 1fr; } nav.toc ol { columns: 1; } }
-  footer { border-block-start: 3px solid var(--ink); background: var(--card); padding: 1.6rem; text-align: center;
-           color: var(--muted); font-size: .85rem; }
-  @media print {
-    @page { size: A4; margin: 14mm; }
-    body { background: #fff; font-size: 11pt; }
-    header.hero { padding: 1.2rem 0 1rem; }
-    main { padding: 0; }
-    section.chapter { margin-block-start: 1.6rem; padding-block-start: 1.2rem; }
-    h2 { break-after: avoid; }
-    .brief h3 { break-after: avoid; }
-    .brief li { break-inside: avoid; }
-    figure { break-inside: avoid; box-shadow: none; }
-    figure img { max-block-size: 110mm; object-fit: contain; }
-    pre { white-space: pre-wrap; break-inside: avoid; background: #f4f4f4; color: #111; }
-    .duo { grid-template-columns: 1fr 1fr; }
-    a { color: inherit; text-decoration: none; }
-    nav.toc ol { columns: 2; }
-  }
+# A printed course reader: ink on paper, one text column, figures wider than the text,
+# one accent (the video's red) reserved for everything that jumps back to the source.
+CSS = """
+:root{--ink:#1c1d1f;--muted:#5d6068;--paper:#fbfbf9;--rule:#e4e3de;--wash:#f0efeb;--accent:#b3302a;
+--measure:41rem;--wide:60rem}
+*{box-sizing:border-box}
+html{background:var(--paper);color:var(--ink);-webkit-text-size-adjust:100%}
+body{margin:0;font:1.125rem/1.9 "Frank Ruhl Libre","Iowan Old Style","Palatino Linotype",Georgia,serif;
+font-kerning:normal;text-rendering:optimizeLegibility}
+.masthead,main,footer{max-inline-size:var(--measure);margin-inline:auto;padding-inline:1.25rem}
+.masthead{padding-block:4.5rem 2rem;border-block-end:1px solid var(--rule)}
+h1{font-size:clamp(2rem,5vw,2.75rem);line-height:1.2;font-weight:800;margin:0 0 1.25rem}
+.meta{margin:0;color:var(--muted);font-size:.95rem;line-height:1.8}
+.meta a{color:var(--accent)}
+main{padding-block:1rem 2rem}
+.brief{margin:2.5rem 0 0;padding-inline-start:1.25rem;border-inline-start:3px solid var(--accent);
+font-size:1.25rem;line-height:1.85;color:var(--ink)}
+.brief p{margin:0 0 .8rem}
+.toc{margin-block:3rem 1rem;font-size:1rem;line-height:1.6}
+.toc-title{margin:0 0 .6rem;font-weight:700;color:var(--muted)}
+.toc ol{margin:0;padding-inline-start:1.4rem;columns:2 17rem;column-gap:2.5rem}
+.toc li{break-inside:avoid;margin-block-end:.35rem}
+.toc a{color:inherit;text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.toc .t{color:var(--muted);font:.78rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+h2{font-size:1.8rem;line-height:1.35;font-weight:800;margin:4.5rem 0 1rem}
+h3{font-size:1.3rem;line-height:1.4;font-weight:700;margin:2.5rem 0 .6rem}
+p{margin:0 0 1.15rem}
+ul,ol{margin:0 0 1.25rem;padding-inline-start:1.4rem}
+li{margin-block:.4rem}
+blockquote{margin:1.6rem 0;padding-inline-start:1.1rem;border-inline-start:2px solid var(--rule);color:#35383d}
+code{font:.84em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--wash);padding:.1em .35em;
+border-radius:3px;unicode-bidi:isolate}
+pre{direction:ltr;text-align:start;background:var(--wash);padding:1rem 1.2rem;border-radius:4px;overflow-x:auto;
+font:.88rem/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre code{background:none;padding:0;font-size:inherit}
+.ts{font:600 .76rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--accent);text-decoration:none;
+border:1px solid currentColor;border-radius:3px;padding:.2em .38em;vertical-align:.15em;unicode-bidi:isolate;
+white-space:nowrap}
+a.ts:hover{background:var(--accent);color:var(--paper)}
+h2 .ts{vertical-align:.35em}
+figure{margin-block:2.4rem;margin-inline:calc(50% - min(var(--wide),100vw - 2.5rem) / 2)}
+figure img{display:block;inline-size:100%;block-size:auto;border-radius:4px;background:var(--wash);cursor:zoom-in}
+figcaption{max-inline-size:var(--measure);margin:.75rem auto 0;padding-inline:1.25rem;color:var(--muted);
+font-size:.95rem;line-height:1.75}
+footer{padding-block:2.5rem 4rem;color:var(--muted);font-size:.9rem;border-block-start:1px solid var(--rule)}
+#zoom{position:fixed;inset:0;display:grid;place-items:center;padding:2vmin;background:rgb(18 19 21/.92);
+cursor:zoom-out;z-index:9}
+#zoom[hidden]{display:none}
+#zoom img{max-inline-size:100%;max-block-size:100%;object-fit:contain}
+@page{size:A4;margin:16mm 15mm}
+@media print{html{background:#fff}body{font-size:11pt;line-height:1.75}.masthead{padding-block:0 1rem}
+h2{break-after:avoid;margin-top:2.2rem}figure{break-inside:avoid;margin-inline:0}figcaption{padding-inline:0}
+a{color:inherit}#zoom{display:none}}
 """
 
-FONT_STACKS = {
-    "en": '"Avenir Next", "Segoe UI", system-ui, sans-serif',
-    "he": '"Heebo", "Arial Hebrew", "Noto Sans Hebrew", system-ui, sans-serif',
-}
+SCRIPT = """const z=document.getElementById('zoom');
+document.addEventListener('click',e=>{if(e.target.matches('figure img')){z.firstElementChild.src=e.target.src;z.hidden=false}
+else if(!z.hidden){z.hidden=true}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')z.hidden=true});"""
 
 
-def font_face_css(lang: str) -> str:
-    """Embedded Heebo subsets (SIL OFL, see scripts/fonts/OFL.txt) for Hebrew
-    documents, so the single file renders identically offline."""
-    if lang != "he":
-        return ""
-    faces = []
-    for weight, name in ((400, "Heebo-Regular.subset.woff"), (700, "Heebo-Bold.subset.woff")):
-        path = FONT_DIR / name
-        if not path.exists():
+def _block_start(line: str) -> bool:
+    return (line.startswith("```") or bool(HEADING.match(line)) or bool(FIGURE.match(line))
+            or any(p.match(line) for p in LISTS.values()))
+
+
+def parse(text: str) -> list[dict]:
+    """Blocks of the Markdown subset, each with the line it starts on."""
+    lines = text.splitlines()
+    blocks, i = [], 0
+    while i < len(lines):
+        line, number = lines[i].strip(), i + 1
+        if not line:
+            i += 1
+        elif line.startswith("```"):
+            body, i = [], i + 1
+            while i < len(lines) and not lines[i].strip().startswith("```"):
+                body.append(lines[i])
+                i += 1
+            blocks.append({"kind": "code", "text": "\n".join(body), "line": number, "open": i >= len(lines)})
+            i += 1
+        elif FIGURE.match(line):
+            num, caption = FIGURE.match(line).groups()
+            blocks.append({"kind": "figure", "id": f"F{int(num):02d}", "text": caption.strip(), "line": number})
+            i += 1
+        elif HEADING.match(line):
+            hashes, text = HEADING.match(line).groups()
+            titled = any(b["kind"] == "title" for b in blocks)
+            kind = "title" if len(hashes) == 1 and not titled else "h2" if len(hashes) <= 2 else "h3"
+            blocks.append({"kind": kind, "text": text.strip(), "line": number})
+            i += 1
+        else:
+            kind = next((k for k, p in LISTS.items() if p.match(line)), None)
+            if kind:
+                items = []
+                while i < len(lines) and LISTS[kind].match(lines[i].strip()):
+                    items.append(LISTS[kind].sub("", lines[i].strip(), count=1))
+                    i += 1
+                    while (i < len(lines) and lines[i][:1] in (" ", "\t") and lines[i].strip()
+                           and not _block_start(lines[i].strip())):
+                        items[-1] += " " + lines[i].strip()
+                        i += 1
+                blocks.append({"kind": kind, "items": items, "line": number})
+            else:
+                body, i = [line], i + 1
+                while i < len(lines) and lines[i].strip() and not _block_start(lines[i].strip()):
+                    body.append(lines[i].strip())
+                    i += 1
+                blocks.append({"kind": "p", "text": " ".join(body), "line": number})
+    return blocks
+
+
+def stamp(label: str, link) -> str:
+    target = link(parse_time(label)) if link else None
+    if target:
+        return f'<a class="ts" href="{html.escape(target)}" dir="ltr">{label}</a>'
+    return f'<span class="ts" dir="ltr">{label}</span>'
+
+
+def _link(url: str) -> tuple[str, str]:
+    """(url, tail): trailing punctuation and an unbalanced closing parenthesis stay outside the link."""
+    tail = ""
+    while url and (url[-1] in ".,;:!?" or (url[-1] == ")" and url.count("(") < url.count(")"))):
+        url, tail = url[:-1], url[-1] + tail
+    return url, tail
+
+
+def inline(text: str, link) -> str:
+    """Escaped text with `code`, **bold**, bare URLs and [mm:ss] links to the source."""
+    kept = []
+
+    def keep(snippet: str) -> str:
+        kept.append(snippet)
+        return f"\x00{len(kept) - 1}\x00"
+
+    def url(match) -> str:
+        address, tail = _link(match.group(0))
+        return keep(f'<a href="{html.escape(address)}" dir="ltr">{html.escape(address)}</a>') + tail
+
+    text = CODE.sub(lambda m: keep(f'<code dir="ltr">{html.escape(m.group(0)[1:-1])}</code>'), text)
+    text = html.escape(URL.sub(url, text), quote=False)
+    text = QUOTED_LATIN.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', text)
+    text = SYMBOL_NAME.sub(lambda m: f'<bdi dir="ltr">{m.group(0)}</bdi>', text)
+    text = BOLD.sub(r"<strong>\1</strong>", text)
+    text = TIME.sub(lambda m: stamp(m.group(1), link), text)
+    return KEPT.sub(lambda m: kept[int(m.group(1))], text)
+
+
+def check(blocks: list[dict], times: dict, duration: float) -> tuple[list[str], list[str]]:
+    errors, warnings, used = [], [], {}
+    if not any(b["kind"] == "h2" for b in blocks):
+        errors.append("line 1: no chapters; start each with a `## ` heading")
+    for b in blocks:
+        n = b["line"]
+        if b["kind"] == "code":
+            if b.get("open"):
+                errors.append(f"line {n}: a ``` code block is never closed")
             continue
-        data = base64.b64encode(path.read_bytes()).decode("ascii")
-        faces.append(
-            "  @font-face { font-family: 'Heebo'; font-style: normal; font-weight: %d; "
-            "font-display: swap; src: url(data:font/woff;base64,%s) format('woff'); }" % (weight, data)
-        )
-    return "\n".join(faces)
+        if b["kind"] == "figure":
+            if b["id"] not in times:
+                errors.append(f"line {n}: {b['id']} is not one of the frames (see frames.json)")
+            if not b["text"]:
+                errors.append(f"line {n}: {b['id']} needs a caption: ![{b['id']}](what it shows and why it is here)")
+            if b["id"] in used:
+                warnings.append(f"line {n}: {b['id']} is already used on line {used[b['id']]}")
+            used.setdefault(b["id"], n)
+        for text in b.get("items") or [b.get("text", "")]:
+            text = CODE.sub("", text)
+            for m in TIME.finditer(text):
+                if any(int(part) > 59 for part in m.group(1).split(":")[1:]):
+                    errors.append(f"line {n}: [{m.group(1)}] is not a time (mm:ss or h:mm:ss)")
+                elif duration and parse_time(m.group(1)) > duration + 5:
+                    errors.append(f"line {n}: [{m.group(1)}] is after the end of the video ({fmt_time(duration)})")
+            if MD_LINK.search(text):
+                warnings.append(f"line {n}: write links as bare URLs; [text](url) is shown as typed")
+            if NIQQUD.search(text):
+                warnings.append(f"line {n}: niqqud; write Hebrew without vowel points")
+    return errors, warnings
 
 
-def _find_chrome() -> str | None:
-    """A Chrome/Chromium/Edge binary for headless print-to-pdf, if any (see hostenv)."""
-    return find_chrome()
-
-
-def _find_weasyprint() -> list[str] | None:
-    """Use an already installed WeasyPrint; never install a PDF dependency."""
-    try:
-        import weasyprint  # type: ignore  # noqa: F401 — optional
-    except Exception:
-        pass
-    else:
-        return [sys.executable, "-m", "weasyprint"]
-    if shutil.which("weasyprint"):
-        return ["weasyprint"]
+def _source_link(meta: dict):
+    if meta.get("kind") == "youtube" and meta.get("id"):
+        return lambda seconds: f"https://www.youtube.com/watch?v={meta['id']}&t={seconds}s"
     return None
 
 
-def export_pdf(single_html: Path, out_pdf: Path, engine: str = "auto") -> dict:
-    """Print the self-contained HTML to PDF: Chrome headless first, WeasyPrint
-    second (or one of them with `engine`). Works on a temporary copy without
-    `loading="lazy"` (headless printers skip lazy images); the bundle itself is
-    untouched. Both engines implement the Unicode bidi algorithm for HTML text,
-    so Hebrew documents print correctly on either."""
-    text = single_html.read_text(encoding="utf-8").replace(' loading="lazy"', "")
-    validate_generated_html(text)
-    if out_pdf.is_symlink():
-        raise SystemExit("Refusing PDF output symlink")
-    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=single_html.parent,
-                                     prefix=".vsum-print-", suffix=".html", delete=False) as stream:
-        stream.write(text)
-        print_html = Path(stream.name)
-    attempts: list[str] = []
-    try:
-        chrome = _find_chrome() if engine in ("auto", "chrome") else None
-        if chrome:
-            command = [
-                chrome, "--headless=new", "--disable-gpu", "--no-first-run",
-                "--no-pdf-header-footer", "--virtual-time-budget=10000",
-                f"--print-to-pdf={out_pdf}", print_html.as_uri(),
-            ]
-            result = run_text(command, timeout=240)
-            if result.returncode == 0 and out_pdf.exists() and out_pdf.stat().st_size > 0:
-                return {"engine": "chrome", "binary": chrome, "path": str(out_pdf)}
-            attempts.append(f"chrome: exit {result.returncode} {result.stderr.strip()[-200:]}")
-        weasy = _find_weasyprint() if engine in ("auto", "weasyprint") else None
-        if weasy:
-            result = run_text(weasy + [str(print_html), str(out_pdf)], timeout=600)
-            if result.returncode == 0 and out_pdf.exists() and out_pdf.stat().st_size > 0:
-                return {"engine": "weasyprint", "binary": weasy[0], "path": str(out_pdf)}
-            attempts.append(f"weasyprint: exit {result.returncode} {result.stderr.strip()[-200:]}")
-        return {"engine": None, "attempts": attempts}
-    finally:
-        print_html.unlink(missing_ok=True)
+def _meta_line(meta: dict, s: dict) -> str:
+    bits = []
+    if meta.get("url"):
+        bits.append(f'<a href="{html.escape(meta["url"])}">{s["watch"]}</a>')
+    bits.append(f'<bdi dir="auto">{html.escape(meta.get("title") or "")}</bdi>')
+    if meta.get("uploader"):
+        bits.append(f'{s["by"]}\u00a0<bdi dir="auto">{html.escape(meta["uploader"])}</bdi>')
+    if meta.get("duration"):
+        bits.append(f'{s["length"]}\u00a0<bdi dir="ltr">{fmt_time(meta["duration"])}</bdi>')
+    t = meta.get("transcript") or {}
+    how = {"captions": s["auto"] if t.get("auto") else s["manual"], "whisper": s["whisper"],
+           "file": s["file"]}.get(t.get("method"))
+    if how:
+        bits.append(f'{s["transcript"]}: {how}')
+    return " · ".join(bits)
 
 
-def _figure(frame: dict, source_url: str | None, strings: dict) -> str:
-    asset = frame["asset"]
-    full = f"assets/{html.escape(asset['full']['file'])}"
-    thumb = f"assets/{html.escape(asset['thumb']['file'])}"
-    timestamp = format_time(frame["actual_t"])
-    timestamp_link = _timestamp_url(source_url, frame["actual_t"])
-    stamp = f'<bdi dir="ltr">{html.escape(timestamp)}</bdi>'
-    time_html = (
-        f'<b><a href="{html.escape(timestamp_link)}">{stamp}</a></b>' if timestamp_link else f"<b>{stamp}</b>"
-    )
-    caption = frame["caption"]
-    # no-break spaces keep "01:02 ·" together when the caption wraps
-    parts = [f"{time_html} · {_inline(caption['shows'])}"]
-    if caption.get("why"):
-        parts.append(f'<span class="why">{_inline(caption["why"])}</span>')
-    if caption.get("look_at"):
-        parts.append(f'<span class="look">{html.escape(strings["look_at"])} {_inline(caption["look_at"])}</span>')
-    seg_ids = " ".join(html.escape(str(seg)) for seg in frame.get("anchor_seg_ids", []))
-    return (
-        f'<figure data-frame-id="{html.escape(frame["name"])}" '
-        f'data-candidate-id="{html.escape(frame["candidate_id"])}" '
-        f'data-time="{frame["actual_t"]:.3f}" data-segment-ids="{seg_ids}" '
-        f'data-role="{html.escape(frame["role"])}" data-novelty="{html.escape(frame["novelty"])}">'
-        f'<a href="{full}"><img src="{thumb}" loading="lazy" '
-        f'alt="{html.escape(frame["alt"])}"></a>'
-        f"<figcaption>{''.join(parts)}</figcaption>"
-        "</figure>"
-    )
+def _body(blocks: list[dict], times: dict, folder: Path, link) -> tuple[list, list[tuple]]:
+    """HTML parts in order (the table of contents is a placeholder list before the first chapter)."""
+    parts, toc, toc_at, brief = [], [], None, False
+    for b in blocks:
+        kind = b["kind"]
+        if kind == "h2":
+            toc_at = len(parts) if toc_at is None else toc_at
+            lead = LEAD_TIME.match(b["text"])
+            name = b["text"][lead.end():] if lead else b["text"]
+            toc.append((len(toc) + 1, name, lead.group(1) if lead else None))
+            chip = stamp(lead.group(1), link) + " " if lead else ""  # a space: margins flip on dir="ltr" chips
+            parts.append(f'<h2 id="s{len(toc)}">{chip}{inline(name, link)}</h2>')
+        elif kind == "h3":
+            parts.append(f"<h3>{inline(b['text'], link)}</h3>")
+        elif kind == "p":
+            parts.append(f"<p>{inline(b['text'], link)}</p>")
+        elif kind in ("ul", "ol"):
+            parts.append(f"<{kind}>" + "".join(f"<li>{inline(x, link)}</li>" for x in b["items"]) + f"</{kind}>")
+        elif kind == "quote":
+            paras, current = [], []
+            for item in b["items"] + [""]:
+                if item:
+                    current.append(item)
+                elif current:
+                    paras.append(" ".join(current))
+                    current = []
+            opening = not toc and not brief
+            brief = brief or opening
+            parts.append(("<blockquote class=\"brief\">" if opening else "<blockquote>")
+                         + "".join(f"<p>{inline(p, link)}</p>" for p in paras) + "</blockquote>")
+        elif kind == "code":
+            parts.append(f'<pre dir="ltr"><code>{html.escape(b["text"])}</code></pre>')
+        elif kind == "figure":
+            data = base64.b64encode((folder / f"{b['id']}.jpg").read_bytes()).decode()
+            alt = html.escape(re.sub(r"[`*]", "", b["text"]))
+            parts.append(f'<figure><img src="data:image/jpeg;base64,{data}" alt="{alt}"><figcaption>'
+                         f'{stamp(fmt_time(times[b["id"]]), link)} {inline(b["text"], link)}</figcaption></figure>')
+    if toc:
+        parts.insert(toc_at, toc)
+    return parts, toc
 
 
-def _figures_block(figures: list[str]) -> str:
-    """Two frames anchored to the same prose block sit side by side (the earlier
-    one at inline-start, which is the reading order in both directions)."""
-    if len(figures) == 2:
-        return '<div class="duo">' + "".join(figures) + "</div>"
-    return "".join(figures)
-
-
-def _block_html(block: dict) -> str:
-    kind = block["kind"]
-    if kind == "code":
-        lang_class = f' class="lang-{html.escape(block["lang"])}"' if block.get("lang") else ""
-        return f'<pre dir="ltr"><code{lang_class}>{html.escape(block["text"])}</code></pre>'
-    if kind == "quote":
-        return f'<blockquote dir="auto">{_inline(block["text"])}</blockquote>'
-    return f"<p>{_inline(block['text'])}</p>"
-
-
-def _brief_html(brief: dict, transcript: dict, strings: dict) -> str:
-    """Render a validated brief without touching chapter blocks or frame anchors."""
-    brief_items({"brief": brief}, transcript)
-    rows = transcript.get("segments", [])
-    segments = {str(row["seg_id"]): row for row in rows}
-    order = {str(row["seg_id"]): i for i, row in enumerate(rows)}
-    source_url = transcript.get("video", {}).get("url")
-
-    def item_html(item: dict) -> str:
-        # One start link per contiguous cited run keeps cross-chapter evidence
-        # compact without inventing a continuous range between distant claims.
-        links = []
-        previous = -2
-        for seg_id in item["seg_ids"]:
-            position = order[seg_id]
-            if position != previous + 1:
-                start = float(segments[seg_id]["start"])
-                label = html.escape(format_time(start))
-                url = _timestamp_url(source_url, start)
-                link = f'<a href="{html.escape(url)}">{label}</a>' if url else label
-                links.append(f'<span class="brief-source" dir="ltr">[{link}]</span>')
-            previous = position
-        sources = (
-            f'<span class="brief-sources" dir="ltr" aria-label="{html.escape(strings["brief_sources"])}">'
-            f'{" ".join(links)}</span>'
-        )
-        return f'{_inline(item["text"])} {sources}'
-
-    body = [f'<p>{item_html(brief["synthesis"])}</p>']
-    for key in ("main_points", "takeaways"):
-        if brief[key]:
-            body.append(f'<h3>{html.escape(strings[key])}</h3><ul>')
-            body.extend(f'<li>{item_html(item)}</li>' for item in brief[key])
-            body.append('</ul>')
-    return (
-        f'<section class="brief" aria-labelledby="brief-title">'
-        f'<h2 id="brief-title">{html.escape(strings["brief"])}</h2>'
-        + ''.join(body) + '</section>'
-    )
-
-
-def _render_html(
-    transcript: dict,
-    chapters: list[dict],
-    summaries: dict[str, dict],
-    frames: list[dict],
-    overview: str,
-    lang: str,
-    candidate_count: int | None = None,
-    brief: dict | None = None,
-) -> str:
-    strings = STRINGS[lang]
+def build(notes: str, meta: dict, frames: list[dict], folder: Path) -> tuple[str, list[str], list[str]]:
+    """(html, errors, warnings); html is empty while there are errors."""
+    warnings = []
+    notes = notes.lstrip("\ufeff")
+    if BIDI.search(notes):
+        notes = BIDI.sub("", notes)
+        warnings.append("removed invisible direction marks; the page isolates directions itself")
+    blocks = parse(notes)
+    times = {f["id"]: f["t"] for f in frames}
+    errors, found = check(blocks, times, meta.get("duration") or 0)
+    warnings += found
+    missing = sorted({b["id"] for b in blocks if b["kind"] == "figure" and b["id"] in times
+                      and not (folder / f"{b['id']}.jpg").is_file()})
+    errors += [f"{fid}.jpg is missing from {folder}; run prepare again" for fid in missing]
+    if errors:
+        return "", errors, warnings
+    prose = CODE.sub("", FENCED.sub("", notes))
+    hebrew, latin = len(HEBREW.findall(prose)), len(LATIN.findall(prose))
+    lang = "he" if hebrew > 0.3 * (hebrew + latin) else "en"
+    s, link = STRINGS[lang], _source_link(meta)
+    title = next((b["text"] for b in blocks if b["kind"] == "title"), meta.get("title") or "")
+    parts, toc = _body([b for b in blocks if b["kind"] != "title"], times, folder, link)
+    if toc:
+        items = "".join(f'<li><a href="#s{i}">{inline(name, None)}</a>'
+                        + (f' <span class="t" dir="ltr">{t}</span>' if t else "") + "</li>" for i, name, t in toc)
+        nav = f'<nav class="toc" aria-label="{s["toc"]}"><p class="toc-title">{s["toc"]}</p><ol>{items}</ol></nav>'
+        parts = [nav if isinstance(p, list) else p for p in parts]
+    today = datetime.date.today()
+    date = today.strftime("%d.%m.%Y") if lang == "he" else today.isoformat()
+    font = ""
+    if FONT.is_file():
+        data = base64.b64encode(FONT.read_bytes()).decode()
+        font = ('@font-face{font-family:"Frank Ruhl Libre";font-weight:300 900;font-display:swap;'
+                f'src:url(data:font/woff2;base64,{data}) format("woff2");'
+                "unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}")
     direction = "rtl" if lang == "he" else "ltr"
-    video = transcript.get("video", {})
-    partial_notice = ""
-    if transcript.get("status") == "partial":
-        label = "סיכום חלקי — טווחי שמע חסרים" if lang == "he" else "PARTIAL SUMMARY — missing audio ranges"
-        ranges = []
-        for failure in transcript.get("failed_chunks") or []:
-            bounds = failure.get("range") or {}
-            ranges.append(f"{format_time(float(bounds.get('start_s', 0)))}–{format_time(float(bounds.get('end_s', 0)))}")
-        ranges_html = ", ".join(f'<bdi dir="ltr">{html.escape(value)}</bdi>' for value in ranges)
-        partial_notice = (f'<section class="partial-notice" role="note">'
-                          f'<strong>{html.escape(label)}</strong><p>{ranges_html}</p></section>')
-    title = str(video.get("title") or "Video summary")
-    source_url = video.get("url")
-    is_link = isinstance(source_url, str) and source_url.startswith(("http://", "https://"))
-    frames_by_chapter: dict[str, list[dict]] = {}
-    for frame in frames:
-        frames_by_chapter.setdefault(frame["chapter_id"], []).append(frame)
-
-    sections: list[str] = [_brief_html(brief, transcript, strings)] if brief is not None else []
-    toc: list[str] = []
-    for number, chapter in enumerate(chapters, start=1):
-        chapter_id = chapter["chapter_id"]
-        summary = summaries[chapter_id]
-        toc.append(f'<li><a href="#{html.escape(chapter_id)}">{_inline(summary["title"])}</a></li>')
-        block_frames: dict[int, list[dict]] = {}
-        for frame in sorted(frames_by_chapter.get(chapter_id, []), key=lambda row: row["actual_t"]):
-            block_frames.setdefault(frame["block_index"], []).append(frame)
-        body: list[str] = []
-        for index, block in enumerate(summary["blocks"]):
-            body.append(_block_html(block))
-            body.append(_figures_block([_figure(frame, source_url, strings) for frame in block_frames.get(index, [])]))
-        if summary["key_points"]:
-            items = "".join(f"<li>{_inline(point)}</li>" for point in summary["key_points"])
-            body.append(f'<ul class="key-points">{items}</ul>')
-        range_text = f"{format_time(chapter['start'])}–{format_time(chapter['end'])}"
-        range_link = _timestamp_url(source_url, chapter["start"]) if is_link else None
-        range_html = (
-            f'<a href="{html.escape(range_link)}">{html.escape(range_text)}</a>' if range_link
-            else html.escape(range_text)
-        )
-        sections.append(
-            f'<section class="chapter" id="{html.escape(chapter_id)}">'
-            f'<div class="ch-head"><span class="ch-num"><bdi dir="ltr">{number:02d}</bdi></span>'
-            f'<h2>{_inline(summary["title"])}</h2>'
-            f'<span class="range" dir="ltr">{range_html}</span></div>'
-            + "".join(body)
-            + "</section>"
-        )
-
-    meta_bits: list[str] = []
-    if video.get("uploader"):
-        meta_bits.append(f'<bdi>{html.escape(str(video["uploader"]))}</bdi>')
-    if video.get("duration"):
-        meta_bits.append(f'<bdi dir="ltr">{html.escape(format_time(float(video["duration"])))}</bdi>')
-    if is_link:
-        meta_bits.append(f'<a href="{html.escape(source_url)}">{html.escape(strings["watch"])}</a>')
-    provenance = transcript.get("source")
-    if provenance:
-        language = transcript.get("language")
-        label = f"{provenance}" + (f" ({language})" if language else "")
-        meta_bits.append(html.escape(strings["transcript"].format(source=label)))
-    if candidate_count:
-        meta_bits.append(html.escape(strings["frames_of"].format(n=len(frames), m=candidate_count)))
-    else:
-        meta_bits.append(html.escape(strings["frames"].format(n=len(frames))))
-    # Isolate complete metadata items: a Latin caption label must not pull the
-    # following Hebrew frame count across the separator into its own bidi run.
-    metadata_html = ' · '.join(f'<bdi dir="auto">{bit}</bdi>' for bit in meta_bits)
-    footer_source = (
-        f'{html.escape(strings["source"])} <a href="{html.escape(source_url)}"><bdi dir="ltr">{html.escape(source_url)}</bdi></a> · '
-        if is_link else ""
-    )
-    font_css = font_face_css(lang)
-    return f"""<!DOCTYPE html>
-<html lang="{lang}" dir="{direction}">
-<head>
-<meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="{html.escape(CSP, quote=True)}">
-<meta name="referrer" content="no-referrer">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(title)} — {html.escape(strings["title_suffix"])}</title>
-<style>
-{font_css}
-  :root {{ --font-stack: {FONT_STACKS[lang]}; }}
-{STYLE}
-.partial-notice {{ border: 2px solid #9b3b19; padding: 1rem; margin-block: 1rem; }}
-</style>
-</head>
-<body>
-
-<header class="hero">
-  <div class="measure">
-    <div class="kicker">{html.escape(strings["kicker"])}</div>
-    <h1 dir="auto">{html.escape(title)}</h1>
-    {partial_notice}
-    <div class="meta">{metadata_html}</div>
-    <div class="thesis"><b>{html.escape(strings["claim"])}</b> {_inline(overview)}</div>
-  </div>
-  <nav class="toc">
-    <div class="kicker">{html.escape(strings["chapters"])}</div>
-    <ol>{''.join(toc)}</ol>
-  </nav>
-</header>
-
-<main>
-{''.join(sections)}
-</main>
-
-<footer>
-  {html.escape(strings["footer"].format(n=len(frames)))} ·
-  {footer_source}{html.escape(strings["provenance"])} <code dir="ltr">manifest.json</code>
-</footer>
-
-</body>
-</html>
-"""
+    style = font + CSS
+    policy = (f"default-src 'none'; img-src data:; font-src data:; style-src '{_digest(style)}'; "
+              f"script-src '{_digest(SCRIPT)}'")
+    page = (f'<!doctype html>\n<html lang="{lang}" dir="{direction}">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+            f'<meta http-equiv="Content-Security-Policy" content="{policy}">\n'
+            f"<title>{html.escape(title)}</title>\n<style>{style}</style>\n</head>\n<body>\n"
+            f'<header class="masthead"><h1>{inline(title, None)}</h1>'
+            f'<p class="meta">{_meta_line(meta, s)}</p></header>\n<main>\n' + "\n".join(parts)
+            + f'\n</main>\n<footer>{s["footer"].format(date=date)}</footer>\n'
+            f'<div id="zoom" hidden><img alt=""></div>\n<script>{SCRIPT}</script>\n</body>\n</html>\n')
+    return page, [], warnings
 
 
-def _checked_assets(payload: dict, root: Path) -> dict:
-    """Hash/render the same in-directory files; old absolute paths are advisory."""
-    if root.is_symlink():
-        raise SystemExit("Refusing symlinked assets directory")
-    for path in root.rglob("*"):
-        if path.is_symlink() or not (path.is_file() or path.is_dir()):
-            raise SystemExit("Refusing non-regular entries in assets directory")
-    for asset in payload.get("assets", []):
-        for variant in ("full", "thumb"):
-            path = asset_file(root, asset[variant].get("file"))
-            asset[variant]["path"] = str(path)
-    return payload
+def _digest(content: str) -> str:
+    """CSP source for one inline <style> or <script>: only these exact bytes may run."""
+    return "sha256-" + base64.b64encode(hashlib.sha256(content.encode("utf-8")).digest()).decode()
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Render validated HTML (Hebrew RTL or English) from summary evidence")
-    parser.add_argument("--work", required=True)
-    parser.add_argument("--summary", required=True, help="Model-authored summary.json")
-    parser.add_argument("--selections", default=None,
-                        help="Model-authored selections.json (required unless --output-mode text-only)")
-    parser.add_argument("--assets-dir", default=None,
-                        help="grab.py output directory (required unless --output-mode text-only)")
-    parser.add_argument("--out-dir", required=True)
-    parser.add_argument("--lang", choices=sorted(LANGS), default=None,
-                        help="Output language (default: summary.json lang, then SUMMARY_LANG, then en)")
-    parser.add_argument("--output-mode", choices=OUTPUT_MODES, default="illustrated",
-                        help="illustrated (default): at least one verified frame is required; text-only: an explicit "
-                             "no-visuals delivery, recorded in manifest.json as output_mode")
-    parser.add_argument("--pdf", action="store_true",
-                        help="Also print the single-file HTML to summary-<id>.pdf")
-    parser.add_argument("--pdf-engine", choices=("auto", "chrome", "weasyprint"), default="auto")
-    parser.add_argument("--allow-audit-errors", action="store_true",
-                        help="Render even when audit_summary.py reports errors (benchmark use only)")
-    args = parser.parse_args()
-    utf8_stdio()
-
-    work = Path(args.work).expanduser().resolve()
-    out_dir = Path(args.out_dir).expanduser().resolve()
-    text_only = args.output_mode == "text-only"
-    if not text_only and (not args.selections or not args.assets_dir):
-        raise GateError("--selections and --assets-dir are required for an illustrated summary "
-                        "(pass --output-mode text-only only for an explicit no-visuals delivery)")
-
-    # Every input is loaded and gated BEFORE any side effect, so a bad
-    # summary.json never leaves a half-built output directory behind.
-    transcript = _load_json(work / "transcript.json")
-    chapters = _load_json(work / "chapters.json")
-    candidate_payload = _load_json(work / "candidates.json")
-    selections = _load_json(Path(args.selections).expanduser().resolve()) if args.selections else []
-    summary_payload = _load_json(Path(args.summary).expanduser().resolve())
-    if not isinstance(chapters, list) or not isinstance(selections, list):
-        raise SystemExit("chapters.json and selections.json must be arrays")
-    if not isinstance(summary_payload, dict):
-        raise SystemExit("summary.json must be an object")
-    if not isinstance(candidate_payload, dict):
-        raise SystemExit("candidates.json must be an object")
-    lang = resolve_lang(args.lang, summary_payload)
-    gate = validate_transcript(transcript)
-    gate.raise_for_errors("transcript.json")
-    duration = float((transcript.get("video") or {}).get("duration") or 0)
-    gate = validate_chapters(chapters, transcript, duration,
-                             visual_decision="none" if text_only else "illustrated")
-    gate.raise_for_errors("chapters.json")
-    if not text_only:
-        if not selections:
-            raise GateError("selections.json is empty: an illustrated summary needs at least one verified frame; "
-                            "a genuinely non-visual video is delivered with --output-mode text-only after an "
-                            "explicit no-visuals decision")
-        gate = validate_selections(selections, candidate_payload, lang=lang,
-                                   shortlist_receipt=candidate_payload.get("shortlist"))
-        gate.print_warnings("selections.json")
-        gate.raise_for_errors("selections.json")
-    # The candidate pool must have been cut from THIS transcript and THESE chapters.
-    inputs = candidate_payload.get("inputs") if isinstance(candidate_payload.get("inputs"), dict) else {}
-    transcript_sha = sha256_file(work / "transcript.json")
-    chapters_sha = sha256_file(work / "chapters.json")
-    if inputs.get("transcript_sha256") and inputs["transcript_sha256"] != transcript_sha:
-        raise StaleError("transcript.json changed after candidates were extracted — re-run candidates.py")
-    if inputs.get("chapters_sha256") and inputs["chapters_sha256"] != chapters_sha:
-        raise StaleError("chapters.json changed after candidates were extracted — re-run candidates.py")
-    if not inputs:
-        print("[vsum] warning: candidates.json predates input binding; staleness cannot be verified", file=sys.stderr)
-    # … and from THIS source: transcript and pool must name the same video.
-    recorded_identity, pool_identity = transcript.get("source_identity"), inputs.get("source_identity")
-    if recorded_identity is not None and pool_identity is not None \
-            and not identity_matches(recorded_identity, pool_identity):
-        raise StaleError(f"candidates.json was cut from {describe_identity(pool_identity)} but transcript.json is "
-                         f"for {describe_identity(recorded_identity)} — re-run candidates.py")
-    transcript_video = (transcript.get("video") or {}).get("id")
-    if transcript_video and inputs.get("video_id") and str(inputs["video_id"]) != str(transcript_video):
-        raise StaleError(f"candidates.json belongs to video {inputs['video_id']} but transcript.json is "
-                         f"for {transcript_video} — re-run candidates.py")
-    for label, payload_version in (("transcript.json", transcript.get("engine_version")),
-                                   ("candidates.json", candidate_payload.get("engine_version"))):
-        drift, drift_message = engine_drift(payload_version)
-        if drift in ("minor", "major", "unknown"):
-            print(f"[vsum] warning: {label} {drift_message}", file=sys.stderr)
-
-    if text_only:
-        assets_dir = None
-        assets_manifest_sha = None
-        assets_payload = {"schema_version": 2, "assets": [], "failures": [], "duplicate_pairs": []}
-        out_dir.mkdir(parents=True, exist_ok=True)
-    else:
-        assets_dir = Path(args.assets_dir).expanduser().absolute()
-        if assets_dir.is_symlink() or (assets_dir / "assets-manifest.json").is_symlink():
-            raise SystemExit("Refusing symlinked assets input")
-        assets_manifest_sha = sha256_file(assets_dir / "assets-manifest.json")
-        assets_payload = _checked_assets(_load_json(assets_dir / "assets-manifest.json"), assets_dir)
-        assets_dir = assets_dir.resolve()
-        out_dir.mkdir(parents=True, exist_ok=True)
-        expected_assets = out_dir / "assets"
-        if assets_dir != expected_assets:
-            if expected_assets.exists():
-                existing = expected_assets / "assets-manifest.json"
-                if existing.is_file() and not existing.is_symlink() and sha256_file(existing) == assets_manifest_sha:
-                    shutil.rmtree(expected_assets)  # the same grab, copied by an earlier render: refresh it
-                else:
-                    raise SystemExit(f"Refusing to replace existing assets directory: {expected_assets}")
-            shutil.copytree(assets_dir, expected_assets, symlinks=True)
-            assets_dir = expected_assets
-            assets_payload = _checked_assets(assets_payload, assets_dir)
-    summaries, frames, _ = _validate(
-        transcript, chapters, candidate_payload, selections, assets_payload, summary_payload, lang
-    )
-    overview = str(summary_payload.get("overview") or "").strip()
-    if not overview:
-        raise SystemExit("summary.json requires a non-empty overview")
-    if lang == "he" and not HEBREW_RE.search(overview):
-        raise SystemExit("Hebrew document — overview must be Hebrew")
-
-    info = None
-    info_path = work / "download" / "video.info.json"
-    if info_path.exists():
-        try:
-            raw = json.loads(info_path.read_text(encoding="utf-8"))
-            info = {key: raw.get(key) for key in ("title", "description", "tags", "uploader")}
-        except (OSError, json.JSONDecodeError):
-            info = None
-    audit = run_audit(transcript, chapters, summary_payload, selections=selections,
-                      candidates=candidate_payload, info=info, lang=lang)
-    audit["inputs"] = audit_inputs(work, Path(args.summary).expanduser().resolve(),
-                                   Path(args.selections).expanduser().resolve() if args.selections else None,
-                                   candidate_payload, lang)
-    atomic_write(work / "audit.json", json.dumps(audit, ensure_ascii=False, indent=2) + "\n")
-    if audit["errors"]:
-        print(f"[vsum] audit: {len(audit['errors'])} error(s), {len(audit['reviews'])} review(s)", file=sys.stderr)
-        for row in audit["errors"][:20]:
-            print(f"  error {row['check']} {row.get('where', '')}: {row['message']}", file=sys.stderr)
-        if not args.allow_audit_errors:
-            print(f"[vsum] fix the summary (see {work / 'audit.json'}) and re-run render", file=sys.stderr)
-            return 5
-
-    source_language = transcript.get("language")
-    translation_mode = "hebrew_passthrough" if (lang == "he" and str(source_language or "").startswith("he")) \
-        else ("translated" if lang == "he" else "same_language")
-    manifest_frames = []
-    for frame in frames:
-        asset = frame["asset"]
-        manifest_frames.append({
-            key: frame[key]
-            for key in (
-                "candidate_id", "name", "chapter_id", "requested_t", "actual_t", "triaged_t",
-                "refinement", "seg_ids", "target_ids", "family_id", "role", "novelty", "caption", "alt",
-                "anchor_seg_ids", "selection_reasons", "quality",
-            )
-        } | {
-            "assets": {
-                "full": {key: asset["full"][key] for key in ("file", "width", "height", "sha256")},
-                "thumb": {key: asset["thumb"][key] for key in ("file", "width", "height", "sha256")},
-            }
-        })
-    manifest = {
-        "schema_version": MANIFEST_SCHEMA,
-        "engine_version": ENGINE_VERSION,
-        "tier": candidate_payload.get("tier"),
-        "lang": lang,
-        "direction": "rtl" if lang == "he" else "ltr",
-        "source_language": source_language,
-        "translation_mode": translation_mode,
-        "video": transcript.get("video", {}),
-        "transcript_source": transcript.get("source"),
-        "overview": overview,
-        "chapters": [summaries[chapter["chapter_id"]] | {
-            "start": chapter["start"], "end": chapter["end"],
-            "coverage_status": next(
-                (
-                    row["status"] for row in candidate_payload.get("coverage", {}).get("chapters", [])
-                    if row["chapter_id"] == chapter["chapter_id"]
-                ),
-                "unknown",
-            ),
-        } for chapter in chapters],
-        "frames": manifest_frames,
-        "audit": {"errors": len(audit["errors"]), "reviews": len(audit["reviews"]),
-                  "warnings": len(audit["warnings"]), "stats": audit.get("stats", {})},
-        "summary_sha256": canonical_json_sha256(summary_payload),
-        "selections_sha256": canonical_json_sha256(selections),
-        # Bindings to every other input, so `workflow.py verify` can prove which
-        # transcript, chapters, pool and assets this document was rendered from.
-        "transcript_sha256": transcript_sha,
-        "chapters_sha256": chapters_sha,
-        "candidates_sha256": candidates_digest(candidate_payload),
-        "assets_manifest_sha256": assets_manifest_sha,
-        "output_mode": args.output_mode,
-        "visual_content": "none" if text_only else (inputs.get("visual_content") or "illustrated"),
-        "frames_count": len(frames),
-        "generated_at": _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat(),
-        # Filled after bundling / printing (a second write of this file), so the
-        # deliverable itself is bound to the manifest, not only the inputs.
-        "bundle_sha256": None,
-        "pdf_sha256": None,
-    }
-    if "brief" in summary_payload:
-        # Structural errors cannot be bypassed, even in benchmark mode.
-        try:
-            brief_items(summary_payload, transcript)
-        except ValueError as exc:
-            raise SystemExit(str(exc)) from exc
-        manifest["brief"] = summary_payload["brief"]
-    atomic_write(out_dir / "manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
-    candidate_count = len(candidate_payload.get("candidates", [])) or None
-    html_text = _render_html(transcript, chapters, summaries, frames, overview, lang, candidate_count,
-                             brief=summary_payload.get("brief"))
-    validate_generated_html(html_text)
-    atomic_write(out_dir / "index.html", html_text)
-    print(f"Rendered `{out_dir / 'index.html'}` and `{out_dir / 'manifest.json'}` (lang={lang}, "
-          f"audit: {len(audit['errors'])} errors / {len(audit['reviews'])} reviews / {len(audit['warnings'])} warnings)")
-    # The single self-contained file is the deliverable people open and share;
-    # the directory stays as the editable source.
-    single = bundle_summary(out_dir, None)
-    size_mb = single.stat().st_size / (1024 * 1024)
-    manifest["bundle_sha256"] = sha256_file(single)
-    atomic_write(out_dir / "manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
-    print(f"Bundled single-file deliverable: `{single}` ({size_mb:.1f} MB, sha256 "
-          f"{manifest['bundle_sha256'][:12]}…) — opens with a double click.")
-    if args.pdf:
-        pdf_path = single.with_suffix(".pdf")
-        outcome = export_pdf(single, pdf_path, args.pdf_engine)
-        if not outcome.get("engine"):
-            print("PDF: no engine (install Google Chrome or WeasyPrint)", file=sys.stderr)
-            for attempt in outcome.get("attempts", []):
-                print(f"  {attempt}", file=sys.stderr)
-            return 4
-        pdf_mb = pdf_path.stat().st_size / (1024 * 1024)
-        manifest["pdf_sha256"] = sha256_file(pdf_path)
-        atomic_write(out_dir / "manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
-        print(f"PDF: `{pdf_path}` ({pdf_mb:.1f} MB via {outcome['engine']})")
-    return 0
+def browser() -> str | None:
+    for name in BROWSERS:
+        path = name if Path(name).is_file() else shutil.which(name)
+        if path:
+            return path
+    return None
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+def pdf(page: Path, out: Path) -> bool:
+    chrome = browser()
+    if not chrome:
+        return False
+    out.unlink(missing_ok=True)
+    # Headless mode already uses a throwaway profile; an explicit fresh --user-data-dir makes
+    # Chrome 153 on macOS print the file and then never exit.
+    try:
+        subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-first-run", "--no-pdf-header-footer",
+                        f"--print-to-pdf={out}", page.resolve().as_uri()], capture_output=True, timeout=120)
+    except subprocess.TimeoutExpired:
+        pass  # the file may be complete even if the browser lingers
+    return out.is_file() and out.stat().st_size > 0

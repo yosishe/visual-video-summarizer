@@ -1,5 +1,34 @@
 # Changelog
 
+## 2.0.0 — 2026-09-28
+
+Rebuilt from scratch. Version 1 produced good summaries when its loop finished, but the loop took about
+30 agent steps for an 11-minute video and stopped on cases that should simply work: no captions (local
+whisper unused without manual registration), videos over two hours (an approval gate), Google Drive links,
+a whisper chunk-boundary crash, and a silent intro that misled language detection. Most of its ~20,000
+lines guarded the process rather than the output.
+
+- **Three steps, one authored file.** `vsum.py prepare` → the agent writes `notes.md` (plain Markdown) →
+  `vsum.py render`. Replaces `workflow.py`, `run.json` bindings, 15 exit codes, and the
+  `chapters.json` / `selections.json` / `summary.json` schemas.
+- **No captions → local whisper, automatically.** No upload, no question; the model comes from
+  `VSUM_WHISPER_MODEL` or v1's `~/.config/summarize-video/local-model.json`. The language is detected on
+  30 s taken at 20 % of the video. Whisper runs in 10-minute parts, each saved as it finishes, so a run
+  stopped by an agent's command time limit resumes instead of starting over.
+- **Any yt-dlp source** (including public Google Drive files), local files, and sidecar or `--captions`
+  subtitle files (e.g. Zoom transcripts). No length limit.
+- **Frames are saved full size at extraction**, so the frame the agent picks from a contact sheet is the
+  frame in the page. Shortlist, pixel re-verification and re-grab are gone. Screens are compared in 4×4
+  blocks of a 128×72 scan: at v1's 64×36, different white slides differed by 1-2 grey levels and a
+  conference talk lost most of its slides between minutes 20 and 36.
+- **A work folder belongs to one video.** A different source stops with a message, changed options redo
+  only their stage, and a folder `prepare` did not create is never used.
+- **Page:** a printed-reader design, Frank Ruhl Libre embedded (replaces Heebo), clickable timestamps,
+  click-to-zoom, print CSS; errors in `notes.md` are reported by line number.
+- **Removed:** cloud transcription, the self-installer, tiers, OCR/face/sharpness signals, the benchmark
+  harness. About 1,100 lines of code and 62 tests.
+
+
 ## 1.10.2 — 2026-09-21
 
 A host that cannot name a home directory now degrades instead of crashing. `pathlib.Path.home()` is partial — it raises `RuntimeError` on a Windows account with no `USERPROFILE`/`HOMEDRIVE` and on a POSIX account with no `HOME` and no passwd entry (service accounts, stripped containers, `runas /env:no`) — and six call sites used it unguarded, two of them at module import time. On Windows this surfaced as `RuntimeError: Could not determine home directory.` raised from inside `doctor.check()`, the one command whose job is to say what is wrong; it also made `render.py` and `candidates.py` unimportable.
